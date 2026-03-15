@@ -28,3 +28,11 @@ export const COUPONS = {
   FREE50:   0.1,
   SUMMER15: 0.15,
 };
+export const STALE_DAYS = 30;
+
+export const SEASON_LABELS = {
+  all: "כל העונות",
+  summer: "☀️ קיץ",
+  winter: "❄️ חורף",
+  "spring-autumn": "🌸🍂 אביב / סתיו",
+};
