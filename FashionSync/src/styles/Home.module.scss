@@ -1,0 +1,687 @@
+:global(:root) {
+  --black: #080808;
+  --white: #fafaf8;
+  --cream: #f5f0e8;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --charcoal: #141414;
+  --gray: #4a4a4a;
+  --light-gray: #888;
+}
+
+:global(body) {
+  font-family: "Alef", sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+:global(body.light) {
+  background: var(--cream);
+  color: #0b0b0b;
+}
+
+.homePage {
+  min-height: 100vh;
+}
+
+.bgImage {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.18) saturate(0.6);
+  z-index: 0;
+}
+
+:global(body.light) .bgImage {
+  filter: brightness(0.75) saturate(0.9);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.floatItem {
+  position: fixed;
+  font-size: 4rem;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 2;
+  animation: floatAround 20s infinite linear;
+}
+
+@keyframes floatAround {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(30px, -40px) rotate(10deg);
+  }
+  50% {
+    transform: translate(-20px, -80px) rotate(-5deg);
+  }
+  75% {
+    transform: translate(40px, -50px) rotate(8deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.6rem 3.5rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+  gap: 1rem;
+}
+
+:global(body.light) .nav {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.navBrand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navTagline {
+  font-size: 0.78rem;
+  letter-spacing: 0.35em;
+  color: rgba(201, 168, 76, 0.5);
+  text-transform: uppercase;
+}
+
+:global(body.light) .navTagline {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.themeToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Alef", sans-serif;
+  white-space: nowrap;
+}
+
+.themeToggle:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+:global(body.light) .themeToggle {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.verText {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+}
+
+:global(body.light) .verText {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.hero {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: auto;
+  text-align: center;
+  padding: 2rem 2rem 1rem;
+}
+
+.heroEyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 0.45em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: riseIn 1s ease 0.3s forwards;
+}
+
+.heroTitle {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: riseIn 1s ease 0.5s forwards;
+}
+
+.heroTitle span {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSub {
+  font-size: 1.1rem;
+  color: var(--light-gray);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 3.2rem;
+  opacity: 0;
+  animation: riseIn 1s ease 0.7s forwards;
+}
+
+:global(body.light) .heroSub {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.roleCards {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: riseIn 1s ease 0.9s forwards;
+}
+
+.roleCard {
+  position: relative;
+  width: 260px;
+  background: rgba(10, 10, 10, 0.75);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 20px;
+  padding: 2.5rem 1.7rem 2.1rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+}
+
+:global(body.light) .roleCard {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.roleCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(201, 168, 76, 0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.roleCard::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform 0.4s;
+}
+
+.roleCard:hover {
+  transform: translateY(-10px);
+  border-color: rgba(201, 168, 76, 0.5);
+  box-shadow: 0 20px 60px rgba(201, 168, 76, 0.12);
+}
+
+.roleCard:hover::before {
+  opacity: 1;
+}
+
+.roleCard:hover::after {
+  transform: scaleX(1);
+}
+
+.cardIcon {
+  width: 64px;
+  height: 64px;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
+  transition: all 0.4s;
+}
+
+.roleCard:hover .cardIcon {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+
+.cardTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.35rem;
+  color: var(--white);
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+:global(body.light) .cardTitle {
+  color: #0b0b0b;
+}
+
+.cardDesc {
+  font-size: 0.82rem;
+  color: var(--light-gray);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+:global(body.light) .cardDesc {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.cardArrow {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.roleCard:hover .cardArrow {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.footerStrip {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 1.4rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+:global(body.light) .footerStrip {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.footerStrip a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(201, 168, 76, 0.35);
+  padding-bottom: 2px;
+}
+
+.footerStrip a:hover {
+  color: var(--gold);
+}
+
+.fsModal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+:global(body.light) .fsModal {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.show {
+  display: flex;
+}
+
+.fsModalCard {
+  width: min(500px, 92vw);
+  background: rgba(10, 10, 10, 0.9);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 20px;
+  padding: 1.6rem 1.5rem 1.5rem;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+  text-align: right;
+  animation: riseIn 0.25s ease forwards;
+}
+
+:global(body.light) .fsModalCard {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.fsModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+}
+
+:global(body.light) .fsModalHeader {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.fsModalHeader h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.25rem;
+  color: var(--gold);
+  margin: 0;
+}
+
+.fsClose {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.1rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.2s;
+}
+
+:global(body.light) .fsClose {
+  color: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.fsClose:hover {
+  color: var(--white);
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
+:global(body.light) .fsClose:hover {
+  color: #000;
+  border-color: rgba(201, 168, 76, 0.55);
+}
+
+.fsModalIntro {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+:global(body.light) .fsModalIntro {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.fsChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.fsChoiceBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  text-align: right;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: "Alef", sans-serif;
+}
+
+:global(body.light) .fsChoiceBtn {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fsChoiceBtn:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.goldBorder {
+  border-color: rgba(201, 168, 76, 0.28);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.goldBorder:hover {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.12);
+}
+
+.fci {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.fcLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--white);
+}
+
+:global(body.light) .fcLabel {
+  color: #0b0b0b;
+}
+
+.fcSub {
+  font-size: 0.76rem;
+  color: var(--light-gray);
+  margin-top: 0.1rem;
+}
+
+:global(body.light) .fcSub {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.fsField {
+  margin-bottom: 0.85rem;
+}
+
+.fsField label {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.45rem;
+}
+
+:global(body.light) .fsField label {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.fsField input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+  padding: 0.85rem 1rem;
+  color: var(--white);
+  font-family: "Alef", sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border 0.2s, background 0.2s;
+}
+
+:global(body.light) .fsField input {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0b0b0b;
+}
+
+.fsField input:focus {
+  border-color: rgba(201, 168, 76, 0.48);
+  background: rgba(201, 168, 76, 0.03);
+}
+
+.fsHint {
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+.fsHint strong {
+  color: rgba(201, 168, 76, 0.8);
+}
+
+.fsActions {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.fsBtn {
+  border: none;
+  cursor: pointer;
+  border-radius: 11px;
+  padding: 0.85rem 1.3rem;
+  font-family: "Alef", sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.fsBtnPrimary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #080808;
+}
+
+.fsBtnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(201, 168, 76, 0.2);
+}
+
+.fsBtnGhost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:global(body.light) .fsBtnGhost {
+  color: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.fsBtnGhost:hover {
+  color: var(--gold);
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
+.fsBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 0.85rem;
+  transition: color 0.2s;
+}
+
+:global(body.light) .fsBack {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.fsBack:hover {
+  color: var(--gold);
+}
+
+.fsErrVisible {
+  display: block;
+  margin-top: 0.5rem;
+  color: #ff6b5f;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .nav {
+    padding: 1.2rem 1.2rem;
+  }
+
+  .navTagline {
+    display: none;
+  }
+}

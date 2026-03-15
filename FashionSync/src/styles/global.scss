@@ -1,0 +1,24 @@
+@use "./theme";
+@use "./ui";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Alef", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}

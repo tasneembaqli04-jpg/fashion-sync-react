@@ -1,0 +1,834 @@
+// ── Variables (same as Home) ────────────────────────────────
+$gold:       #c9a84c;
+$gold-light: #e8c97a;
+$white:      #fafaf8;
+$black:      #080808;
+$light-gray: #777;
+$green:      #27ae60;
+$red:        #c0392b;
+$purple:     #8e44ad;
+$radius:     14px;
+$sidebar:    260px;
+
+// ── Wrapper ─────────────────────────────────────────────────
+.wrapper {
+  font-family: "Alef", sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+
+// ── Sidebar ─────────────────────────────────────────────────
+.sidebar {
+  width: $sidebar;
+  background: var(--charcoal);
+  border-left: 1px solid rgba($gold, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem 1.2rem;
+  position: fixed;
+  right: 0; top: 0; bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+  transition: transform 0.28s ease;
+
+  @media (max-width: 860px) {
+    transform: translateX(110%);
+    &.open { transform: translateX(0); }
+  }
+}
+
+.sidebarOverlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 199;
+}
+
+.brand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, $gold, $gold-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.2rem;
+}
+
+.roleBadge {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  color: rgba($gold, 0.45);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.userInfoBar {
+  background: rgba($gold, 0.07);
+  border: 1px solid rgba($gold, 0.15);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.8rem;
+}
+.uname  { color: $gold; font-weight: 700; margin-bottom: 0.15rem; }
+.uemail { color: $light-gray; font-size: 0.75rem; }
+
+.guestBar {
+  background: rgba($gold, 0.04);
+  border: 1px dashed rgba($gold, 0.2);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.glabel { color: $light-gray; font-size: 0.78rem; margin-bottom: 0.35rem; }
+
+.guestLoginBtn {
+  width: 100%;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, $gold, $gold-light);
+  border: none;
+  border-radius: 8px;
+  color: $black;
+  font-family: "Alef", sans-serif;
+  font-weight: 900;
+  font-size: 0.82rem;
+  cursor: pointer;
+  &:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba($gold, 0.25); }
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: $light-gray;
+  font-size: 0.92rem;
+  transition: all 0.25s;
+  margin-bottom: 0.25rem;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: right;
+  font-family: "Alef", sans-serif;
+
+  &:hover { background: rgba($gold, 0.07); color: var(--white); }
+  &.active { background: rgba($gold, 0.12); color: $gold; }
+  &.locked { opacity: 0.5; }
+  &.locked::after { content: "🔒"; font-size: 0.7rem; margin-right: auto; }
+}
+.navIcon { font-size: 1.1rem; flex-shrink: 0; }
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.logoutBtn { color: $red !important; }
+
+// ── Mobile Topbar ───────────────────────────────────────────
+.mobileTopbar {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; left: 0;
+  z-index: 150;
+  background: var(--charcoal);
+  border-bottom: 1px solid rgba($gold, 0.12);
+  padding: 0.85rem 1.2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  @media (max-width: 860px) { display: flex; }
+}
+
+.mobileBrand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, $gold, $gold-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hamburger {
+  background: none;
+  border: 1px solid rgba($gold, 0.25);
+  color: $gold;
+  width: 40px; height: 40px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileCartBtn {
+  background: rgba($gold, 0.1);
+  border: 1px solid rgba($gold, 0.25);
+  color: $gold;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9px;
+  font-family: "Alef", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+// ── Main ─────────────────────────────────────────────────────
+.main {
+  margin-right: $sidebar;
+  flex: 1;
+  min-height: 100vh;
+  padding: 2.5rem;
+
+  @media (max-width: 860px) {
+    margin-right: 0;
+    padding: 5rem 1rem 1.5rem;
+  }
+}
+
+.panel { display: block; }
+.pageTitle { font-family: "Playfair Display", serif; font-size: 1.8rem; margin-bottom: 0.3rem; }
+.pageSub   { color: $light-gray; font-size: 0.88rem; margin-bottom: 2rem; }
+
+// ── Banners ─────────────────────────────────────────────────
+.guestCatalogBanner {
+  background: rgba($gold, 0.06);
+  border: 1px solid rgba($gold, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.gbt { color: $light-gray; font-size: 0.88rem; strong { color: $gold; } }
+
+.saleCatalogBanner {
+  background: linear-gradient(135deg, rgba($purple, 0.1), rgba($purple, 0.04));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.sbt { color: #c084fc; font-size: 0.88rem; strong { color: #a855f7; } }
+
+.btnSale {
+  background: linear-gradient(135deg, #8e44ad, #a855f7);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-family: "Alef", sans-serif;
+  font-weight: 900;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+// ── Season banner ────────────────────────────────────────────
+.seasonBanner {
+  border-radius: $radius;
+  padding: 1rem 1.3rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  &.summer { background: linear-gradient(135deg, rgba(255,180,0,.1), rgba(255,140,0,.05)); border: 1px solid rgba(255,180,0,.3); }
+  &.winter { background: linear-gradient(135deg, rgba(100,149,237,.1), rgba(65,105,225,.05)); border: 1px solid rgba(100,149,237,.3); }
+  &.spring { background: linear-gradient(135deg, rgba(39,174,96,.1), rgba(46,213,115,.05)); border: 1px solid rgba(39,174,96,.3); }
+}
+.seasonEmoji { font-size: 1.6rem; }
+.seasonText  { font-size: 0.88rem; }
+
+// ── Season tabs ──────────────────────────────────────────────
+.seasonTabs {
+  display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+.seasonTab {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: $light-gray;
+  font-family: "Alef", sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { border-color: rgba($gold, 0.35); }
+}
+.activeAll    { background: rgba($gold, 0.12);          border-color: rgba($gold, 0.35)          !important; color: $gold          !important; }
+.activeSummer { background: rgba(255,180,0,.12);        border-color: rgba(255,180,0,.4)          !important; color: #ffb400       !important; }
+.activeWinter { background: rgba(100,149,237,.12);      border-color: rgba(100,149,237,.4)        !important; color: #6495ed       !important; }
+.activeSpring { background: rgba(39,174,96,.12);        border-color: rgba(39,174,96,.4)          !important; color: #27ae60       !important; }
+
+// ── Filter bar ───────────────────────────────────────────────
+.filterBar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  input, select {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 0.7rem 1rem;
+    color: var(--white);
+    font-family: "Alef", sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    &:focus { border-color: rgba($gold, 0.5); }
+  }
+  select option { background: var(--charcoal); color: var(--white); }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    input, select { width: 100%; }
+  }
+}
+.filterLeft  { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.filterRight { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+
+.cameraBtn {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba($gold, 0.1);
+  color: $gold;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  &:hover { border-color: rgba($gold, 0.5); transform: translateY(-1px); }
+}
+
+// ── Tabs ─────────────────────────────────────────────────────
+.tabs {
+  display: flex; gap: 0.4rem; margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem; flex-wrap: wrap;
+}
+.tabBtn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: $light-gray;
+  font-family: "Alef", sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { border-color: rgba($gold, 0.4); color: var(--white); }
+  &.active { background: rgba($gold, 0.12); border-color: rgba($gold, 0.35); color: $gold; }
+}
+
+// ── Products grid ────────────────────────────────────────────
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.2rem;
+  @media (max-width: 500px) { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+}
+
+.productCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: $radius;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+  &:hover {
+    transform: translateY(-6px);
+    border-color: rgba($gold, 0.3);
+    box-shadow: 0 16px 40px rgba(0,0,0,.25);
+  }
+}
+
+.productImgWrap {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #1a1a1a;
+  img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .productCard:hover & img { transform: scale(1.06); }
+  @media (max-width: 500px) { height: 160px; }
+}
+
+.wishIcon {
+  position: absolute; top: 0.6rem; left: 0.6rem;
+  background: rgba(0,0,0,.5); border: none; border-radius: 50%;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer; z-index: 2;
+  &:hover { background: rgba(192,57,43,.7); }
+  &.active { background: rgba(192,57,43,.85); }
+}
+
+.shareIcon {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  background: rgba(0,0,0,.5); border: none; border-radius: 50%;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem; cursor: pointer; z-index: 2;
+  &:hover { background: rgba($gold, 0.7); }
+}
+
+.seasonBadgeCard {
+  position: absolute; bottom: 0.5rem; right: 0.5rem;
+  padding: 0.18rem 0.55rem; border-radius: 999px;
+  font-size: 0.65rem; font-weight: 900; z-index: 2;
+  &.summer  { background: rgba(255,180,0,.85);  color: $black; }
+  &.winter  { background: rgba(100,149,237,.85); color: #fff;   }
+  &.spring  { background: rgba(39,174,96,.85);   color: #fff;   }
+  &.autumn  { background: rgba(192,100,40,.85);  color: #fff;   }
+  &.all     { background: rgba($gold,.75);       color: $black; }
+}
+
+.saleRibbon {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  background: linear-gradient(135deg, #8e44ad, #a855f7);
+  color: #fff; font-size: 0.7rem; font-weight: 900;
+  padding: 0.22rem 0.6rem; border-radius: 999px; z-index: 3;
+}
+.trendingBadge {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  background: rgba(192,57,43,.85); color: #fff;
+  font-size: 0.7rem; font-weight: 900;
+  padding: 0.2rem 0.55rem; border-radius: 999px;
+}
+.bestsellerBadge {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  background: rgba($gold,.9); color: $black;
+  font-size: 0.7rem; font-weight: 900;
+  padding: 0.2rem 0.55rem; border-radius: 999px;
+}
+
+.productBody {
+  padding: 0.9rem;
+  display: flex; flex-direction: column; gap: 0.5rem; flex: 1;
+}
+.productName { font-weight: 800; font-size: 0.93rem; }
+.productCode { font-size: 0.73rem; color: $light-gray; font-family: monospace; }
+
+.priceRow     { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.productPrice { color: $gold; font-family: "Playfair Display", serif; font-size: 1.15rem; }
+.salePrice    { color: #a855f7; }
+.productPriceOriginal { color: $light-gray; font-family: "Playfair Display", serif; font-size: 0.9rem; text-decoration: line-through; }
+.saleInlineTag {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  background: linear-gradient(135deg, rgba(142,68,173,.18), rgba(168,85,247,.12));
+  border: 1px solid rgba(168,85,247,.35);
+  color: #c084fc; font-size: 0.66rem; font-weight: 900;
+  padding: 0.15rem 0.5rem; border-radius: 999px;
+}
+
+.badgeGreen  { display: inline-block; padding: .22rem .65rem; border-radius: 20px; font-size: .73rem; font-weight: 800; background: rgba(39,174,96,.12); color: $green; border: 1px solid rgba(39,174,96,.3); }
+.badgeRed    { display: inline-block; padding: .22rem .65rem; border-radius: 20px; font-size: .73rem; font-weight: 800; background: rgba(192,57,43,.12); color: $red;   border: 1px solid rgba(192,57,43,.3); }
+.badgeYellow { display: inline-block; padding: .22rem .65rem; border-radius: 20px; font-size: .73rem; font-weight: 800; background: rgba($gold,.12);     color: $gold;  border: 1px solid rgba($gold,.3); }
+
+.cardActions {
+  display: flex; gap: 0.5rem; margin-top: 0.25rem; flex-wrap: wrap;
+}
+
+.actBtn {
+  flex: 1; min-width: 100px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.58rem 0.65rem;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: rgba(255,255,255,.03);
+  color: var(--white);
+  font-family: "Alef", sans-serif; font-size: 0.83rem; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  &:hover { border-color: rgba($gold,.45); transform: translateY(-1px); }
+  &.gold { background: linear-gradient(135deg, $gold, $gold-light); color: $black; border: none; }
+  &.gold:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba($gold,.25); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  &.guestLocked { background: rgba($gold,.05); border: 1px dashed rgba($gold,.3); color: rgba($gold,.6); }
+}
+
+.notifyBtn {
+  width: 100%; margin-top: 0.1rem;
+  padding: 0.52rem 0.75rem;
+  background: rgba(192,57,43,.08); border: 1px solid rgba(192,57,43,.25);
+  border-radius: 9px; color: #ffd1cc;
+  font-family: "Alef", sans-serif; font-size: 0.83rem; font-weight: 800;
+  cursor: pointer;
+  &:hover { background: rgba(192,57,43,.15); }
+}
+
+// ── Empty state ──────────────────────────────────────────────
+.emptyState {
+  grid-column: 1/-1;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 2rem; text-align: center;
+  color: $light-gray;
+}
+
+// ── Chat ─────────────────────────────────────────────────────
+.chatShell {
+  display: flex; flex-direction: column;
+  height: calc(100vh - 160px); min-height: 400px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: $radius; overflow: hidden;
+  @media (max-width: 860px) { height: calc(100vh - 200px); }
+}
+.chatTop {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  background: rgba($gold,.06);
+  border-bottom: 1px solid rgba($gold,.12);
+}
+.chatAvatar {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, $gold, $gold-light);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; color: $black; font-weight: 900; flex-shrink: 0;
+}
+.chatBotName { font-weight: 900; }
+.chatOnline  { font-size: 0.78rem; color: $green; }
+
+.chatMsgs {
+  flex: 1; overflow-y: auto; padding: 1.2rem;
+  display: flex; flex-direction: column; gap: 0.85rem;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+}
+
+.msg {
+  max-width: 72%;
+  padding: 0.8rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.92rem; line-height: 1.55;
+  animation: msgIn 0.3s ease;
+  &.bot  {
+    background: rgba(255,255,255,.06); border: 1px solid var(--border);
+    align-self: flex-start; border-radius: 12px 12px 12px 3px;
+  }
+  &.user {
+    background: rgba($gold,.18); border: 1px solid rgba($gold,.2);
+    align-self: flex-end; border-radius: 12px 12px 3px 12px;
+  }
+}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.chatPills {
+  display: flex; flex-wrap: nowrap; gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  overflow-x: auto;
+  &::-webkit-scrollbar { height: 6px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 999px; }
+}
+.pill {
+  flex: 0 0 auto;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  color: var(--white); padding: 8px 14px; border-radius: 999px;
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+  &:hover { background: rgba($gold,.14); border-color: rgba($gold,.45); color: $gold; }
+}
+
+.chatBottom {
+  padding: 0.85rem 1.1rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 0.75rem; align-items: flex-end;
+}
+.chatIn {
+  flex: 1;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.65rem 1rem;
+  color: var(--white); font-family: "Alef", sans-serif; font-size: 0.9rem;
+  resize: none; outline: none; min-height: 42px; max-height: 110px;
+  &:focus { border-color: rgba($gold,.5); }
+}
+.sendBtn {
+  width: 42px; height: 42px;
+  background: $gold; border: none; border-radius: 9px;
+  color: $black; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { background: $gold-light; }
+}
+.attachBtn {
+  background: none; border: none; color: $light-gray;
+  font-size: 1.2rem; cursor: pointer; padding: 0.3rem;
+  display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; border-radius: 9px;
+  border: 1px solid transparent;
+  &:hover { color: $gold; border-color: rgba($gold,.3); }
+}
+.typingDots {
+  span {
+    display: inline-block; width: 6px; height: 6px;
+    background: $light-gray; border-radius: 50%; margin: 0 2px;
+    animation: dot 1.4s infinite;
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+@keyframes dot {
+  0%, 80%, 100% { transform: scale(1); }
+  40%           { transform: scale(1.4); }
+}
+
+// ── Modals ───────────────────────────────────────────────────
+.modalWrap {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.72);
+  z-index: 1000;
+  display: none;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(6px); padding: 1.25rem;
+  &.open { display: flex; }
+}
+.modalBox {
+  background: var(--card-bg);
+  border: 1px solid rgba($gold,.2);
+  border-radius: 20px; padding: 1.6rem;
+  width: 880px; max-width: 96vw; max-height: 90vh;
+  overflow: auto; position: relative;
+  animation: riseIn 0.28s ease;
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.modalClose {
+  position: absolute; top: 1.1rem; left: 1.1rem;
+  background: none; border: none; color: $light-gray; font-size: 1.4rem; cursor: pointer;
+  &:hover { color: $red; }
+}
+
+// ── Product modal ─────────────────────────────────────────────
+.pdGrid {
+  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.2rem; align-items: start;
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+}
+.pdImg   { width: 100%; height: 400px; border-radius: 14px; object-fit: cover; border: 1px solid var(--border); @media (max-width: 860px) { height: 260px; } }
+.pdTitle { font-family: "Playfair Display", serif; font-size: 1.6rem; margin-bottom: 0.3rem; }
+.pdMeta  { color: $light-gray; font-family: monospace; font-size: 0.83rem; margin-bottom: 0.7rem; }
+.pdPrice {
+  font-family: "Playfair Display", serif; font-size: 1.5rem; margin: 0.5rem 0 0.7rem;
+  .current { color: $gold; &.onSale { color: #a855f7; } }
+  .original { color: $light-gray; text-decoration: line-through; font-size: 1.05rem; margin-right: 0.5rem; }
+}
+.pdDesc  { color: $light-gray; font-size: 0.9rem; line-height: 1.65; margin-bottom: 1rem; }
+.pdRow   { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; margin-top: 0.8rem; }
+.pdField {
+  flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 0.4rem;
+  label { font-size: 0.8rem; color: $light-gray; }
+  select, input {
+    width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.72rem 0.9rem;
+    color: var(--white); font-family: "Alef", sans-serif; font-size: 0.9rem; outline: none;
+  }
+  select option { background: var(--charcoal); color: var(--white); }
+}
+.pdActions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+
+// ── Buttons ──────────────────────────────────────────────────
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.72rem 1.1rem; border-radius: 10px;
+  font-family: "Alef", sans-serif; font-size: 0.93rem; cursor: pointer;
+  transition: all 0.2s; border: none; font-weight: 900; white-space: nowrap;
+}
+.btnGold    { background: linear-gradient(135deg, $gold, $gold-light); color: $black; &:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba($gold,.28); } }
+.btnOutline { background: transparent; border: 1px solid $gold; color: $gold; &:hover { background: rgba($gold,.08); } }
+.btnDanger  { background: rgba(192,57,43,.1); border: 1px solid rgba(192,57,43,.28); color: #ffd1cc; &:hover { background: rgba(192,57,43,.18); } }
+
+// ── Cart drawer ──────────────────────────────────────────────
+.backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1150; }
+
+.drawer {
+  position: fixed; top: 0; bottom: 0; left: 0;
+  width: 400px; max-width: 94vw;
+  background: var(--card-bg);
+  border-right: 1px solid rgba($gold,.18);
+  z-index: 1200;
+  transform: translateX(-110%);
+  transition: transform 0.25s ease;
+  display: flex; flex-direction: column;
+  &.open { transform: translateX(0); }
+}
+.drawerHead {
+  padding: 1.2rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+}
+.drawerTitle { font-family: "Playfair Display", serif; font-size: 1.2rem; color: $gold; }
+.drawerClose {
+  background: none; border: 1px solid var(--border); color: $light-gray;
+  width: 38px; height: 38px; border-radius: 10px; cursor: pointer; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { border-color: rgba($gold,.45); color: $gold; }
+}
+.drawerBody  { padding: 1rem 1.2rem; overflow: auto; flex: 1; }
+.drawerFoot  { padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
+
+.cartEmpty { text-align: center; padding: 2.5rem; color: $light-gray; }
+.cartItem  {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--border);
+}
+.cartLeft  { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+.cartItem img { width: 50px; height: 50px; object-fit: cover; border-radius: 9px; border: 1px solid var(--border); flex-shrink: 0; }
+.cartName  { font-weight: 900; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+.cartMeta  { color: $light-gray; font-family: monospace; font-size: 0.76rem; margin-top: 0.12rem; }
+.qtyControls { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.qtyBtn    { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,.03); color: var(--white); cursor: pointer; font-weight: 900; &:hover { border-color: rgba($gold,.45); } }
+.qtyNum    { min-width: 20px; text-align: center; font-weight: 900; }
+.cartPrice { color: $gold; font-weight: 900; min-width: 68px; text-align: left; font-family: "Playfair Display", serif; }
+.rmBtn     { background: none; border: none; color: $red; cursor: pointer; font-size: 1rem; padding: 0.2rem 0.3rem; }
+
+.pointsRow   { background: rgba($purple,.08); border: 1px solid rgba($purple,.2); border-radius: 10px; padding: .58rem .9rem; margin-bottom: .75rem; font-size: .86rem; color: #c39bd3; }
+.couponRow   { display: flex; gap: .5rem; margin-bottom: .85rem; }
+.couponInput { flex: 1; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 9px; padding: .58rem .9rem; color: var(--white); font-family: "Alef", sans-serif; font-size: .86rem; outline: none; }
+.couponApply { background: linear-gradient(135deg, $gold, $gold-light); border: none; border-radius: 9px; color: $black; font-family: "Alef", sans-serif; font-weight: 900; padding: .58rem 1rem; cursor: pointer; }
+.discountRow { color: $green; font-size: .86rem; margin-bottom: .6rem; }
+.totalRow    { display: flex; align-items: center; justify-content: space-between; margin-bottom: .85rem; }
+.totalLabel  { color: $light-gray; font-size: .88rem; }
+.totalVal    { color: $gold; font-family: "Playfair Display", serif; font-size: 1.6rem; font-weight: 900; }
+.checkoutBtn { width: 100%; padding: .9rem 1rem; border-radius: 12px; border: none; cursor: pointer; font-family: "Alef", sans-serif; font-weight: 900; font-size: 1rem; background: linear-gradient(135deg, $gold, $gold-light); color: $black; &:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba($gold,.22); } }
+
+// ── Orders ────────────────────────────────────────────────────
+.orderCard    { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem; margin-bottom: .9rem; }
+.orderTop     { display: flex; justify-content: space-between; align-items: center; margin-bottom: .7rem; flex-wrap: wrap; gap: .5rem; }
+.orderId      { font-family: monospace; font-size: .83rem; color: $light-gray; }
+.orderItems   { font-size: .86rem; color: $light-gray; margin-bottom: .6rem; }
+.orderTotal   { color: $gold; font-family: "Playfair Display", serif; font-size: 1.05rem; font-weight: 900; }
+.progressBar  { background: rgba(255,255,255,.08); border-radius: 999px; height: 7px; overflow: hidden; margin-bottom: .5rem; }
+.progressFill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, $gold, $gold-light); transition: width .5s; }
+.progressSteps { display: flex; justify-content: space-between; font-size: .73rem; color: $light-gray; span.done { color: $gold; } }
+
+// ── Loyalty ───────────────────────────────────────────────────
+.pointsCard   { background: linear-gradient(135deg, rgba($purple,.15), rgba($purple,.05)); border: 1px solid rgba($purple,.3); border-radius: 16px; padding: 1.2rem; margin-bottom: 1.2rem; }
+.pointsLabel  { color: $light-gray; font-size: .86rem; margin-bottom: .3rem; }
+.pointsAmount { font-family: "Playfair Display", serif; font-size: 2.2rem; color: #c39bd3; font-weight: 900; }
+.pointsSub    { color: $light-gray; font-size: .8rem; margin-top: .4rem; }
+
+.secTitle { font-family: "Playfair Display", serif; font-size: 1.05rem; color: $gold; margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid rgba($gold,.12); }
+
+.couponList   { display: flex; flex-direction: column; gap: .75rem; }
+.couponItem   { background: rgba(255,255,255,.03); border: 1px dashed rgba($gold,.3); border-radius: 12px; padding: .9rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.couponCodeDisplay { font-family: monospace; font-size: 1.05rem; color: $gold; letter-spacing: .15em; }
+.couponDesc   { font-size: .8rem; color: $light-gray; }
+
+// ── Gift card ─────────────────────────────────────────────────
+.gcGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; @media (max-width: 700px) { grid-template-columns: 1fr; } }
+.gcError { color: #ffb3b3; background: rgba(192,57,43,.08); border: 1px solid rgba(192,57,43,.25); border-radius: 10px; padding: .7rem .9rem; font-size: .85rem; margin-bottom: .75rem; }
+.giftCardDisplay { background: linear-gradient(135deg, #1a1209, #2d1f0a); border: 2px solid $gold; border-radius: 18px; padding: 1.8rem; text-align: center; }
+.giftCardLogo    { font-family: "Playfair Display", serif; font-size: 1.4rem; font-weight: 900; color: $gold; margin-bottom: .4rem; }
+.giftCardSub     { color: $light-gray; font-size: .83rem; margin-bottom: .5rem; }
+.giftCardAmount  { font-family: "Playfair Display", serif; font-size: 2.4rem; color: $gold-light; font-weight: 900; }
+.giftCardFor     { color: $light-gray; font-size: .8rem; margin-top: .6rem; }
+.giftCardMsg     { color: $light-gray; font-size: .78rem; margin-top: .3rem; font-style: italic; }
+.giftCardCode    { font-family: monospace; font-size: 1.1rem; letter-spacing: .25em; color: $white; background: rgba(255,255,255,.08); padding: .5rem 1rem; border-radius: 8px; margin-top: .75rem; display: inline-block; }
+
+// ── Policy ────────────────────────────────────────────────────
+.policySection { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.4rem; margin-bottom: 1rem; }
+.policyTitle   { font-family: "Playfair Display", serif; font-size: 1.05rem; color: $gold; margin-bottom: .7rem; }
+.policyText    { color: $light-gray; font-size: .88rem; line-height: 1.75; }
+
+// ── Wishlist ──────────────────────────────────────────────────
+.wishGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 1rem; @media (max-width: 500px) { grid-template-columns: repeat(2,1fr); gap: .75rem; } }
+
+// ── Share modal ───────────────────────────────────────────────
+.shareTitle    { font-family: "Playfair Display", serif; font-size: 1.3rem; color: $gold; margin-bottom: .5rem; }
+.shareItemName { color: $light-gray; margin-bottom: .5rem; }
+.shareOptions  { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
+.shareOpt      { flex: 1; min-width: 90px; display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: .9rem; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; background: none; color: var(--white); font-family: "Alef", sans-serif; font-size: .8rem; &:hover { border-color: rgba($gold,.4); background: rgba($gold,.06); } }
+.shareOptIcon  { font-size: 1.5rem; }
+.shareCopied   { color: $green; text-align: center; margin-top: .75rem; font-size: .9rem; }
+
+// ── Notify modal ──────────────────────────────────────────────
+.notifyTitle { font-family: "Playfair Display", serif; font-size: 1.3rem; color: $gold; margin-bottom: .6rem; }
+.notifyText  { color: $light-gray; margin-bottom: 1rem; line-height: 1.6; }
+
+// ── Visual modal ──────────────────────────────────────────────
+.visualHeader { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .85rem; flex-wrap: wrap; }
+.visualTitle  { font-family: "Playfair Display", serif; font-size: 1.3rem; color: $gold; }
+.vsLayout     { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; @media (max-width: 700px) { grid-template-columns: 1fr; } }
+.card         { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+.uploadDrop   {
+  border: 2px dashed rgba($gold,.25); border-radius: 16px; padding: 1.8rem;
+  text-align: center; cursor: pointer; display: block; position: relative;
+  &:hover { border-color: $gold; background: rgba($gold,.04); }
+}
+.uploadIcon { font-size: 2.2rem; margin-bottom: .5rem; }
+.uploadText { color: $light-gray; font-size: .88rem; }
+.visEmpty   { text-align: center; padding: 2.5rem; color: $light-gray; }
+.visResult  { display: flex; gap: .9rem; align-items: center; padding: .75rem; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; &:hover { background: rgba($gold,.04); } img { width: 58px; height: 58px; object-fit: cover; border-radius: 11px; border: 1px solid var(--border); } }
+
+// ── Try-on stage ──────────────────────────────────────────────
+.tryonStage   { position: relative; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: rgba(0,0,0,.12); height: 400px; img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; } }
+.tryonOverlay { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 64%; max-width: 420px; opacity: .55; border-radius: 16px; }
+.tryonCap     { position: absolute; bottom: 0; right: 0; left: 0; padding: 1rem; background: linear-gradient(transparent, rgba(0,0,0,.62)); color: $white; }
+.tryonCapSmall { font-size: .78rem; color: rgba(255,255,255,.75); }
+.tryonCapBig   { color: $gold; font-weight: 900; margin-top: .2rem; }
+
+// ── Mini chat ─────────────────────────────────────────────────
+.miniChat       { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; height: 320px; }
+.miniChatTop    { padding: .8rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba($gold,.06); }
+.miniChatBody   { flex: 1; overflow: auto; padding: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+.miniChatBottom { border-top: 1px solid var(--border); padding: .75rem; display: flex; gap: .6rem; align-items: flex-end; }
+.miniIn         { flex: 1; border: 1px solid var(--border); border-radius: 12px; padding: .62rem .85rem; background: rgba(255,255,255,.05); color: var(--white); font-family: "Alef", sans-serif; outline: none; min-height: 38px; max-height: 100px; resize: none; }
+.miniSend       { width: 38px; height: 38px; border-radius: 12px; border: none; background: $gold; color: $black; cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+
+// ── Pre-checkout feedback ────────────────────────────────────
+.preCheckoutFeedback { position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 1.25rem; }
+.pcfBox      { background: var(--card-bg); border: 1px solid rgba($gold,.25); border-radius: 22px; padding: 1.8rem; width: 540px; max-width: 96vw; animation: riseIn .3s ease; text-align: right; }
+.pcfTitle    { font-family: "Playfair Display", serif; font-size: 1.4rem; color: $gold; margin-bottom: .3rem; }
+.pcfSub      { color: $light-gray; font-size: .88rem; margin-bottom: 1.2rem; }
+.pcfStars    { display: flex; gap: .4rem; margin-bottom: .9rem; flex-direction: row-reverse; }
+.pcfStar     { font-size: 1.8rem; cursor: pointer; opacity: .35; filter: grayscale(1); transition: transform .15s; &.on { opacity: 1; filter: none; transform: scale(1.15); } }
+.pcfTopics   { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .9rem; }
+.pcfTopic    { padding: .38rem .85rem; border-radius: 999px; border: 1px solid var(--border); background: none; color: $light-gray; font-family: "Alef", sans-serif; font-size: .8rem; cursor: pointer; &:hover { border-color: rgba($gold,.4); color: $gold; } &.sel { background: rgba($gold,.12); border-color: rgba($gold,.4); color: $gold; } }
+.pcfTextarea { width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 12px; padding: .85rem 1rem; color: var(--white); font-family: "Alef", sans-serif; font-size: .9rem; resize: vertical; min-height: 90px; outline: none; margin-bottom: .85rem; &:focus { border-color: rgba($gold,.5); } }
+.pcfActions  { display: flex; gap: .75rem; justify-content: flex-start; flex-wrap: wrap; }
+
+// ── Post-order feedback ───────────────────────────────────────
+.feedbackModalWrap { position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 1.25rem; }
+.feedbackModalBox  { background: var(--card-bg); border: 1px solid rgba($gold,.25); border-radius: 22px; padding: 2rem; width: 540px; max-width: 96vw; animation: riseIn .3s ease; text-align: right; }
+.fbTitle     { font-family: "Playfair Display", serif; font-size: 1.6rem; color: $gold; margin-bottom: .3rem; }
+.fbSub       { color: $light-gray; font-size: .88rem; }
+.feedbackStars  { display: flex; gap: .4rem; margin-bottom: 1rem; flex-direction: row-reverse; }
+.feedbackStar   { font-size: 2rem; cursor: pointer; opacity: .35; filter: grayscale(1); transition: transform .15s; &.on { opacity: 1; filter: none; transform: scale(1.15); } }
+.feedbackTopics { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.feedbackTopic  { padding: .4rem .85rem; border-radius: 999px; border: 1px solid var(--border); background: none; color: $light-gray; font-family: "Alef", sans-serif; font-size: .8rem; cursor: pointer; &:hover { border-color: rgba($gold,.4); color: $gold; } &.selected { background: rgba($gold,.12); border-color: rgba($gold,.4); color: $gold; } }
+.feedbackTextarea { width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 12px; padding: .9rem 1rem; color: var(--white); font-family: "Alef", sans-serif; font-size: .93rem; resize: vertical; min-height: 100px; outline: none; margin-bottom: .75rem; &:focus { border-color: rgba($gold,.5); } }
+.feedbackSuccess { text-align: center; padding: 1.5rem 0; }
+.fsIcon       { font-size: 3.5rem; margin-bottom: .75rem; }

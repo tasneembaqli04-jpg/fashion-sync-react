@@ -1,0 +1,99 @@
+:global(body) {
+  margin: 0;
+  font-family: "Alef", sans-serif;
+  background: #080808;
+}
+
+.page {
+  min-height: 100vh;
+  color: #fafaf8;
+  background: #080808;
+  padding: 2rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.brand {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  opacity: 0.7;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.linkBtn {
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: inherit;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+}
+
+.checkoutCard {
+  width: min(560px, 100%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1.5rem;
+}
+
+.row,
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.totalRow {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.ghostBtn,
+.primaryBtn {
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.ghostBtn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: inherit;
+}
+
+.primaryBtn {
+  border: none;
+  background: linear-gradient(135deg, #c9a84c, #e8c97a);
+  color: #080808;
+  font-weight: 700;
+}
