@@ -1,208 +1,208 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "../../../styles/Manager.module.scss";
-import {
-  getVariantTotal,
-  getProductStockFromVariants,
-  sanitizeQtyInput,
-} from "../../../functions/manager/inventoryFunctions";
+
+function deepCopyVariants(variants = []) {
+  return variants.map((variant) => ({
+    colorName: variant.colorName,
+    colorHex: variant.colorHex,
+    sizes: { ...(variant.sizes || {}) },
+  }));
+}
+
+function calcVariantsTotal(variants = []) {
+  return variants.reduce((sum, variant) => {
+    return (
+      sum +
+      Object.values(variant.sizes || {}).reduce(
+        (innerSum, qty) => innerSum + (parseInt(qty, 10) || 0),
+        0
+      )
+    );
+  }, 0);
+}
 
 export default function DetailsModal({
-  open,
-  onClose,
+  isOpen,
   product,
-  onSaveDetails,
+  onClose,
+  onSave,
 }) {
-  const [variants, setVariants] = useState([]);
-  const [minStock, setMinStock] = useState(0);
   const [price, setPrice] = useState(0);
+  const [minStock, setMinStock] = useState(10);
+  const [variantsDraft, setVariantsDraft] = useState([]);
 
   useEffect(() => {
-    if (product?.variants) {
-      const clonedVariants = product.variants.map((variant) => ({
-        ...variant,
-        sizes: { ...variant.sizes },
-      }));
-      setVariants(clonedVariants);
-    }
-
-    setMinStock(product?.minStock ?? 0);
-    setPrice(product?.price ?? 0);
+    if (!product) return;
+    setPrice(product.price || 0);
+    setMinStock(product.minStock || 10);
+    setVariantsDraft(deepCopyVariants(product.variants || []));
   }, [product]);
 
-  if (!open || !product) return null;
+  const totalStock = useMemo(
+    () => calcVariantsTotal(variantsDraft),
+    [variantsDraft]
+  );
 
-  function handleQtyChange(variantIndex, size, value) {
-    const cleanValue = sanitizeQtyInput(value);
+  if (!isOpen || !product) return null;
 
-    setVariants((prev) =>
-      prev.map((variant, index) => {
-        if (index !== variantIndex) return variant;
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
 
-        return {
-          ...variant,
-          sizes: {
-            ...variant.sizes,
-            [size]: cleanValue,
-          },
-        };
-      })
+  const handleQtyChange = (variantIndex, sizeKey, value) => {
+    const safeValue = Math.max(0, parseInt(value || "0", 10) || 0);
+
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex
+          ? variant
+          : {
+              ...variant,
+              sizes: {
+                ...variant.sizes,
+                [sizeKey]: safeValue,
+              },
+            }
+      )
     );
-  }
+  };
 
-  function handleMinStockChange(value) {
-    setMinStock(sanitizeQtyInput(value));
-  }
-
-  function handlePriceChange(value) {
-    setPrice(sanitizeQtyInput(value));
-  }
-
-  function handleSave() {
-    const updatedProduct = {
+  const handleSave = () => {
+    onSave({
       ...product,
-      variants,
-      stock: getProductStockFromVariants(variants),
-      minStock,
-      price,
-    };
-
-    if (onSaveDetails) {
-      onSaveDetails(updatedProduct);
-    }
-
-    onClose();
-  }
+      price: Number(price),
+      minStock: Number(minStock),
+      variants: variantsDraft,
+      stock: totalStock,
+    });
+  };
 
   return (
-    <div
-      className={styles.editModal}
-      style={{ display: "flex" }}
-      onClick={onClose}
-    >
-      <div
-        className={styles.detailsBox}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.detailsHead}>
-          <div>
-            <div className={styles.detailsTitle}>
-              פרטים — {product.name}
-            </div>
-
-            <div className={styles.detailsMeta}>
-              <span className={`${styles.tag} ${styles.tGold}`}>
-                {product.code}
-              </span>
-
-              <span className={`${styles.tag} ${styles.tBlue}`}>
-                {product.cat}
-              </span>
-
-              <span
-                className={`${styles.tag} ${
-                  product.gender === "נשים" ? styles.tPurple : styles.tOrange
-                }`}
-              >
-                {product.gender}
-              </span>
-
-              <span className={`${styles.tag} ${styles.tGreen}`}>
-                מלאי: {getProductStockFromVariants(variants)}
-              </span>
-
-              <span className={`${styles.tag} ${styles.tGold}`}>
-                ₪{price}
-              </span>
-            </div>
-          </div>
-
-          <button className={styles.detailsClose} onClick={onClose}>
-            ✕
-          </button>
-        </div>
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={styles.detailsModalBox}>
+        <button className={styles.modalCloseBtn} onClick={onClose}>
+          ✕
+        </button>
 
         <div className={styles.detailsTopSection}>
-          <img
-            src={product.img}
-            alt={product.name}
-            className={styles.detailsProductImage}
-          />
+  <div className={styles.detailsTopRight}>
+    <div className={styles.detailsTitle}>פרטים — {product.name}</div>
 
-          <div className={styles.detailsTopInfo}>
-            <div className={styles.detailsProductName}>{product.name}</div>
-            <div className={styles.detailsProductDesc}>{product.desc}</div>
+    <div className={styles.detailsMeta}>
+      <span className={`${styles.tag} ${styles.tGold}`}>{product.code}</span>
+      <span className={`${styles.tag} ${styles.tBlue}`}>{product.cat}</span>
+      <span
+        className={`${styles.tag} ${
+          product.gender === "נשים" ? styles.tPurple : styles.tOrange
+        }`}
+      >
+        {product.gender}
+      </span>
+      <span className={`${styles.tag} ${styles.tGreen}`}>
+        מלאי: {totalStock}
+      </span>
+      <span className={`${styles.tag} ${styles.tGold}`}>₪{price}</span>
+    </div>
 
-            <div className={styles.detailsMiniGrid}>
-              <div className={styles.detailsMiniCard}>
-                <div className={styles.detailsMiniLabel}>מינימום להתראה</div>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={minStock}
-                  onChange={(e) => handleMinStockChange(e.target.value)}
-                  className={styles.detailsMiniInput}
-                />
-              </div>
+    <div className={styles.detailsName}>{product.name}</div>
+    <div className={styles.detailsDescription}>{product.desc}</div>
+  </div>
 
-              <div className={styles.detailsMiniCard}>
-                <div className={styles.detailsMiniLabel}>מחיר (₪)</div>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={price}
-                  onChange={(e) => handlePriceChange(e.target.value)}
-                  className={styles.detailsMiniInput}
-                />
-              </div>
-            </div>
+  <img
+    src={product.img}
+    alt={product.name}
+    className={styles.detailsProductImage}
+  />
+</div>
+
+
+
+        <div className={styles.detailsFieldsGrid}>
+          <div className={styles.fg}>
+            <div className={styles.fl}>מחיר (₪)</div>
+            <input
+              className={styles.fi}
+              type="number"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.fg}>
+            <div className={styles.fl}>מינימום להתראה</div>
+            <input
+              className={styles.fi}
+              type="number"
+              min="0"
+              value={minStock}
+              onChange={(e) => setMinStock(e.target.value)}
+            />
           </div>
         </div>
 
-        <div className={styles.detailsVariantsTitle}>
-          עריכת כמות לפי צבע / מידה
+        <div className={styles.detailsSectionRow}>
+          <span className={styles.detailsSectionLabel}>
+            עריכת כמות לפי צבע/מידה
+          </span>
         </div>
 
-        <div className={styles.detailsVariantsList}>
-          {variants.map((variant, index) => (
-            <div key={`${product.code}-${index}`} className={styles.colorCard}>
-              <div className={styles.colorCardHeader}>
-                <div className={styles.colorCardTitle}>
-                  <span
-                    className={styles.dot}
-                    style={{ background: variant.colorHex }}
-                  ></span>
-                  <strong>{variant.colorName}</strong>
-                </div>
+        <div className={styles.detailsVariantsWrap}>
+          {variantsDraft.map((variant, variantIndex) => {
+            const sizesEntries = Object.entries(variant.sizes || {});
+            const variantTotal = sizesEntries.reduce(
+              (sum, [, qty]) => sum + (parseInt(qty, 10) || 0),
+              0
+            );
 
-                <span className={`${styles.tag} ${styles.tGold}`}>
-                  סה״כ: {getVariantTotal(variant)} יח׳
-                </span>
-              </div>
+            return (
+              <div
+                key={`${variant.colorName}-${variantIndex}`}
+                className={styles.colorCard}
+              >
+                <div className={styles.colorCardHead}>
+                  <span className={`${styles.tag} ${styles.tGold}`}>
+                    סה״כ: {variantTotal} יח׳
+                  </span>
 
-              <div className={styles.colorCardSizes}>
-                {Object.entries(variant.sizes).map(([size, qty]) => (
-                  <div key={size} className={styles.sizePill}>
-                    <strong>{size}</strong>
-                    <span>•</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={qty}
-                      onChange={(e) =>
-                        handleQtyChange(index, size, e.target.value)
-                      }
-                      className={styles.sizeQtyInput}
+                  <div className={styles.colorCardTitleWrap}>
+                    <strong>{variant.colorName || "צבע"}</strong>
+                    <span
+                      className={styles.dot}
+                      style={{ background: variant.colorHex || "#999" }}
                     />
                   </div>
-                ))}
+                </div>
+
+                <div className={styles.sizesGrid}>
+                  {sizesEntries.map(([sizeKey, qty]) => (
+                    <label key={sizeKey} className={styles.sizePill}>
+                      <strong>{sizeKey}</strong>
+                      <span className={styles.sizeSeparator}>•</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={qty}
+                        onChange={(e) =>
+                          handleQtyChange(
+                            variantIndex,
+                            sizeKey,
+                            e.target.value
+                          )
+                        }
+                        className={styles.sizeQtyInput}
+                      />
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className={styles.detailsFooter}>
-          <button className={styles.btnGold} onClick={handleSave}>
-            שמירה
+          <button className={styles.detailsSaveBtn} onClick={handleSave}>
+            שמירה 💾
           </button>
         </div>
       </div>

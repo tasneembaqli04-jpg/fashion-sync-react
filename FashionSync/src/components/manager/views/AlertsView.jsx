@@ -1,198 +1,108 @@
 import { useMemo, useState } from "react";
 import styles from "../../../styles/Manager.module.scss";
 
-function buildAlertsFromProducts(products) {
-  const alerts = [];
-
-  products.forEach((product) => {
-    const requests = Number(product.notifyCount || 0);
-
-    if (product.stock === 0) {
-      alerts.push({
-        id: `${product.code}-out`,
-        type: "out",
-        label: "אזל מהמלאי",
-        requests,
-        productName: product.name,
-        productCode: product.code,
-        img: product.img,
-        message: `${product.name} אזל מהמלאי`,
-        className: styles.aDanger,
-        icon: "🚫",
-      });
-
-      if (requests > 15) {
-        alerts.push({
-          id: `${product.code}-demand`,
-          type: "demand",
-          label: "ביקושים גבוהים",
-          requests,
-          productName: product.name,
-          productCode: product.code,
-          img: product.img,
-          message: `${product.name} — נרשמו ${requests} בקשות לעדכון כשיחזור למלאי`,
-          className: styles.aWarn,
-          icon: "🔥",
-        });
-      }
-    } else if (product.stock <= product.minStock) {
-      alerts.push({
-        id: `${product.code}-low`,
-        type: "low",
-        label: "מלאי נמוך",
-        requests: 0,
-        productName: product.name,
-        productCode: product.code,
-        img: product.img,
-        message: `${product.name} — נותרו ${product.stock} יח׳`,
-        className: styles.aWarn,
-        icon: "⚠️",
-      });
-    }
-  });
-
-  return alerts;
+function alertClass(type) {
+  if (type === "danger") return `${styles.alert} ${styles.aDanger}`;
+  if (type === "warn") return `${styles.alert} ${styles.aWarn}`;
+  if (type === "info") return `${styles.alert} ${styles.aInfo}`;
+  return `${styles.alert} ${styles.aSuccess}`;
 }
 
+function fmtDate(date) {
+  return new Date(date).toLocaleString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-export default function AlertsView({ products = [] }) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [alertTypeFilter, setAlertTypeFilter] = useState("all");
-  const [requestsFilter, setRequestsFilter] = useState("all");
-
-  const alerts = useMemo(() => {
-    return buildAlertsFromProducts(products);
-  }, [products]);
+export default function AlertsView({ alerts, products }) {
+  const [typeFilter, setTypeFilter] = useState("");
+  const [demandMin, setDemandMin] = useState(0);
 
   const filteredAlerts = useMemo(() => {
-    return alerts.filter((alert) => {
-      const matchesType =
-        alertTypeFilter === "all" ? true : alert.type === alertTypeFilter;
+    let list = [...alerts];
 
-      const matchesRequests =
-        requestsFilter === "all"
-          ? true
-          : requestsFilter === "gt15"
-            ? alert.requests > 15
-            : requestsFilter === "gt30"
-              ? alert.requests > 30
-              : requestsFilter === "gt60"
-                ? alert.requests > 60
-                : true;
+    if (typeFilter === "oos") {
+      list = list.filter((a) => a.key.startsWith("oos_"));
+    } else if (typeFilter === "low") {
+      list = list.filter((a) => a.key.startsWith("low_"));
+    } else if (typeFilter === "demand") {
+      list = list.filter((a) => a.isDemand);
+    }
 
-      return matchesType && matchesRequests;
-    });
-  }, [alerts, alertTypeFilter, requestsFilter]);
+    if (demandMin > 0) {
+      list = list.filter((a) => a.isDemand && (a.demandCount || 0) > demandMin);
+    }
 
-  const activeFiltersCount =
-    (alertTypeFilter !== "all" ? 1 : 0) + (requestsFilter !== "all" ? 1 : 0);
-
-  function resetFilters() {
-    setAlertTypeFilter("all");
-    setRequestsFilter("all");
-  }
+    return list;
+  }, [alerts, typeFilter, demandMin]);
 
   return (
-    <div className={styles.view}>
+    <div className={`${styles.view} ${styles.active}`}>
       <div className={styles.pageHd}>
         <div className={styles.phLeft}>
           <h2>התראות מערכת</h2>
-          <p>נשמרות לשבוע ומתעדכנות לפי מצב המוצרים</p>
+          <p>נשמרות לשבוע אחד ומתעדכנות לפי מצב המוצרים</p>
         </div>
       </div>
 
-      <div style={{ marginBottom: "0.7rem" }}>
-        <button
-          className={`${styles.filterToggleBtn} ${
-            filtersOpen ? styles.active : ""
-          }`}
-          onClick={() => setFiltersOpen((prev) => !prev)}
+      <div style={{ display: "flex", gap: ".5rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+        <button className={styles.filterTab} onClick={() => setTypeFilter("")}>🔔 הכל</button>
+        <button className={styles.filterTab} onClick={() => setTypeFilter("oos")}>🚫 אזל מהמלאי</button>
+        <button className={styles.filterTab} onClick={() => setTypeFilter("low")}>⚠️ מלאי נמוך</button>
+        <button className={styles.filterTab} onClick={() => setTypeFilter("demand")}>🔥 ביקוש גבוה</button>
+
+        <select
+          className={styles.fpInput}
+          style={{ maxWidth: 180 }}
+          value={demandMin}
+          onChange={(e) => setDemandMin(Number(e.target.value))}
         >
-          🔽 סינון
-          <span
-            className={styles.filterBadge}
-            style={{ display: activeFiltersCount ? "inline-flex" : "none" }}
-          >
-            {activeFiltersCount}
-          </span>
-        </button>
-      </div>
-
-      <div
-        className={`${styles.filterPanel} ${filtersOpen ? styles.open : ""}`}
-      >
-        <div className={styles.fpGrid}>
-          <div className={styles.fpField}>
-            <div className={styles.fpLabel}>סוג התראה</div>
-            <select
-              className={styles.fpInput}
-              value={alertTypeFilter}
-              onChange={(e) => setAlertTypeFilter(e.target.value)}
-            >
-              <option value="all">הכל</option>
-              <option value="out">אזל מהמלאי</option>
-              <option value="low">מלאי נמוך</option>
-              <option value="demand">ביקושים גבוהים</option>
-            </select>
-          </div>
-
-          <div className={styles.fpField}>
-            <div className={styles.fpLabel}>מספר ביקושים</div>
-            <select
-              className={styles.fpInput}
-              value={requestsFilter}
-              onChange={(e) => setRequestsFilter(e.target.value)}
-            >
-              <option value="all">הכל</option>
-              <option value="gt15">יותר מ־15</option>
-              <option value="gt30">יותר מ־30</option>
-              <option value="gt60">יותר מ־60</option>
-
-            </select>
-          </div>
-        </div>
-
-        <div className={styles.fpActions}>
-          <button className={styles.fpReset} onClick={resetFilters}>
-            ✕ אפס
-          </button>
-        </div>
+          <option value={0}>הכל</option>
+          <option value={15}>גדול מ־15</option>
+          <option value={30}>גדול מ־30</option>
+          <option value={60}>גדול מ־60</option>
+        </select>
       </div>
 
       <div>
-        {filteredAlerts.length === 0 ? (
+        {filteredAlerts.length > 0 ? (
+          filteredAlerts.map((alert) => {
+            const product = products.find((p) => p.code === alert.code);
+            const img =
+              product?.img ||
+              "https://images.pexels.com/photos/6311387/pexels-photo-6311387.jpeg?auto=compress&cs=tinysrgb&w=400";
+
+            return (
+              <div key={alert.key} className={alertClass(alert.type)}>
+                <img
+                  src={img}
+                  alt={alert.title}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <strong>{alert.title}</strong>
+                  <div style={{ opacity: 0.92 }}>{alert.msg}</div>
+                  <div style={{ opacity: 0.65, fontSize: ".78rem", marginTop: ".15rem" }}>
+                    🕒 {fmtDate(alert.createdAt)}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
           <div className={`${styles.alert} ${styles.aSuccess}`}>
             ✅ אין התראות בסינון הנוכחי
           </div>
-        ) : (
-          filteredAlerts.map((alert) => (
-            <div key={alert.id} className={`${styles.alert} ${alert.className}`}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  width: "100%",
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 800, marginBottom: "0.2rem" }}>
-                    {alert.icon} {alert.label}
-                  </div>
-                  <div>{alert.message}</div>
-                </div>
-
-                {alert.img && (
-                  <img
-                    src={alert.img}
-                    alt={alert.productName}
-                    className={styles.ptb}
-                  />
-                )}
-              </div>
-            </div>
-          ))
         )}
       </div>
     </div>

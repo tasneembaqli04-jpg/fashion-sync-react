@@ -1,35 +1,18 @@
 import styles from "../../../styles/Manager.module.scss";
 
-function getStatus(stock, minStock) {
-  if (stock === 0) {
-    return { label: "אזל", className: styles.tRed };
-  }
-
-  if (stock <= minStock) {
-    return { label: "נמוך", className: styles.tOrange };
-  }
-
-  return { label: "זמין", className: styles.tGreen };
+function statusBadge(stock, minStock) {
+  if (stock === 0) return <span className={`${styles.tag} ${styles.tRed}`}>אזל</span>;
+  if (stock <= minStock) return <span className={`${styles.tag} ${styles.tYellow}`}>נמוך</span>;
+  return <span className={`${styles.tag} ${styles.tGreen}`}>זמין</span>;
 }
 
-function getVariantTotal(variant) {
-  return Object.values(variant.sizes || {}).reduce(
-    (sum, qty) => sum + (parseInt(qty, 10) || 0),
-    0
-  );
-}
-
-export default function InventoryView({ products = [], onOpenDetails }) {
-  const totalUnits = products.reduce((sum, product) => sum + product.stock, 0);
-
+export default function InventoryView({ products, onOpenDetails }) {
   return (
-    <div className={styles.view}>
+    <div className={`${styles.view} ${styles.active}`}>
       <div className={styles.pageHd}>
         <div className={styles.phLeft}>
           <h2>ניהול מלאי</h2>
-          <p>
-            {totalUnits} יחידות · {products.length} מוצרים
-          </p>
+          <p>{products.reduce((sum, p) => sum + p.stock, 0)} יחידות · {products.length} מוצרים</p>
         </div>
       </div>
 
@@ -43,72 +26,67 @@ export default function InventoryView({ products = [], onOpenDetails }) {
                 <th>שם מוצר</th>
                 <th>מלאי</th>
                 <th>מחיר</th>
-                <th>מינימום</th>
+                <th>מינימום להתראה</th>
                 <th>סטטוס</th>
                 <th>פעולות</th>
               </tr>
             </thead>
 
             <tbody>
-              {products.map((product) => {
-                const status = getStatus(product.stock, product.minStock);
+              {products.map((p) => (
+                <tr key={p.code}>
+                  <td>
+                    <img className={styles.ptb} src={p.img} alt={p.name} />
+                  </td>
 
-                return (
-                  <tr key={product.code}>
-                    <td>
-                      <img
-                        className={styles.ptb}
-                        src={product.img}
-                        alt={product.name}
-                      />
-                    </td>
+                  <td>
+                    <code style={{ color: "var(--gold)", fontSize: ".78rem" }}>{p.code}</code>
+                  </td>
 
-                    <td>
-                      <code className={styles.productCode}>{product.code}</code>
-                    </td>
+                  <td>
+                    <div className={styles.pname}>{p.name}</div>
+                    <div className={styles.psku}>{p.gender}</div>
+                  </td>
 
-                    <td>
-                      <div className={styles.pname}>{product.name}</div>
-                      <div className={styles.psku}>
-                        {product.gender} · {product.cat}
-                      </div>
-                    </td>
+                  <td style={{ fontWeight: 700 }}>{p.stock}</td>
 
-                    <td style={{ fontWeight: 700 }}>{product.stock}</td>
+                  <td style={{ color: "var(--gold)", fontWeight: 700 }}>
+                    ₪{p.price}
+                  </td>
 
-                    <td className={styles.priceCell}>₪{product.price}</td>
+                  <td>
+                    <strong style={{ color: "var(--gold)" }}>{p.minStock}</strong>
+                  </td>
 
-                    <td>
-                      <strong className={styles.minStockValue}>
-                        {product.minStock}
-                      </strong>
-                    </td>
+                  <td>{statusBadge(p.stock, p.minStock)}</td>
 
-                    <td>
-                      <span className={`${styles.tag} ${status.className}`}>
-                        {status.label}
-                      </span>
-                    </td>
+                  <td>
+                    <div style={{ display: "flex", gap: ".35rem", flexWrap: "wrap" }}>
+                      <button
+                        className={`${styles.btn} ${styles.btnGhost}`}
+                        style={{ padding: ".35rem .7rem", fontSize: ".75rem" }}
+                        onClick={() => onOpenDetails(p)}
+                      >
+                        פרטים
+                      </button>
 
-                    
 
-                    <td>
-                      <div className={styles.inventoryActions}>
-                        <button
-                          className={styles.btnGhost}
-                          style={{
-                            padding: ".3rem .62rem",
-                            fontSize: ".72rem",
-                          }}
-                          onClick={() => onOpenDetails(product)}
-                        >
-                          פרטים
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <button
+                        className={styles.btn}
+                        style={{
+                          background: "rgba(231,76,60,.08)",
+                          border: "1px solid rgba(231,76,60,.2)",
+                          color: "#f1948a",
+                          padding: ".35rem .7rem",
+                          fontSize: ".75rem",
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

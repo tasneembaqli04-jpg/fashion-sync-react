@@ -1,122 +1,82 @@
+import { useState } from "react";
 import styles from "../../../styles/Manager.module.scss";
 
-export default function SettingsView({ onOpenAddEmployee }) {
+export default function SettingsView() {
+  const [storeName, setStoreName] = useState("FashionSync");
+  const [phone, setPhone] = useState("054-1234567");
+  const [email, setEmail] = useState("store@fashionsync.co.il");
+  const [address, setAddress] = useState("רחוב דיזנגוף 120, תל אביב");
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
   return (
-    <div className={styles.view}>
+    <div className={`${styles.view} ${styles.active}`}>
       <div className={styles.pageHd}>
         <div className={styles.phLeft}>
-          <h2>⚙️ הגדרות מערכת</h2>
-          <p>ניהול חנות, עובדים, קטגוריות ועוד</p>
+          <h2>הגדרות</h2>
+          <p>פרטי חנות והגדרות מערכת</p>
         </div>
       </div>
 
       <div className={styles.g2}>
         <div className={styles.card}>
           <div className={styles.cardHd}>
-            <div className={styles.cardTitle}>🏪 פרטי החנות</div>
+            <div className={styles.cardTitle}>פרטי חנות</div>
           </div>
+
           <div className={styles.cardBody}>
-            <div className={styles.settingsSection}>
-              <div className={styles.fg2}>
-                <div className={styles.fg}>
-                  <div className={styles.fl}>שם החנות</div>
-                  <input className={styles.fi} defaultValue="FashionSync" />
-                </div>
-
-                <div className={styles.fg}>
-                  <div className={styles.fl}>טלפון</div>
-                  <input className={styles.fi} defaultValue="054-1234567" />
-                </div>
-
-                <div className={styles.fg} style={{ gridColumn: "span 2" }}>
-                  <div className={styles.fl}>אימייל</div>
-                  <input className={styles.fi} defaultValue="store@fashionsync.co.il" />
-                </div>
-
-                <div className={styles.fg} style={{ gridColumn: "span 2" }}>
-                  <div className={styles.fl}>כתובת</div>
-                  <input className={styles.fi} defaultValue="רחוב דיזנגוף 120, תל אביב" />
-                </div>
+            <div className={styles.fg2}>
+              <div className={styles.fg}>
+                <div className={styles.fl}>שם החנות</div>
+                <input className={styles.fi} value={storeName} onChange={(e) => setStoreName(e.target.value)} />
               </div>
 
-              <button className={styles.btnGold} style={{ marginTop: "0.75rem" }}>
-                💾 שמור פרטים
-              </button>
+              <div className={styles.fg}>
+                <div className={styles.fl}>טלפון</div>
+                <input className={styles.fi} value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+
+              <div className={styles.fg} style={{ gridColumn: "span 2" }}>
+                <div className={styles.fl}>אימייל</div>
+                <input className={styles.fi} value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+
+              <div className={styles.fg} style={{ gridColumn: "span 2" }}>
+                <div className={styles.fl}>כתובת</div>
+                <input className={styles.fi} value={address} onChange={(e) => setAddress(e.target.value)} />
+              </div>
             </div>
+
+            <button
+              className={`${styles.btn} ${styles.btnGold}`}
+              style={{ marginTop: ".75rem" }}
+              onClick={handleSave}
+            >
+              שמור שינויים
+            </button>
+
+            {saved && (
+              <div className={`${styles.alert} ${styles.aSuccess}`} style={{ marginTop: ".75rem" }}>
+                פרטים נשמרו ✓
+              </div>
+            )}
           </div>
         </div>
 
         <div className={styles.card}>
           <div className={styles.cardHd}>
-            <div className={styles.cardTitle}>🔔 הגדרות התראות</div>
+            <div className={styles.cardTitle}>הגדרות מערכת</div>
           </div>
+
           <div className={styles.cardBody}>
-            <div className={styles.settingsSection}>
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.settingLabel}>התראות מלאי נמוך</div>
-                  <div className={styles.settingDesc}>
-                    קבל התראה כשמוצר מתחת לרף המינימום
-                  </div>
-                </div>
-                <div className={styles.toggleWrap}>
-                  <label className={styles.toggle}>
-                    <input type="checkbox" defaultChecked />
-                    <span className={styles.toggleSlider}></span>
-                  </label>
-                </div>
-              </div>
-
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.settingLabel}>התראות מלאי אפס</div>
-                  <div className={styles.settingDesc}>
-                    קבל התראה כשמוצר אוזל לחלוטין
-                  </div>
-                </div>
-                <div className={styles.toggleWrap}>
-                  <label className={styles.toggle}>
-                    <input type="checkbox" defaultChecked />
-                    <span className={styles.toggleSlider}></span>
-                  </label>
-                </div>
-              </div>
-
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.settingLabel}>התראות ביקושים גבוהים</div>
-                  <div className={styles.settingDesc}>כאשר notifyCount עולה על 15</div>
-                </div>
-                <div className={styles.toggleWrap}>
-                  <label className={styles.toggle}>
-                    <input type="checkbox" defaultChecked />
-                    <span className={styles.toggleSlider}></span>
-                  </label>
-                </div>
-              </div>
-
-              <button className={styles.btnGold} style={{ marginTop: "0.75rem" }}>
-                💾 שמור הגדרות
-              </button>
-            </div>
+            <p style={{ color: "var(--muted)", fontSize: ".82rem", lineHeight: 1.5 }}>
+              הגדרות מתקדמות זמינות בגרסה המלאה.
+            </p>
           </div>
-        </div>
-      </div>
-
-      <div className={styles.card}>
-        <div className={styles.cardHd}>
-          <div className={styles.cardTitle}>👥 ניהול עובדים</div>
-          <button
-            className={styles.btnGold}
-            style={{ fontSize: "0.78rem", padding: "0.4rem 0.85rem" }}
-            onClick={onOpenAddEmployee}
-          >
-            + הוסף עובד
-          </button>
-        </div>
-
-        <div className={styles.cardBody}>
-          <div style={{ color: "var(--muted)" }}>כאן יוצג בהמשך ניהול עובדים</div>
         </div>
       </div>
     </div>

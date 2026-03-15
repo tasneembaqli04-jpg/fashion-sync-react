@@ -1,18 +1,20 @@
 import { useState } from "react";
 import styles from "../../styles/Manager.module.scss";
 
-export default function LoginOverlay({ onLogin }) {
+export default function LoginOverlay({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showError, setShowError] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
 
-  const submitLogin = () => {
-    const result = onLogin({ username, password });
-
-    if (!result.success) {
-      setShowError(true);
-      setTimeout(() => setShowError(false), 2000);
+  const handleLogin = () => {
+    if (username.trim() === "manager" && password === "admin123") {
+      setErrorVisible(false);
+      onLoginSuccess();
+      return;
     }
+
+    setErrorVisible(true);
+    setTimeout(() => setErrorVisible(false), 2000);
   };
 
   return (
@@ -28,7 +30,7 @@ export default function LoginOverlay({ onLogin }) {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitLogin()}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
         </div>
 
@@ -39,18 +41,15 @@ export default function LoginOverlay({ onLogin }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitLogin()}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
         </div>
 
-        <div
-          className={styles.errMsg}
-          style={{ display: showError ? "block" : "none" }}
-        >
-          ❌ שם משתמש או סיסמה שגויים
-        </div>
+        {errorVisible && (
+          <div className={styles.errMsg}>❌ שם משתמש או סיסמה שגויים</div>
+        )}
 
-        <button className={styles.btnLogin} onClick={submitLogin}>
+        <button className={styles.btnLogin} onClick={handleLogin}>
           כניסה
         </button>
       </div>
