@@ -1,21 +1,28 @@
+import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
+import overviewStyles from "../../styles/employee/EmployeeOverview.module.scss";
+
 export default function EmployeeHistory({ history }) {
   return (
-    <div className="panel active">
-      <div className="page-header">
-        <div className="page-title">פעילות אחרונה</div>
-        <div className="page-sub">כל הפעולות שבוצעו</div>
+    <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
+      <div className={layoutStyles.pageHeader}>
+        <div className={layoutStyles.pageTitle}>פעילות אחרונה</div>
+        <div className={layoutStyles.pageSub}>כל הפעולות שבוצעו</div>
       </div>
 
-      <div className="card">
-        <div className="feed">
+      <div className={layoutStyles.card}>
+        <div className={overviewStyles.feed}>
           {!history.length ? (
-            <div className="feed-item">
-              <div className="feed-text">אין פעילות עדיין.</div>
+            <div className={overviewStyles.feedItem}>
+              <div className={overviewStyles.feedText}>
+                אין פעילות עדיין.
+              </div>
             </div>
           ) : (
             history.map((item) => (
-              <div className="feed-item" key={item.id}>
-                <div className="feed-text">{item.text}</div>
+              <div className={overviewStyles.feedItem} key={item.id}>
+                <div className={overviewStyles.feedText}>
+                  {item.text}
+                </div>
               </div>
             ))
           )}

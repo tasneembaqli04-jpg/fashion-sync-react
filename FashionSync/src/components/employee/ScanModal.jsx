@@ -1,4 +1,7 @@
 import { useState } from "react";
+import modalStyles from "../../styles/employee/EmployeeModals.module.scss";
+import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
+import sellStyles from "../../styles/employee/EmployeeSell.module.scss";
 
 export default function ScanModal({ isOpen, scanTarget, onClose, onApplyCode }) {
   const [manualCode, setManualCode] = useState("");
@@ -12,13 +15,15 @@ export default function ScanModal({ isOpen, scanTarget, onClose, onApplyCode }) 
   }
 
   return (
-    <div className="modal-wrap open">
-      <div className="modal-box">
+    <div className={`${modalStyles.modalWrap} ${modalStyles.open}`}>
+      <div className={modalStyles.modalBox}>
         <h2>📷 סריקת ברקוד</h2>
         <p>כרגע מצב ידני בלבד ב-React</p>
 
-        <div className="scan-mode-tabs">
-          <button className="scan-mtab active">⌨️ ידנית</button>
+        <div className={modalStyles.scanModeTabs}>
+          <button className={`${modalStyles.scanMtab} ${modalStyles.active}`}>
+            ⌨️ ידנית
+          </button>
         </div>
 
         <div style={{ marginBottom: "0.85rem" }}>
@@ -35,20 +40,28 @@ export default function ScanModal({ isOpen, scanTarget, onClose, onApplyCode }) 
 
           <div style={{ display: "flex", gap: "0.55rem" }}>
             <input
-              className="barcode-input"
+              className={sellStyles.barcodeInput}
               type="text"
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleApply()}
               placeholder="לדוגמה: FS-001"
             />
-            <button className="btn btn-gold" onClick={handleApply}>
+
+            <button
+              className={`${layoutStyles.btn} ${layoutStyles.btnGold}`}
+              onClick={handleApply}
+            >
               חפש
             </button>
           </div>
         </div>
 
-        <button className="btn btn-outline" style={{ width: "100%" }} onClick={onClose}>
+        <button
+          className={`${layoutStyles.btn} ${layoutStyles.btnOutline}`}
+          style={{ width: "100%" }}
+          onClick={onClose}
+        >
           סגור ✕
         </button>
       </div>

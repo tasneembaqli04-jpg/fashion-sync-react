@@ -1,3 +1,5 @@
+import styles from "../../styles/employee/EmployeeTopbar.module.scss";
+
 export default function EmployeeTopbar({
   currentUser,
   onToggleSidebar,
@@ -7,39 +9,52 @@ export default function EmployeeTopbar({
   onRefresh,
 }) {
   return (
-    <div className="topbar visible">
-      <button className="hamburger" onClick={onToggleSidebar}>
+    <div className={`${styles.topbar} ${styles.visible}`}>
+      <button className={styles.hamburger} onClick={onToggleSidebar}>
         <span></span>
         <span></span>
         <span></span>
-      </button>
-
-      <button className="quick-btn qb-sell" onClick={() => onShowPanel("sell")}>
-        🏷️ <span className="qb-label">מכירה</span>
-      </button>
-
-      <button className="quick-btn qb-scan" onClick={() => onOpenScan("inventory")}>
-        📷 <span className="qb-label">ברקוד</span>
       </button>
 
       <button
-        className="quick-btn qb-inventory"
+        className={`${styles.quickBtn} ${styles.qbSell}`}
+        onClick={() => onShowPanel("sell")}
+      >
+        🏷️ <span className={styles.qbLabel}>מכירה</span>
+      </button>
+
+      <button
+        className={`${styles.quickBtn} ${styles.qbScan}`}
+        onClick={() => onOpenScan("inventory")}
+      >
+        📷 <span className={styles.qbLabel}>ברקוד</span>
+      </button>
+
+      <button
+        className={`${styles.quickBtn} ${styles.qbInventory}`}
         onClick={() => onShowPanel("inventory")}
       >
-        📦 <span className="qb-label">מלאי</span>
+        📦 <span className={styles.qbLabel}>מלאי</span>
       </button>
 
-      <button className="quick-btn qb-newprod" onClick={onOpenNewProduct}>
-        ➕ <span className="qb-label">מוצר חדש</span>
+      <button
+        className={`${styles.quickBtn} ${styles.qbNewprod}`}
+        onClick={onOpenNewProduct}
+      >
+        ➕ <span className={styles.qbLabel}>מוצר חדש</span>
       </button>
 
-      <div className="topbar-sep"></div>
+      <div className={styles.topbarSep}></div>
 
-      <button className="quick-btn qb-refresh" onClick={onRefresh} title="רענן">
+      <button
+        className={`${styles.quickBtn} ${styles.qbRefresh}`}
+        onClick={onRefresh}
+        title="רענן"
+      >
         🔄
       </button>
 
-      <span className="topbar-greeting">
+      <span className={styles.topbarGreeting}>
         <strong>{currentUser?.name || "—"}</strong>
       </span>
     </div>

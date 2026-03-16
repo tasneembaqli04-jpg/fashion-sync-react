@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { EMPLOYEES } from "../../data/employees";
+import styles from "../../styles/employee/EmployeeLogin.module.scss";
 
 export default function EmployeeLogin({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -26,13 +27,13 @@ export default function EmployeeLogin({ onLogin }) {
   }
 
   return (
-    <div className="login-overlay">
-      <div className="login-box">
-        <div className="login-brand">FashionSync</div>
-        <div className="login-role">👔 פורטל עובד</div>
+    <div className={styles.loginOverlay}>
+      <div className={styles.loginBox}>
+        <div className={styles.loginBrand}>FashionSync</div>
+        <div className={styles.loginRole}>👔 פורטל עובד</div>
 
         <form onSubmit={handleSubmit}>
-          <div className="fg">
+          <div className={styles.fg}>
             <label>שם משתמש</label>
             <input
               type="text"
@@ -42,7 +43,7 @@ export default function EmployeeLogin({ onLogin }) {
             />
           </div>
 
-          <div className="fg">
+          <div className={styles.fg}>
             <label>סיסמה</label>
             <input
               type="password"
@@ -52,9 +53,13 @@ export default function EmployeeLogin({ onLogin }) {
             />
           </div>
 
-          {error && <div className="err-msg" style={{ display: "block" }}>{error}</div>}
+          {error && (
+            <div className={styles.errMsg} style={{ display: "block" }}>
+              {error}
+            </div>
+          )}
 
-          <button type="submit" className="btn-login">
+          <button type="submit" className={styles.btnLogin}>
             כניסה
           </button>
         </form>

@@ -1,0 +1,109 @@
+.orderCard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.75rem;
+  transition: var(--tr);
+}
+
+.orderCard:hover {
+  border-color: var(--border-gold);
+}
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.orderId {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.orderCustomer {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.orderItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.orderItemRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface3);
+  border-radius: 8px;
+}
+
+.orderItemImg {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.orderItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.orderItemName {
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.orderItemMeta {
+  font-size: 0.69rem;
+  color: var(--text-dim);
+}
+
+.orderStatusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.orderTotal {
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+}
+
+.orderPrepareBtn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.42rem 1rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.orderPrepareBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+}
+
+.done {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}

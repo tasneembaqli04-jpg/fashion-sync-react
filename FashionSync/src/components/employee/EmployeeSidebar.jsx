@@ -1,3 +1,5 @@
+import styles from "../../styles/employee/EmployeeSidebar.module.scss";
+
 export default function EmployeeSidebar({
   currentUser,
   activePanel,
@@ -12,79 +14,92 @@ export default function EmployeeSidebar({
   return (
     <>
       <div
-        className={`sidebar-overlay ${isSidebarOpen ? "open" : ""}`}
+        className={`${styles.sidebarOverlay} ${isSidebarOpen ? styles.open : ""}`}
         onClick={onCloseSidebar}
       ></div>
 
-      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-        <div className="brand">
+      <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ""}`}>
+        <div className={styles.brand}>
           Fashion
           <br />
           Sync
         </div>
-        <div className="role-badge">פורטל עובד</div>
 
-        <div className="emp-chip">
+        <div className={styles.roleBadge}>פורטל עובד</div>
+
+        <div className={styles.empChip}>
           <span>👤</span>
-          <span className="emp-chip-name">{currentUser?.name || "—"}</span>
+          <span className={styles.empChipName}>{currentUser?.name || "—"}</span>
         </div>
 
-        <div className="nav-section">ראשי</div>
+        <div className={styles.navSection}>ראשי</div>
         <button
-          className={`nav-item ${activePanel === "overview" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "overview" ? styles.active : ""}`}
           onClick={() => onShowPanel("overview")}
         >
-          <span className="nav-icon">🏠</span> סקירה כללית
+          <span className={styles.navIcon}>🏠</span>
+          סקירה כללית
         </button>
 
         <button
-          className={`nav-item ${activePanel === "tasks" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "tasks" ? styles.active : ""}`}
           onClick={() => onShowPanel("tasks")}
         >
-          <span className="nav-icon">✅</span> משימות
-          {tasksCount > 0 && <span className="nav-badge">{tasksCount}</span>}
+          <span className={styles.navIcon}>✅</span>
+          משימות
+          {tasksCount > 0 && <span className={styles.navBadge}>{tasksCount}</span>}
         </button>
 
-        <div className="nav-section">מכירות</div>
+        <div className={styles.navSection}>מכירות</div>
         <button
-          className={`nav-item ${activePanel === "sell" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "sell" ? styles.active : ""}`}
           onClick={() => onShowPanel("sell")}
         >
-          <span className="nav-icon">🏷️</span> סריקת מכירה
+          <span className={styles.navIcon}>🏷️</span>
+          סריקת מכירה
         </button>
 
-        <div className="nav-section">מלאי</div>
+        <div className={styles.navSection}>מלאי</div>
         <button
-          className={`nav-item ${activePanel === "inventory" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "inventory" ? styles.active : ""}`}
           onClick={() => onShowPanel("inventory")}
         >
-          <span className="nav-icon">📦</span> ניהול מלאי
+          <span className={styles.navIcon}>📦</span>
+          ניהול מלאי
         </button>
 
-        <div className="nav-section">הזמנות</div>
+        <div className={styles.navSection}>הזמנות</div>
         <button
-          className={`nav-item ${activePanel === "orders" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "orders" ? styles.active : ""}`}
           onClick={() => onShowPanel("orders")}
         >
-          <span className="nav-icon">📋</span> הזמנות לקוחות
-          {ordersCount > 0 && <span className="nav-badge">{ordersCount}</span>}
+          <span className={styles.navIcon}>📋</span>
+          הזמנות לקוחות
+          {ordersCount > 0 && <span className={styles.navBadge}>{ordersCount}</span>}
         </button>
 
-        <div className="nav-section">היסטוריה</div>
+        <div className={styles.navSection}>היסטוריה</div>
         <button
-          className={`nav-item ${activePanel === "history" ? "active" : ""}`}
+          className={`${styles.navItem} ${activePanel === "history" ? styles.active : ""}`}
           onClick={() => onShowPanel("history")}
         >
-          <span className="nav-icon">🕒</span> פעילות אחרונה
+          <span className={styles.navIcon}>🕒</span>
+          פעילות אחרונה
         </button>
 
-        <div className="sidebar-footer">
-          <button className="nav-item" onClick={onToggleTheme}>
-            <span className="nav-icon">🌓</span> מצב כהה/בהיר
+        <div className={styles.sidebarFooter}>
+          <button className={styles.navItem} onClick={onToggleTheme}>
+            <span className={styles.navIcon}>🌓</span>
+            מצב כהה/בהיר
           </button>
 
-          <button className="nav-item" onClick={onLogout} style={{ color: "var(--red)" }}>
-            <span className="nav-icon">🚪</span> התנתקות
+          <button
+            className={styles.navItem}
+            onClick={onLogout}
+            style={{ color: "var(--red)" }}
+          >
+            <span className={styles.navIcon}>🚪</span>
+            התנתקות
           </button>
         </div>
       </aside>

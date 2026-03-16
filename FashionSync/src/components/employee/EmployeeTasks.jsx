@@ -1,37 +1,49 @@
+import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
+import taskStyles from "../../styles/employee/EmployeeTasks.module.scss";
+
 export default function EmployeeTasks({ tasks, onCompleteTask, onMarkSeen }) {
   return (
-    <div className="panel active">
-      <div className="page-header">
-        <div className="page-title">📋 המשימות שלי</div>
-        <div className="page-sub">כל המשימות שנשלחו לעובד</div>
+    <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
+      <div className={layoutStyles.pageHeader}>
+        <div className={layoutStyles.pageTitle}>📋 המשימות שלי</div>
+        <div className={layoutStyles.pageSub}>כל המשימות שנשלחו לעובד</div>
       </div>
 
       {!tasks.length ? (
-        <div className="tasks-empty-state">אין משימות כרגע</div>
+        <div className={taskStyles.tasksEmptyState}>אין משימות כרגע</div>
       ) : (
-        <div className="task-list">
+        <div className={taskStyles.taskList}>
           {tasks.map((task) => (
-            <div className={`task ${task.done ? "completed" : ""}`} key={task.id}>
-              <div className="task-icon">{task.icon || "📌"}</div>
+            <div
+              className={`${taskStyles.task} ${task.done ? taskStyles.completed : ""}`}
+              key={task.id}
+            >
+              <div className={taskStyles.taskIcon}>{task.icon || "📌"}</div>
 
-              <div className="task-info">
-                <div className="task-title">{task.title}</div>
-                {task.desc && <div className="task-sub">{task.desc}</div>}
+              <div className={taskStyles.taskInfo}>
+                <div className={taskStyles.taskTitle}>{task.title}</div>
+                {task.desc && <div className={taskStyles.taskSub}>{task.desc}</div>}
               </div>
 
-              <div className="task-btns-col">
+              <div className={taskStyles.taskBtnsCol}>
                 {!task.seen && (
-                  <button className="task-seen-btn" onClick={() => onMarkSeen(task.id)}>
+                  <button
+                    className={taskStyles.taskSeenBtn}
+                    onClick={() => onMarkSeen(task.id)}
+                  >
                     📬 קיבלתי
                   </button>
                 )}
 
                 {!task.done ? (
-                  <button className="task-done-btn" onClick={() => onCompleteTask(task.id)}>
+                  <button
+                    className={taskStyles.taskDoneBtn}
+                    onClick={() => onCompleteTask(task.id)}
+                  >
                     סיימתי ✓
                   </button>
                 ) : (
-                  <button className="task-done-btn" disabled>
+                  <button className={taskStyles.taskDoneBtn} disabled>
                     ✓ הושלם
                   </button>
                 )}

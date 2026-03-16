@@ -1,4 +1,6 @@
 import { useState } from "react";
+import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
+import sellStyles from "../../styles/employee/EmployeeSell.module.scss";
 
 export default function EmployeeSell({
   sellItems,
@@ -19,20 +21,20 @@ export default function EmployeeSell({
   }
 
   return (
-    <div className="panel active">
-      <div className="page-header">
-        <div className="page-title">סריקת מכירה</div>
-        <div className="page-sub">סרוק פריטים ורשום מכירה</div>
+    <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
+      <div className={layoutStyles.pageHeader}>
+        <div className={layoutStyles.pageTitle}>סריקת מכירה</div>
+        <div className={layoutStyles.pageSub}>סרוק פריטים ורשום מכירה</div>
       </div>
 
-      <div className="two-col">
+      <div className={layoutStyles.twoCol}>
         <div>
-          <div className="card" style={{ marginBottom: "1rem" }}>
-            <div className="sec-title">📲 סרוק / הכנס קוד</div>
+          <div className={layoutStyles.card} style={{ marginBottom: "1rem" }}>
+            <div className={layoutStyles.secTitle}>📲 סרוק / הכנס קוד</div>
 
-            <div className="barcode-row">
+            <div className={sellStyles.barcodeRow}>
               <input
-                className="barcode-input scanning"
+                className={`${sellStyles.barcodeInput} ${sellStyles.scanning}`}
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -40,13 +42,16 @@ export default function EmployeeSell({
                 placeholder="קוד מוצר (לדוגמה: FS-001)"
               />
 
-              <button className="btn btn-gold" onClick={handleAdd}>
+              <button
+                className={`${layoutStyles.btn} ${layoutStyles.btnGold}`}
+                onClick={handleAdd}
+              >
                 + הוסף
               </button>
             </div>
 
             <button
-              className="btn btn-blue btn-full"
+              className={`${layoutStyles.btn} ${layoutStyles.btnBlue} ${layoutStyles.btnFull}`}
               style={{ marginTop: "0.55rem" }}
               onClick={() => onOpenScan("sell")}
             >
@@ -55,38 +60,53 @@ export default function EmployeeSell({
           </div>
         </div>
 
-        <div className="card">
-          <div className="sec-title">🧾 פריטים למכירה</div>
+        <div className={layoutStyles.card}>
+          <div className={layoutStyles.secTitle}>🧾 פריטים למכירה</div>
 
           <div>
             {!sellItems.length ? (
-              <div className="empty-state">
-                <div className="empty-icon">📋</div>
-                <div className="empty-text">סרוק פריטים להתחיל</div>
+              <div className={layoutStyles.emptyState}>
+                <div className={layoutStyles.emptyIcon}>📋</div>
+                <div className={layoutStyles.emptyText}>סרוק פריטים להתחיל</div>
               </div>
             ) : (
               sellItems.map((item) => (
-                <div className="scan-item" key={item.code}>
-                  <img className="scan-img" src={item.img} alt={item.name} />
+                <div className={sellStyles.scanItem} key={item.code}>
+                  <img
+                    className={sellStyles.scanImg}
+                    src={item.img}
+                    alt={item.name}
+                  />
 
-                  <div className="scan-info">
-                    <div className="scan-name">{item.name}</div>
-                    <div className="scan-code">{item.code}</div>
+                  <div className={sellStyles.scanInfo}>
+                    <div className={sellStyles.scanName}>{item.name}</div>
+                    <div className={sellStyles.scanCode}>{item.code}</div>
                   </div>
 
-                  <div className="qty-wrap">
-                    <button className="qty-btn" onClick={() => onChangeSellQty(item.code, -1)}>
+                  <div className={sellStyles.qtyWrap}>
+                    <button
+                      className={sellStyles.qtyBtn}
+                      onClick={() => onChangeSellQty(item.code, -1)}
+                    >
                       −
                     </button>
-                    <span className="qty-num">{item.qty}</span>
-                    <button className="qty-btn" onClick={() => onChangeSellQty(item.code, 1)}>
+                    <span className={sellStyles.qtyNum}>{item.qty}</span>
+                    <button
+                      className={sellStyles.qtyBtn}
+                      onClick={() => onChangeSellQty(item.code, 1)}
+                    >
                       +
                     </button>
                   </div>
 
-                  <span className="scan-price">₪{item.price * item.qty}</span>
+                  <span className={sellStyles.scanPrice}>
+                    ₪{item.price * item.qty}
+                  </span>
 
-                  <button className="scan-rm" onClick={() => onRemoveSellItem(item.code)}>
+                  <button
+                    className={sellStyles.scanRm}
+                    onClick={() => onRemoveSellItem(item.code)}
+                  >
                     ✕
                   </button>
                 </div>
@@ -95,9 +115,9 @@ export default function EmployeeSell({
           </div>
 
           {sellItems.length > 0 && (
-            <div className="summary-box">
+            <div className={sellStyles.summaryBox}>
               {sellItems.map((item) => (
-                <div className="sumrow" key={item.code}>
+                <div className={sellStyles.sumrow} key={item.code}>
                   <span>
                     {item.name} × {item.qty}
                   </span>
@@ -105,15 +125,17 @@ export default function EmployeeSell({
                 </div>
               ))}
 
-              <div className="sumtotal">
+              <div className={sellStyles.sumtotal}>
                 <span style={{ color: "var(--text-dim)" }}>סה"כ מכירה:</span>
-                <span className="sumtotal-val">₪{total.toLocaleString()}</span>
+                <span className={sellStyles.sumtotalVal}>
+                  ₪{total.toLocaleString()}
+                </span>
               </div>
             </div>
           )}
 
           <button
-            className="btn btn-gold btn-full btn-lg"
+            className={`${layoutStyles.btn} ${layoutStyles.btnGold} ${layoutStyles.btnFull} ${layoutStyles.btnLg}`}
             style={{ marginTop: "0.85rem" }}
             onClick={onCompleteSell}
           >

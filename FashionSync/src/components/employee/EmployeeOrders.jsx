@@ -1,69 +1,101 @@
+import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
+import overviewStyles from "../../styles/employee/EmployeeOverview.module.scss";
+import ordersStyles from "../../styles/employee/EmployeeOrders.module.scss";
+
 export default function EmployeeOrders({ orders, onToggleOrderReady }) {
   const pending = orders.filter((o) => o.status === "pending").length;
   const ready = orders.filter((o) => o.status === "ready").length;
 
   return (
-    <div className="panel active">
-      <div className="page-header">
-        <div className="page-title">הזמנות לקוחות</div>
-        <div className="page-sub">הזמנות שנפתחו — יש להכין ולסמן כמוכן</div>
+    <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
+      <div className={layoutStyles.pageHeader}>
+        <div className={layoutStyles.pageTitle}>הזמנות לקוחות</div>
+        <div className={layoutStyles.pageSub}>
+          הזמנות שנפתחו — יש להכין ולסמן כמוכן
+        </div>
       </div>
 
-      <div className="stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-        <div className="stat-card orange">
-          <div className="stat-icon">⏳</div>
-          <div className="stat-label">ממתינות</div>
-          <div className="stat-value orange">{pending}</div>
-          <div className="stat-sub">לטיפול</div>
+      <div
+        className={layoutStyles.statsRow}
+        style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
+      >
+        <div className={`${overviewStyles.statCard} ${overviewStyles.orange}`}>
+          <div className={overviewStyles.statIcon}>⏳</div>
+          <div className={overviewStyles.statLabel}>ממתינות</div>
+          <div className={`${overviewStyles.statValue} ${overviewStyles.orangeText}`}>
+            {pending}
+          </div>
+          <div className={overviewStyles.statSub}>לטיפול</div>
         </div>
 
-        <div className="stat-card green">
-          <div className="stat-icon">✅</div>
-          <div className="stat-label">מוכנות</div>
-          <div className="stat-value green">{ready}</div>
-          <div className="stat-sub">להגשה</div>
+        <div className={`${overviewStyles.statCard} ${overviewStyles.green}`}>
+          <div className={overviewStyles.statIcon}>✅</div>
+          <div className={overviewStyles.statLabel}>מוכנות</div>
+          <div className={`${overviewStyles.statValue} ${overviewStyles.greenText}`}>
+            {ready}
+          </div>
+          <div className={overviewStyles.statSub}>להגשה</div>
         </div>
 
-        <div className="stat-card blue">
-          <div className="stat-icon">📋</div>
-          <div className="stat-label">סה"כ</div>
-          <div className="stat-value blue">{orders.length}</div>
-          <div className="stat-sub">הזמנות</div>
+        <div className={`${overviewStyles.statCard} ${overviewStyles.blue}`}>
+          <div className={overviewStyles.statIcon}>📋</div>
+          <div className={overviewStyles.statLabel}>סה"כ</div>
+          <div className={`${overviewStyles.statValue} ${overviewStyles.blueText}`}>
+            {orders.length}
+          </div>
+          <div className={overviewStyles.statSub}>הזמנות</div>
         </div>
       </div>
 
       {!orders.length ? (
-        <div className="empty-state">
-          <div className="empty-icon">🎉</div>
-          <div className="empty-text">אין הזמנות פתוחות</div>
+        <div className={layoutStyles.emptyState}>
+          <div className={layoutStyles.emptyIcon}>🎉</div>
+          <div className={layoutStyles.emptyText}>אין הזמנות פתוחות</div>
         </div>
       ) : (
         orders.map((order) => {
-          const total = order.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+          const total = order.items.reduce(
+            (sum, item) => sum + item.price * item.qty,
+            0
+          );
           const isReady = order.status === "ready";
 
           return (
-            <div className="order-card" key={order.id}>
-              <div className="order-header">
+            <div className={ordersStyles.orderCard} key={order.id}>
+              <div className={ordersStyles.orderHeader}>
                 <div>
-                  <div className="order-customer">👤 {order.customer}</div>
-                  <div className="order-id">{order.id}</div>
+                  <div className={ordersStyles.orderCustomer}>
+                    👤 {order.customer}
+                  </div>
+                  <div className={ordersStyles.orderId}>{order.id}</div>
                 </div>
 
                 <div>
-                  <span className={`badge ${isReady ? "badge-green" : "badge-yellow"}`}>
+                  <span
+                    className={`${layoutStyles.badge} ${
+                      isReady
+                        ? layoutStyles.badgeGreen
+                        : layoutStyles.badgeYellow
+                    }`}
+                  >
                     {isReady ? "✅ מוכן לאיסוף" : "⏳ ממתין להכנה"}
                   </span>
                 </div>
               </div>
 
-              <div className="order-items-list">
+              <div className={ordersStyles.orderItemsList}>
                 {order.items.map((item, index) => (
-                  <div className="order-item-row" key={index}>
-                    <img className="order-item-img" src={item.img} alt={item.name} />
-                    <div className="order-item-info">
-                      <div className="order-item-name">{item.name}</div>
-                      <div className="order-item-meta">
+                  <div className={ordersStyles.orderItemRow} key={index}>
+                    <img
+                      className={ordersStyles.orderItemImg}
+                      src={item.img}
+                      alt={item.name}
+                    />
+                    <div className={ordersStyles.orderItemInfo}>
+                      <div className={ordersStyles.orderItemName}>
+                        {item.name}
+                      </div>
+                      <div className={ordersStyles.orderItemMeta}>
                         מידה: {item.size} · כמות: {item.qty} · ₪{item.price}
                       </div>
                     </div>
@@ -71,11 +103,15 @@ export default function EmployeeOrders({ orders, onToggleOrderReady }) {
                 ))}
               </div>
 
-              <div className="order-status-bar">
-                <span className="order-total">₪{total.toLocaleString()}</span>
+              <div className={ordersStyles.orderStatusBar}>
+                <span className={ordersStyles.orderTotal}>
+                  ₪{total.toLocaleString()}
+                </span>
 
                 <button
-                  className={`order-prepare-btn ${isReady ? "done" : ""}`}
+                  className={`${ordersStyles.orderPrepareBtn} ${
+                    isReady ? ordersStyles.done : ""
+                  }`}
                   onClick={() => onToggleOrderReady(order.id)}
                 >
                   {isReady ? "✓ מוכן" : "הכן להגשה"}

@@ -15,6 +15,7 @@ import StockEditModal from "../components/employee/StockEditModal";
 import ScanModal from "../components/employee/ScanModal";
 
 import { PRODUCTS_SEED } from "../data/products";
+import layoutStyles from "../styles/employee/EmployeeLayout.module.scss";
 
 export default function Employee() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -339,7 +340,7 @@ export default function Employee() {
         onRefresh={handleRefresh}
       />
 
-      <div className="app-body">
+      <div className={layoutStyles.appBody}>
         <EmployeeSidebar
           currentUser={currentUser}
           activePanel={activePanel}
@@ -352,7 +353,7 @@ export default function Employee() {
           ordersCount={ordersCount}
         />
 
-        <main className="main visible">
+        <main className={`${layoutStyles.main} ${layoutStyles.visible}`}>
           {activePanel === "overview" && (
             <EmployeeOverview
               currentUser={currentUser}
