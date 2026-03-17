@@ -1,0 +1,291 @@
+.productCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.productCard:hover {
+  transform: translateY(-6px);
+  border-color: rgba(201, 168, 76, 0.3);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.productImgWrap {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+:global(body[data-theme="light"]) .productImgWrap {
+  background: #f0f0f0;
+}
+
+.productImgWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.productCard:hover .productImgWrap img {
+  transform: scale(1.06);
+}
+
+@media (max-width: 500px) {
+  .productImgWrap {
+    height: 160px;
+  }
+}
+
+.wishIcon,
+.shareIcon {
+  position: absolute;
+  top: 0.6rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.wishIcon {
+  left: 0.6rem;
+}
+
+.shareIcon {
+  right: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.wishIcon:hover {
+  background: rgba(192, 57, 43, 0.7);
+}
+
+.activeWish {
+  background: rgba(192, 57, 43, 0.85);
+}
+
+.shareIcon:hover {
+  background: rgba(201, 168, 76, 0.7);
+}
+
+.seasonBadgeCard {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  z-index: 2;
+}
+
+.badgeSummer {
+  background: rgba(255, 180, 0, 0.85);
+  color: #080808;
+}
+
+.badgeWinter {
+  background: rgba(100, 149, 237, 0.85);
+  color: #fff;
+}
+
+.badgeSpring {
+  background: rgba(39, 174, 96, 0.85);
+  color: #fff;
+}
+
+.badgeAutumn {
+  background: rgba(192, 100, 40, 0.85);
+  color: #fff;
+}
+
+.badgeAll {
+  background: rgba(201, 168, 76, 0.75);
+  color: #080808;
+}
+
+.saleRibbon,
+.trendingBadge,
+.bestsellerBadge {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  z-index: 3;
+}
+
+.saleRibbon {
+  background: linear-gradient(135deg, #8e44ad, #a855f7);
+  color: #fff;
+}
+
+.trendingBadge {
+  background: rgba(192, 57, 43, 0.85);
+  color: #fff;
+}
+
+.bestsellerBadge {
+  background: rgba(201, 168, 76, 0.9);
+  color: #080808;
+}
+
+.productBody {
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.productName {
+  font-weight: 800;
+  font-size: 0.93rem;
+}
+
+.productCode {
+  font-size: 0.73rem;
+  color: var(--light-gray);
+  font-family: monospace;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.productPrice {
+  color: var(--gold);
+  font-family: "Playfair Display", serif;
+  font-size: 1.15rem;
+}
+
+.salePrice {
+  color: #a855f7;
+}
+
+.productPriceOriginal {
+  color: var(--light-gray);
+  font-family: "Playfair Display", serif;
+  font-size: 0.9rem;
+  text-decoration: line-through;
+}
+
+.saleInlineTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(142, 68, 173, 0.18),
+    rgba(168, 85, 247, 0.12)
+  );
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  font-size: 0.66rem;
+  font-weight: 900;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.actBtn {
+  flex: 1;
+  min-width: 100px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.58rem 0.65rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--white);
+  font-family: "Alef", sans-serif;
+  font-size: 0.83rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+:global(body[data-theme="light"]) .actBtn {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.actBtn:hover {
+  border-color: rgba(201, 168, 76, 0.45);
+  transform: translateY(-1px);
+}
+
+.goldBtn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #080808;
+  border: none;
+}
+
+.goldBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(201, 168, 76, 0.25);
+}
+
+.actBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.guestLocked {
+  background: rgba(201, 168, 76, 0.05);
+  border: 1px dashed rgba(201, 168, 76, 0.3);
+  color: rgba(201, 168, 76, 0.6);
+}
+
+.notifyBtn {
+  width: 100%;
+  margin-top: 0.1rem;
+  padding: 0.52rem 0.75rem;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: 9px;
+  color: #ffd1cc;
+  font-family: "Alef", sans-serif;
+  font-size: 0.83rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.notifyBtn:hover {
+  background: rgba(192, 57, 43, 0.15);
+}
+
+.notifyDone {
+  background: rgba(39, 174, 96, 0.08);
+  border-color: rgba(39, 174, 96, 0.25);
+  color: var(--green);
+}

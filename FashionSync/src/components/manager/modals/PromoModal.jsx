@@ -1,4 +1,4 @@
-import styles from "../../../styles/Manager.module.scss";
+import styles from "../../styles/Manager.module.scss";
 
 export default function PromoModal({ open, onClose }) {
   if (!open) return null;

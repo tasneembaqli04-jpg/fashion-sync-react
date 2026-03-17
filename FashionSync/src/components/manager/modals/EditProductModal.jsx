@@ -1,4 +1,4 @@
-import styles from "../../../styles/Manager.module.scss";
+import styles from "../../styles/Manager.module.scss";
 
 export default function EditProductModal({ open, onClose }) {
   if (!open) return null;

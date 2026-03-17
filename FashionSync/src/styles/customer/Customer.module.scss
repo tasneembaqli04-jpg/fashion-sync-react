@@ -1,0 +1,200 @@
+:global(:root) {
+  --black: #080808;
+  --white: #fafaf8;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --charcoal: #111;
+  --card-bg: #161616;
+  --border: rgba(255, 255, 255, 0.07);
+  --light-gray: #777;
+  --red: #c0392b;
+  --green: #27ae60;
+  --purple: #8e44ad;
+  --teal: #1abc9c;
+  --radius: 14px;
+  --sidebar: 260px;
+}
+
+:global(body[data-theme="light"]) {
+  --black: #f6f6f3;
+  --white: #111;
+  --charcoal: #ffffff;
+  --card-bg: #ffffff;
+  --border: rgba(0, 0, 0, 0.08);
+  --light-gray: #555;
+}
+
+:global(*) {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:global(body) {
+  font-family: "Alef", sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.main {
+  margin-right: var(--sidebar);
+  flex: 1;
+  min-height: 100vh;
+  padding: 2.5rem;
+}
+
+@media (max-width: 860px) {
+  .main {
+    margin-right: 0 !important;
+    padding: 5rem 1rem 1.5rem;
+  }
+}
+
+.panel {
+  display: none;
+}
+
+.activePanel {
+  display: block;
+}
+
+.pageTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.pageSub {
+  color: var(--light-gray);
+  font-size: 0.88rem;
+  margin-bottom: 2rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+.tabBtn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--light-gray);
+  font-family: "Alef", sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  border-color: rgba(201, 168, 76, 0.4);
+  color: var(--white);
+}
+
+.activeTab {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.35);
+  color: var(--gold);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+:global(body[data-theme="light"]) .card {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.72rem 1.1rem;
+  border-radius: 10px;
+  font-family: "Alef", sans-serif;
+  font-size: 0.93rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.btnGold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #080808;
+}
+
+.btnGold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(201, 168, 76, 0.28);
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+.btnOutline:hover {
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.btnDanger {
+  background: rgba(192, 57, 43, 0.1);
+  border: 1px solid rgba(192, 57, 43, 0.28);
+  color: #ffd1cc;
+}
+
+.btnDanger:hover {
+  background: rgba(192, 57, 43, 0.18);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.22rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 800;
+}
+
+.badgeGreen {
+  background: rgba(39, 174, 96, 0.12);
+  color: var(--green);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.badgeRed {
+  background: rgba(192, 57, 43, 0.12);
+  color: var(--red);
+  border: 1px solid rgba(192, 57, 43, 0.3);
+}
+
+.badgeYellow {
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.secTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+}

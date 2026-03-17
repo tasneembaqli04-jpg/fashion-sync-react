@@ -1,0 +1,329 @@
+.guestCatalogBanner {
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gbt {
+  color: var(--light-gray);
+  font-size: 0.88rem;
+}
+
+.gbt strong {
+  color: var(--gold);
+}
+
+.saleCatalogBanner {
+  background: linear-gradient(
+    135deg,
+    rgba(142, 68, 173, 0.1),
+    rgba(142, 68, 173, 0.04)
+  );
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sbt {
+  color: #c084fc;
+  font-size: 0.88rem;
+}
+
+.sbt strong {
+  color: #a855f7;
+}
+
+.seasonBanner {
+  border-radius: 14px;
+  padding: 1rem 1.3rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summer {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 180, 0, 0.1),
+    rgba(255, 140, 0, 0.05)
+  );
+  border: 1px solid rgba(255, 180, 0, 0.3);
+}
+
+.winter {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 149, 237, 0.1),
+    rgba(65, 105, 225, 0.05)
+  );
+  border: 1px solid rgba(100, 149, 237, 0.3);
+}
+
+.spring {
+  background: linear-gradient(
+    135deg,
+    rgba(39, 174, 96, 0.1),
+    rgba(46, 213, 115, 0.05)
+  );
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.autumn {
+  background: linear-gradient(
+    135deg,
+    rgba(192, 100, 40, 0.1),
+    rgba(201, 168, 76, 0.05)
+  );
+  border: 1px solid rgba(192, 100, 40, 0.3);
+}
+
+.seasonEmoji {
+  font-size: 1.6rem;
+}
+
+.seasonText {
+  font-size: 0.88rem;
+}
+
+.summer .seasonText {
+  color: #ffb400;
+}
+.winter .seasonText {
+  color: #6495ed;
+}
+.spring .seasonText {
+  color: #27ae60;
+}
+.autumn .seasonText {
+  color: #c06428;
+}
+
+.filterBar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filterRight,
+.filterLeft {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filterBar input,
+.filterBar select {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.7rem 1rem;
+  color: var(--white);
+  font-family: "Alef", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+:global(body[data-theme="light"]) .filterBar input,
+:global(body[data-theme="light"]) .filterBar select {
+  color: var(--white);
+}
+
+.filterBar input:focus,
+.filterBar select:focus {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+.filterBar select option {
+  background: var(--charcoal);
+  color: var(--white);
+}
+
+.cameraBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(201, 168, 76, 0.1);
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.cameraBtn:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterRight,
+  .filterLeft {
+    width: 100%;
+  }
+
+  .filterBar input,
+  .filterBar select {
+    width: 100%;
+  }
+}
+
+.seasonTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.seasonTab {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--light-gray);
+  font-family: "Alef", sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.seasonTab:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+.activeSummer {
+  background: rgba(255, 180, 0, 0.12);
+  border-color: rgba(255, 180, 0, 0.4);
+  color: #ffb400;
+}
+
+.activeWinter {
+  background: rgba(100, 149, 237, 0.12);
+  border-color: rgba(100, 149, 237, 0.4);
+  color: #6495ed;
+}
+
+.activeSpring {
+  background: rgba(39, 174, 96, 0.12);
+  border-color: rgba(39, 174, 96, 0.4);
+  color: #27ae60;
+}
+
+.activeAutumn {
+  background: rgba(192, 100, 40, 0.12);
+  border-color: rgba(192, 100, 40, 0.4);
+  color: #c06428;
+}
+
+.activeAll {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.35);
+  color: var(--gold);
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.2rem;
+}
+
+@media (max-width: 500px) {
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+.wishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .wishGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+.pointsCard {
+  background: linear-gradient(
+    135deg,
+    rgba(142, 68, 173, 0.15),
+    rgba(142, 68, 173, 0.05)
+  );
+  border: 1px solid rgba(142, 68, 173, 0.3);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.pointsAmount {
+  font-family: "Playfair Display", serif;
+  font-size: 2.2rem;
+  color: #c39bd3;
+  font-weight: 900;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.couponItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(201, 168, 76, 0.3);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.couponCodeDisplay {
+  font-family: monospace;
+  font-size: 1.05rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+}
+
+.couponDesc {
+  font-size: 0.8rem;
+  color: var(--light-gray);
+}
