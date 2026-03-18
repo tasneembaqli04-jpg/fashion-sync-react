@@ -1,0 +1,62 @@
+.mobileTopbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 150;
+  background: var(--charcoal);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+  padding: 0.85rem 1.2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+@media (max-width: 860px) {
+  .mobileTopbar {
+    display: flex;
+  }
+}
+
+.mobileBrand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mobileTopbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hamburger {
+  background: none;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--gold);
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.mobileCartBtn {
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--gold);
+  padding: 0.45rem 0.85rem;
+  border-radius: 9px;
+  font-family: "Alef", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}

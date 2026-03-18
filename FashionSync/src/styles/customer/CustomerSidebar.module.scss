@@ -1,0 +1,163 @@
+.sidebar {
+  width: var(--sidebar);
+  background: var(--charcoal);
+  border-left: 1px solid rgba(201, 168, 76, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem 1.2rem;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+  transition: transform 0.28s ease;
+}
+
+.sidebarOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 199;
+}
+
+.showOverlay {
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .sidebar {
+    transform: translateX(110%);
+  }
+
+  .openSidebar {
+    transform: translateX(0);
+  }
+}
+
+.brand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.2rem;
+}
+
+.roleBadge {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  color: rgba(201, 168, 76, 0.45);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.userInfoBar {
+  background: rgba(201, 168, 76, 0.07);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.8rem;
+}
+
+.uname {
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.uemail {
+  color: var(--light-gray);
+  font-size: 0.75rem;
+}
+
+.guestBar {
+  background: rgba(201, 168, 76, 0.04);
+  border: 1px dashed rgba(201, 168, 76, 0.2);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.glabel {
+  color: var(--light-gray);
+  font-size: 0.78rem;
+  margin-bottom: 0.35rem;
+}
+
+.guestLoginBtn {
+  width: 100%;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  border-radius: 8px;
+  color: #080808;
+  font-family: "Alef", sans-serif;
+  font-weight: 900;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.guestLoginBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.25);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--light-gray);
+  font-size: 0.92rem;
+  transition: all 0.25s;
+  margin-bottom: 0.25rem;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: right;
+  font-family: "Alef", sans-serif;
+}
+
+.navItem:hover {
+  background: rgba(201, 168, 76, 0.07);
+  color: var(--white);
+}
+
+.activeNavItem {
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
+}
+
+.lockedNavItem {
+  opacity: 0.5;
+}
+
+.lockedNavItem::after {
+  content: "🔒";
+  font-size: 0.7rem;
+  margin-right: auto;
+}
+
+.navIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
