@@ -1,0 +1,225 @@
+.stepPanel {
+  animation: fadeUp 0.3s ease;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.secTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+}
+
+.successWrap {
+  text-align: center;
+  padding: 1rem 0 2rem;
+  animation: fadeUp 0.5s ease;
+}
+
+.successCircle {
+  width: 96px;
+  height: 96px;
+  background: linear-gradient(
+    135deg,
+    rgba(39, 174, 96, 0.15),
+    rgba(39, 174, 96, 0.04)
+  );
+  border: 2px solid rgba(39, 174, 96, 0.35);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  margin: 0 auto 1.5rem;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.successTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.successSub {
+  color: var(--light-gray);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.successSubGold {
+  color: var(--gold);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.receiptNum {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--gold);
+  margin: 1rem 0;
+  padding: 0.45rem 1.2rem;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 8px;
+  background: rgba(201, 168, 76, 0.04);
+}
+
+.successOrderBox {
+  width: 100%;
+  text-align: right;
+  margin: 1.2rem 0;
+}
+
+.successItemRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.successItemRow:last-child {
+  border-bottom: none;
+}
+
+.successItemRow img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+
+.successItemInfo {
+  flex: 1;
+}
+
+.successItemName {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.successItemMeta {
+  font-size: 0.74rem;
+  color: var(--light-gray);
+}
+
+.successItemPrice {
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.successDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.75rem 0;
+}
+
+.pline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.87rem;
+  padding: 0.25rem 0;
+}
+
+.pl {
+  color: var(--light-gray);
+}
+
+.disc {
+  color: var(--green);
+}
+
+.total {
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(201, 168, 76, 0.15);
+  margin-top: 0.3rem;
+}
+
+.total span:last-child {
+  font-family: "Playfair Display", serif;
+  font-size: 1.45rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.total .pl {
+  color: var(--white);
+  font-size: 0.88rem;
+  align-self: flex-end;
+}
+
+.successBtns {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 9px;
+  font-family: "Alef", sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  border: none;
+  font-weight: 700;
+}
+
+.btnGold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #080808;
+}
+
+.btnGold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(201, 168, 76, 0.3);
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--light-gray);
+}
+
+.btnOutline:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}

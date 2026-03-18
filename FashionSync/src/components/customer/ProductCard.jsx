@@ -183,7 +183,11 @@ export default function ProductCard({
           ) : (
             <button
               className={`${cardStyles.actBtn} ${cardStyles.gold}`}
-              onClick={() => addToCart(product.code)}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("clicked add button", product.code);
+                addToCart(product.code);
+              }}
               disabled={product.stock === 0}
             >
               🛒 הוסף לסל

@@ -173,6 +173,7 @@
   margin-top: 1rem;
 }
 
+/* CART DRAWER */
 .drawer {
   position: fixed;
   top: 0;
@@ -189,7 +190,7 @@
   flex-direction: column;
 }
 
-.openDrawer {
+.drawerOpen {
   transform: translateX(0);
 }
 
@@ -314,6 +315,17 @@
   font-family: "Playfair Display", serif;
 }
 
+.oldItemPrice {
+  color: var(--light-gray);
+  font-size: 0.78rem;
+  text-decoration: line-through;
+}
+
+.saleItemPrice {
+  color: #a855f7;
+  font-weight: 900;
+}
+
 .rmBtn {
   background: none;
   border: none;
@@ -418,8 +430,25 @@
   display: none;
 }
 
-.showBackdrop {
+.backdropShow {
   display: block;
+}
+
+.discountRow {
+  color: var(--green);
+  font-size: 0.86rem;
+  margin-bottom: 0.6rem;
+}
+
+.emptyCart {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--light-gray);
+}
+
+.emptyCartIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .orderCard {
@@ -897,4 +926,4 @@
 :global(#tryonProductSelect option) {
   color: #111;
   background: #fff;
-}
+} 

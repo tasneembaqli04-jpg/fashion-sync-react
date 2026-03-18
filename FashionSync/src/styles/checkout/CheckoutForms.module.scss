@@ -1,0 +1,232 @@
+.stepPanel {
+  animation: fadeUp 0.3s ease;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.secTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+}
+
+.fg {
+  margin-bottom: 1.1rem;
+}
+
+.fg label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--light-gray);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+}
+
+.fg input,
+.fg select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.78rem 1rem;
+  color: var(--white);
+  font-family: "Alef", sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border 0.2s, background 0.2s;
+}
+
+.fg input:focus,
+.fg select:focus {
+  border-color: rgba(201, 168, 76, 0.5);
+  background: rgba(201, 168, 76, 0.03);
+}
+
+.fg select option {
+  background: #131313;
+}
+
+.twoFg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.threeFg {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.invalid {
+  border-color: rgba(192, 57, 43, 0.55) !important;
+}
+
+.fieldErr {
+  font-size: 0.75rem;
+  color: var(--red);
+  margin-top: 0.3rem;
+}
+
+.shipOptWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.shipOpt {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.shipOpt:hover {
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
+.selected {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.shipIcon {
+  font-size: 1.5rem;
+}
+
+.shipInfo {
+  flex: 1;
+}
+
+.shipLabel {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.shipSub {
+  font-size: 0.76rem;
+  color: var(--light-gray);
+  margin-top: 0.1rem;
+}
+
+.shipPrice {
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.radioDot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.25s;
+  margin-right: auto;
+}
+
+.selected .radioDot {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+.deliveryEstimate {
+  font-size: 0.9rem;
+  color: var(--light-gray);
+  line-height: 1.8;
+}
+
+.btnRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 9px;
+  font-family: "Alef", sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  border: none;
+  font-weight: 700;
+}
+
+.btnGold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #080808;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.btnGold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(201, 168, 76, 0.3);
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--light-gray);
+}
+
+.btnOutline:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.btnRow .btnOutline {
+  flex: 1;
+}
+
+.btnRow .btnGold {
+  flex: 2;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .twoFg,
+  .threeFg {
+    grid-template-columns: 1fr;
+  }
+
+  .btnRow {
+    flex-direction: column;
+  }
+
+  .btnRow .btnOutline,
+  .btnRow .btnGold {
+    flex: unset;
+    width: 100%;
+  }
+}

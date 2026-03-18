@@ -1,0 +1,27 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+  background: var(--charcoal);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topbarRight {
+  font-size: 0.82rem;
+  color: var(--light-gray);
+}

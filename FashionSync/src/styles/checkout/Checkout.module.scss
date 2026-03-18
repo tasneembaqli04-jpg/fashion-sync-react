@@ -1,0 +1,72 @@
+:global(:root) {
+  --black: #080808;
+  --white: #fafaf8;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --charcoal: #111;
+  --card-bg: #161616;
+  --border: rgba(255, 255, 255, 0.07);
+  --light-gray: #777;
+  --red: #c0392b;
+  --green: #27ae60;
+  --blue: #2980b9;
+  --radius: 14px;
+}
+
+.checkoutWrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+.processingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 8, 0.93);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.show {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 3px solid rgba(201, 168, 76, 0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.procText {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+}
+
+.procSub {
+  font-size: 0.82rem;
+  color: var(--light-gray);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

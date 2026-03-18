@@ -14,17 +14,16 @@ export default function CartDrawer({
   applyCoupon,
   startCheckout,
 }) {
+  console.log("CartDrawer open =", open);
   return (
     <>
       <div
-        className={`${modalStyles.backdrop} ${open ? modalStyles.show : ""}`}
-        id="backdrop"
+        className={`${modalStyles.backdrop} ${open ? modalStyles.backdropShow : ""}`}
         onClick={closeCart}
       />
 
       <div
-        className={`${modalStyles.drawer} ${open ? modalStyles.open : ""}`}
-        id="cart-drawer"
+        className={`${modalStyles.drawer} ${open ? modalStyles.drawerOpen : ""}`}
       >
         <div className={modalStyles.drawerHead}>
           <div className={modalStyles.drawerTitle}>🛒 סל הקניות</div>
@@ -33,61 +32,73 @@ export default function CartDrawer({
           </button>
         </div>
 
-        <div className={modalStyles.drawerBody} id="cart-body">
+        <div className={modalStyles.drawerBody}>
           {cart.length ? (
-            cart.map((item) => (
-              <div className={modalStyles.cartItem} key={item.key}>
-                <div className={modalStyles.cartLeft}>
-                  <img src={item.img} alt={item.name} />
-                  <div style={{ minWidth: 0 }}>
-                    <div className={modalStyles.cartName}>{item.name}</div>
-                    <div className={modalStyles.cartMeta}>
-                      {item.code}
-                      {item.size ? ` · ${item.size}` : ""}
-                      {item.color ? ` · ${item.color}` : ""}
+            cart.map((item) => {
+              const isSale =
+                item.sale &&
+                item.originalPrice &&
+                item.originalPrice > item.price;
+
+              return (
+                <div className={modalStyles.cartItem} key={item.key}>
+                  <div className={modalStyles.cartLeft}>
+                    <img src={item.img} alt={item.name} />
+                    <div style={{ minWidth: 0 }}>
+                      <div className={modalStyles.cartName}>{item.name}</div>
+                      <div className={modalStyles.cartMeta}>
+                        {item.code}
+                        {item.size ? ` · ${item.size}` : ""}
+                        {item.color ? ` · ${item.color}` : ""}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className={modalStyles.qtyControls}>
-                  <button
-                    className={modalStyles.qtyBtn}
-                    onClick={() => changeQty(item.key, -1)}
-                  >
-                    −
-                  </button>
+                  <div className={modalStyles.qtyControls}>
+                    <button
+                      className={modalStyles.qtyBtn}
+                      onClick={() => changeQty(item.key, -1)}
+                    >
+                      −
+                    </button>
 
-                  <div className={modalStyles.qtyNum}>{item.qty}</div>
+                    <div className={modalStyles.qtyNum}>{item.qty}</div>
 
-                  <button
-                    className={modalStyles.qtyBtn}
-                    onClick={() => changeQty(item.key, 1)}
-                  >
-                    +
-                  </button>
+                    <button
+                      className={modalStyles.qtyBtn}
+                      onClick={() => changeQty(item.key, 1)}
+                    >
+                      +
+                    </button>
 
-                  <div className={modalStyles.cartPrice}>
-                    ₪{item.price * item.qty}
+                    <div className={modalStyles.cartPrice}>
+                      {isSale ? (
+                        <>
+                          <span className={modalStyles.oldItemPrice}>
+                            ₪{item.originalPrice}
+                          </span>{" "}
+                          <span className={modalStyles.saleItemPrice}>
+                            ₪{item.price * item.qty}
+                          </span>
+                        </>
+                      ) : (
+                        <>₪{item.price * item.qty}</>
+                      )}
+                    </div>
+
+                    <button
+                      className={modalStyles.rmBtn}
+                      onClick={() => removeItem(item.key)}
+                    >
+                      ✕
+                    </button>
                   </div>
-
-                  <button
-                    className={modalStyles.rmBtn}
-                    onClick={() => removeItem(item.key)}
-                  >
-                    ✕
-                  </button>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "2.5rem",
-                color: "var(--light-gray)",
-              }}
-            >
-              <div style={{ fontSize: "2.5rem", marginBottom: ".8rem" }}>🛒</div>
+            <div className={modalStyles.emptyCart}>
+              <div className={modalStyles.emptyCartIcon}>🛒</div>
               אין פריטים בעגלה
             </div>
           )}
@@ -95,13 +106,12 @@ export default function CartDrawer({
 
         <div className={modalStyles.drawerFoot}>
           <div className={modalStyles.pointsRow}>
-            ⭐ תצבור <span id="cart-points">{cartPoints}</span> נקודות על הזמנה זו
+            ⭐ תצבור <span>{cartPoints}</span> נקודות על הזמנה זו
           </div>
 
           <div className={modalStyles.couponRow}>
             <input
               className={modalStyles.couponInput}
-              id="coupon-input"
               type="text"
               placeholder="קוד קופון..."
               value={couponValue}
@@ -113,23 +123,14 @@ export default function CartDrawer({
           </div>
 
           {discountText && (
-            <div
-              id="discount-row"
-              style={{
-                color: "var(--green)",
-                fontSize: "0.86rem",
-                marginBottom: "0.6rem",
-              }}
-            >
-              ✅ הנחה הוחלה: <span id="discount-val">{discountText}</span>
+            <div className={modalStyles.discountRow}>
+              ✅ הנחה הוחלה: <span>{discountText}</span>
             </div>
           )}
 
           <div className={modalStyles.totalRow}>
             <span className={modalStyles.totalLabel}>סה"כ לתשלום:</span>
-            <span className={modalStyles.totalVal} id="cart-total">
-              ₪{cartTotal}
-            </span>
+            <span className={modalStyles.totalVal}>₪{cartTotal}</span>
           </div>
 
           <button className={modalStyles.checkoutBtn} onClick={startCheckout}>

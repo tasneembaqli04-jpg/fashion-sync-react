@@ -1,0 +1,68 @@
+.stepsBar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 2.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+}
+
+.stepGroup {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--light-gray);
+  transition: color 0.3s;
+}
+
+.done {
+  color: var(--green);
+}
+
+.active {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.stepNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.done .stepNum {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.active .stepNum {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #080808;
+}
+
+.stepSep {
+  flex: 1;
+  min-width: 16px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 0 0.6rem;
+}
