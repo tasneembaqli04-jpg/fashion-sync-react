@@ -21,12 +21,19 @@ export default function EmployeeOverview({
   const openTasks = tasks.slice(0, 4);
   const recentHistory = history.slice(0, 5);
 
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const unsoldItems = products.filter((p) => {
+    if (!p.lastSold) return true; 
+    return new Date(p.lastSold).getTime() < thirtyDaysAgo;
+  });
+
   return (
     <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
       <div className={layoutStyles.pageHeader}>
         <div className={layoutStyles.pageTitle}>סקירה כללית</div>
         <div className={layoutStyles.pageSub}>
-          ברוך הבא, {currentUser?.name}
+          יום {new Date().toLocaleDateString("he-IL", { weekday: "long" })},{" "}
+          {new Date().toLocaleDateString("he-IL")} · ברוך הבא, {currentUser?.name}
         </div>
       </div>
 
@@ -70,7 +77,6 @@ export default function EmployeeOverview({
       <div className={layoutStyles.twoCol}>
         <div className={layoutStyles.card}>
           <div className={layoutStyles.secTitle}>✅ המשימות שלי</div>
-
           <div className={taskStyles.taskList}>
             {openTasks.length === 0 ? (
               <div className={taskStyles.tasksEmptyState}>אין משימות כרגע</div>
@@ -105,7 +111,6 @@ export default function EmployeeOverview({
             >
               🚨 התראות מלאי
             </div>
-
             <button
               className={layoutStyles.tblBtn}
               onClick={() => onShowPanel("inventory")}
@@ -125,10 +130,7 @@ export default function EmployeeOverview({
             <tbody>
               {lowItems.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="3"
-                    style={{ textAlign: "center", color: "var(--text-dim)" }}
-                  >
+                  <td colSpan="3" style={{ textAlign: "center", color: "var(--text-dim)" }}>
                     ✅ כל המוצרים במלאי תקין
                   </td>
                 </tr>
@@ -137,11 +139,7 @@ export default function EmployeeOverview({
                   <tr key={p.code}>
                     <td>
                       <div className={layoutStyles.pc}>
-                        <img
-                          className={layoutStyles.pimg}
-                          src={p.img}
-                          alt={p.name}
-                        />
+                        <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
                         <div>
                           <div className={layoutStyles.pname}>{p.name}</div>
                           <div className={layoutStyles.psku}>{p.code}</div>
@@ -151,13 +149,9 @@ export default function EmployeeOverview({
                     <td>{p.stock}</td>
                     <td>
                       {p.stock === 0 ? (
-                        <span className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}>
-                          אזל
-                        </span>
+                        <span className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}>אזל</span>
                       ) : (
-                        <span className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}>
-                          נמוך
-                        </span>
+                        <span className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}>נמוך</span>
                       )}
                     </td>
                   </tr>
@@ -166,6 +160,96 @@ export default function EmployeeOverview({
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className={layoutStyles.card} style={{ marginTop: "1.2rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "0.85rem",
+          }}
+        >
+          <div
+            className={layoutStyles.secTitle}
+            style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}
+          >
+            🏷️ פריטים שלא נמכרו מעל 30 יום ({unsoldItems.length})
+          </div>
+          <button
+            className={layoutStyles.tblBtn}
+            onClick={() => onShowPanel("inventory")}
+          >
+            צפה הכל
+          </button>
+        </div>
+
+        {unsoldItems.length === 0 ? (
+          <div style={{ textAlign: "center", color: "var(--text-dim)", padding: "1rem" }}>
+            ✅ כל הפריטים נמכרו לאחרונה
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+            {unsoldItems.slice(0, 5).map((p) => {
+              const daysSince = p.lastSold
+                ? Math.floor((Date.now() - new Date(p.lastSold).getTime()) / (1000 * 60 * 60 * 24))
+                : null;
+
+              return (
+                <div
+                  key={p.code}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "0.6rem 0.8rem",
+                    borderRadius: "10px",
+                    background: "var(--surface3)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <div className={layoutStyles.pc}>
+                    <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
+                    <div>
+                      <div className={layoutStyles.pname}>{p.name}</div>
+                      <div className={layoutStyles.psku}>
+                        {p.code} · {p.gender} · מלאי: {p.stock}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                    {p.season === "summer" && (
+                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSummer}`}>☀️ קיץ</span>
+                    )}
+                    {p.season === "winter" && (
+                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonWinter}`}>❄️ חורף</span>
+                    )}
+                    {p.season === "spring-autumn" && (
+                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSpringAutumn}`}>🍂 אביב/סתיו</span>
+                    )}
+                    {(!p.season || p.season === "all") && (
+                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonAll}`}>📅 כל השנה</span>
+                    )}
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        color: "var(--text-dim)",
+                        background: "var(--surface2)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "20px",
+                        padding: "0.14rem 0.55rem",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {daysSince !== null ? `${daysSince} ימים` : "לא נמכר"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className={layoutStyles.card} style={{ marginTop: "1.2rem" }}>

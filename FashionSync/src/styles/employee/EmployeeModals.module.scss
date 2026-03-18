@@ -1,16 +1,22 @@
-.newprodOverlay {
+:root {
+  --radius: 12px;
+  --tr: all 0.3s ease;
+}
+
+
+.newprodOverlay, .stockEditOverlay, .modalWrap {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.78);
   z-index: 400;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(8px);
-}
+  background: rgba(0, 0, 0, 0.78);
 
-.newprodOverlay.open {
-  display: flex;
+  &.open {
+    display: flex;
+  }
 }
 
 .newprodBox {
@@ -23,28 +29,28 @@
   max-height: 92vh;
   overflow-y: auto;
   animation: fadeUp 0.3s ease;
-}
 
-.newprodHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.4rem;
-}
+  .newprodHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.4rem;
 
-.newprodTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 1.3rem;
-  color: var(--gold);
-}
+    .newprodTitle {
+      font-family: "Playfair Display", serif;
+      font-size: 1.3rem;
+      color: var(--gold);
+    }
 
-.newprodClose {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 1.3rem;
-  cursor: pointer;
-  padding: 0.3rem;
+    .newprodClose {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 0.3rem;
+    }
+  }
 }
 
 .uploadPhotoTabs {
@@ -68,12 +74,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-}
 
-.uptBtn.active {
-  background: var(--gold-dim);
-  color: var(--gold);
-  border-color: var(--border-gold);
+  &.active {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border-color: var(--border-gold);
+  }
 }
 
 .uploadDrop {
@@ -84,51 +90,53 @@
   cursor: pointer;
   transition: var(--tr);
   position: relative;
-}
 
-.uploadDrop:hover {
-  border-color: var(--gold);
-  background: rgba(201, 168, 76, 0.03);
-}
+  &:hover {
+    border-color: var(--gold);
+    background: rgba(201, 168, 76, 0.03);
+  }
 
-.uploadDrop input[type="file"] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
+  input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
 }
 
 .cameraArea {
-  border: 2px dashed rgba(74, 158, 255, 0.22);
-  border-radius: var(--radius);
-  overflow: hidden;
+  height: 180px;
   background: #000;
-  aspect-ratio: 4 / 3;
-  position: relative;
-}
-
-.cameraArea video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.stockEditOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  z-index: 400;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
-}
+  border: 2px dashed var(--border-gold);
+  position: relative;
+  overflow: hidden;
 
-.stockEditOverlay.open {
-  display: flex;
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .camPlaceholder {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+
+  .captureBtn {
+    position: absolute;
+    bottom: 10px;
+    background: var(--gold);
+    border: none;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+  }
 }
 
 .stockEditBox {
@@ -150,20 +158,19 @@
   margin-bottom: 1.2rem;
   flex-wrap: wrap;
   gap: 0.65rem;
-}
 
-.seTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 1.1rem;
-}
+  .seTitle {
+    font-family: "Playfair Display", serif;
+    font-size: 1.1rem;
+  }
 
-.seClose {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.3rem;
+  .seClose {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
 }
 
 .seProductBar {
@@ -175,38 +182,79 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 1.1rem;
+
+  .seProductImg {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .seProductName {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .seProductMeta {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-family: "Roboto Mono", monospace;
+  }
+
+  .seProductPrice {
+    color: var(--gold);
+    font-weight: 700;
+  }
 }
 
-.seProductImg {
-  width: 44px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
+
+.seasonPicker {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+
+  label {
+    display: block;
+    color: #e0e0e0;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .seasonOptions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .seasonBtn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #bbb;
+    padding: 10px 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    transition: var(--tr);
+
+    span { font-size: 1.2rem; }
+
+    &:hover { background: #252525; }
+
+    &.active {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+      font-weight: bold;
+      span { filter: brightness(0.1); }
+    }
+  }
 }
 
-.seProductInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.seProductName {
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.seProductMeta {
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  margin-top: 0.1rem;
-  font-family: "Roboto Mono", monospace;
-}
-
-.seProductPrice {
-  color: var(--gold);
-  font-weight: 700;
-  font-size: 0.88rem;
-}
 
 .seSectionTitle {
   font-size: 0.72rem;
@@ -229,16 +277,9 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.65rem;
-}
 
-.colorBlockName {
-  font-weight: 700;
-  font-size: 0.88rem;
-}
-
-.colorBlockTotal {
-  font-size: 0.76rem;
-  color: var(--text-dim);
+  .colorBlockName { font-weight: 700; font-size: 0.88rem; }
+  .colorBlockTotal { font-size: 0.76rem; color: var(--text-dim); }
 }
 
 .sizeInputsRow {
@@ -249,269 +290,51 @@
 
 .sizeInputCell {
   text-align: center;
-}
 
-.sizeInputLabel {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-dim);
-  margin-bottom: 0.25rem;
-  letter-spacing: 0.04em;
-}
-
-.sizeInputField {
-  width: 100%;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 0.42rem 0.3rem;
-  text-align: center;
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 700;
-  font-family: "Alef", sans-serif;
-  outline: none;
-  transition: var(--tr);
-}
-
-.sizeInputField:focus {
-  border-color: var(--gold);
-}
-
-.seActions {
-  display: flex;
-  gap: 0.65rem;
-  margin-top: 1.2rem;
-}
-
-.modalWrap {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.82);
-  z-index: 500;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-.modalWrap.open {
-  display: flex;
-}
-
-.modalBox {
-  background: var(--surface);
-  border: 1px solid var(--border-gold);
-  border-radius: 20px;
-  padding: 2rem;
-  max-width: 480px;
-  width: 96%;
-  max-height: 92vh;
-  overflow-y: auto;
-  text-align: center;
-  animation: fadeUp 0.3s ease;
-}
-
-.modalBox h2 {
-  font-family: "Playfair Display", serif;
-  font-size: 1.3rem;
-  margin-bottom: 0.32rem;
-}
-
-.modalBox p {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  margin-bottom: 1.1rem;
-}
-
-.camViewport {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  background: #000;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 1.05rem;
-  border: 1px solid var(--border);
-}
-
-.camViewport video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.camOverlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.camFrame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  aspect-ratio: 3 / 1;
-  border: 2px solid var(--gold);
-  border-radius: 8px;
-}
-
-.camFrame::before,
-.camFrame::after {
-  content: "";
-  position: absolute;
-  width: 17px;
-  height: 17px;
-  border-color: var(--gold-light);
-  border-style: solid;
-}
-
-.camFrame::before {
-  top: -2px;
-  right: -2px;
-  border-width: 3px 3px 0 0;
-  border-radius: 0 4px 0 0;
-}
-
-.camFrame::after {
-  top: -2px;
-  left: -2px;
-  border-width: 3px 0 0 3px;
-  border-radius: 4px 0 0 0;
-}
-
-.camScanLine {
-  position: absolute;
-  left: 15%;
-  right: 15%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  animation: camScan 1.8s ease-in-out infinite;
-}
-
-@keyframes camScan {
-  0%,
-  100% {
-    top: 22%;
+  .sizeInputLabel {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 0.25rem;
   }
-  50% {
-    top: 74%;
+
+  .sizeInputField {
+    width: 100%;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.42rem 0.3rem;
+    text-align: center;
+    color: var(--text);
+    font-weight: 700;
+    outline: none;
+    transition: var(--tr);
+
+    &:focus { border-color: var(--gold); }
   }
 }
 
-.camStatus {
-  position: absolute;
-  bottom: 0.65rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.72);
-  color: var(--text-dim);
-  font-size: 0.7rem;
-  padding: 0.22rem 0.8rem;
-  border-radius: 20px;
-  white-space: nowrap;
-}
-
-.scanModeTabs {
-  display: flex;
-  gap: 0.45rem;
-  margin-bottom: 1rem;
-}
-
-.scanMtab {
-  flex: 1;
-  padding: 0.55rem;
-  border-radius: 8px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  font-family: "Alef", sans-serif;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  transition: var(--tr);
-}
-
-.scanMtab.active {
-  background: var(--gold-dim);
-  color: var(--gold);
-  border-color: var(--border-gold);
-}
-
-.scanResultInner {
-  background: var(--surface3);
-  border: 1px solid var(--green-border);
-  border-radius: 10px;
-  padding: 0.85rem;
-  margin-bottom: 0.85rem;
-  display: none;
-}
-
-.scanResultInner.show {
-  display: block;
-  animation: fadeIn 0.3s ease;
-}
 
 .notifBar {
   position: fixed;
-  top: calc(var(--topbar) + 8px);
+  top: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(-120px);
   z-index: 800;
-  min-width: 260px;
-  max-width: 480px;
   width: 90vw;
+  max-width: 480px;
   background: var(--surface);
   border: 1px solid var(--border-gold);
   border-radius: 14px;
   padding: 0.9rem 1.3rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 0.65rem;
-}
 
-.notifBar.show {
-  transform: translateX(-50%) translateY(0);
-}
-
-.notifBar.success {
-  border-color: var(--green-border);
-  background: linear-gradient(135deg, rgba(52, 199, 106, 0.08), var(--surface));
-}
-
-.notifBar.error {
-  border-color: var(--red-border);
-  background: linear-gradient(135deg, rgba(224, 80, 80, 0.08), var(--surface));
-}
-
-.notifBar.info {
-  border-color: var(--border-gold);
-}
-
-.notifBarIcon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-
-.notifBarText {
-  flex: 1;
-}
-
-.notifBarClose {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.1rem 0.3rem;
-  flex-shrink: 0;
+  &.show { transform: translateX(-50%) translateY(0); }
+  &.success { border-color: var(--green-border); }
+  &.error { border-color: var(--red-border); }
 }
 
 .confirmDialog {
@@ -524,53 +347,201 @@
   border: 1px solid var(--border-gold);
   border-radius: 16px;
   padding: 1.6rem 1.8rem;
-  max-width: 360px;
   width: 90vw;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  max-width: 360px;
   text-align: center;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.22s;
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
-.confirmDialog.open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.scanOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; 
+  backdrop-filter: blur(5px);
+}
+.cameraContainer {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.confirmDialogBackdrop {
+.videoFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scannerLine {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: red;
+  box-shadow: 0 0 8px red;
+  animation: scanMove 2s infinite ease-in-out;
+}
+
+@keyframes scanMove {
+  0% { top: 20%; }
+  50% { top: 80%; }
+  100% { top: 20%; }
+}
+
+.targetFrame {
+  position: absolute;
+  inset: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+.inputActionBtn {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface3);
+  border: 1px solid var(--border-gold);
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: var(--gold);
+    color: black;
+  }
+}
+
+.cameraArea {
+  height: 180px;
+  background: #000;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border-gold);
+  position: relative;
+}
+
+.camPlaceholder {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.captureBtn {
+  position: absolute;
+  bottom: 10px;
+  background: var(--gold);
+  border: none;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.scanOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 899;
-  display: none;
-  backdrop-filter: blur(4px);
-}
-
-.confirmDialogBackdrop.open {
-  display: block;
-}
-
-.confirmDialogIcon {
-  font-size: 2rem;
-  margin-bottom: 0.55rem;
-}
-
-.confirmDialogTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 1.05rem;
-  margin-bottom: 0.35rem;
-}
-
-.confirmDialogSub {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  margin-bottom: 1.2rem;
-}
-
-.confirmDialogBtns {
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
-  gap: 0.65rem;
+  align-items: center;
   justify-content: center;
+  z-index: 10000; 
+  backdrop-filter: blur(6px);
+}
+
+.cameraContainer {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.videoFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scannerOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.targetFrame {
+  width: 70%;
+  height: 60%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5); 
+}
+
+.scannerLine {
+  position: absolute;
+  top: 25%;
+  left: 15%;
+  width: 70%;
+  height: 2px;
+  background: #ff4d4d;
+  box-shadow: 0 0 12px #ff4d4d;
+  animation: scanMove 2.5s infinite ease-in-out;
+}
+
+@keyframes scanMove {
+  0%, 100% { top: 25%; }
+  50% { top: 70%; }
+}
+
+.captureBtn {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: black;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+}
+.modalBox {
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
+  border-radius: 24px;
+  padding: 24px;
+  width: 450px;
+  max-width: 96vw;
 }

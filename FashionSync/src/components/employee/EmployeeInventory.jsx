@@ -11,6 +11,14 @@ export default function EmployeeInventory({
 }) {
   const safeProducts = Array.isArray(products) ? products : [];
 
+  // פונקציית עזר להמרת מזהה עונה לטקסט קריא לחיפוש
+  const getSeasonName = (s) => {
+    if (s === 'summer') return 'קיץ';
+    if (s === 'winter') return 'חורף';
+    if (s === 'spring-autumn') return 'מעבר';
+    return 'כל השנה';
+  };
+
   const filtered = safeProducts.filter((p) => {
     const q = inventorySearch.trim().toLowerCase();
     if (!q) return true;
@@ -19,7 +27,8 @@ export default function EmployeeInventory({
       (p.name || "").toLowerCase().includes(q) ||
       (p.code || "").toLowerCase().includes(q) ||
       (p.cat || "").toLowerCase().includes(q) ||
-      (p.gender || "").toLowerCase().includes(q)
+      (p.gender || "").toLowerCase().includes(q) ||
+      getSeasonName(p.season).includes(q) // מאפשר חיפוש לפי "קיץ", "חורף" וכו'
     );
   });
 
@@ -42,7 +51,7 @@ export default function EmployeeInventory({
           type="text"
           value={inventorySearch}
           onChange={(e) => onChangeSearch(e.target.value)}
-          placeholder="🔍 חיפוש לפי שם / קוד / קטגוריה..."
+          placeholder="🔍 חיפוש לפי שם / קוד / עונה..."
         />
 
         <button
@@ -65,6 +74,7 @@ export default function EmployeeInventory({
           <thead>
             <tr>
               <th>פריט</th>
+              <th>עונה</th> {/* עמודה חדשה */}
               <th>קטגוריה</th>
               <th>מחיר</th>
               <th>מלאי / מידות</th>
@@ -77,7 +87,7 @@ export default function EmployeeInventory({
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan="6"
+                  colSpan="7" // גדל מ-6 ל-7 בגלל העונה
                   style={{
                     textAlign: "center",
                     color: "var(--text-dim)",
@@ -112,10 +122,17 @@ export default function EmployeeInventory({
                       </div>
                     </td>
 
+                    {/* תצוגת עונה עם אייקון */}
                     <td>
-                      <span
-                        className={`${layoutStyles.tag} ${layoutStyles.tagBlue}`}
-                      >
+                      <div style={{ fontSize: '1.1rem' }} title={getSeasonName(p.season)}>
+                        {p.season === 'summer' ? '☀️' : 
+                         p.season === 'winter' ? '❄️' : 
+                         p.season === 'spring-autumn' ? '🍂' : '📅'}
+                      </div>
+                    </td>
+
+                    <td>
+                      <span className={`${layoutStyles.tag} ${layoutStyles.tagBlue}`}>
                         {p.cat}
                       </span>
                     </td>
@@ -150,21 +167,15 @@ export default function EmployeeInventory({
 
                     <td>
                       {p.stock === 0 ? (
-                        <span
-                          className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}
-                        >
+                        <span className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}>
                           אזל
                         </span>
                       ) : p.stock <= 3 ? (
-                        <span
-                          className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}
-                        >
+                        <span className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}>
                           נמוך
                         </span>
                       ) : (
-                        <span
-                          className={`${layoutStyles.tag} ${layoutStyles.tagGreen}`}
-                        >
+                        <span className={`${layoutStyles.tag} ${layoutStyles.tagGreen}`}>
                           זמין
                         </span>
                       )}

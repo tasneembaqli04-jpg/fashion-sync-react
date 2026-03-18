@@ -52,8 +52,12 @@ export default function EmployeeSell({
 
             <button
               className={`${layoutStyles.btn} ${layoutStyles.btnBlue} ${layoutStyles.btnFull}`}
-              style={{ marginTop: "0.55rem" }}
-              onClick={() => onOpenScan("sell")}
+              style={{
+                marginTop: "0.55rem",
+                background: "#2a3a4a",
+                color: "#8db5ff",
+              }}
+              onClick={() => onOpenScan("sell")} 
             >
               📷 סרוק ברקוד
             </button>

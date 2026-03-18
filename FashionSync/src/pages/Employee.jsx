@@ -86,6 +86,7 @@ export default function Employee() {
 
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [scanTarget, setScanTarget] = useState("inventory");
+  const [scannedCode, setScannedCode] = useState(""); // ← חדש
 
   useEffect(() => {
     setProducts(PRODUCTS_SEED);
@@ -93,7 +94,6 @@ export default function Employee() {
 
   function showNotification(text, type = "info", icon = "ℹ️") {
     setNotification({ text, type, icon });
-
     setTimeout(() => {
       setNotification(null);
     }, 3000);
@@ -153,13 +153,11 @@ export default function Employee() {
 
     setSellItems((prev) => {
       const existing = prev.find((item) => item.code === found.code);
-
       if (existing) {
         return prev.map((item) =>
           item.code === found.code ? { ...item, qty: item.qty + 1 } : item
         );
       }
-
       return [...prev, { ...found, qty: 1 }];
     });
   }
@@ -181,13 +179,15 @@ export default function Employee() {
   function handleCompleteSell() {
     if (!sellItems.length) return;
 
-    const total = sellItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const total = sellItems.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
 
     setProducts((prevProducts) =>
       prevProducts.map((product) => {
         const sold = sellItems.find((item) => item.code === product.code);
         if (!sold) return product;
-
         return {
           ...product,
           stock: Math.max(0, product.stock - sold.qty),
@@ -238,7 +238,9 @@ export default function Employee() {
     }
 
     const newProduct = {
-      code: form.code || `FS-${String(products.length + 1).padStart(3, "0")}`,
+      code:
+        form.code ||
+        `FS-${String(products.length + 1).padStart(3, "0")}`,
       name: form.name,
       cat: form.cat,
       gender: form.gender,
@@ -248,7 +250,7 @@ export default function Employee() {
       img:
         form.img ||
         "https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?auto=compress&cs=tinysrgb&w=800",
-      season: "all",
+      season: form.season || "all",
       colors: ["שחור", "לבן"],
       sizes: ["S", "M", "L", "XL"],
     };
@@ -282,23 +284,26 @@ export default function Employee() {
     setIsScanOpen(true);
   }
 
+  
   function handleApplyScanCode(code, target) {
-    const found = products.find(
-      (p) => p.code.toUpperCase() === code.trim().toUpperCase()
-    );
-
-    if (!found) {
-      showNotification("מוצר לא נמצא", "error", "❌");
-      return;
-    }
-
     if (target === "sell") {
       handleAddSell(code);
+      setIsScanOpen(false);
+    } else if (target === "code") {
+      
+      setScannedCode(code);
+      setIsScanOpen(false);
     } else {
-      showNotification(`נסרק: ${found.name}`, "success", "✅");
+      const found = products.find(
+        (p) => p.code.toUpperCase() === code.trim().toUpperCase()
+      );
+      if (!found) {
+        showNotification("מוצר לא נמצא", "error", "❌");
+      } else {
+        showNotification(`נסרק: ${found.name}`, "success", "✅");
+      }
+      setIsScanOpen(false);
     }
-
-    setIsScanOpen(false);
   }
 
   const tasksCount = useMemo(
@@ -407,8 +412,13 @@ export default function Employee() {
 
       <NewProductModal
         isOpen={isNewProductOpen}
-        onClose={() => setIsNewProductOpen(false)}
+        onClose={() => {
+          setIsNewProductOpen(false);
+          setScannedCode("");
+        }}
         onSave={handleSaveNewProduct}
+        onOpenScanner={handleOpenScan}
+        scannedCode={scannedCode}
       />
 
       <StockEditModal
