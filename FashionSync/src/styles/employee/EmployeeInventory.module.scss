@@ -45,3 +45,12 @@
 .searchInput:focus {
   border-color: rgba(201, 168, 76, 0.5);
 }
+.invTable {
+  background: var(--surface); 
+  border-radius: 12px;
+  
+  td {
+    color: #ffffff; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}

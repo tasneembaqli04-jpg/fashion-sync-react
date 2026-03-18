@@ -1,5 +1,6 @@
 import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
 import overviewStyles from "../../styles/employee/EmployeeOverview.module.scss";
+import { ACTIVITY_ICONS } from "../../data/constants";
 
 export default function EmployeeHistory({ history }) {
   return (
@@ -20,18 +21,14 @@ export default function EmployeeHistory({ history }) {
           ) : (
             history.map((item) => (
               <div className={overviewStyles.feedItem} key={item.id}>
-                {/* הצגת אייקון לפי סוג הפעולה מהקוד המקורי */}
                 <div className={overviewStyles.feedIcon}>
-                  {item.type === 'sell' ? '💰' : 
-                   item.type === 'stock' ? '📦' : 
-                   item.type === 'order' ? '🛒' : '📝'}
+                  {ACTIVITY_ICONS[item.type] || ACTIVITY_ICONS.default}
                 </div>
                 
                 <div className={overviewStyles.feedContent}>
                   <div className={overviewStyles.feedText}>
                     {item.text}
                   </div>
-                  {/* הוספת חותמת זמן כפי שהגדרת בלוגיקה המקורית */}
                   <div className={overviewStyles.feedTime}>
                     {item.time}
                   </div>

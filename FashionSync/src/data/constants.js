@@ -30,9 +30,16 @@ export const COUPONS = {
 };
 export const STALE_DAYS = 30;
 
-export const SEASON_LABELS = {
-  all: "כל העונות",
-  summer: "☀️ קיץ",
-  winter: "❄️ חורף",
-  "spring-autumn": "🌸🍂 אביב / סתיו",
+export const SEASON_NAMES = {
+  all: "כל השנה",
+  summer: "קיץ",
+  winter: "חורף",
+  "spring-autumn": "אביב-סתיו"
+};
+
+export const ACTIVITY_ICONS = {
+  sell: '💰',
+  stock: '📦',
+  order: '🛒',
+  default: '📝'
 };
