@@ -20,12 +20,7 @@ export default function EmployeeOverview({
 
   const openTasks = tasks.slice(0, 4);
   const recentHistory = history.slice(0, 5);
-
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const unsoldItems = products.filter((p) => {
-    if (!p.lastSold) return true; 
-    return new Date(p.lastSold).getTime() < thirtyDaysAgo;
-  });
+  const publishedItems = products.filter((p) => p.publishedToStaff === true);
 
   return (
     <div className={`${layoutStyles.panel} ${layoutStyles.active}`}>
@@ -163,91 +158,60 @@ export default function EmployeeOverview({
       </div>
 
       <div className={layoutStyles.card} style={{ marginTop: "1.2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "0.85rem",
-          }}
-        >
-          <div
-            className={layoutStyles.secTitle}
-            style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}
-          >
-            🏷️ פריטים שלא נמכרו מעל 30 יום ({unsoldItems.length})
-          </div>
-          <button
-            className={layoutStyles.tblBtn}
-            onClick={() => onShowPanel("inventory")}
-          >
-            צפה הכל
-          </button>
-        </div>
+        <div className={layoutStyles.secTitle}>🏷️ פריטים מומלצים למכירה</div>
 
-        {unsoldItems.length === 0 ? (
-          <div style={{ textAlign: "center", color: "var(--text-dim)", padding: "1rem" }}>
-            ✅ כל הפריטים נמכרו לאחרונה
+        {publishedItems.length === 0 ? (
+          <div style={{
+            textAlign: "center",
+            color: "var(--text-dim)",
+            padding: "1.2rem",
+            fontSize: "0.84rem",
+          }}>
+            אין פריטים מומלצים כרגע
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            {unsoldItems.slice(0, 5).map((p) => {
-              const daysSince = p.lastSold
-                ? Math.floor((Date.now() - new Date(p.lastSold).getTime()) / (1000 * 60 * 60 * 24))
-                : null;
-
-              return (
-                <div
-                  key={p.code}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0.6rem 0.8rem",
-                    borderRadius: "10px",
-                    background: "var(--surface3)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <div className={layoutStyles.pc}>
-                    <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
-                    <div>
-                      <div className={layoutStyles.pname}>{p.name}</div>
-                      <div className={layoutStyles.psku}>
-                        {p.code} · {p.gender} · מלאי: {p.stock}
-                      </div>
+            {publishedItems.map((p) => (
+              <div
+                key={p.code}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "10px",
+                  background: "var(--surface3)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <div className={layoutStyles.pc}>
+                  <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
+                  <div>
+                    <div className={layoutStyles.pname}>{p.name}</div>
+                    <div className={layoutStyles.psku}>
+                      {p.code} · {p.gender} · מלאי: {p.stock}
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
-                    {p.season === "summer" && (
-                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSummer}`}>☀️ קיץ</span>
-                    )}
-                    {p.season === "winter" && (
-                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonWinter}`}>❄️ חורף</span>
-                    )}
-                    {p.season === "spring-autumn" && (
-                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSpringAutumn}`}>🍂 אביב/סתיו</span>
-                    )}
-                    {(!p.season || p.season === "all") && (
-                      <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonAll}`}>📅 כל השנה</span>
-                    )}
-                    <span
-                      style={{
-                        fontSize: "0.72rem",
-                        color: "var(--text-dim)",
-                        background: "var(--surface2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "20px",
-                        padding: "0.14rem 0.55rem",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {daysSince !== null ? `${daysSince} ימים` : "לא נמכר"}
-                    </span>
-                  </div>
                 </div>
-              );
-            })}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                  {p.season === "summer" && (
+                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSummer}`}>☀️ קיץ</span>
+                  )}
+                  {p.season === "winter" && (
+                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonWinter}`}>❄️ חורף</span>
+                  )}
+                  {p.season === "spring-autumn" && (
+                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSpringAutumn}`}>🍂 אביב/סתיו</span>
+                  )}
+                  {(!p.season || p.season === "all") && (
+                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonAll}`}>📅 כל השנה</span>
+                  )}
+                  <span className={`${layoutStyles.tag} ${layoutStyles.tagGold}`}>
+                    ₪{p.price}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

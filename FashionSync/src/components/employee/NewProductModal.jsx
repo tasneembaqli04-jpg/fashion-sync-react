@@ -131,11 +131,11 @@ export default function NewProductModal({
                 <input
                   className={layoutStyles.formInput}
                   value={form.code}
-                  placeholder="FS-011"
+                  placeholder="FS-XXX"
                   onChange={(e) => handleChange("code", e.target.value)}
                   style={{ direction: "ltr", flex: 1 }}
                 />
-                {/* לחיצה על 📷 פותחת את מסך סריקת ברקוד */}
+               
                 <button
                   type="button"
                   onClick={() => {

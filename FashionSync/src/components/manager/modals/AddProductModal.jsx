@@ -5,14 +5,19 @@ export default function AddProductModal({
   isOpen,
   onClose,
   onSubmit,
+  onOpenScanner,
 }) {
   const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   const [form, setForm] = useState({
     code: "",
     name: "",
     cat: "חולצות",
     gender: "נשים",
+    season: "",
     stock: "0",
     price: "0",
     minStock: "10",
@@ -20,15 +25,14 @@ export default function AddProductModal({
     image: "",
   });
 
+  const [uploadMode, setUploadMode] = useState("file");
+  const [isCameraActive, setIsCameraActive] = useState(false);
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
   const handleChange = (field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const resetForm = () => {
@@ -37,6 +41,7 @@ export default function AddProductModal({
       name: "",
       cat: "חולצות",
       gender: "נשים",
+      season: "",
       stock: "0",
       price: "0",
       minStock: "10",
@@ -44,6 +49,8 @@ export default function AddProductModal({
       image: "",
     });
     setError("");
+    setUploadMode("file");
+    stopCamera();
   };
 
   const handleClose = () => {
@@ -52,26 +59,63 @@ export default function AddProductModal({
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
+    if (e.target === e.currentTarget) handleClose();
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setIsCameraActive(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 50);
+    } catch (err) {
+      setError("לא ניתן לגשת למצלמה — " + (err.message || err.name));
     }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    canvas.width = videoRef.current.videoWidth || 640;
+    canvas.height = videoRef.current.videoHeight || 480;
+    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    handleChange("image", dataUrl);
+    stopCamera();
+    setUploadMode("file");
   };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setError("⚠️ יש לבחור קובץ תמונה");
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (event) => {
       handleChange("image", event.target?.result || "");
       setError("");
     };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleSubmit = () => {
@@ -80,6 +124,7 @@ export default function AddProductModal({
       !form.name.trim() ||
       !form.cat.trim() ||
       !form.gender.trim() ||
+      !form.season ||
       form.stock === "" ||
       form.price === "" ||
       form.minStock === "" ||
@@ -95,6 +140,7 @@ export default function AddProductModal({
       name: form.name.trim(),
       cat: form.cat,
       gender: form.gender,
+      season: form.season,
       stock: Number(form.stock),
       price: Number(form.price),
       minStock: Number(form.minStock),
@@ -114,26 +160,69 @@ export default function AddProductModal({
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
       <div className={styles.addProductModal}>
+
+        {/* כפתור סגירה */}
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
 
-        <div className={styles.addProductHeader}>
-          <h2 className={styles.addProductTitle}>מוצר חדש</h2>
-          <span className={styles.addProductPlus}>＋</span>
+        {/* כותרת — צד ימין */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          gap: "0.45rem",
+          marginBottom: "1.8rem",
+        }}>
+          <h2 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: "1.7rem",
+            color: "var(--gold)",
+            margin: 0,
+          }}>
+            מוצר חדש
+          </h2>
+          <span style={{ fontSize: "2rem", fontWeight: 700, color: "#8f6bff", lineHeight: 1 }}>
+            ＋
+          </span>
         </div>
 
+        {/* גריד שדות */}
         <div className={styles.addProductGrid}>
+
+          {/* קוד + סריקה */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>קוד</label>
-            <input
-              className={styles.addInput}
-              placeholder="FS-XXX"
-              value={form.code}
-              onChange={(e) => handleChange("code", e.target.value)}
-            />
+            <div style={{ display: "flex", gap: "0.45rem" }}>
+              <input
+                className={styles.addInput}
+                placeholder="FS-XXX"
+                value={form.code}
+                onChange={(e) => handleChange("code", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => onOpenScanner?.()}
+                title="סרוק ברקוד"
+                style={{
+                  background: "rgba(52,152,219,0.1)",
+                  border: "1px solid rgba(52,152,219,0.25)",
+                  color: "var(--blue)",
+                  borderRadius: "14px",
+                  padding: "0 1rem",
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  height: "54px",
+                }}
+              >
+                📷
+              </button>
+            </div>
           </div>
 
+          {/* שם */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>שם</label>
             <input
@@ -144,6 +233,7 @@ export default function AddProductModal({
             />
           </div>
 
+          {/* קטגוריה */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>קטגוריה</label>
             <select
@@ -158,6 +248,7 @@ export default function AddProductModal({
             </select>
           </div>
 
+          {/* מגדר */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>מגדר</label>
             <select
@@ -170,6 +261,24 @@ export default function AddProductModal({
             </select>
           </div>
 
+          {/* עונה */}
+          <div className={styles.addField}>
+            <label className={styles.addLabel}>עונה</label>
+            <select
+              className={styles.addInput}
+              value={form.season}
+              onChange={(e) => handleChange("season", e.target.value)}
+              style={{ color: form.season ? "var(--text)" : "var(--muted)" }}
+            >
+              <option value="" disabled>בחר עונה...</option>
+              <option value="all">כל השנה</option>
+              <option value="summer">קיץ</option>
+              <option value="winter">חורף</option>
+              <option value="spring-autumn">אביב-סתיו</option>
+            </select>
+          </div>
+
+          {/* כמות */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>כמות</label>
             <input
@@ -180,6 +289,7 @@ export default function AddProductModal({
             />
           </div>
 
+          {/* מחיר */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>מחיר (₪)</label>
             <input
@@ -189,18 +299,21 @@ export default function AddProductModal({
               onChange={(e) => handleChange("price", e.target.value)}
             />
           </div>
+
+          {/* מינימום */}
+          <div className={styles.addField}>
+            <label className={styles.addLabel}>מינימום להתראה</label>
+            <input
+              className={styles.addInput}
+              type="number"
+              value={form.minStock}
+              onChange={(e) => handleChange("minStock", e.target.value)}
+            />
+          </div>
+
         </div>
 
-        <div className={styles.addFieldFull}>
-          <label className={styles.addLabel}>מינימום להתראה</label>
-          <input
-            className={styles.addInput}
-            type="number"
-            value={form.minStock}
-            onChange={(e) => handleChange("minStock", e.target.value)}
-          />
-        </div>
-
+        {/* תיאור */}
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תיאור</label>
           <input
@@ -211,66 +324,210 @@ export default function AddProductModal({
           />
         </div>
 
+        {/* תמונת מוצר — הכל במרכז */}
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תמונת מוצר</label>
 
-          <div className={styles.imageUploadBox}>
-            {form.image ? (
-              <>
-                <img
-                  src={form.image}
-                  alt="תצוגה מקדימה"
-                  className={styles.imagePreview}
-                />
-                <button
-                  className={styles.removeImageBtn}
-                  onClick={() => handleChange("image", "")}
-                >
-                  הסר תמונה 🗑️
-                </button>
-              </>
-            ) : (
-              <>
-                <div className={styles.uploadIcon}>📷</div>
-                <div className={styles.uploadText}>תמונת מוצר</div>
+          {/* טאבים — מרכז */}
+          <div style={{
+            display: "flex",
+            gap: "0.5rem",
+            marginBottom: "0.75rem",
+            justifyContent: "center",
+          }}>
+            <button
+              type="button"
+              onClick={() => { setUploadMode("file"); stopCamera(); }}
+              style={{
+                padding: "0.45rem 1.1rem",
+                borderRadius: "9px",
+                border: "1px solid",
+                borderColor: uploadMode === "file" ? "var(--gold)" : "var(--border)",
+                background: uploadMode === "file" ? "var(--gold-dim)" : "transparent",
+                color: uploadMode === "file" ? "var(--gold)" : "var(--muted)",
+                fontFamily: "Alef, sans-serif",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontSize: "0.82rem",
+              }}
+            >
+              📁 קובץ
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUploadMode("camera"); startCamera(); }}
+              style={{
+                padding: "0.45rem 1.1rem",
+                borderRadius: "9px",
+                border: "1px solid",
+                borderColor: uploadMode === "camera" ? "var(--gold)" : "var(--border)",
+                background: uploadMode === "camera" ? "var(--gold-dim)" : "transparent",
+                color: uploadMode === "camera" ? "var(--gold)" : "var(--muted)",
+                fontFamily: "Alef, sans-serif",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontSize: "0.82rem",
+              }}
+            >
+              📸 מצלמה
+            </button>
+          </div>
 
-                <div className={styles.uploadActions}>
+          {/* קובץ */}
+          {uploadMode === "file" && (
+            <div className={styles.imageUploadBox}>
+              {form.image ? (
+                <>
+                  <img
+                    src={form.image}
+                    alt="תצוגה מקדימה"
+                    className={styles.imagePreview}
+                  />
                   <button
-                    type="button"
-                    className={styles.uploadBtn}
-                    onClick={() => fileInputRef.current?.click()}
+                    className={styles.removeImageBtn}
+                    onClick={() => handleChange("image", "")}
                   >
-                    העלה קובץ 📁
+                    🗑️ הסר תמונה
                   </button>
+                </>
+              ) : (
+                <>
+                  <div className={styles.uploadIcon}>📷</div>
+                  <div className={styles.uploadText}>תמונת מוצר</div>
+                  <div className={styles.uploadActions}>
+                    <button
+                      type="button"
+                      className={styles.uploadBtn}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      📁 קובץ
+                    </button>
+                  </div>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleFileSelect}
+              />
+            </div>
+          )}
 
+          {/* מצלמה */}
+          {uploadMode === "camera" && (
+            <div style={{
+              background: "#000",
+              borderRadius: "14px",
+              overflow: "hidden",
+              position: "relative",
+              aspectRatio: "4/3",
+              border: "1px solid var(--border)",
+            }}>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: isCameraActive ? "block" : "none",
+                }}
+              />
+              <canvas ref={canvasRef} style={{ display: "none" }} />
+
+              {!isCameraActive && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#060a14",
+                }}>
                   <button
                     type="button"
-                    className={styles.uploadBtn}
-                    onClick={() => alert("נחבר מצלמה בשלב הבא")}
+                    onClick={startCamera}
+                    style={{
+                      background: "rgba(52,152,219,0.1)",
+                      border: "1px solid rgba(52,152,219,0.25)",
+                      color: "var(--blue)",
+                      borderRadius: "12px",
+                      padding: "0.72rem 1.5rem",
+                      fontFamily: "Alef, sans-serif",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                    }}
                   >
-                    צלם עכשיו 📸
+                    📷 פתח מצלמה
                   </button>
                 </div>
-              </>
-            )}
+              )}
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleFileSelect}
-            />
-          </div>
+              {isCameraActive && (
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  style={{
+                    position: "absolute",
+                    bottom: "12px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "52px",
+                    height: "52px",
+                    fontSize: "1.4rem",
+                    cursor: "pointer",
+                    boxShadow: "0 0 16px rgba(0,0,0,0.6)",
+                    zIndex: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  📸
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {error && <div className={styles.addError}>{error}</div>}
 
-        <div className={styles.addModalFooter}>
-          <button className={styles.addSubmitBtn} onClick={handleSubmit}>
+        {/* כפתורים */}
+        <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+          <button
+            className={styles.addSubmitBtn}
+            style={{ flex: 2 }}
+            onClick={handleSubmit}
+          >
             הוסף מוצר
           </button>
+          <button
+            onClick={handleClose}
+            style={{
+              flex: 1,
+              height: "54px",
+              border: "1px solid var(--border)",
+              borderRadius: "14px",
+              background: "transparent",
+              color: "var(--muted)",
+              fontFamily: "Alef, sans-serif",
+              fontWeight: 700,
+              fontSize: "1rem",
+              cursor: "pointer",
+            }}
+          >
+            ביטול
+          </button>
         </div>
+
       </div>
     </div>
   );

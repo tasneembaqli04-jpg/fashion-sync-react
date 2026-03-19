@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styles from "../../styles/employee/EmployeeSidebar.module.scss";
 
 export default function EmployeeSidebar({
@@ -11,6 +12,8 @@ export default function EmployeeSidebar({
   tasksCount,
   ordersCount,
 }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <div
@@ -18,7 +21,9 @@ export default function EmployeeSidebar({
         onClick={onCloseSidebar}
       ></div>
 
-      <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ""}`}>
+      <aside
+        className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ""}`}
+      >
         <div className={styles.brand}>
           Fashion
           <br />
@@ -47,7 +52,9 @@ export default function EmployeeSidebar({
         >
           <span className={styles.navIcon}>✅</span>
           משימות
-          {tasksCount > 0 && <span className={styles.navBadge}>{tasksCount}</span>}
+          {tasksCount > 0 && (
+            <span className={styles.navBadge}>{tasksCount}</span>
+          )}
         </button>
 
         <div className={styles.navSection}>מכירות</div>
@@ -75,7 +82,9 @@ export default function EmployeeSidebar({
         >
           <span className={styles.navIcon}>📋</span>
           הזמנות לקוחות
-          {ordersCount > 0 && <span className={styles.navBadge}>{ordersCount}</span>}
+          {ordersCount > 0 && (
+            <span className={styles.navBadge}>{ordersCount}</span>
+          )}
         </button>
 
         <div className={styles.navSection}>היסטוריה</div>
@@ -91,6 +100,11 @@ export default function EmployeeSidebar({
           <button className={styles.navItem} onClick={onToggleTheme}>
             <span className={styles.navIcon}>🌓</span>
             מצב כהה/בהיר
+          </button>
+
+          <button className={styles.navItem} onClick={() => navigate("/")}>
+            <span className={styles.navIcon}>🏡</span>
+            דף הבית
           </button>
 
           <button
