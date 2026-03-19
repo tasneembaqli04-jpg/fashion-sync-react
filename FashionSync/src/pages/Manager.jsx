@@ -32,8 +32,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 0,
     img: "https://img.kwcdn.com/product/fancy/c61fb9bc-58ae-40c5-bd3e-b99ba62d5b9b.jpg?imageMogr2/auto-orient%7CimageView2/2/w/800/q/70/format/webp",
     variants: [
-      { colorName: "לבן", colorHex: "#f6f6f6", sizes: { S: 3, M: 4, L: 3, XL: 2 } },
-      { colorName: "שחור", colorHex: "#111111", sizes: { S: 1, M: 3, L: 2, XL: 1 } },
+      {
+        colorName: "לבן",
+        colorHex: "#f6f6f6",
+        sizes: { S: 3, M: 4, L: 3, XL: 2 },
+      },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { S: 1, M: 3, L: 2, XL: 1 },
+      },
     ],
   },
   {
@@ -51,8 +59,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 1,
     img: "https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "כחול כהה", colorHex: "#1f3a6b", sizes: { 28: 1, 30: 1, 32: 1, 34: 0 } },
-      { colorName: "שחור", colorHex: "#111111", sizes: { 28: 0, 30: 1, 32: 0, 34: 0 } },
+      {
+        colorName: "כחול כהה",
+        colorHex: "#1f3a6b",
+        sizes: { 28: 1, 30: 1, 32: 1, 34: 0 },
+      },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { 28: 0, 30: 1, 32: 0, 34: 0 },
+      },
     ],
   },
   {
@@ -70,8 +86,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 0,
     img: "https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "ירוק", colorHex: "#2e8b57", sizes: { XS: 0, S: 0, M: 0, L: 0 } },
-      { colorName: "ורוד", colorHex: "#d85b8a", sizes: { XS: 0, S: 0, M: 0, L: 0 } },
+      {
+        colorName: "ירוק",
+        colorHex: "#2e8b57",
+        sizes: { XS: 0, S: 0, M: 0, L: 0 },
+      },
+      {
+        colorName: "ורוד",
+        colorHex: "#d85b8a",
+        sizes: { XS: 0, S: 0, M: 0, L: 0 },
+      },
     ],
   },
   {
@@ -89,8 +113,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 2,
     img: "https://xcdn.next.co.uk/common/items/default/default/itemimages/3_4Ratio/product/lge/103395s5.jpg?im=Resize,width=400",
     variants: [
-      { colorName: "שחור", colorHex: "#111111", sizes: { XS: 0, S: 1, M: 1, L: 0, XL: 0 } },
-      { colorName: "חום", colorHex: "#6b3f2a", sizes: { XS: 0, S: 0, M: 1, L: 0, XL: 0 } },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { XS: 0, S: 1, M: 1, L: 0, XL: 0 },
+      },
+      {
+        colorName: "חום",
+        colorHex: "#6b3f2a",
+        sizes: { XS: 0, S: 0, M: 1, L: 0, XL: 0 },
+      },
     ],
   },
   {
@@ -108,8 +140,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 15,
     img: "https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "לבן", colorHex: "#f6f6f6", sizes: { XS: 3, S: 5, M: 6, L: 4, XL: 2 } },
-      { colorName: "שחור", colorHex: "#111111", sizes: { XS: 2, S: 3, M: 4, L: 2, XL: 1 } },
+      {
+        colorName: "לבן",
+        colorHex: "#f6f6f6",
+        sizes: { XS: 3, S: 5, M: 6, L: 4, XL: 2 },
+      },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { XS: 2, S: 3, M: 4, L: 2, XL: 1 },
+      },
     ],
   },
   {
@@ -127,8 +167,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 0,
     img: "https://images.pexels.com/photos/1755428/pexels-photo-1755428.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "שמפניה", colorHex: "#d9c5a3", sizes: { XS: 0, S: 0, M: 0, L: 0 } },
-      { colorName: "שחור", colorHex: "#111111", sizes: { XS: 0, S: 0, M: 0, L: 0 } },
+      {
+        colorName: "שמפניה",
+        colorHex: "#d9c5a3",
+        sizes: { XS: 0, S: 0, M: 0, L: 0 },
+      },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { XS: 0, S: 0, M: 0, L: 0 },
+      },
     ],
   },
   {
@@ -146,8 +194,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 0,
     img: "https://images.pexels.com/photos/6311600/pexels-photo-6311600.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "אפור", colorHex: "#7b7f87", sizes: { S: 1, M: 2, L: 2, XL: 0 } },
-      { colorName: "שחור", colorHex: "#111111", sizes: { S: 0, M: 1, L: 1, XL: 0 } },
+      {
+        colorName: "אפור",
+        colorHex: "#7b7f87",
+        sizes: { S: 1, M: 2, L: 2, XL: 0 },
+      },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { S: 0, M: 1, L: 1, XL: 0 },
+      },
     ],
   },
   {
@@ -165,8 +221,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 1,
     img: "https://www.delta.co.il/pub/media/catalog/product/cache/f3dca7ff1d37a6b21edba38be76bc1a9/l/n/LN00956_LM05H_3-1754217257726666.jpg",
     variants: [
-      { colorName: "שחור", colorHex: "#111111", sizes: { S: 0, M: 0, L: 0, XL: 0 } },
-      { colorName: "ירוק זית", colorHex: "#556b2f", sizes: { S: 0, M: 0, L: 0, XL: 0 } },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { S: 0, M: 0, L: 0, XL: 0 },
+      },
+      {
+        colorName: "ירוק זית",
+        colorHex: "#556b2f",
+        sizes: { S: 0, M: 0, L: 0, XL: 0 },
+      },
     ],
   },
   {
@@ -184,8 +248,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 0,
     img: "https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=400",
     variants: [
-      { colorName: "לבן", colorHex: "#f6f6f6", sizes: { S: 1, M: 2, L: 2, XL: 1 } },
-      { colorName: "תכלת", colorHex: "#6aa7ff", sizes: { S: 0, M: 1, L: 1, XL: 0 } },
+      {
+        colorName: "לבן",
+        colorHex: "#f6f6f6",
+        sizes: { S: 1, M: 2, L: 2, XL: 1 },
+      },
+      {
+        colorName: "תכלת",
+        colorHex: "#6aa7ff",
+        sizes: { S: 0, M: 1, L: 1, XL: 0 },
+      },
     ],
   },
   {
@@ -203,8 +275,16 @@ const INITIAL_PRODUCTS = [
     salesLastMonth: 2,
     img: "https://nitedress.co.il/wp-content/uploads/2021/03/41656-d8640c.jpeg",
     variants: [
-      { colorName: "שחור", colorHex: "#111111", sizes: { XS: 1, S: 2, M: 3, L: 2 } },
-      { colorName: "בז", colorHex: "#d2b48c", sizes: { XS: 0, S: 1, M: 1, L: 0 } },
+      {
+        colorName: "שחור",
+        colorHex: "#111111",
+        sizes: { XS: 1, S: 2, M: 3, L: 2 },
+      },
+      {
+        colorName: "בז",
+        colorHex: "#d2b48c",
+        sizes: { XS: 0, S: 1, M: 1, L: 0 },
+      },
     ],
   },
 ];
@@ -283,7 +363,9 @@ function buildReceipts(products) {
     {
       id: "RCP-1000002",
       date: new Date(Date.now() - 86400000).toISOString(),
-      items: [{ code: p1.code, name: p1.name, price: p1.price, qty: 1, img: p1.img }],
+      items: [
+        { code: p1.code, name: p1.name, price: p1.price, qty: 1, img: p1.img },
+      ],
       total: p1.price,
     },
     {
@@ -307,7 +389,9 @@ export default function Manager() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("fs_theme") === "light" ? "light" : "dark";
+  });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -321,7 +405,7 @@ export default function Manager() {
   const stats = useMemo(() => {
     const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     const lowCount = products.filter(
-      (p) => p.stock === 0 || (p.stock > 0 && p.stock <= p.minStock)
+      (p) => p.stock === 0 || (p.stock > 0 && p.stock <= p.minStock),
     ).length;
     const demandCount = products.filter((p) => p.notifyCount > 15).length;
     const sales = receipts.reduce((sum, r) => sum + r.total, 0);
@@ -353,9 +437,17 @@ export default function Manager() {
   };
 
   const handleToggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("fs_theme", next);
+      if (next === "light") {
+        document.body.classList.add("light");
+      } else {
+        document.body.classList.remove("light");
+      }
+      return next;
+    });
   };
-
   const handleAddTask = (newTask) => {
     setTasks((prev) => [{ ...newTask, id: `MT-${Date.now()}` }, ...prev]);
   };
@@ -373,11 +465,11 @@ export default function Manager() {
     if (!globalSearch.trim()) return products;
     const q = globalSearch.trim();
     return products.filter(
-      (p) => p.name.includes(q) || p.code.includes(q) || p.cat.includes(q)
+      (p) => p.name.includes(q) || p.code.includes(q) || p.cat.includes(q),
     );
   }, [products, globalSearch]);
 
-  const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : ""}`;
+  const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
 
   if (!isLoggedIn) {
     return <LoginOverlay onLoginSuccess={handleLoginSuccess} />;
@@ -436,7 +528,6 @@ export default function Manager() {
                 setIsDetailsOpen(true);
               }}
             />
-
           )}
 
           {activeView === "alerts" && (
@@ -452,9 +543,7 @@ export default function Manager() {
             />
           )}
 
-          {activeView === "receipts" && (
-            <ReceiptsView receipts={receipts} />
-          )}
+          {activeView === "receipts" && <ReceiptsView receipts={receipts} />}
 
           {activeView === "analytics" && <AnalyticsView />}
 
@@ -478,15 +567,13 @@ export default function Manager() {
         onSave={(updatedProduct) => {
           setProducts((prev) =>
             prev.map((p) =>
-              p.code === updatedProduct.code ? updatedProduct : p
-            )
+              p.code === updatedProduct.code ? updatedProduct : p,
+            ),
           );
           setIsDetailsOpen(false);
           setSelectedProduct(null);
         }}
       />
-
-
     </div>
   );
 }

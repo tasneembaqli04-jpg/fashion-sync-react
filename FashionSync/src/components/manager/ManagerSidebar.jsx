@@ -121,7 +121,7 @@ export default function ManagerSidebar({
           <span className={styles.icon}>
             {theme === "light" ? "☀️" : "🌙"}
           </span>
-          <span>{theme === "light" ? "מצב כהה" : "מצב כהה/בהיר"}</span>
+          <span>{theme === "light" ? "מצב כהה/בהיר" : "מצב כהה/בהיר"}</span>
         </button>
 
         <button className={styles.navBtn} onClick={onGoHome}>

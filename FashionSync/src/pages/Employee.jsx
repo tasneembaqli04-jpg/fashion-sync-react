@@ -89,7 +89,12 @@ export default function Employee() {
   const [scannedCode, setScannedCode] = useState(""); // ← חדש
 
   useEffect(() => {
-    setProducts(PRODUCTS_SEED);
+    const saved = localStorage.getItem("fs_theme");
+    if (saved === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
   }, []);
 
   function showNotification(text, type = "info", icon = "ℹ️") {
@@ -117,10 +122,9 @@ export default function Employee() {
   }
 
   function handleToggleTheme() {
-    document.body.dataset.theme =
-      document.body.dataset.theme === "light" ? "dark" : "light";
+    const isLight = document.body.classList.toggle("light");
+    localStorage.setItem("fs_theme", isLight ? "light" : "dark");
   }
-
   function handleRefresh() {
     setProducts([...products]);
     showNotification("הדף עודכן", "info", "🔄");
@@ -138,7 +142,7 @@ export default function Employee() {
 
   function handleAddSell(code) {
     const found = products.find(
-      (p) => p.code.toUpperCase() === code.trim().toUpperCase()
+      (p) => p.code.toUpperCase() === code.trim().toUpperCase(),
     );
 
     if (!found) {
@@ -155,7 +159,7 @@ export default function Employee() {
       const existing = prev.find((item) => item.code === found.code);
       if (existing) {
         return prev.map((item) =>
-          item.code === found.code ? { ...item, qty: item.qty + 1 } : item
+          item.code === found.code ? { ...item, qty: item.qty + 1 } : item,
         );
       }
       return [...prev, { ...found, qty: 1 }];
@@ -166,9 +170,9 @@ export default function Employee() {
     setSellItems((prev) =>
       prev
         .map((item) =>
-          item.code === code ? { ...item, qty: item.qty + delta } : item
+          item.code === code ? { ...item, qty: item.qty + delta } : item,
         )
-        .filter((item) => item.qty > 0)
+        .filter((item) => item.qty > 0),
     );
   }
 
@@ -181,7 +185,7 @@ export default function Employee() {
 
     const total = sellItems.reduce(
       (sum, item) => sum + item.price * item.qty,
-      0
+      0,
     );
 
     setProducts((prevProducts) =>
@@ -192,7 +196,7 @@ export default function Employee() {
           ...product,
           stock: Math.max(0, product.stock - sold.qty),
         };
-      })
+      }),
     );
 
     addHistory(`מכירה הושלמה — ₪${total}`);
@@ -202,18 +206,14 @@ export default function Employee() {
 
   function handleCompleteTask(taskId) {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, done: true } : task
-      )
+      prev.map((task) => (task.id === taskId ? { ...task, done: true } : task)),
     );
     showNotification("המשימה הושלמה", "success", "✅");
   }
 
   function handleMarkSeen(taskId) {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, seen: true } : task
-      )
+      prev.map((task) => (task.id === taskId ? { ...task, seen: true } : task)),
     );
     showNotification("אישור קבלה נשלח", "success", "📬");
   }
@@ -226,8 +226,8 @@ export default function Employee() {
               ...order,
               status: order.status === "ready" ? "pending" : "ready",
             }
-          : order
-      )
+          : order,
+      ),
     );
   }
 
@@ -238,9 +238,7 @@ export default function Employee() {
     }
 
     const newProduct = {
-      code:
-        form.code ||
-        `FS-${String(products.length + 1).padStart(3, "0")}`,
+      code: form.code || `FS-${String(products.length + 1).padStart(3, "0")}`,
       name: form.name,
       cat: form.cat,
       gender: form.gender,
@@ -269,8 +267,8 @@ export default function Employee() {
   function handleSaveStockEdit(code, newStock) {
     setProducts((prev) =>
       prev.map((product) =>
-        product.code === code ? { ...product, stock: newStock } : product
-      )
+        product.code === code ? { ...product, stock: newStock } : product,
+      ),
     );
 
     setIsStockEditOpen(false);
@@ -284,18 +282,16 @@ export default function Employee() {
     setIsScanOpen(true);
   }
 
-  
   function handleApplyScanCode(code, target) {
     if (target === "sell") {
       handleAddSell(code);
       setIsScanOpen(false);
     } else if (target === "code") {
-      
       setScannedCode(code);
       setIsScanOpen(false);
     } else {
       const found = products.find(
-        (p) => p.code.toUpperCase() === code.trim().toUpperCase()
+        (p) => p.code.toUpperCase() === code.trim().toUpperCase(),
       );
       if (!found) {
         showNotification("מוצר לא נמצא", "error", "❌");
@@ -308,12 +304,12 @@ export default function Employee() {
 
   const tasksCount = useMemo(
     () => tasks.filter((task) => !task.done).length,
-    [tasks]
+    [tasks],
   );
 
   const ordersCount = useMemo(
     () => orders.filter((order) => order.status === "pending").length,
-    [orders]
+    [orders],
   );
 
   if (!currentUser) {
