@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 
 import { LS_KEYS } from "../data/constants";
@@ -54,6 +55,8 @@ import PostOrderFeedback from "../components/customer/PostOrderFeedback";
 import VisualSearchModal from "../components/customer/VisualSearchModal";
 
 export default function Customer() {
+  const navigate = useNavigate();
+
   const [theme, setTheme] = useState(getSavedTheme());
   const [activePanel, setActivePanel] = useState("browse");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -166,14 +169,14 @@ export default function Customer() {
     const auth = initAuth();
 
     if (!auth.mode) {
-      window.location.href = "/";
+      navigate("/");
       return;
     }
 
     setCurrentUser(auth.currentUser || null);
     setIsGuest(Boolean(auth.isGuest));
     setProducts(loadProducts());
-  }, []);
+  }, [navigate]);
 
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.code === selectedProductCode) || null;
@@ -325,8 +328,12 @@ export default function Customer() {
     if (!product || product.stock <= 0) return;
 
     const variant = fromModal ? getChosenVariant() : { size: "", color: "" };
-    const nextCart = addToCartFn({ cart, product, variant });
-    setCart(nextCart);
+
+    setCart((prevCart) => {
+      const nextCart = addToCartFn({ cart: prevCart, product, variant });
+      return nextCart;
+    });
+
     setCartOpen(true);
 
     if (fromModal) closeProductModal();
@@ -367,9 +374,16 @@ export default function Customer() {
   }
 
   function startCheckout() {
-    if (!cart.length) return;
+    if (!cart.length) {
+      alert("הסל ריק");
+      return;
+    }
+
     setCartOpen(false);
-    setPreCheckoutOpen(true);
+
+    setTimeout(() => {
+      window.location.assign("/checkout");
+    }, 100);
   }
 
   function togglePcfTopic(topic) {
@@ -394,12 +408,12 @@ export default function Customer() {
 
     localStorage.setItem(LS_KEYS.FEEDBACK, JSON.stringify(existing));
     setPreCheckoutOpen(false);
-    window.location.href = "/checkout";
+    navigate("/checkout");
   }
 
   function skipToCheckout() {
     setPreCheckoutOpen(false);
-    window.location.href = "/checkout";
+    navigate("/checkout");
   }
 
   function openShareModal(code) {
@@ -599,7 +613,7 @@ export default function Customer() {
 
     setGiftError("");
     setGiftPreviewCode(result.code);
-    window.location.href = "/checkout";
+    navigate("/checkout");
   }
 
   function handleLogout() {

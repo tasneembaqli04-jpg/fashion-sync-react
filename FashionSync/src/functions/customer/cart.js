@@ -20,27 +20,37 @@ export function getCartTotals(cart, appliedDiscount = 0) {
 }
 
 export function addToCart({ cart, product, variant = { size: "", color: "" } }) {
-  const nextCart = [...cart];
   const key = `${product.code}|${variant.size || ""}|${variant.color || ""}`;
-  const existing = nextCart.find((item) => item.key === key);
 
-  if (existing) {
-    if (existing.qty < product.stock) {
-      existing.qty += 1;
-    }
-  } else {
-    nextCart.push({
-      key,
-      code: product.code,
-      name: product.name,
-      img: product.img,
-      price: product.price,
-      originalPrice: product.originalPrice || product.price,
-      sale: product.sale,
-      qty: 1,
-      size: variant.size || "",
-      color: variant.color || "",
+  const existingItem = cart.find((item) => item.key === key);
+
+  let nextCart;
+
+  if (existingItem) {
+    nextCart = cart.map((item) => {
+      if (item.key !== key) return item;
+
+      return {
+        ...item,
+        qty: Math.min(item.qty + 1, product.stock),
+      };
     });
+  } else {
+    nextCart = [
+      ...cart,
+      {
+        key,
+        code: product.code,
+        name: product.name,
+        img: product.img,
+        price: product.price,
+        originalPrice: product.originalPrice || product.price,
+        sale: product.sale,
+        qty: 1,
+        size: variant.size || "",
+        color: variant.color || "",
+      },
+    ];
   }
 
   saveCart(nextCart);
@@ -48,19 +58,23 @@ export function addToCart({ cart, product, variant = { size: "", color: "" } }) 
 }
 
 export function changeQty(cart, key, delta, products) {
-  const nextCart = [...cart];
-  const index = nextCart.findIndex((item) => item.key === key);
-  if (index < 0) return nextCart;
+  const currentItem = cart.find((item) => item.key === key);
+  if (!currentItem) return cart;
 
-  const item = nextCart[index];
-  const product = products.find((p) => p.code === item.code);
+  const product = products.find((p) => p.code === currentItem.code);
+  const maxStock = product ? product.stock : 99;
+  const nextQty = currentItem.qty + delta;
 
-  item.qty += delta;
+  let nextCart;
 
-  if (item.qty <= 0) {
-    nextCart.splice(index, 1);
+  if (nextQty <= 0) {
+    nextCart = cart.filter((item) => item.key !== key);
   } else {
-    item.qty = Math.min(item.qty, product ? product.stock : 99);
+    nextCart = cart.map((item) =>
+      item.key === key
+        ? { ...item, qty: Math.min(nextQty, maxStock) }
+        : item
+    );
   }
 
   saveCart(nextCart);
