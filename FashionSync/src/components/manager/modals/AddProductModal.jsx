@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import styles from "../../../styles/Manager.module.scss";
-
+import ScanModal from "./ScanModal";
 export default function AddProductModal({
   isOpen,
   onClose,
   onSubmit,
   onOpenScanner,
+  theme,
 }) {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -28,6 +29,7 @@ export default function AddProductModal({
   const [uploadMode, setUploadMode] = useState("file");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [error, setError] = useState("");
+  const [isScanOpen, setIsScanOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -158,38 +160,52 @@ export default function AddProductModal({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+    <div
+      className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
+      onClick={handleOverlayClick}
+    >
       <div className={styles.addProductModal}>
-
         {/* כפתור סגירה */}
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
 
-        {/* כותרת — צד ימין */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: "0.45rem",
-          marginBottom: "1.8rem",
-        }}>
-          <h2 style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "1.7rem",
-            color: "var(--gold)",
-            margin: 0,
-          }}>
-            מוצר חדש
-          </h2>
-          <span style={{ fontSize: "2rem", fontWeight: 700, color: "#8f6bff", lineHeight: 1 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start", // מצמיד את הכל לימין (בגלל ה-RTL)
+            direction: "rtl", // קובע כיוון כתיבה מימין לשמאל
+            gap: "0.6rem", // רווח נעים בין הפלוס לטקסט
+            marginBottom: "1.8rem",
+          }}
+        >
+          {/* הפלוס מופיע ראשון בקוד כדי שיהיה הכי ימני במסך */}
+          <span
+            style={{
+              fontSize: "2rem",
+              fontWeight: 700,
+              color: "#8f6bff",
+              lineHeight: 1,
+            }}
+          >
             ＋
           </span>
+
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "1.7rem",
+              color: "var(--gold)",
+              margin: 0,
+            }}
+          >
+            מוצר חדש
+          </h2>
         </div>
 
         {/* גריד שדות */}
         <div className={styles.addProductGrid}>
-
           {/* קוד + סריקה */}
           <div className={styles.addField}>
             <label className={styles.addLabel}>קוד</label>
@@ -203,7 +219,7 @@ export default function AddProductModal({
               />
               <button
                 type="button"
-                onClick={() => onOpenScanner?.()}
+                onClick={() => setIsScanOpen(true)}
                 title="סרוק ברקוד"
                 style={{
                   background: "rgba(52,152,219,0.1)",
@@ -270,7 +286,9 @@ export default function AddProductModal({
               onChange={(e) => handleChange("season", e.target.value)}
               style={{ color: form.season ? "var(--text)" : "var(--muted)" }}
             >
-              <option value="" disabled>בחר עונה...</option>
+              <option value="" disabled>
+                בחר עונה...
+              </option>
               <option value="all">כל השנה</option>
               <option value="summer">קיץ</option>
               <option value="winter">חורף</option>
@@ -310,7 +328,6 @@ export default function AddProductModal({
               onChange={(e) => handleChange("minStock", e.target.value)}
             />
           </div>
-
         </div>
 
         {/* תיאור */}
@@ -324,26 +341,33 @@ export default function AddProductModal({
           />
         </div>
 
-        {/* תמונת מוצר — הכל במרכז */}
+        {/* תמונת מוצר */}
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תמונת מוצר</label>
 
-          {/* טאבים — מרכז */}
-          <div style={{
-            display: "flex",
-            gap: "0.5rem",
-            marginBottom: "0.75rem",
-            justifyContent: "center",
-          }}>
+          {/* כפתורי קובץ / מצלמה — רוחב מלא, גובה מקורי */}
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              marginBottom: "0.75rem",
+            }}
+          >
             <button
               type="button"
-              onClick={() => { setUploadMode("file"); stopCamera(); }}
+              onClick={() => {
+                setUploadMode("file");
+                stopCamera();
+              }}
               style={{
+                flex: 1,
                 padding: "0.45rem 1.1rem",
                 borderRadius: "9px",
                 border: "1px solid",
-                borderColor: uploadMode === "file" ? "var(--gold)" : "var(--border)",
-                background: uploadMode === "file" ? "var(--gold-dim)" : "transparent",
+                borderColor:
+                  uploadMode === "file" ? "var(--gold)" : "var(--border)",
+                background:
+                  uploadMode === "file" ? "var(--gold-dim)" : "transparent",
                 color: uploadMode === "file" ? "var(--gold)" : "var(--muted)",
                 fontFamily: "Alef, sans-serif",
                 fontWeight: 700,
@@ -355,13 +379,19 @@ export default function AddProductModal({
             </button>
             <button
               type="button"
-              onClick={() => { setUploadMode("camera"); startCamera(); }}
+              onClick={() => {
+                setUploadMode("camera");
+                startCamera();
+              }}
               style={{
+                flex: 1,
                 padding: "0.45rem 1.1rem",
                 borderRadius: "9px",
                 border: "1px solid",
-                borderColor: uploadMode === "camera" ? "var(--gold)" : "var(--border)",
-                background: uploadMode === "camera" ? "var(--gold-dim)" : "transparent",
+                borderColor:
+                  uploadMode === "camera" ? "var(--gold)" : "var(--border)",
+                background:
+                  uploadMode === "camera" ? "var(--gold-dim)" : "transparent",
                 color: uploadMode === "camera" ? "var(--gold)" : "var(--muted)",
                 fontFamily: "Alef, sans-serif",
                 fontWeight: 700,
@@ -375,7 +405,11 @@ export default function AddProductModal({
 
           {/* קובץ */}
           {uploadMode === "file" && (
-            <div className={styles.imageUploadBox}>
+            <div
+              className={styles.imageUploadBox}
+              onClick={() => !form.image && fileInputRef.current?.click()}
+              style={{ cursor: form.image ? "default" : "pointer" }}
+            >
               {form.image ? (
                 <>
                   <img
@@ -385,23 +419,26 @@ export default function AddProductModal({
                   />
                   <button
                     className={styles.removeImageBtn}
-                    onClick={() => handleChange("image", "")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleChange("image", "");
+                    }}
                   >
                     🗑️ הסר תמונה
                   </button>
                 </>
               ) : (
                 <>
-                  <div className={styles.uploadIcon}>📷</div>
-                  <div className={styles.uploadText}>תמונת מוצר</div>
-                  <div className={styles.uploadActions}>
-                    <button
-                      type="button"
-                      className={styles.uploadBtn}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      📁 קובץ
-                    </button>
+                  
+                  <div
+                    style={{
+                      color: "var(--text)",
+                      fontWeight: 700,
+                      fontSize: "1rem",
+                      marginBottom: "0.3rem",
+                    }}
+                  >
+                    לחץ להעלאה
                   </div>
                 </>
               )}
@@ -417,14 +454,16 @@ export default function AddProductModal({
 
           {/* מצלמה */}
           {uploadMode === "camera" && (
-            <div style={{
-              background: "#000",
-              borderRadius: "14px",
-              overflow: "hidden",
-              position: "relative",
-              aspectRatio: "4/3",
-              border: "1px solid var(--border)",
-            }}>
+            <div
+              style={{
+                background: "#000",
+                borderRadius: "14px",
+                overflow: "hidden",
+                position: "relative",
+                aspectRatio: "4/3",
+                border: "1px solid var(--border)",
+              }}
+            >
               <video
                 ref={videoRef}
                 autoPlay
@@ -440,14 +479,16 @@ export default function AddProductModal({
               <canvas ref={canvasRef} style={{ display: "none" }} />
 
               {!isCameraActive && (
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#060a14",
-                }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#060a14",
+                  }}
+                >
                   <button
                     type="button"
                     onClick={startCamera}
@@ -500,15 +541,15 @@ export default function AddProductModal({
 
         {error && <div className={styles.addError}>{error}</div>}
 
-        {/* כפתורים */}
-        <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
-          <button
-            className={styles.addSubmitBtn}
-            style={{ flex: 2 }}
-            onClick={handleSubmit}
-          >
-            הוסף מוצר
-          </button>
+        {/* כפתורים — ביטול מימין, הוסף מוצר משמאל */}
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            marginTop: "1rem",
+            flexDirection: "row-reverse",
+          }}
+        >
           <button
             onClick={handleClose}
             style={{
@@ -526,8 +567,14 @@ export default function AddProductModal({
           >
             ביטול
           </button>
+          <button
+            className={styles.addSubmitBtn}
+            style={{ flex: 2 }}
+            onClick={handleSubmit}
+          >
+            הוסף מוצר
+          </button>
         </div>
-
       </div>
     </div>
   );

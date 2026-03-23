@@ -1608,3 +1608,35 @@ tr:last-child td {
   background: #080808;
   color: #fafaf8;
 }
+.light .addProductModal {
+  background: linear-gradient(180deg, #ffffff 0%, #f4f5f7 100%);
+  border-color: rgba(185, 146, 46, 0.22);
+}
+
+.light .detailsModalBox {
+  background: linear-gradient(180deg, #ffffff 0%, #f4f5f7 100%);
+  border-color: rgba(185, 146, 46, 0.22);
+}
+
+.light .addInput {
+  background: #eef0f4;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1c24;
+}
+
+.light .addLabel {
+  color: #8a90a0;
+}
+
+.light .imageUploadBox {
+  background: #eef0f4;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .modalCloseBtn {
+  color: #8a90a0;
+}
+
+.light .modalCloseBtn:hover {
+  color: #1a1c24;
+}

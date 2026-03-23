@@ -22,7 +22,7 @@ export default function Employee() {
   const [activePanel, setActivePanel] = useState("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(PRODUCTS_SEED);
   const [sellItems, setSellItems] = useState([]);
   const [inventorySearch, setInventorySearch] = useState("");
 

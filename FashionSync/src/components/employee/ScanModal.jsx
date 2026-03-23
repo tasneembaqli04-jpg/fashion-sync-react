@@ -87,7 +87,6 @@ export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) 
           {scanTarget === "sell" ? "סרוק ברקוד פריט למכירה" : "סרוק ברקוד לעדכון מלאי"}
         </p>
 
-        {/* טאבים */}
         <div
           style={{
             display: "flex",

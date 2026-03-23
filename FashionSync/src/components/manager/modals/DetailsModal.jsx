@@ -26,6 +26,7 @@ export default function DetailsModal({
   product,
   onClose,
   onSave,
+  theme,
 }) {
   const [price, setPrice] = useState(0);
   const [minStock, setMinStock] = useState(10);
@@ -78,7 +79,7 @@ export default function DetailsModal({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+    <div className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`} onClick={handleOverlayClick}>
       <div className={styles.detailsModalBox}>
         <button className={styles.modalCloseBtn} onClick={onClose}>
           ✕

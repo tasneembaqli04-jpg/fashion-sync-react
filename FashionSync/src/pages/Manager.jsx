@@ -552,6 +552,7 @@ export default function Manager() {
       </div>
       <AddProductModal
         isOpen={isAddProductOpen}
+        theme={theme}
         onClose={() => setIsAddProductOpen(false)}
         onSubmit={(newProduct) => {
           setProducts((prev) => [...prev, newProduct]);
@@ -560,6 +561,7 @@ export default function Manager() {
       <DetailsModal
         isOpen={isDetailsOpen}
         product={selectedProduct}
+        theme={theme}
         onClose={() => {
           setIsDetailsOpen(false);
           setSelectedProduct(null);
