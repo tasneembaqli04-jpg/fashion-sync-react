@@ -9,7 +9,10 @@ export default function HomeBackground({ featuredImage }) {
     <>
       <div
         className={styles.bgImage}
-        style={{ backgroundImage }}
+        style={{ 
+          backgroundImage,
+          transition: "background-image 0.8s ease-in-out" 
+        }}
       />
       <div className={styles.grain} />
     </>

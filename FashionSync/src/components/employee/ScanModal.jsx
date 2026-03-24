@@ -3,7 +3,12 @@ import modalStyles from "../../styles/employee/EmployeeModals.module.scss";
 import layoutStyles from "../../styles/employee/EmployeeLayout.module.scss";
 import sellStyles from "../../styles/employee/EmployeeSell.module.scss";
 
-export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) {
+export default function ScanModal({
+  isOpen,
+  onClose,
+  onApplyCode,
+  scanTarget,
+}) {
   const [manualCode, setManualCode] = useState("");
   const [scanMode, setScanMode] = useState("camera");
   const [cameraReady, setCameraReady] = useState(false);
@@ -14,7 +19,11 @@ export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) 
     setCameraReady(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -78,13 +87,44 @@ export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) 
     >
       <div
         className={modalStyles.modalBox}
-        style={{ width: "450px", borderRadius: "24px", padding: "24px" }}
+        style={{
+          width: "450px",
+          borderRadius: "24px",
+          padding: "24px",
+          position: "relative",
+        }} 
       >
+        <button
+          onClick={handleClose}
+          style={{
+            position: "absolute",
+            top: "20px",
+            left: "20px",
+            background: "rgba(255,255,255,0.05)",
+            border: "none",
+            color: "#888",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "0.2s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+        >
+          ✕
+        </button>
         <h2 style={{ color: "white", marginBottom: "5px", textAlign: "right" }}>
           📷 סריקת ברקוד
         </h2>
         <p style={{ color: "#aaa", marginBottom: "20px", textAlign: "right" }}>
-          {scanTarget === "sell" ? "סרוק ברקוד פריט למכירה" : "סרוק ברקוד לעדכון מלאי"}
+          {scanTarget === "sell"
+            ? "סרוק ברקוד פריט למכירה"
+            : "סרוק ברקוד לעדכון מלאי"}
         </p>
 
         <div
@@ -183,7 +223,9 @@ export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) 
                   cursor: "pointer",
                   fontSize: "0.95rem",
                 }}
-                onClick={() => handleApply("FS-" + Math.floor(100 + Math.random() * 900))}
+                onClick={() =>
+                  handleApply("FS-" + Math.floor(100 + Math.random() * 900))
+                }
               >
                 לחץ לסריקה
               </button>
@@ -241,23 +283,6 @@ export default function ScanModal({ isOpen, onClose, onApplyCode, scanTarget }) 
             </div>
           </div>
         )}
-
-        <button
-          style={{
-            width: "100%",
-            marginTop: "20px",
-            borderRadius: "12px",
-            padding: "12px",
-            border: "1px solid #e1b16a",
-            color: "#e1b16a",
-            background: "transparent",
-            cursor: "pointer",
-            fontSize: "1rem",
-          }}
-          onClick={handleClose}
-        >
-          סגור ✕
-        </button>
       </div>
     </div>
   );

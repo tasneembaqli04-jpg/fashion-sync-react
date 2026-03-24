@@ -165,7 +165,7 @@ export default function AddProductModal({
       onClick={handleOverlayClick}
     >
       <div className={styles.addProductModal}>
-        {/* כפתור סגירה */}
+        
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
@@ -174,13 +174,13 @@ export default function AddProductModal({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-start", // מצמיד את הכל לימין (בגלל ה-RTL)
-            direction: "rtl", // קובע כיוון כתיבה מימין לשמאל
-            gap: "0.6rem", // רווח נעים בין הפלוס לטקסט
+            justifyContent: "flex-start", 
+            direction: "rtl", 
+            gap: "0.6rem", 
             marginBottom: "1.8rem",
           }}
         >
-          {/* הפלוס מופיע ראשון בקוד כדי שיהיה הכי ימני במסך */}
+          
           <span
             style={{
               fontSize: "2rem",
@@ -204,9 +204,9 @@ export default function AddProductModal({
           </h2>
         </div>
 
-        {/* גריד שדות */}
+        
         <div className={styles.addProductGrid}>
-          {/* קוד + סריקה */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>קוד</label>
             <div style={{ display: "flex", gap: "0.45rem" }}>
@@ -238,7 +238,7 @@ export default function AddProductModal({
             </div>
           </div>
 
-          {/* שם */}
+         
           <div className={styles.addField}>
             <label className={styles.addLabel}>שם</label>
             <input
@@ -249,7 +249,7 @@ export default function AddProductModal({
             />
           </div>
 
-          {/* קטגוריה */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>קטגוריה</label>
             <select
@@ -264,7 +264,7 @@ export default function AddProductModal({
             </select>
           </div>
 
-          {/* מגדר */}
+         
           <div className={styles.addField}>
             <label className={styles.addLabel}>מגדר</label>
             <select
@@ -277,7 +277,7 @@ export default function AddProductModal({
             </select>
           </div>
 
-          {/* עונה */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>עונה</label>
             <select
@@ -296,7 +296,7 @@ export default function AddProductModal({
             </select>
           </div>
 
-          {/* כמות */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>כמות</label>
             <input
@@ -307,7 +307,7 @@ export default function AddProductModal({
             />
           </div>
 
-          {/* מחיר */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>מחיר (₪)</label>
             <input
@@ -318,7 +318,7 @@ export default function AddProductModal({
             />
           </div>
 
-          {/* מינימום */}
+          
           <div className={styles.addField}>
             <label className={styles.addLabel}>מינימום להתראה</label>
             <input
@@ -330,7 +330,7 @@ export default function AddProductModal({
           </div>
         </div>
 
-        {/* תיאור */}
+        
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תיאור</label>
           <input
@@ -341,11 +341,11 @@ export default function AddProductModal({
           />
         </div>
 
-        {/* תמונת מוצר */}
+       
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תמונת מוצר</label>
 
-          {/* כפתורי קובץ / מצלמה — רוחב מלא, גובה מקורי */}
+          
           <div
             style={{
               display: "flex",
@@ -403,7 +403,7 @@ export default function AddProductModal({
             </button>
           </div>
 
-          {/* קובץ */}
+         
           {uploadMode === "file" && (
             <div
               className={styles.imageUploadBox}
@@ -429,7 +429,6 @@ export default function AddProductModal({
                 </>
               ) : (
                 <>
-                  
                   <div
                     style={{
                       color: "var(--text)",
@@ -452,7 +451,7 @@ export default function AddProductModal({
             </div>
           )}
 
-          {/* מצלמה */}
+       
           {uploadMode === "camera" && (
             <div
               style={{
@@ -541,7 +540,6 @@ export default function AddProductModal({
 
         {error && <div className={styles.addError}>{error}</div>}
 
-        {/* כפתורים — ביטול מימין, הוסף מוצר משמאל */}
         <div
           style={{
             display: "flex",
@@ -575,6 +573,14 @@ export default function AddProductModal({
             הוסף מוצר
           </button>
         </div>
+        <ScanModal
+          open={isScanOpen}
+          onClose={() => setIsScanOpen(false)}
+          onCodeScanned={(code) => {
+            handleChange("code", code);
+            setIsScanOpen(false);
+          }}
+        />
       </div>
     </div>
   );

@@ -359,7 +359,7 @@ export default function NewProductModal({
         <div
           style={{
             display: "flex",
-            flexDirection: "row-reverse",
+            flexDirection: "row",
             gap: "12px",
             marginTop: "15px",
             borderTop: "1px solid #333",
