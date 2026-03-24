@@ -182,7 +182,7 @@ export default function ProductCard({
             </button>
           ) : (
             <button
-              className={`${cardStyles.actBtn} ${cardStyles.gold}`}
+              className={`${cardStyles.actBtn} ${cardStyles.goldBtn}`}
               onClick={(e) => {
                 e.stopPropagation();
                 console.log("clicked add button", product.code);

@@ -12,17 +12,24 @@ export default function PreCheckoutFeedback({
   submitPreCheckoutFeedback,
   skipToCheckout,
 }) {
-  const topics = ["🎨 עיצוב", "🔍 חיפוש", "🛒 קנייה", "📱 מובייל", "💬 צ'אטבוט", "💡 הצעה"];
+  const topics = [
+    "🎨 עיצוב",
+    "🔍 חיפוש",
+    "🛒 קנייה",
+    "📱 מובייל",
+    "💬 צ'אטבוט",
+    "💡 הצעה",
+  ];
 
   return (
     <div
-      className={`${modalStyles.preCheckoutFeedback} ${
-        open ? modalStyles.open : ""
-      }`}
+      className={modalStyles.preCheckoutFeedback}
       id="pre-checkout-feedback"
+      style={{ display: open ? "flex" : "none" }}
     >
       <div className={modalStyles.pcfBox}>
         <div className={modalStyles.pcfTitle}>💡 לפני שאתה משלם...</div>
+
         <div className={modalStyles.pcfSub}>
           יש לך הצעות לשיפור האתר? נשמח לשמוע! (אפשר לדלג)
         </div>
@@ -32,9 +39,8 @@ export default function PreCheckoutFeedback({
             <span
               key={value}
               className={`${modalStyles.pcfStar} ${
-                pcfRating >= value ? modalStyles.on : ""
+                pcfRating >= value ? modalStyles.starOn : ""
               }`}
-              data-v={value}
               onClick={() => setPcfRating(value)}
             >
               ⭐
@@ -46,8 +52,11 @@ export default function PreCheckoutFeedback({
           {topics.map((topic) => (
             <button
               key={topic}
+              type="button"
               className={`${modalStyles.pcfTopic} ${
-                selectedTopics.includes(topic) ? modalStyles.sel : ""
+                selectedTopics.includes(topic)
+                  ? modalStyles.selectedTopic
+                  : ""
               }`}
               onClick={() => togglePcfTopic(topic)}
             >
@@ -66,6 +75,7 @@ export default function PreCheckoutFeedback({
 
         <div className={modalStyles.pcfActions}>
           <button
+            type="button"
             className={`${baseStyles.btn} ${baseStyles.btnGold}`}
             onClick={submitPreCheckoutFeedback}
           >
@@ -73,6 +83,7 @@ export default function PreCheckoutFeedback({
           </button>
 
           <button
+            type="button"
             className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
             onClick={skipToCheckout}
           >

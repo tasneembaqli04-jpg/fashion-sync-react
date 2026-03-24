@@ -142,9 +142,7 @@ export default function CustomerSidebar({
             <span className={sidebarStyles.navIcon}>🌓</span> מצב כהה/בהיר
           </button>
 
-          <button className={sidebarStyles.navItem} onClick={goHome}>
-            <span className={sidebarStyles.navIcon}>🏠</span> דף הבית
-          </button>
+          
 
           {!isGuest && (
             <button
@@ -160,4 +158,5 @@ export default function CustomerSidebar({
       </aside>
     </>
   );
+  
 }

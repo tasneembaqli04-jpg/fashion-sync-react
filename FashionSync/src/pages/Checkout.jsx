@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
 import {
   getAppliedDiscountPercent,
   buildCart,
-  clearCheckoutCart,
   getCurrentUser,
-  saveReceipt,
+  clearCheckoutCart,
+  saveReceiptAndOrder,
   updateProductsStock,
 } from "../functions/checkout/checkoutStorage";
 import {
@@ -16,10 +18,6 @@ import {
   getSubtotal,
   getTotal,
 } from "../functions/checkout/checkoutPricing";
-import {
-  validatePayment,
-  validateStep1,
-} from "../functions/checkout/checkoutValidation";
 
 import CheckoutTopbar from "../components/checkout/checkoutTopbar";
 import CheckoutStepsBar from "../components/checkout/CheckoutStepsBar";
@@ -30,6 +28,8 @@ import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
 
 export default function Checkout() {
+  const navigate = useNavigate();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(
@@ -63,10 +63,10 @@ export default function Checkout() {
   useEffect(() => {
     const nextCart = buildCart();
     setCart(Array.isArray(nextCart) ? nextCart : []);
-
     setDiscountPct(getAppliedDiscountPercent());
 
     const currentUser = getCurrentUser();
+
     if (currentUser?.email || currentUser?.name) {
       const parts = String(currentUser?.name || "")
         .trim()
@@ -101,11 +101,11 @@ export default function Checkout() {
   );
 
   const installmentOptions = useMemo(() => {
+    if (payMethod !== "card" || total < 100) return [1];
     if (total >= 1000) return [1, 2, 3, 6, 12];
     if (total >= 500) return [1, 2, 3, 6];
-    if (total >= 100) return [1, 2, 3];
-    return [1];
-  }, [total]);
+    return [1, 2, 3];
+  }, [payMethod, total]);
 
   useEffect(() => {
     if (!installmentOptions.includes(selectedInstallments)) {
@@ -116,6 +116,10 @@ export default function Checkout() {
   function handleInputChange(event) {
     const { name, value } = event.target;
     let nextValue = value;
+
+    if (name === "bitPhone") {
+      nextValue = value.replace(/[^\d-]/g, "").slice(0, 11);
+    }
 
     if (name === "cardNumber") {
       const clean = value.replace(/\D/g, "").slice(0, 16);
@@ -170,8 +174,62 @@ export default function Checkout() {
     }`;
   }
 
+  function validateStep1Fields() {
+    const nextErrors = {};
+
+    if (!formData.firstName.trim()) nextErrors.firstName = true;
+    if (!formData.lastName.trim()) nextErrors.lastName = true;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim());
+    if (!emailOk) nextErrors.email = true;
+
+    const phoneClean = formData.phone.replace(/-/g, "").trim();
+    const phoneOk = /^0\d{9}$/.test(phoneClean);
+    if (!phoneOk) nextErrors.phone = true;
+
+    if (!formData.street.trim()) nextErrors.street = true;
+    if (!formData.city.trim()) nextErrors.city = true;
+
+    return nextErrors;
+  }
+
+  function validatePaymentFields() {
+    const nextErrors = {};
+
+    if (!termsAccepted) {
+      nextErrors.terms = true;
+    }
+
+    if (payMethod === "card") {
+      const cardNumberClean = formData.cardNumber.replace(/\s/g, "");
+      if (cardNumberClean.length < 15) nextErrors.cardNumber = true;
+      if (!formData.cardHolder.trim()) nextErrors.cardHolder = true;
+      if (formData.cardId.trim().length !== 9) nextErrors.cardId = true;
+      if (!/^\d{2}\/\d{2}$/.test(formData.expiry.trim())) {
+        nextErrors.expiry = true;
+      }
+      if (formData.cvv.trim().length !== 3) nextErrors.cvv = true;
+    }
+
+    if (payMethod === "bit") {
+      const bitPhoneClean = formData.bitPhone.replace(/-/g, "").trim();
+      if (!/^0\d{9}$/.test(bitPhoneClean)) {
+        nextErrors.bitPhone = true;
+      }
+    }
+
+    if (payMethod === "paypal") {
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim());
+      if (!emailOk) {
+        nextErrors.email = true;
+      }
+    }
+
+    return nextErrors;
+  }
+
   function goToStep2() {
-    const stepErrors = validateStep1(formData);
+    const stepErrors = validateStep1Fields();
     setErrors(stepErrors);
 
     if (Object.keys(stepErrors).length > 0) return;
@@ -190,91 +248,93 @@ export default function Checkout() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function completeOrder() {
-    const receiptId = `RCP-${Date.now()}`;
-    const isCash = payMethod === "cash";
-
-    const receipt = {
-      id: receiptId,
-      date: new Date().toISOString(),
-      emp: "self-checkout",
-      payMethod,
-      status: isCash ? "pending_payment" : "paid",
-      items: cart.map((item) => ({
-        code: item.code,
-        name: item.name,
-        price: item.price,
-        qty: item.qty,
-        img: item.img,
-        size: item.size,
-        color: item.color,
-      })),
-      total,
-      shipping: selectedShipping?.label || "",
-      shippingCost,
-      customer: {
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        email: formData.email.toLowerCase().trim(),
-        phone: formData.phone,
-      },
-    };
-
-    saveReceipt(receipt);
-
-    if (!isCash) {
-      updateProductsStock(cart);
-    }
-
-    clearCheckoutCart();
-
-    setSuccessData({
-      receiptId,
-      isCash,
-      email: formData.email,
-      items: cart,
-      shippingCost,
-      discountAmount,
-      total,
-    });
-
-    setCurrentStep(4);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
   function handlePay() {
-    const paymentErrors = validatePayment(formData, payMethod, termsAccepted);
+    const paymentErrors = validatePaymentFields();
     setErrors(paymentErrors);
 
-    if (Object.keys(paymentErrors).length > 0) return;
+    if (Object.keys(paymentErrors).length > 0) {
+      return;
+    }
 
     setProcessing(true);
 
-    const delay = payMethod === "cash" ? 800 : 2200;
     setTimeout(() => {
-      setProcessing(false);
-      completeOrder();
-    }, delay);
-  }
+      try {
+        const receipt = {
+          id: `RCP-${Date.now()}`,
+          date: new Date().toISOString(),
+          customer: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email,
+            phone: formData.phone,
+            street: formData.street,
+            city: formData.city,
+            zip: formData.zip,
+            notes: formData.notes,
+          },
+          items: cart,
+          subtotal,
+          discountAmount,
+          discountPct,
+          shipping: selectedShipping,
+          shippingCost,
+          total,
+          payMethod,
+          installments: payMethod === "card" ? selectedInstallments : 1,
+          status: 0,
+        };
 
+        saveReceiptAndOrder(receipt);
+        updateProductsStock(cart);
+        clearCheckoutCart();
+        setProcessing(false);
+
+        setSuccessData({
+          receiptId: receipt.id,
+          isCash: payMethod === "cash",
+          email: formData.email,
+          items: cart,
+          shippingCost,
+          discountAmount,
+          total,
+        });
+
+        setCurrentStep(4);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        console.error("Payment save error FULL:", error);
+        console.error("message:", error?.message);
+        console.error("stack:", error?.stack);
+        setProcessing(false);
+        alert(`אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`);
+      }
+    }, 1500);
+  }
   function handleToggleTerms(event) {
     const checked = event.target.checked;
     setTermsAccepted(checked);
 
-    if (checked) {
-      setErrors((prev) => ({
-        ...prev,
-        terms: undefined,
-      }));
-    }
+    setErrors((prev) => ({
+      ...prev,
+      terms: checked ? undefined : prev.terms,
+    }));
   }
 
   function handlePrint() {
     window.print();
   }
 
-  function backToStore() {
-    window.location.href = "/customer";
-  }
+  const backToStore = () => {
+  
+    setCart([]);
+    setSuccessData(null);
+    setCurrentStep(1);
+    navigate("/customer", { replace: true });
+  };
+
+  const isPayDisabled = !termsAccepted;
 
   return (
     <>
@@ -326,6 +386,7 @@ export default function Checkout() {
             onToggleTerms={handleToggleTerms}
             onBack={() => goBack(2)}
             onPay={handlePay}
+            isPayDisabled={isPayDisabled}
           />
         )}
 
