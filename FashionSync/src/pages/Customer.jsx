@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-
+import { loadOrders } from "../functions/checkout/checkoutStorage";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -51,7 +51,6 @@ import ShareModal from "../components/customer/ShareModal";
 import NotifyModal from "../components/customer/NotifyModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
-import PostOrderFeedback from "../components/customer/PostOrderFeedback";
 import VisualSearchModal from "../components/customer/VisualSearchModal";
 
 export default function Customer() {
@@ -85,27 +84,7 @@ export default function Customer() {
   ]);
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
-  const [orders] = useState([
-    {
-      id: "ORD-DEMO-001",
-      date: new Date(Date.now() - 3 * 86400000).toLocaleDateString("he-IL"),
-      items: [
-        { name: "שמלת קיץ פרחונית", qty: 1 },
-        { name: "חולצת טי בייסיק", qty: 2 },
-      ],
-      total: 477,
-      status: 1,
-      steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-    },
-    {
-      id: "ORD-DEMO-002",
-      date: new Date(Date.now() - 10 * 86400000).toLocaleDateString("he-IL"),
-      items: [{ name: "ג'ינס סלים פיט", qty: 1 }],
-      total: 349,
-      status: 3,
-      steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -131,11 +110,6 @@ export default function Customer() {
   const [pcfText, setPcfText] = useState("");
   const [pcfTopics, setPcfTopics] = useState([]);
 
-  const [postFeedbackOpen, setPostFeedbackOpen] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState(0);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [feedbackTopics, setFeedbackTopics] = useState([]);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   const [visualOpen, setVisualOpen] = useState(false);
   const [visualTab, setVisualTab] = useState("search");
@@ -158,11 +132,19 @@ export default function Customer() {
   const [giftMessage, setGiftMessage] = useState("");
   const [giftPreviewCode, setGiftPreviewCode] = useState("—");
   const [giftError, setGiftError] = useState("");
+  useEffect(() => {
+  if (!currentUser?.email) {
+    setOrders([]);
+    return;
+  }
 
+  const userOrders = loadOrders(currentUser.email);
+  setOrders(Array.isArray(userOrders) ? userOrders.slice().reverse() : []);
+}, [currentUser, activePanel]);
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
-
+   
   useEffect(() => {
     openDB();
 
@@ -334,8 +316,6 @@ export default function Customer() {
       return nextCart;
     });
 
-    setCartOpen(true);
-
     if (fromModal) closeProductModal();
   }
 
@@ -373,19 +353,18 @@ export default function Customer() {
     setAppliedDiscount(discount);
   }
 
-  function startCheckout() {
-    if (!cart.length) {
-      alert("הסל ריק");
-      return;
-    }
-
-    setCartOpen(false);
-
-    setTimeout(() => {
-      window.location.assign("/checkout");
-    }, 100);
+function startCheckout() {
+  if (!cart.length) {
+    alert("הסל ריק");
+    return;
   }
 
+  setCartOpen(false);
+  setPcfRating(0);
+  setPcfText("");
+  setPcfTopics([]);
+  setPreCheckoutOpen(true);
+}
   function togglePcfTopic(topic) {
     setPcfTopics((prev) =>
       prev.includes(topic)
@@ -565,33 +544,7 @@ export default function Customer() {
     }, 400);
   }
 
-  function toggleTopic(topic) {
-    setFeedbackTopics((prev) =>
-      prev.includes(topic)
-        ? prev.filter((item) => item !== topic)
-        : [...prev, topic]
-    );
-  }
 
-  function submitFeedback() {
-    const existing = JSON.parse(localStorage.getItem(LS_KEYS.FEEDBACK) || "[]");
-
-    existing.push({
-      date: new Date().toISOString(),
-      type: "post-order",
-      user: currentUser?.email || "אורח",
-      rating: feedbackRating,
-      topics: feedbackTopics,
-      text: feedbackText.trim(),
-    });
-
-    localStorage.setItem(LS_KEYS.FEEDBACK, JSON.stringify(existing));
-    setFeedbackSubmitted(true);
-  }
-
-  function closeFeedbackModal() {
-    setPostFeedbackOpen(false);
-  }
 
   function handleGcAmountChange(value) {
     setGiftAmount(value);
@@ -637,6 +590,7 @@ export default function Customer() {
 
   return (
     <>
+      
       <CustomerTopbar
         cartCountMobile={cartCount}
         toggleSidebar={toggleSidebar}
@@ -806,7 +760,7 @@ export default function Customer() {
         applyCoupon={applyCoupon}
         startCheckout={startCheckout}
       />
-
+      
       <PreCheckoutFeedback
         open={preCheckoutOpen}
         pcfRating={pcfRating}
@@ -819,18 +773,7 @@ export default function Customer() {
         skipToCheckout={skipToCheckout}
       />
 
-      <PostOrderFeedback
-        open={postFeedbackOpen}
-        feedbackRating={feedbackRating}
-        feedbackText={feedbackText}
-        selectedTopics={feedbackTopics}
-        submitted={feedbackSubmitted}
-        setFeedbackRating={setFeedbackRating}
-        setFeedbackText={setFeedbackText}
-        toggleTopic={toggleTopic}
-        closeFeedbackModal={closeFeedbackModal}
-        submitFeedback={submitFeedback}
-      />
+ 
 
       <VisualSearchModal
         open={visualOpen}

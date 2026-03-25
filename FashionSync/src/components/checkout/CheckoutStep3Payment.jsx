@@ -211,16 +211,28 @@ export default function CheckoutStep3Payment({
                 type="tel"
                 value={form.bitPhone}
                 onChange={onChange}
+                className={errors.bitPhone ? styles.invalid : ""}
               />
+              {errors.bitPhone && (
+                <div className={styles.fieldErr}>מספר טלפון לא תקין</div>
+              )}
             </div>
           </div>
         )}
 
         {payMethod === "paypal" && (
-          <div className={`${styles.alert} ${styles.alertInfo}`}>
-            🅿️ לאחר לחיצה על "שלם" תועבר ל-PayPal לביצוע התשלום.
-          </div>
-        )}
+          <div>
+            <div className={`${styles.alert} ${styles.alertInfo}`}>
+              🅿️ לאחר לחיצה על "שלם" תועבר ל-PayPal לביצוע התשלום.
+            </div>
+
+            {errors.email && (
+              <div className={styles.fieldErr} style={{ display: "block", marginTop: "0.5rem" }}>
+                כדי להמשיך עם PayPal צריך אימייל תקין בשלב הפרטים
+              </div>
+           )}
+         </div>
+       )}
 
         {payMethod === "cash" && (
           <div className={`${styles.alert} ${styles.alertWarn}`}>
