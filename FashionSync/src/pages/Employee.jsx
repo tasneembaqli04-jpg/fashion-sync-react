@@ -26,24 +26,28 @@ export default function Employee() {
   const [sellItems, setSellItems] = useState([]);
   const [inventorySearch, setInventorySearch] = useState("");
 
-  const [tasks, setTasks] = useState([
-    {
-      id: "T1",
-      title: "לבדוק מלאי של חולצות קיץ",
-      desc: "לעבור על פריטים עם מלאי נמוך",
-      icon: "📦",
-      done: false,
-      seen: false,
-    },
-    {
-      id: "T2",
-      title: "להכין הזמנה ללקוח",
-      desc: "הזמנה שממתינה בדלפק",
-      icon: "📋",
-      done: false,
-      seen: false,
-    },
-  ]);
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("fs_tasks");
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: "T1",
+        title: "לבדוק מלאי של חולצות קיץ",
+        desc: "לעבור על פריטים עם מלאי נמוך",
+        icon: "📦",
+        done: false,
+        seen: false,
+      },
+      {
+        id: "T2",
+        title: "להכין הזמנה ללקוח",
+        desc: "הזמנה שממתינה בדלפק",
+        icon: "📋",
+        done: false,
+        seen: false,
+      },
+    ];
+  });
 
   const [orders, setOrders] = useState([
     {
@@ -86,7 +90,12 @@ export default function Employee() {
 
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [scanTarget, setScanTarget] = useState("inventory");
-  const [scannedCode, setScannedCode] = useState(""); // ← חדש
+  const [scannedCode, setScannedCode] = useState("");
+  const featuredProduct = useMemo(() => {
+    const code = localStorage.getItem("featuredProductCode");
+    if (!code) return null;
+    return products.find((p) => p.code === code) || null;
+  }, [products]);
 
   useEffect(() => {
     const saved = localStorage.getItem("fs_theme");
@@ -205,16 +214,24 @@ export default function Employee() {
   }
 
   function handleCompleteTask(taskId) {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, done: true } : task)),
-    );
+    setTasks((prev) => {
+      const updated = prev.map((task) =>
+        task.id === taskId ? { ...task, done: true } : task,
+      );
+      localStorage.setItem("fs_tasks", JSON.stringify(updated));
+      return updated;
+    });
     showNotification("המשימה הושלמה", "success", "✅");
   }
 
   function handleMarkSeen(taskId) {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, seen: true } : task)),
-    );
+    setTasks((prev) => {
+      const updated = prev.map((task) =>
+        task.id === taskId ? { ...task, seen: true } : task,
+      );
+      localStorage.setItem("fs_tasks", JSON.stringify(updated));
+      return updated;
+    });
     showNotification("אישור קבלה נשלח", "success", "📬");
   }
 
@@ -362,6 +379,7 @@ export default function Employee() {
               tasks={tasks.filter((task) => !task.done)}
               history={history}
               onShowPanel={handleShowPanel}
+              featuredProduct={featuredProduct}
             />
           )}
 

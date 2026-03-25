@@ -29,7 +29,9 @@
   color: var(--text);
   display: flex;
   font-family: "Alef", sans-serif;
-  transition: background 0.25s, color 0.25s;
+  transition:
+    background 0.25s,
+    color 0.25s;
 }
 
 .light {
@@ -384,7 +386,9 @@
   padding: 1.2rem;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .stat:hover {
@@ -1265,7 +1269,9 @@ tr:last-child td {
   font-family: "Alef", sans-serif;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .addInput:focus {
@@ -1419,10 +1425,6 @@ tr:last-child td {
   margin-bottom: 1rem;
 }
 
-
-
-
-
 .detailsTopRight {
   flex: 1;
   min-width: 0;
@@ -1468,7 +1470,6 @@ tr:last-child td {
   margin-top: 45px;
 }
 
-
 .detailsFieldsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1481,7 +1482,6 @@ tr:last-child td {
   justify-content: flex-end;
   width: 100%;
 }
-
 
 .detailsSectionLabel {
   margin-right: 0;
@@ -1496,7 +1496,6 @@ tr:last-child td {
   font-size: 0.78rem;
   font-weight: 700;
 }
-
 
 .detailsVariantsWrap {
   display: flex;
@@ -1520,7 +1519,6 @@ tr:last-child td {
   flex-wrap: wrap;
   margin-bottom: 0.7rem;
 }
-
 
 .colorCardTitleWrap {
   display: flex;
@@ -1548,7 +1546,6 @@ tr:last-child td {
   background: rgba(255, 255, 255, 0.015);
   min-height: 38px;
 }
-
 
 .sizeSeparator {
   color: var(--muted);
@@ -1679,8 +1676,14 @@ tr:last-child td {
     display: flex;
     flex-direction: column;
     text-align: right;
-    strong { color: var(--text-h); font-size: 1.1rem; }
-    span { font-size: 0.9rem; opacity: 0.8; }
+    strong {
+      color: var(--text-h);
+      font-size: 1.1rem;
+    }
+    span {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
   }
 
   .closeX {
@@ -1690,24 +1693,32 @@ tr:last-child td {
     cursor: pointer;
     margin-right: auto;
     font-size: 16px;
-    &:hover { color: var(--accent); }
+    &:hover {
+      color: var(--accent);
+    }
   }
 }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .promoModalBox {
   background: #1a1a1a;
-  border: 1px solid rgba(212, 175, 55, 0.3); 
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 20px;
   padding: 2rem;
   width: 100%;
   max-width: 400px;
   position: relative;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   text-align: center;
 }
 
@@ -1718,7 +1729,6 @@ tr:last-child td {
   margin-bottom: 1.5rem;
 }
 
-
 .btnGold {
   background: linear-gradient(135deg, #d4af37 0%, #f1c40f 100%);
   color: #000;
@@ -1728,7 +1738,7 @@ tr:last-child td {
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
@@ -1751,7 +1761,7 @@ tr:last-child td {
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   border-left: 5px solid #2ecc71;
 
   .checkBadge {
@@ -1769,7 +1779,20 @@ tr:last-child td {
   .textDetails {
     display: flex;
     flex-direction: column;
-    strong { color: #2ecc71; font-size: 1rem; }
-    span { font-size: 0.9rem; color: #666; }
+    strong {
+      color: #2ecc71;
+      font-size: 1rem;
+    }
+    span {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+  .mtfInput option {
+    direction: rtl;
+  }
+
+  select.mtfInput {
+    direction: rtl;
   }
 }

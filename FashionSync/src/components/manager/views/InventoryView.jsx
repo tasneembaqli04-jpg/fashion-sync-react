@@ -8,21 +8,35 @@ const SEASON_COLORS = {
 };
 
 function SeasonBadge({ season }) {
-  const s = SEASON_COLORS[season] || { bg: "rgba(255,255,255,0.06)", color: "var(--muted)", icon: "—" };
+  const s = SEASON_COLORS[season] || {
+    bg: "rgba(255,255,255,0.06)",
+    color: "var(--muted)",
+    icon: "—",
+  };
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: "0.28rem",
-      padding: "0.18rem 0.6rem", borderRadius: "20px",
-      background: s.bg, color: s.color, fontSize: "0.72rem", fontWeight: 700,
-    }}>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.28rem",
+        padding: "0.18rem 0.6rem",
+        borderRadius: "20px",
+        background: s.bg,
+        color: s.color,
+        fontSize: "0.72rem",
+        fontWeight: 700,
+      }}
+    >
       {s.icon} {season || "—"}
     </span>
   );
 }
 
 function StatusBadge({ stock, minStock }) {
-  if (stock === 0) return <span className={`${styles.tag} ${styles.tRed}`}>אזל</span>;
-  if (stock <= minStock) return <span className={`${styles.tag} ${styles.tYellow}`}>נמוך</span>;
+  if (stock === 0)
+    return <span className={`${styles.tag} ${styles.tRed}`}>אזל</span>;
+  if (stock <= minStock)
+    return <span className={`${styles.tag} ${styles.tYellow}`}>נמוך</span>;
   return <span className={`${styles.tag} ${styles.tGreen}`}>זמין</span>;
 }
 
@@ -33,7 +47,7 @@ export default function InventoryView({
   onOpenPromo,
   onCancelPromote,
   promotedCode,
-})  {
+}) {
   return (
     <div className={styles.view}>
       <div className={styles.pageHd}>
@@ -65,7 +79,13 @@ export default function InventoryView({
             <tbody>
               {products.map((p) => {
                 const isPromoted = promotedCode === p.code;
-                console.log(p.code, "isPromoted:", isPromoted, "promotedCode:", promotedCode);
+                console.log(
+                  p.code,
+                  "isPromoted:",
+                  isPromoted,
+                  "promotedCode:",
+                  promotedCode,
+                );
 
                 return (
                   <tr key={p.code}>
@@ -73,28 +93,42 @@ export default function InventoryView({
                       <img className={styles.ptb} src={p.img} alt={p.name} />
                     </td>
                     <td>
-                      <code style={{ color: "var(--gold)", fontSize: ".78rem" }}>
+                      <code
+                        style={{ color: "var(--gold)", fontSize: ".78rem" }}
+                      >
                         {p.code}
                       </code>
                     </td>
                     <td>
                       <div className={styles.pname}>{p.name}</div>
-                      <div className={styles.psku}>{p.gender} · {p.cat}</div>
+                      <div className={styles.psku}>
+                        {p.gender} · {p.cat}
+                      </div>
                     </td>
                     <td>
                       <SeasonBadge season={p.season} />
                     </td>
                     <td style={{ fontWeight: 700 }}>{p.stock}</td>
-                    <td style={{ color: "var(--gold)", fontWeight: 700 }}>₪{p.price}</td>
+                    <td style={{ color: "var(--gold)", fontWeight: 700 }}>
+                      ₪{p.price}
+                    </td>
                     <td>
-                      <strong style={{ color: "var(--gold)" }}>{p.minStock}</strong>
+                      <strong style={{ color: "var(--gold)" }}>
+                        {p.minStock}
+                      </strong>
                     </td>
                     <td>
                       <StatusBadge stock={p.stock} minStock={p.minStock} />
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: ".35rem", flexWrap: "wrap", alignItems: "center" }}>
-
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: ".35rem",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                        }}
+                      >
                         <button
                           style={{
                             background: isPromoted
@@ -110,15 +144,7 @@ export default function InventoryView({
                             fontFamily: "Alef, sans-serif",
                             transition: "all 0.2s ease",
                           }}
-                          onClick={() => {
-                            if (isPromoted) {
-                              if (window.confirm(`לבטל את הפרסום של ${p.name}?`)) {
-                                onCancelPromote();
-                              }
-                            } else {
-                              onOpenPromo(p);
-                            }
-                          }}
+                          onClick={() => onOpenPromo(p)}
                         >
                           {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
                         </button>
@@ -140,12 +166,12 @@ export default function InventoryView({
                             fontSize: ".75rem",
                           }}
                           onClick={() => {
-                            if (window.confirm("למחוק מוצר?")) onDeleteProduct(p.code);
+                            if (window.confirm("למחוק מוצר?"))
+                              onDeleteProduct(p.code);
                           }}
                         >
                           🗑️
                         </button>
-
                       </div>
                     </td>
                   </tr>

@@ -8,6 +8,7 @@ export default function EmployeeOverview({
   tasks,
   history,
   onShowPanel,
+  featuredProduct,
 }) {
   const total = products.length;
   const inStock = products.filter((p) => p.stock > 0).length;
@@ -28,7 +29,8 @@ export default function EmployeeOverview({
         <div className={layoutStyles.pageTitle}>סקירה כללית</div>
         <div className={layoutStyles.pageSub}>
           יום {new Date().toLocaleDateString("he-IL", { weekday: "long" })},{" "}
-          {new Date().toLocaleDateString("he-IL")} · ברוך הבא, {currentUser?.name}
+          {new Date().toLocaleDateString("he-IL")} · ברוך הבא,{" "}
+          {currentUser?.name}
         </div>
       </div>
 
@@ -36,7 +38,9 @@ export default function EmployeeOverview({
         <div className={`${overviewStyles.statCard} ${overviewStyles.blue}`}>
           <div className={overviewStyles.statIcon}>📦</div>
           <div className={overviewStyles.statLabel}>פריטים</div>
-          <div className={`${overviewStyles.statValue} ${overviewStyles.blueText}`}>
+          <div
+            className={`${overviewStyles.statValue} ${overviewStyles.blueText}`}
+          >
             {total}
           </div>
           <div className={overviewStyles.statSub}>סה"כ מוצרים</div>
@@ -45,7 +49,9 @@ export default function EmployeeOverview({
         <div className={`${overviewStyles.statCard} ${overviewStyles.green}`}>
           <div className={overviewStyles.statIcon}>✅</div>
           <div className={overviewStyles.statLabel}>זמינים</div>
-          <div className={`${overviewStyles.statValue} ${overviewStyles.greenText}`}>
+          <div
+            className={`${overviewStyles.statValue} ${overviewStyles.greenText}`}
+          >
             {inStock}
           </div>
           <div className={overviewStyles.statSub}>במלאי</div>
@@ -54,7 +60,9 @@ export default function EmployeeOverview({
         <div className={`${overviewStyles.statCard} ${overviewStyles.orange}`}>
           <div className={overviewStyles.statIcon}>⚠️</div>
           <div className={overviewStyles.statLabel}>מלאי נמוך</div>
-          <div className={`${overviewStyles.statValue} ${overviewStyles.orangeText}`}>
+          <div
+            className={`${overviewStyles.statValue} ${overviewStyles.orangeText}`}
+          >
             {low}
           </div>
           <div className={overviewStyles.statSub}>פחות מ-3</div>
@@ -63,7 +71,9 @@ export default function EmployeeOverview({
         <div className={`${overviewStyles.statCard} ${overviewStyles.red}`}>
           <div className={overviewStyles.statIcon}>🚨</div>
           <div className={overviewStyles.statLabel}>אזל</div>
-          <div className={`${overviewStyles.statValue} ${overviewStyles.redText}`}>
+          <div
+            className={`${overviewStyles.statValue} ${overviewStyles.redText}`}
+          >
             {out}
           </div>
         </div>
@@ -102,7 +112,11 @@ export default function EmployeeOverview({
           >
             <div
               className={layoutStyles.secTitle}
-              style={{ marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}
+              style={{
+                marginBottom: 0,
+                borderBottom: "none",
+                paddingBottom: 0,
+              }}
             >
               🚨 התראות מלאי
             </div>
@@ -125,7 +139,10 @@ export default function EmployeeOverview({
             <tbody>
               {lowItems.length === 0 ? (
                 <tr>
-                  <td colSpan="3" style={{ textAlign: "center", color: "var(--text-dim)" }}>
+                  <td
+                    colSpan="3"
+                    style={{ textAlign: "center", color: "var(--text-dim)" }}
+                  >
                     ✅ כל המוצרים במלאי תקין
                   </td>
                 </tr>
@@ -134,7 +151,11 @@ export default function EmployeeOverview({
                   <tr key={p.code}>
                     <td>
                       <div className={layoutStyles.pc}>
-                        <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
+                        <img
+                          className={layoutStyles.pimg}
+                          src={p.img}
+                          alt={p.name}
+                        />
                         <div>
                           <div className={layoutStyles.pname}>{p.name}</div>
                           <div className={layoutStyles.psku}>{p.code}</div>
@@ -144,9 +165,17 @@ export default function EmployeeOverview({
                     <td>{p.stock}</td>
                     <td>
                       {p.stock === 0 ? (
-                        <span className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}>אזל</span>
+                        <span
+                          className={`${layoutStyles.tag} ${layoutStyles.tagRed}`}
+                        >
+                          אזל
+                        </span>
                       ) : (
-                        <span className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}>נמוך</span>
+                        <span
+                          className={`${layoutStyles.tag} ${layoutStyles.tagOrange}`}
+                        >
+                          נמוך
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -158,60 +187,76 @@ export default function EmployeeOverview({
       </div>
 
       <div className={layoutStyles.card} style={{ marginTop: "1.2rem" }}>
-        <div className={layoutStyles.secTitle}>🏷️ פריטים מומלצים למכירה</div>
+        <div className={layoutStyles.secTitle}>🏷️ פריט מומלץ למכירה</div>
 
-        {publishedItems.length === 0 ? (
-          <div style={{
-            textAlign: "center",
-            color: "var(--text-dim)",
-            padding: "1.2rem",
-            fontSize: "0.84rem",
-          }}>
-            אין פריטים מומלצים כרגע
+        {!featuredProduct ? (
+          <div
+            style={{
+              textAlign: "center",
+              color: "var(--text-dim)",
+              padding: "1.2rem",
+              fontSize: "0.84rem",
+            }}
+          >
+            אין פריט מומלץ כרגע
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            {publishedItems.map((p) => (
-              <div
-                key={p.code}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0.75rem 1rem",
+              borderRadius: "12px",
+              background: "rgba(255,107,53,0.06)",
+              border: "1px solid rgba(255,107,53,0.25)",
+            }}
+          >
+            <div className={layoutStyles.pc}>
+              <img
+                className={layoutStyles.pimg}
+                src={featuredProduct.img}
+                alt={featuredProduct.name}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0.6rem 0.8rem",
-                  borderRadius: "10px",
-                  background: "var(--surface3)",
-                  border: "1px solid var(--border)",
+                  width: 52,
+                  height: 52,
+                  borderRadius: 10,
+                  objectFit: "cover",
                 }}
-              >
-                <div className={layoutStyles.pc}>
-                  <img className={layoutStyles.pimg} src={p.img} alt={p.name} />
-                  <div>
-                    <div className={layoutStyles.pname}>{p.name}</div>
-                    <div className={layoutStyles.psku}>
-                      {p.code} · {p.gender} · מלאי: {p.stock}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
-                  {p.season === "summer" && (
-                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSummer}`}>☀️ קיץ</span>
-                  )}
-                  {p.season === "winter" && (
-                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonWinter}`}>❄️ חורף</span>
-                  )}
-                  {p.season === "spring-autumn" && (
-                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonSpringAutumn}`}>🍂 אביב/סתיו</span>
-                  )}
-                  {(!p.season || p.season === "all") && (
-                    <span className={`${layoutStyles.tagSeason} ${layoutStyles.tagSeasonAll}`}>📅 כל השנה</span>
-                  )}
-                  <span className={`${layoutStyles.tag} ${layoutStyles.tagGold}`}>
-                    ₪{p.price}
-                  </span>
+              />
+              <div>
+                <div className={layoutStyles.pname}>{featuredProduct.name}</div>
+                <div className={layoutStyles.psku}>
+                  {featuredProduct.code} · {featuredProduct.gender} · מלאי:{" "}
+                  {featuredProduct.stock}
                 </div>
               </div>
-            ))}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                flexShrink: 0,
+              }}
+            >
+              <span
+                style={{
+                  background: "rgba(255,107,53,0.12)",
+                  color: "#ff6b35",
+                  border: "1px solid rgba(255,107,53,0.3)",
+                  borderRadius: "20px",
+                  padding: "0.2rem 0.7rem",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                }}
+              >
+                📢 מקודם
+              </span>
+              <span className={`${layoutStyles.tag} ${layoutStyles.tagGold}`}>
+                ₪{featuredProduct.price}
+              </span>
+            </div>
           </div>
         )}
       </div>
