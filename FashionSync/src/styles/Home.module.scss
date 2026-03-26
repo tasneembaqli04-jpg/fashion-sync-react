@@ -15,6 +15,7 @@
   color: var(--white);
   min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 :global(body.light) {
@@ -37,15 +38,6 @@
 
 :global(body.light) .bgImage {
   filter: brightness(0.28) saturate(0.5);
-}
-
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
 }
 
 .floatItem {
@@ -918,4 +910,70 @@
     flex-direction: column-reverse;
     align-items: flex-start;
   }
+  }
+
+.intentCard {
+  width: 420px;
+  max-width: 92vw;
+  background: rgba(10, 10, 10, 0.82);
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 20px;
+  padding: 2.2rem 2rem;
+  backdrop-filter: blur(20px);
+  text-align: right;
+}
+
+:global(body.light) .intentCard {
+  background: #1a1a1a !important;
+  border: 1px solid rgba(201, 168, 76, 0.4) !important;
+}
+
+:global(body.light) .intentTitle {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:global(body.light) .fcLabel {
+  color: #ffffff !important;
+}
+
+:global(body.light) .fcSub {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:global(body.light) .fsModalIntro {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+:global(body.light) .fsChoiceBtn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+.intentTitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 1.2rem;
+  text-align: right;
+}
+
+:global(body.light) .homePage .intentTitle {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.homePage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  flex: 1;
+}
+:global(body.light) .fsHint {
+  background: rgba(201, 168, 76, 0.12) !important;
+  border: 1px solid rgba(201, 168, 76, 0.35) !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+:global(body.light) .fsHint strong {
+  color: rgba(150, 100, 0, 0.9) !important;
 }

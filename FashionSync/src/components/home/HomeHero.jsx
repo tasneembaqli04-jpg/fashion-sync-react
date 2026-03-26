@@ -1,6 +1,6 @@
 import styles from "../../styles/Home.module.scss";
 
-export default function HomeHero({ onOpenIntent }) {
+export default function HomeHero({ onOpenLogin, onBrowse }) {
   return (
     <main className={styles.hero}>
       <div className={styles.heroEyebrow}>ברוך הבא ל</div>
@@ -14,14 +14,37 @@ export default function HomeHero({ onOpenIntent }) {
       </p>
 
       <div className={styles.roleCards}>
-        <button className={styles.roleCard} onClick={onOpenIntent} type="button">
-          <div className={styles.cardIcon}>🛍️</div>
-          <div className={styles.cardTitle}>לקוח</div>
-          <div className={styles.cardDesc}>
-            חיפוש מוצרים, צ'אטבוט, מדידה וירטואלית ועוד
+        <div className={styles.intentCard}>
+
+          <p className={styles.intentTitle}>מה תרצה לעשות היום?</p>
+
+          <div className={styles.fsChoices}>
+            <button
+              className={`${styles.fsChoiceBtn} ${styles.goldBorder}`}
+              onClick={onOpenLogin}
+              type="button"
+            >
+              <span className={styles.fci}>🔑</span>
+              <div>
+                <div className={styles.fcLabel}>כניסה עם מייל וסיסמה</div>
+                <div className={styles.fcSub}>גישה מלאה לסל, מועדפים, הזמנות ועוד</div>
+              </div>
+            </button>
+
+            <button
+              className={styles.fsChoiceBtn}
+              onClick={onBrowse}
+              type="button"
+            >
+              <span className={styles.fci}>👀</span>
+              <div>
+                <div className={styles.fcLabel}>רק להסתכל</div>
+                <div className={styles.fcSub}>כניסה מהירה לקטלוג ללא התחברות</div>
+              </div>
+            </button>
           </div>
-          <div className={styles.cardArrow}>↓</div>
-        </button>
+
+        </div>
       </div>
     </main>
   );

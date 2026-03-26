@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { EMPLOYEES } from "../../data/employees";
 import styles from "../../styles/employee/EmployeeLogin.module.scss";
 
 export default function EmployeeLogin({ onLogin }) {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,9 +14,7 @@ export default function EmployeeLogin({ onLogin }) {
 
     const foundUser = EMPLOYEES.find(
       (emp) =>
-        emp.username === username &&
-        emp.password === password &&
-        emp.active
+        emp.username === username && emp.password === password && emp.active,
     );
 
     if (!foundUser) {
@@ -29,6 +29,22 @@ export default function EmployeeLogin({ onLogin }) {
   return (
     <div className={styles.loginOverlay}>
       <div className={styles.loginBox}>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            left: "1rem",
+            background: "none",
+            border: "none",
+            color: "var(--text-dim)",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            lineHeight: 1,
+          }}
+        >
+          ✕
+        </button>
         <div className={styles.loginBrand}>FashionSync</div>
         <div className={styles.loginRole}>👔 פורטל עובד</div>
 

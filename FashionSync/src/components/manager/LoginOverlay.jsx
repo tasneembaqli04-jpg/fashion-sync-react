@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styles from "../../styles/Manager.module.scss";
 
 export default function LoginOverlay({ onLoginSuccess }) {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
@@ -20,6 +22,22 @@ export default function LoginOverlay({ onLoginSuccess }) {
   return (
     <div className={styles.loginOverlay}>
       <div className={styles.loginBox}>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            left: "1rem",
+            background: "none",
+            border: "none",
+            color: "var(--muted)",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            lineHeight: 1,
+          }}
+        >
+          ✕
+        </button>
         <div className={styles.loginBrand}>FashionSync</div>
         <div className={styles.loginSub}>👑 כניסת מנהל ראשי</div>
 

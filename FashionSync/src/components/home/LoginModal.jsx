@@ -8,13 +8,12 @@ export default function LoginModal({
   onEmailChange,
   onPasswordChange,
   onClose,
-  onBack,
   onSubmit,
 }) {
   if (!isOpen) return null;
 
   return (
-    <div className={`${styles.fsModal} ${styles.show}`} onClick={onClose}>
+    <div className={`${styles.fsModal} ${styles.show}`}>
       <div
         className={styles.fsModalCard}
         role="dialog"
@@ -50,6 +49,7 @@ export default function LoginModal({
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             placeholder="סיסמה (לפחות 8 תווים)"
+            onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           />
         </div>
 
@@ -59,14 +59,9 @@ export default function LoginModal({
           <button className={`${styles.fsBtn} ${styles.fsBtnPrimary}`} onClick={onSubmit}>
             כניסה
           </button>
-
           <button className={`${styles.fsBtn} ${styles.fsBtnGhost}`} onClick={onClose}>
             ביטול
           </button>
-        </div>
-
-        <div className={styles.fsBack} onClick={onBack}>
-          ← חזרה לבחירה
         </div>
       </div>
     </div>

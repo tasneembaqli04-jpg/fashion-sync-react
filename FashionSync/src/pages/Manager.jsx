@@ -389,7 +389,6 @@ export default function Manager({ onPromote }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
 
-  
   const [currentPromotedCode, setCurrentPromotedCode] = useState(
     localStorage.getItem("featuredProductCode") || null,
   );
@@ -426,11 +425,9 @@ export default function Manager({ onPromote }) {
     );
   }, [products, globalSearch]);
 
-  
   const promotedProduct = products.find((p) => p.code === currentPromotedCode);
   const currentPromotedImg = promotedProduct?.img || null;
 
- 
   const isCurrentlyPromoted =
     selectedProduct && currentPromotedCode === selectedProduct.code;
 
@@ -441,7 +438,7 @@ export default function Manager({ onPromote }) {
     localStorage.setItem("featuredProductImage", product.img);
     setPromoMessage(product.name);
     setIsPromoOpen(false);
-    setTimeout(() => setSelectedProduct(null), 0); 
+    setTimeout(() => setSelectedProduct(null), 0);
     setTimeout(() => setPromoMessage(null), 3000);
   };
 
@@ -452,7 +449,7 @@ export default function Manager({ onPromote }) {
     if (onPromote) onPromote(null);
     setPromoMessage("הקידום בוטל בהצלחה");
     setIsPromoOpen(false);
-    setTimeout(() => setSelectedProduct(null), 0); 
+    setTimeout(() => setSelectedProduct(null), 0);
     setTimeout(() => setPromoMessage(null), 3000);
   };
 
@@ -495,6 +492,7 @@ export default function Manager({ onPromote }) {
           if (!window.confirm("להתנתק?")) return;
           setIsLoggedIn(false);
           setActiveView("overview");
+          navigate("/");
         }}
         onGoHome={() => {
           if (!window.confirm("לחזור לדף הבית?")) return;

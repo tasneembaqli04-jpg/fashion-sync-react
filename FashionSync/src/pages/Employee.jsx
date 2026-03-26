@@ -1,4 +1,6 @@
+import EmployeeDeliveries from "../components/employee/EmployeeDeliveries";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import EmployeeLogin from "../components/employee/EmployeeLogin";
 import EmployeeTopbar from "../components/employee/EmployeeTopbar";
 import EmployeeSidebar from "../components/employee/EmployeeSidebar";
@@ -18,6 +20,7 @@ import { PRODUCTS_SEED } from "../data/products";
 import layoutStyles from "../styles/employee/EmployeeLayout.module.scss";
 
 export default function Employee() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [activePanel, setActivePanel] = useState("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -47,6 +50,11 @@ export default function Employee() {
         seen: false,
       },
     ];
+  });
+
+  const [deliveries, setDeliveries] = useState(() => {
+    const saved = localStorage.getItem("fs_deliveries");
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [orders, setOrders] = useState([
@@ -80,7 +88,10 @@ export default function Employee() {
     },
   ]);
 
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => {
+    const saved = localStorage.getItem("fs_history");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [notification, setNotification] = useState(null);
   const [confirmData, setConfirmData] = useState(null);
 
@@ -123,6 +134,7 @@ export default function Employee() {
     setActivePanel("overview");
     setSellItems([]);
     setIsSidebarOpen(false);
+    navigate("/");
   }
 
   function handleShowPanel(panel) {
@@ -140,13 +152,14 @@ export default function Employee() {
   }
 
   function addHistory(text) {
-    setHistory((prev) => [
-      {
-        id: Date.now().toString(),
-        text,
-      },
-      ...prev,
-    ]);
+    setHistory((prev) => {
+      const updated = [{ id: Date.now().toString(), text }, ...prev].slice(
+        0,
+        50,
+      );
+      localStorage.setItem("fs_history", JSON.stringify(updated));
+      return updated;
+    });
   }
 
   function handleAddSell(code) {
@@ -237,15 +250,37 @@ export default function Employee() {
 
   function handleToggleOrderReady(orderId) {
     setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status: order.status === "ready" ? "pending" : "ready",
-            }
-          : order,
-      ),
+      prev.map((order) => {
+        if (order.id !== orderId) return order;
+        const newStatus = order.status === "ready" ? "pending" : "ready";
+        if (newStatus === "ready") {
+          const delivery = {
+            id: `DEL-${Date.now()}`,
+            orderId: order.id,
+            customer: order.customer,
+            items: order.items,
+            status: "waiting",
+            createdAt: Date.now(),
+          };
+          setDeliveries((prev) => {
+            const updated = [delivery, ...prev];
+            localStorage.setItem("fs_deliveries", JSON.stringify(updated));
+            return updated;
+          });
+        }
+        return { ...order, status: newStatus };
+      }),
     );
+  }
+
+  function handleUpdateDeliveryStatus(deliveryId, newStatus) {
+    setDeliveries((prev) => {
+      const updated = prev.map((d) =>
+        d.id === deliveryId ? { ...d, status: newStatus } : d,
+      );
+      localStorage.setItem("fs_deliveries", JSON.stringify(updated));
+      return updated;
+    });
   }
 
   function handleSaveNewProduct(form) {
@@ -421,6 +456,13 @@ export default function Employee() {
           )}
 
           {activePanel === "history" && <EmployeeHistory history={history} />}
+
+          {activePanel === "deliveries" && (
+            <EmployeeDeliveries
+              deliveries={deliveries}
+              onUpdateStatus={handleUpdateDeliveryStatus}
+            />
+          )}
         </main>
       </div>
 

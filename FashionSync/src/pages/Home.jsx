@@ -4,7 +4,6 @@ import FloatingItems from "../components/home/FloatingItems.jsx";
 import HomeNavbar from "../components/home/HomeNavbar.jsx";
 import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
-import IntentModal from "../components/home/IntentModal.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
 import styles from "../styles/Home.module.scss";
 
@@ -40,7 +39,6 @@ function saveUsers(users) {
 
 export default function Home() {
   const [isLight, setIsLight] = useState(false);
-  const [intentOpen, setIntentOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
   const [email, setEmail] = useState("");
@@ -60,13 +58,11 @@ export default function Home() {
   useEffect(() => {
     const image = localStorage.getItem("featuredProductImage") || "";
     setFeaturedImage(image);
-
     function handleStorage(e) {
       if (e.key === "featuredProductImage" || e.key === null) {
         setFeaturedImage(localStorage.getItem("featuredProductImage") || "");
       }
     }
-
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
@@ -76,7 +72,6 @@ export default function Home() {
   }
 
   function handleBrowse() {
-    setIntentOpen(false);
     localStorage.setItem(LS.MODE, "guest");
     localStorage.removeItem(LS.CURRENT_USER);
     window.location.href = CUSTOMER_PAGE;
@@ -87,28 +82,24 @@ export default function Home() {
     setError("");
     setEmail(saved?.email || "");
     setPassword("");
-    setIntentOpen(false);
     setLoginOpen(true);
   }
 
   function handleLogin() {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPass = password.trim();
-
     setError("");
 
     if (!isGmail(normalizedEmail)) {
       setError("אימייל לא תקין — חייב להיות ‎@gmail.com");
       return;
     }
-
     if (normalizedPass.length < 8) {
       setError("הסיסמה חייבת להכיל לפחות 8 תווים");
       return;
     }
 
     const users = loadUsers();
-
     if (!users[normalizedEmail]) {
       users[normalizedEmail] = {
         password: normalizedPass,
@@ -124,28 +115,17 @@ export default function Home() {
       email: normalizedEmail,
       name: users[normalizedEmail].name || normalizedEmail.split("@")[0],
     };
-
     localStorage.setItem(LS.CURRENT_USER, JSON.stringify(user));
     localStorage.setItem(LS.MODE, "auth");
-
-    window.location.href =
-      `${CUSTOMER_PAGE}?mode=auth&email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}`;
+    window.location.href = `${CUSTOMER_PAGE}?mode=auth&email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}`;
   }
 
   return (
     <div className={styles.homePage}>
       <HomeBackground featuredImage={featuredImage} />
-      <FloatingItems />
       <HomeNavbar isLight={isLight} onToggleTheme={handleToggleTheme} />
-      <HomeHero onOpenIntent={() => setIntentOpen(true)} />
+      <HomeHero onOpenLogin={openLoginModal} onBrowse={handleBrowse} />
       <HomeFooter />
-
-      <IntentModal
-        isOpen={intentOpen}
-        onClose={() => setIntentOpen(false)}
-        onBrowse={handleBrowse}
-        onGoToLogin={openLoginModal}
-      />
 
       <LoginModal
         isOpen={loginOpen}
@@ -155,10 +135,6 @@ export default function Home() {
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onClose={() => setLoginOpen(false)}
-        onBack={() => {
-          setLoginOpen(false);
-          setIntentOpen(true);
-        }}
         onSubmit={handleLogin}
       />
     </div>

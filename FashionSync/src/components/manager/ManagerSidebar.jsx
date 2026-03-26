@@ -124,11 +124,6 @@ export default function ManagerSidebar({
           <span>{theme === "light" ? "מצב כהה/בהיר" : "מצב כהה/בהיר"}</span>
         </button>
 
-        <button className={styles.navBtn} onClick={onGoHome}>
-          <span className={styles.icon}>🏠</span>
-          דף הבית
-        </button>
-
         <button
           className={styles.navBtn}
           onClick={onLogout}

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function HomeFooter() {
   return (
-    <div className={styles.footerStrip}>
+    <div className={styles.footerStrip} style={{ marginTop: "auto" }}>
       <span>FashionSync · כל הזכויות שמורות · 2026</span>
       <span>•</span>
       <Link to="/employee">כניסת עובד</Link>

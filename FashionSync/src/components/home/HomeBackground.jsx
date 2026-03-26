@@ -14,7 +14,6 @@ export default function HomeBackground({ featuredImage }) {
           transition: "background-image 0.8s ease-in-out" 
         }}
       />
-      <div className={styles.grain} />
     </>
   );
 }

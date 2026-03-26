@@ -24,11 +24,7 @@ export default function EmployeeSidebar({
       <aside
         className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ""}`}
       >
-        <div className={styles.brand}>
-          Fashion
-          <br />
-          Sync
-        </div>
+        <div className={styles.brand}>FashionSync</div>
 
         <div className={styles.roleBadge}>פורטל עובד</div>
 
@@ -87,6 +83,15 @@ export default function EmployeeSidebar({
           )}
         </button>
 
+        <div className={styles.navSection}>משלוחים</div>
+        <button
+          className={`${styles.navItem} ${activePanel === "deliveries" ? styles.active : ""}`}
+          onClick={() => onShowPanel("deliveries")}
+        >
+          <span className={styles.navIcon}>🚚</span>
+          מעקב משלוחים
+        </button>
+
         <div className={styles.navSection}>היסטוריה</div>
         <button
           className={`${styles.navItem} ${activePanel === "history" ? styles.active : ""}`}
@@ -102,18 +107,13 @@ export default function EmployeeSidebar({
             מצב כהה/בהיר
           </button>
 
-          <button className={styles.navItem} onClick={() => navigate("/")}>
-            <span className={styles.navIcon}>🏡</span>
-            דף הבית
-          </button>
-
           <button
             className={styles.navItem}
             onClick={onLogout}
             style={{ color: "var(--red)" }}
           >
             <span className={styles.navIcon}>🚪</span>
-            התנתקות
+            התנתק
           </button>
         </div>
       </aside>
