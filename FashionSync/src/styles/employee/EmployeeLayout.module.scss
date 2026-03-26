@@ -71,7 +71,7 @@
   flex: 1;
   background: var(--bg);
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;
 }
 .main {
   margin-right: var(--sidebar);
@@ -192,7 +192,7 @@
   background: rgba(0, 0, 0, 0.02);
 }
 
-/* תיקון מצב בהיר - רקע שקוף בטבלה */
+
 :global(body[data-theme="light"]) .tbl td {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
