@@ -261,14 +261,15 @@
 
 .topbarSearch {
   flex: 2;
-  max-width: 360px;
+  flex: 0 1 auto;
+  max-width: 150px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 9px;
-  padding: 0.5rem 0.95rem;
+  padding: 0.4rem;
 }
 
 .topbarSearch input {
@@ -1079,10 +1080,6 @@ tr:last-child td {
   .g3 {
     grid-template-columns: 1fr;
   }
-
-  .topbarSearch {
-    display: none;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1122,10 +1119,6 @@ tr:last-child td {
 
   .topbarTitle {
     font-size: 0.95rem;
-  }
-
-  .tbRight .btnGhost {
-    display: none;
   }
 
   .content {
@@ -1740,9 +1733,10 @@ tr:last-child td {
   background: linear-gradient(135deg, #d4af37 0%, #f1c40f 100%);
   color: #000;
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 10px;
   font-weight: 700;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: transform 0.2s;
 
