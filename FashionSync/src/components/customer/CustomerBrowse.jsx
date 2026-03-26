@@ -17,6 +17,7 @@ export default function CustomerBrowse({
   priceValue,
   saleValue,
   cartCount,
+  cart,
   products,
   currentListMode,
   setSearchValue,
@@ -53,56 +54,6 @@ export default function CustomerBrowse({
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>🏬 קטלוג מוצרים</div>
-      <div className={commonStyles.pageSub}>חפש לפי מגדר, קטגוריה ועונה</div>
-
-      {isGuest && (
-        <div className={browseStyles.guestCatalogBanner}>
-          <div className={browseStyles.gbt}>
-            👀 אתה גולש כ<strong>אורח</strong>. <strong>התחבר</strong> כדי
-            להוסיף לסל ולהזמין.
-          </div>
-
-          <button
-            className={`${commonStyles.btn} ${commonStyles.btnGold}`}
-            style={{ padding: "0.5rem 1rem", fontSize: "0.86rem" }}
-            onClick={goLogin}
-          >
-            🔑 התחבר
-          </button>
-        </div>
-      )}
-
-      {saleBannerVisible && (
-        <div className={browseStyles.saleCatalogBanner}>
-          <div className={browseStyles.sbt}>
-            🏷️ <strong>מבצע מיוחד!</strong> פריטים נבחרים עם הנחה – לזמן מוגבל
-          </div>
-
-          <button
-            className={commonStyles.btn}
-            style={{
-              background: "linear-gradient(135deg, #8e44ad, #a855f7)",
-              color: "#fff",
-              padding: "0.5rem 1rem",
-              fontSize: "0.86rem",
-            }}
-            onClick={filterSaleOnly}
-          >
-            🛍️ הצג מבצעים
-          </button>
-        </div>
-      )}
-
-      {seasonBannerVisible && (
-        <div className={`${browseStyles.seasonBanner} ${seasonBannerClass}`}>
-          <span className={browseStyles.seasonEmoji}>{seasonEmoji}</span>
-          <span className={browseStyles.seasonText}>{seasonText}</span>
-        </div>
-      )}
-
-   
-
       <div className={browseStyles.filterBar}>
         <div className={browseStyles.filterLeft}>
           <div className={browseStyles.searchWrap}>
@@ -113,7 +64,6 @@ export default function CustomerBrowse({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
-
             <label
               className={browseStyles.searchCameraBtn}
               title="חיפוש לפי תמונה"
@@ -149,15 +99,17 @@ export default function CustomerBrowse({
             <option value="שמלות">שמלות</option>
             <option value="עליוניות">עליוניות</option>
           </select>
+
           <select
             value={currentSeasonTab}
             onChange={(e) => setSeasonTab(e.target.value)}
           >
             <option value="all">כל העונות</option>
-            <option value="summer">קיץ</option>
-            <option value="winter">חורף</option>
-            <option value="spring">אביב / סתיו</option>
+            <option value="summer">☀️ קיץ</option>
+            <option value="winter">❄️ חורף</option>
+            <option value="spring-autumn">🌸 אביב / סתיו</option>
           </select>
+
           <select
             value={priceValue}
             onChange={(e) => setPriceValue(e.target.value)}
@@ -168,7 +120,7 @@ export default function CustomerBrowse({
             <option value="300-500">₪300–₪500</option>
             <option value="500-9999">מעל ₪500</option>
           </select>
-          
+
           <select
             value={saleValue}
             onChange={(e) => setSaleValue(e.target.value)}
@@ -187,42 +139,89 @@ export default function CustomerBrowse({
         </div>
       </div>
 
-      <div className={commonStyles.tabs}>
-        <button
-          className={`${commonStyles.tabBtn} ${
-            currentListMode === "all" ? commonStyles.activeTab : ""
-          }`}
-          onClick={() => setListMode("all")}
-        >
-          הכל
-        </button>
+      <div className={browseStyles.tabsSticky}>
+        <div className={browseStyles.pageHeader}>
+          <div className={commonStyles.pageTitle}>🏬 קטלוג מוצרים</div>
+          <div className={commonStyles.pageSub}>חפש לפי מגדר, קטגוריה ועונה</div>
 
-        <button
-          className={`${commonStyles.tabBtn} ${
-            currentListMode === "trending" ? commonStyles.activeTab : ""
-          }`}
-          onClick={() => setListMode("trending")}
-        >
-          🔥 טרנדים
-        </button>
+          {seasonBannerVisible && (
+            <div className={`${browseStyles.seasonBanner} ${seasonBannerClass}`}>
+              <span className={browseStyles.seasonEmoji}>{seasonEmoji}</span>
+              <span className={browseStyles.seasonText}>{seasonText}</span>
+            </div>
+          )}
 
-        <button
-          className={`${commonStyles.tabBtn} ${
-            currentListMode === "bestsellers" ? commonStyles.activeTab : ""
-          }`}
-          onClick={() => setListMode("bestsellers")}
-        >
-          ⭐ נמכרים
-        </button>
+          {isGuest && (
+            <div className={browseStyles.guestCatalogBanner}>
+              <div className={browseStyles.gbt}>
+                👀 אתה גולש כ<strong>אורח</strong>. <strong>התחבר</strong> כדי
+                להוסיף לסל ולהזמין.
+              </div>
+              <button
+                className={`${commonStyles.btn} ${commonStyles.btnGold}`}
+                style={{ padding: "0.5rem 1rem", fontSize: "0.86rem" }}
+                onClick={goLogin}
+              >
+                🔑 התחבר
+              </button>
+            </div>
+          )}
 
-        <button
-          className={`${commonStyles.tabBtn} ${
-            currentListMode === "sale" ? commonStyles.activeTab : ""
-          }`}
-          onClick={() => setListMode("sale")}
-        >
-          🏷️ מבצעים
-        </button>
+          {saleBannerVisible && (
+            <div className={browseStyles.saleCatalogBanner}>
+              <div className={browseStyles.sbt}>
+                🏷️ <strong>מבצע מיוחד!</strong> פריטים נבחרים עם הנחה – לזמן מוגבל
+              </div>
+              <button
+                className={commonStyles.btn}
+                style={{
+                  background: "linear-gradient(135deg, #8e44ad, #a855f7)",
+                  color: "#fff",
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.86rem",
+                }}
+                onClick={filterSaleOnly}
+              >
+                🛍️ הצג מבצעים
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className={commonStyles.tabs}>
+          <button
+            className={`${commonStyles.tabBtn} ${
+              currentListMode === "all" ? commonStyles.activeTab : ""
+            }`}
+            onClick={() => setListMode("all")}
+          >
+            הכל
+          </button>
+          <button
+            className={`${commonStyles.tabBtn} ${
+              currentListMode === "trending" ? commonStyles.activeTab : ""
+            }`}
+            onClick={() => setListMode("trending")}
+          >
+            🔥 טרנדים
+          </button>
+          <button
+            className={`${commonStyles.tabBtn} ${
+              currentListMode === "bestsellers" ? commonStyles.activeTab : ""
+            }`}
+            onClick={() => setListMode("bestsellers")}
+          >
+            ⭐ נמכרים
+          </button>
+          <button
+            className={`${commonStyles.tabBtn} ${
+              currentListMode === "sale" ? commonStyles.activeTab : ""
+            }`}
+            onClick={() => setListMode("sale")}
+          >
+            🏷️ מבצעים
+          </button>
+        </div>
       </div>
 
       {products?.length ? (
@@ -231,6 +230,7 @@ export default function CustomerBrowse({
             <ProductCard
               key={product.code}
               product={product}
+              cart={cart}
               isGuest={isGuest}
               openProductModal={openProductModal}
               toggleWish={toggleWish}

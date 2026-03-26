@@ -9,7 +9,6 @@ function stockBadge(stock, minStock) {
       </span>
     );
   }
-
   if (stock <= minStock) {
     return (
       <span className={`${baseStyles.badge} ${baseStyles.badgeYellow}`}>
@@ -17,7 +16,6 @@ function stockBadge(stock, minStock) {
       </span>
     );
   }
-
   return (
     <span className={`${baseStyles.badge} ${baseStyles.badgeGreen}`}>זמין</span>
   );
@@ -29,29 +27,33 @@ function seasonBadge(product) {
     : product.season;
 
   const classMap = {
-    קיץ: "summer",
-    חורף: "winter",
-    "אביב-סתיו": "spring",
-    "כל השנה": "all",
+    summer: "badgeSummer",
+    winter: "badgeWinter",
+    "spring-autumn": "badgeSpring",
+    all: "badgeAll",
   };
 
   const iconMap = {
-    קיץ: "☀️",
-    חורף: "❄️",
-    "אביב-סתיו": "🌸",
-    "כל השנה": "🗓️",
+    summer: "☀️",
+    winter: "❄️",
+    "spring-autumn": "🌸",
+    all: "🗓️",
   };
 
+  const labelMap = {
+    summer: "קיץ",
+    winter: "חורף",
+    "spring-autumn": "אביב / סתיו",
+    all: "כל השנה",
+  };
+
+  const cls = classMap[season] || "badgeAll";
+  const icon = iconMap[season] || "🗓️";
+  const label = labelMap[season] || season;
+
   return (
-    <div
-      className={`${cardStyles.seasonBadgeCard} ${
-        cardStyles[classMap[season]] || cardStyles.all
-      }`}
-    >
-      {iconMap[season] || "🗓️"}{" "}
-      {Array.isArray(product.season)
-        ? product.season.join(" / ")
-        : product.season}
+    <div className={`${cardStyles.seasonBadgeCard} ${cardStyles[cls]}`}>
+      {icon} {label}
     </div>
   );
 }
@@ -67,16 +69,13 @@ function priceHtml(product) {
         <span className={cardStyles.productPriceOriginal}>
           ₪{product.originalPrice}
         </span>
-        <span
-          className={`${cardStyles.productPrice} ${cardStyles.salePrice}`}
-        >
+        <span className={`${cardStyles.productPrice} ${cardStyles.salePrice}`}>
           ₪{product.price}
         </span>
         <span className={cardStyles.saleInlineTag}>🏷️ -20%</span>
       </div>
     );
   }
-
   return (
     <div className={cardStyles.priceRow}>
       <span className={cardStyles.productPrice}>₪{product.price}</span>
@@ -87,6 +86,7 @@ function priceHtml(product) {
 export default function ProductCard({
   product,
   isGuest,
+  cart = [],
   openProductModal,
   toggleWish,
   addToCart,
@@ -95,6 +95,10 @@ export default function ProductCard({
   openNotifyModal,
   guestPrompt,
 }) {
+  const cartItem = cart.find((item) => item.code === product.code);
+  const isInCart = Boolean(cartItem);
+  const cartQty = cartItem ? cartItem.qty : 0;
+
   const badgeHtml = product.sale ? (
     <div className={cardStyles.saleRibbon}>🏷️ -20%</div>
   ) : product.trending ? (
@@ -115,23 +119,15 @@ export default function ProductCard({
         {isGuest ? (
           <button
             className={cardStyles.wishIcon}
-            onClick={(e) => {
-              e.stopPropagation();
-              guestPrompt();
-            }}
+            onClick={(e) => { e.stopPropagation(); guestPrompt(); }}
             title="התחבר"
           >
             🔒
           </button>
         ) : (
           <button
-            className={`${cardStyles.wishIcon} ${
-              product.wished ? cardStyles.active : ""
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleWish(product.code);
-            }}
+            className={`${cardStyles.wishIcon} ${product.wished ? cardStyles.active : ""}`}
+            onClick={(e) => { e.stopPropagation(); toggleWish(product.code); }}
           >
             {product.wished ? "❤️" : "🤍"}
           </button>
@@ -139,10 +135,7 @@ export default function ProductCard({
 
         <button
           className={cardStyles.shareIcon}
-          onClick={(e) => {
-            e.stopPropagation();
-            openShareModal(product.code);
-          }}
+          onClick={(e) => { e.stopPropagation(); openShareModal(product.code); }}
         >
           📤
         </button>
@@ -158,21 +151,12 @@ export default function ProductCard({
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {priceHtml(product)}
           {stockBadge(product.stock, product.minStock)}
         </div>
 
-        <div
-          className={cardStyles.cardActions}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className={cardStyles.cardActions} onClick={(e) => e.stopPropagation()}>
           {isGuest ? (
             <button
               className={`${cardStyles.actBtn} ${cardStyles.guestLocked}`}
@@ -180,14 +164,18 @@ export default function ProductCard({
             >
               🔒 הוסף לסל
             </button>
+          ) : isInCart ? (
+            <button
+              className={`${cardStyles.actBtn} ${cardStyles.inCartBtn}`}
+              onClick={(e) => { e.stopPropagation(); addToCart(product.code); }}
+              disabled={product.stock === 0}
+            >
+              ✓ בסל ({cartQty}) – הוסף עוד
+            </button>
           ) : (
             <button
               className={`${cardStyles.actBtn} ${cardStyles.goldBtn}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log("clicked add button", product.code);
-                addToCart(product.code);
-              }}
+              onClick={(e) => { e.stopPropagation(); addToCart(product.code); }}
               disabled={product.stock === 0}
             >
               🛒 הוסף לסל
@@ -196,7 +184,7 @@ export default function ProductCard({
 
           <button
             className={cardStyles.actBtn}
-            onClick={() => openTryOnFromProduct(product.code)}
+            onClick={(e) => { e.stopPropagation(); openTryOnFromProduct(product.code); }}
           >
             📷 נסה עליי
           </button>
@@ -206,10 +194,7 @@ export default function ProductCard({
           <button
             className={cardStyles.notifyBtn}
             id={`nb-${product.code}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              openNotifyModal(product.code);
-            }}
+            onClick={(e) => { e.stopPropagation(); openNotifyModal(product.code); }}
           >
             🔔 הודע לי שיחזור למלאי
           </button>

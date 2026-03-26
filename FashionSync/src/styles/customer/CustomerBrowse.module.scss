@@ -1,137 +1,59 @@
-.guestCatalogBanner {
-  background: rgba(201, 168, 76, 0.06);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 12px;
-  padding: 0.85rem 1.1rem;
-  margin-bottom: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.guestCatalogBanner .gbt {
-  color: var(--light-gray);
-  font-size: 0.88rem;
-}
-
-.guestCatalogBanner .gbt strong {
-  color: var(--gold);
-}
-
-.saleCatalogBanner {
-  background: linear-gradient(
-    135deg,
-    rgba(142, 68, 173, 0.1),
-    rgba(142, 68, 173, 0.04)
-  );
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  border-radius: 12px;
-  padding: 0.85rem 1.1rem;
-  margin-bottom: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.saleCatalogBanner .sbt {
-  color: #c084fc;
-  font-size: 0.88rem;
-}
-
-.saleCatalogBanner .sbt strong {
-  color: #a855f7;
-}
-
-/* ── SEASON BANNER ── */
-.seasonBanner {
-  border-radius: 14px;
-  padding: 1rem 1.3rem;
-  margin-bottom: 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.seasonBanner.summer {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 180, 0, 0.1),
-    rgba(255, 140, 0, 0.05)
-  );
-  border: 1px solid rgba(255, 180, 0, 0.3);
-}
-
-.seasonBanner.winter {
-  background: linear-gradient(
-    135deg,
-    rgba(100, 149, 237, 0.1),
-    rgba(65, 105, 225, 0.05)
-  );
-  border: 1px solid rgba(100, 149, 237, 0.3);
-}
-
-.seasonBanner.spring {
-  background: linear-gradient(
-    135deg,
-    rgba(39, 174, 96, 0.1),
-    rgba(46, 213, 115, 0.05)
-  );
-  border: 1px solid rgba(39, 174, 96, 0.3);
-}
-
-.seasonBanner.autumn {
-  background: linear-gradient(
-    135deg,
-    rgba(192, 100, 40, 0.1),
-    rgba(201, 168, 76, 0.05)
-  );
-  border: 1px solid rgba(192, 100, 40, 0.3);
-}
-
-.seasonBanner .seasonEmoji {
-  font-size: 1.6rem;
-}
-
-.seasonBanner .seasonText {
-  font-size: 0.88rem;
-}
-
-.seasonBanner.summer .seasonText {
-  color: #ffb400;
-}
-.seasonBanner.winter .seasonText {
-  color: #6495ed;
-}
-.seasonBanner.spring .seasonText {
-  color: #27ae60;
-}
-.seasonBanner.autumn .seasonText {
-  color: #c06428;
-}
-
 .filterBar {
   position: sticky;
   top: 0;
   z-index: 90;
-
   display: flex;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-
   background: var(--black);
-  padding: 0.6rem 0;
-  width: calc(100% + 2rem);
-  margin-right: -1rem;
-  margin-left: -1rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  padding: 0.6rem 1rem;
+  width: calc(100% + 5rem);
+  margin-right: -2.5rem;
+  margin-left: -2.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 860px) {
+  .filterBar {
+    width: calc(100% + 2rem);
+    margin-right: -1rem;
+    margin-left: -1rem;
+    padding: 0.6rem 1rem;
+    top: 57px;
+  }
+}
+
+.tabsSticky {
+  position: sticky;
+  z-index: 89;
+  background: var(--black);
+  padding: 0.5rem 0 0;
+  width: calc(100% + 5rem);
+  margin-right: -2.5rem;
+  margin-left: -2.5rem;
+  padding-right: 2.5rem;
+  padding-left: 2.5rem;
+  margin-bottom: 1rem;
+  top: 53px;
+}
+
+@media (max-width: 860px) {
+  .tabsSticky {
+    width: calc(100% + 2rem);
+    margin-right: -1rem;
+    margin-left: -1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    top: 110px;
+  }
+}
+
+.pageHeader {
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .filterRight {
@@ -175,6 +97,7 @@
   background: var(--charcoal);
   color: var(--white);
 }
+
 .searchWrap {
   position: relative;
   width: 380px;
@@ -247,7 +170,8 @@
   .filterBar select {
     width: 100%;
   }
-    .searchWrap {
+
+  .searchWrap {
     width: 100%;
   }
 
@@ -256,8 +180,6 @@
   }
 }
 
-
-/* ── PRODUCT GRID ── */
 .productsGrid {
   display: grid;
   grid-template-columns: repeat(4, 230px);
@@ -265,18 +187,123 @@
   justify-content: center;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 1100px) {
+  .productsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 750px) {
   .productsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
 }
+
+@media (max-width: 400px) {
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+.wishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .wishGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+.guestCatalogBanner {
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gbt {
+  color: var(--light-gray);
+  font-size: 0.88rem;
+}
+
+.gbt strong {
+  color: var(--gold);
+}
+
+.saleCatalogBanner {
+  background: linear-gradient(135deg, rgba(142, 68, 173, 0.1), rgba(142, 68, 173, 0.04));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sbt {
+  color: #c084fc;
+  font-size: 0.88rem;
+}
+
+.sbt strong {
+  color: #a855f7;
+}
+
+.seasonBanner {
+  border-radius: 14px;
+  padding: 0.75rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.summer {
+  background: linear-gradient(135deg, rgba(255, 180, 0, 0.1), rgba(255, 140, 0, 0.05));
+  border: 1px solid rgba(255, 180, 0, 0.3);
+}
+
+.winter {
+  background: linear-gradient(135deg, rgba(100, 149, 237, 0.1), rgba(65, 105, 225, 0.05));
+  border: 1px solid rgba(100, 149, 237, 0.3);
+}
+
+.spring {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.1), rgba(46, 213, 115, 0.05));
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.autumn {
+  background: linear-gradient(135deg, rgba(192, 100, 40, 0.1), rgba(201, 168, 76, 0.05));
+  border: 1px solid rgba(192, 100, 40, 0.3);
+}
+
+.seasonEmoji {
+  font-size: 1.4rem;
+}
+
+.seasonText {
+  font-size: 0.88rem;
+}
+
 .pointsCard {
-  background: linear-gradient(
-    135deg,
-    rgba(142, 68, 173, 0.14),
-    rgba(142, 68, 173, 0.05)
-  );
+  background: linear-gradient(135deg, rgba(142, 68, 173, 0.14), rgba(142, 68, 173, 0.05));
   border: 1px solid rgba(168, 85, 247, 0.28);
   border-radius: 18px;
   padding: 1rem 1.3rem;

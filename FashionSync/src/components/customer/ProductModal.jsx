@@ -29,6 +29,30 @@ export default function ProductModal({
     product.originalPrice &&
     product.originalPrice > product.price;
 
+  const colorsFromVariants = product.variants
+    ? product.variants.map((v) => v.colorName)
+    : product.colors || [];
+
+  const sizesFromVariants = product.variants
+    ? [...new Set(product.variants.flatMap((v) => Object.keys(v.sizes || {})))]
+    : product.sizes || [];
+
+  const allSizes = sizesFromVariants.includes("אחר")
+    ? sizesFromVariants
+    : [...sizesFromVariants, "אחר"];
+
+  const seasonIcon =
+    product.season === "summer" ? "☀️" :
+    product.season === "winter" ? "❄️" :
+    product.season === "spring-autumn" ? "🌸" : "🗓️";
+
+  const seasonLabel =
+    product.season === "summer" ? "קיץ" :
+    product.season === "winter" ? "חורף" :
+    product.season === "spring-autumn" ? "אביב / סתיו" :
+    product.season === "all" ? "כל השנה" :
+    product.season || "";
+
   return (
     <div
       className={`${modalStyles.modalWrap} ${open ? modalStyles.open : ""}`}
@@ -62,55 +86,17 @@ export default function ProductModal({
           </div>
 
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                gap: ".5rem",
-              }}
-            >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: ".5rem" }}>
               <div className={modalStyles.pdTitle}>{product.name}</div>
-
               <div style={{ display: "flex", gap: ".4rem", flexShrink: 0 }}>
                 {isGuest ? (
-                  <button
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: "1.3rem",
-                      cursor: "pointer",
-                      opacity: ".4",
-                    }}
-                    onClick={guestPrompt}
-                  >
-                    🔒
-                  </button>
+                  <button style={{ background: "none", border: "none", fontSize: "1.3rem", cursor: "pointer", opacity: ".4" }} onClick={guestPrompt}>🔒</button>
                 ) : (
-                  <button
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: "1.3rem",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => toggleWishModal(product.code)}
-                  >
+                  <button style={{ background: "none", border: "none", fontSize: "1.3rem", cursor: "pointer" }} onClick={() => toggleWishModal(product.code)}>
                     {wished ? "❤️" : "🤍"}
                   </button>
                 )}
-
-                <button
-                  style={{
-                    background: "none",
-                    border: "none",
-                    fontSize: "1.3rem",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => openShareModal(product.code)}
-                >
-                  📤
-                </button>
+                <button style={{ background: "none", border: "none", fontSize: "1.3rem", cursor: "pointer" }} onClick={() => openShareModal(product.code)}>📤</button>
               </div>
             </div>
 
@@ -119,29 +105,8 @@ export default function ProductModal({
             </div>
 
             <div style={{ marginBottom: ".6rem" }}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: ".3rem",
-                  padding: ".2rem .65rem",
-                  borderRadius: "999px",
-                  fontSize: ".76rem",
-                  fontWeight: 900,
-                  background: "rgba(201,168,76,.1)",
-                  border: "1px solid rgba(201,168,76,.25)",
-                  color: "var(--gold)",
-                  marginRight: ".6rem",
-                }}
-              >
-                {product.season === "קיץ"
-                  ? "☀️"
-                  : product.season === "חורף"
-                  ? "❄️"
-                  : product.season === "אביב-סתיו"
-                  ? "🌸"
-                  : "🗓️"}{" "}
-                {product.season}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: ".3rem", padding: ".2rem .65rem", borderRadius: "999px", fontSize: ".76rem", fontWeight: 900, background: "rgba(201,168,76,.1)", border: "1px solid rgba(201,168,76,.25)", color: "var(--gold)", marginRight: ".6rem" }}>
+                {seasonIcon} {seasonLabel}
               </span>
             </div>
 
@@ -163,37 +128,26 @@ export default function ProductModal({
                 <label>צבע</label>
                 <select
                   id="pd-color"
-                  value={selectedColor}
+                  value={selectedColor || colorsFromVariants[0] || ""}
                   onChange={(e) => setSelectedColor(e.target.value)}
                 >
-                  {(product.colors || []).map((color) => (
-                    <option key={color}>{color}</option>
+                  {colorsFromVariants.map((color) => (
+                    <option key={color} value={color}>{color}</option>
                   ))}
                 </select>
-
-                {selectedColor === "אחר" && (
-                  <input
-                    id="pd-color-other"
-                    type="text"
-                    placeholder="צבע…"
-                    value={customColor}
-                    onChange={(e) => setCustomColor(e.target.value)}
-                  />
-                )}
               </div>
 
               <div className={modalStyles.pdField}>
                 <label>מידה</label>
                 <select
                   id="pd-size"
-                  value={selectedSize}
+                  value={selectedSize || sizesFromVariants[0] || ""}
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
-                  {(product.sizes || []).map((size) => (
-                    <option key={size}>{size}</option>
+                  {allSizes.map((size) => (
+                    <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
-
                 {selectedSize === "אחר" && (
                   <input
                     id="pd-size-other"
@@ -201,6 +155,7 @@ export default function ProductModal({
                     placeholder="מידה…"
                     value={customSize}
                     onChange={(e) => setCustomSize(e.target.value)}
+                    style={{ marginTop: "0.4rem" }}
                   />
                 )}
               </div>
@@ -209,55 +164,18 @@ export default function ProductModal({
             <div className={modalStyles.pdActions}>
               {isGuest ? (
                 <>
-                  <button
-                    className={baseStyles.btn}
-                    style={{
-                      border: "1px dashed rgba(201,168,76,.3)",
-                      color: "rgba(201,168,76,.6)",
-                    }}
-                    onClick={guestPrompt}
-                  >
-                    🔒 התחבר לסל
-                  </button>
-
-                  <button
-                    className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-                    onClick={() => openTryOnFromProduct(product.code)}
-                  >
-                    📷 נסה עליי
-                  </button>
+                  <button className={baseStyles.btn} style={{ border: "1px dashed rgba(201,168,76,.3)", color: "rgba(201,168,76,.6)" }} onClick={guestPrompt}>🔒 התחבר לסל</button>
+                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>📷 נסה עליי</button>
                 </>
               ) : product.stock > 0 ? (
                 <>
-                  <button
-                    className={`${baseStyles.btn} ${baseStyles.btnGold}`}
-                    onClick={() => addToCart(product.code, true)}
-                  >
-                    🛒 הוסף לסל
-                  </button>
-
-                  <button
-                    className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-                    onClick={() => openTryOnFromProduct(product.code)}
-                  >
-                    📷 נסה עליי
-                  </button>
+                  <button className={`${baseStyles.btn} ${baseStyles.btnGold}`} onClick={() => addToCart(product.code, true)}>🛒 הוסף לסל</button>
+                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>📷 נסה עליי</button>
                 </>
               ) : (
-                <button
-                  className={`${baseStyles.btn} ${baseStyles.btnDanger}`}
-                  onClick={() => openNotifyModal(product.code)}
-                >
-                  🔔 הודע לי
-                </button>
+                <button className={`${baseStyles.btn} ${baseStyles.btnDanger}`} onClick={() => openNotifyModal(product.code)}>🔔 הודע לי</button>
               )}
-
-              <button
-                className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-                onClick={closeProductModal}
-              >
-                סגור
-              </button>
+              <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={closeProductModal}>סגור</button>
             </div>
           </div>
         </div>

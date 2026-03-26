@@ -18,7 +18,9 @@ export default function CustomerTopbar({
       <div className={topbarStyles.mobileBrand}>FashionSync</div>
 
       <div className={topbarStyles.mobileTopbarRight}>
- 
+        <button className={topbarStyles.mobileCartBtn} onClick={openCartOrAuth}>
+          🛒 {cartCountMobile}
+        </button>
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import {
   loadProducts,
   filterProducts,
   SEASON_META,
+  getCurrentSeason,
 } from "../functions/customer/catalog";
 import {
   loadCart,
@@ -71,7 +72,7 @@ export default function Customer() {
   const [categoryValue, setCategoryValue] = useState("");
   const [priceValue, setPriceValue] = useState("");
   const [saleValue, setSaleValue] = useState("");
-  const [currentSeasonTab, setCurrentSeasonTab] = useState("all");
+  const [currentSeasonTab, setCurrentSeasonTab] = useState(getCurrentSeason());
   const [currentListMode, setCurrentListMode] = useState("all");
 
   const [chatInput, setChatInput] = useState("");
@@ -85,6 +86,7 @@ export default function Customer() {
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
+  
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -569,6 +571,7 @@ export default function Customer() {
             priceValue={priceValue}
             saleValue={saleValue}
             cartCount={cartCount}
+            cart={cart}
             products={browseProducts}
             currentListMode={currentListMode}
             setSearchValue={setSearchValue}
