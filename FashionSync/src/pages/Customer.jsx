@@ -110,21 +110,8 @@ export default function Customer() {
   const [pcfText, setPcfText] = useState("");
   const [pcfTopics, setPcfTopics] = useState([]);
 
-
   const [visualOpen, setVisualOpen] = useState(false);
-  const [visualTab, setVisualTab] = useState("search");
-  const [visualPreview, setVisualPreview] = useState("");
-  const [visualResults, setVisualResults] = useState([]);
-  const [vchatMessages, setVchatMessages] = useState([
-    { type: "bot", html: "שלח/י תמונה ואני אציג תוצאות." },
-  ]);
-  const [vchatInput, setVchatInput] = useState("");
-  const [tchatMessages, setTchatMessages] = useState([
-    { type: "bot", html: "שאל על מידה, צבע, הוספה לסל" },
-  ]);
-  const [tchatInput, setTchatInput] = useState("");
   const [tryonSelfie, setTryonSelfie] = useState("");
-  const [tryonProductCode, setTryonProductCode] = useState("");
 
   const [giftAmount, setGiftAmount] = useState("100");
   const [giftCustomAmount, setGiftCustomAmount] = useState("");
@@ -132,19 +119,21 @@ export default function Customer() {
   const [giftMessage, setGiftMessage] = useState("");
   const [giftPreviewCode, setGiftPreviewCode] = useState("—");
   const [giftError, setGiftError] = useState("");
-  useEffect(() => {
-  if (!currentUser?.email) {
-    setOrders([]);
-    return;
-  }
 
-  const userOrders = loadOrders(currentUser.email);
-  setOrders(Array.isArray(userOrders) ? userOrders.slice().reverse() : []);
-}, [currentUser, activePanel]);
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setOrders([]);
+      return;
+    }
+
+    const userOrders = loadOrders(currentUser.email);
+    setOrders(Array.isArray(userOrders) ? userOrders.slice().reverse() : []);
+  }, [currentUser, activePanel]);
+
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
-   
+
   useEffect(() => {
     openDB();
 
@@ -203,9 +192,6 @@ export default function Customer() {
 
   const seasonMeta =
     currentSeasonTab !== "all" ? SEASON_META[currentSeasonTab] : null;
-
-  const tryonStageProduct =
-    products.find((product) => product.code === tryonProductCode) || null;
 
   const giftPreview = buildGiftCardPreview({
     amount: giftAmount,
@@ -353,18 +339,19 @@ export default function Customer() {
     setAppliedDiscount(discount);
   }
 
-function startCheckout() {
-  if (!cart.length) {
-    alert("הסל ריק");
-    return;
+  function startCheckout() {
+    if (!cart.length) {
+      alert("הסל ריק");
+      return;
+    }
+
+    setCartOpen(false);
+    setPcfRating(0);
+    setPcfText("");
+    setPcfTopics([]);
+    setPreCheckoutOpen(true);
   }
 
-  setCartOpen(false);
-  setPcfRating(0);
-  setPcfText("");
-  setPcfTopics([]);
-  setPreCheckoutOpen(true);
-}
   function togglePcfTopic(topic) {
     setPcfTopics((prev) =>
       prev.includes(topic)
@@ -460,51 +447,13 @@ function startCheckout() {
     setNotifyModalOpen(false);
   }
 
-  function switchVisualTab(tab) {
-    setVisualTab(tab);
-  }
-
   function openVisualModal() {
     setVisualOpen(true);
-    setVisualTab("search");
   }
 
   function closeVisualModal() {
     setVisualOpen(false);
-  }
-
-  function doVisualSearch(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setVisualPreview(e.target.result);
-      setTimeout(() => {
-        setVisualResults(
-          products.filter((product) => product.stock > 0).slice(0, 6)
-        );
-      }, 700);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function sendVChat() {
-    const text = vchatInput.trim();
-    if (!text) return;
-
-    setVchatMessages((prev) => [...prev, { type: "user", html: text }]);
-    setVchatInput("");
-
-    setTimeout(() => {
-      setVchatMessages((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          html: "שלח/י תמונה של פריט, ואני אנסה למצוא מוצרים דומים מתוך הקטלוג 🔍",
-        },
-      ]);
-    }, 400);
+    setTryonSelfie("");
   }
 
   function tryOnSelfieUpload(event) {
@@ -512,39 +461,19 @@ function startCheckout() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => setTryonSelfie(e.target.result);
+    reader.onload = (e) => {
+      setTryonSelfie(e.target.result);
+    };
     reader.readAsDataURL(file);
   }
 
-  function tryOnPickFromSelect(code) {
-    setTryonProductCode(code);
+  function clearTryonSelfie() {
+    setTryonSelfie("");
   }
 
-  function openTryOnFromProduct(code) {
+  function openTryOnFromProduct() {
     setVisualOpen(true);
-    setVisualTab("tryon");
-    setTryonProductCode(code);
   }
-
-  function sendTChat() {
-    const text = tchatInput.trim();
-    if (!text) return;
-
-    setTchatMessages((prev) => [...prev, { type: "user", html: text }]);
-    setTchatInput("");
-
-    setTimeout(() => {
-      setTchatMessages((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          html: "העלה/י תמונה שלך ובחר/י פריט כדי לראות תצוגת 'נסה עליי'",
-        },
-      ]);
-    }, 400);
-  }
-
-
 
   function handleGcAmountChange(value) {
     setGiftAmount(value);
@@ -590,7 +519,6 @@ function startCheckout() {
 
   return (
     <>
-      
       <CustomerTopbar
         cartCountMobile={cartCount}
         toggleSidebar={toggleSidebar}
@@ -760,7 +688,7 @@ function startCheckout() {
         applyCoupon={applyCoupon}
         startCheckout={startCheckout}
       />
-      
+
       <PreCheckoutFeedback
         open={preCheckoutOpen}
         pcfRating={pcfRating}
@@ -773,33 +701,12 @@ function startCheckout() {
         skipToCheckout={skipToCheckout}
       />
 
- 
-
       <VisualSearchModal
         open={visualOpen}
-        visualTab={visualTab}
-        visualPreview={visualPreview}
-        visualResults={visualResults}
-        vchatMessages={vchatMessages}
-        vchatInput={vchatInput}
-        tchatMessages={tchatMessages}
-        tchatInput={tchatInput}
         tryonSelfie={tryonSelfie}
-        tryonProductCode={tryonProductCode}
-        tryonProducts={products}
-        tryonStageProduct={tryonStageProduct}
-        isGuest={isGuest}
         closeVisualModal={closeVisualModal}
-        switchVisualTab={switchVisualTab}
-        doVisualSearch={doVisualSearch}
-        sendVChat={sendVChat}
-        setVchatInput={setVchatInput}
         tryOnSelfieUpload={tryOnSelfieUpload}
-        tryOnPickFromSelect={tryOnPickFromSelect}
-        sendTChat={sendTChat}
-        setTchatInput={setTchatInput}
-        openProductModal={openProductModal}
-        addToCart={addToCart}
+        clearTryonSelfie={clearTryonSelfie}
       />
     </>
   );

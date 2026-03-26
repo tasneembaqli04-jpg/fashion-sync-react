@@ -24,7 +24,7 @@ export default function CustomerBrowse({
   setCategoryValue,
   setPriceValue,
   setSaleValue,
-  openVisualModal,
+  onImageSearchUpload,
   goLogin,
   filterSaleOnly,
   setSeasonTab,
@@ -101,61 +101,32 @@ export default function CustomerBrowse({
         </div>
       )}
 
-      <div className={browseStyles.seasonTabs}>
-        <button
-          className={`${browseStyles.seasonTab} ${
-            currentSeasonTab === "all" ? browseStyles.activeAll : ""
-          }`}
-          onClick={() => setSeasonTab("all")}
-        >
-          ✨ כל העונות
-        </button>
-
-        <button
-          className={`${browseStyles.seasonTab} ${
-            currentSeasonTab === "קיץ" ? browseStyles.activeSummer : ""
-          }`}
-          onClick={() => setSeasonTab("קיץ")}
-        >
-          ☀️ קיץ
-        </button>
-
-        <button
-          className={`${browseStyles.seasonTab} ${
-            currentSeasonTab === "חורף" ? browseStyles.activeWinter : ""
-          }`}
-          onClick={() => setSeasonTab("חורף")}
-        >
-          ❄️ חורף
-        </button>
-
-        <button
-          className={`${browseStyles.seasonTab} ${
-            currentSeasonTab === "אביב-סתיו" ? browseStyles.activeSpring : ""
-          }`}
-          onClick={() => setSeasonTab("אביב-סתיו")}
-        >
-          🌸 אביב / סתיו
-        </button>
-      </div>
+   
 
       <div className={browseStyles.filterBar}>
         <div className={browseStyles.filterLeft}>
-          <button
-            className={browseStyles.cameraBtn}
-            title="חיפוש חזותי"
-            onClick={openVisualModal}
-          >
-            📷
-          </button>
+          <div className={browseStyles.searchWrap}>
+            <input
+              type="text"
+              className={browseStyles.searchInput}
+              placeholder="שם, קוד, חיפוש לפי תמונה..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
 
-          <input
-            type="text"
-            placeholder="שם, קוד..."
-            style={{ minWidth: "160px" }}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
+            <label
+              className={browseStyles.searchCameraBtn}
+              title="חיפוש לפי תמונה"
+            >
+              📷
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onImageSearchUpload}
+                style={{ display: "none" }}
+              />
+            </label>
+          </div>
         </div>
 
         <div className={browseStyles.filterRight}>
@@ -178,7 +149,15 @@ export default function CustomerBrowse({
             <option value="שמלות">שמלות</option>
             <option value="עליוניות">עליוניות</option>
           </select>
-
+          <select
+            value={currentSeasonTab}
+            onChange={(e) => setSeasonTab(e.target.value)}
+          >
+            <option value="all">כל העונות</option>
+            <option value="summer">קיץ</option>
+            <option value="winter">חורף</option>
+            <option value="spring">אביב / סתיו</option>
+          </select>
           <select
             value={priceValue}
             onChange={(e) => setPriceValue(e.target.value)}
@@ -189,7 +168,7 @@ export default function CustomerBrowse({
             <option value="300-500">₪300–₪500</option>
             <option value="500-9999">מעל ₪500</option>
           </select>
-
+          
           <select
             value={saleValue}
             onChange={(e) => setSaleValue(e.target.value)}
