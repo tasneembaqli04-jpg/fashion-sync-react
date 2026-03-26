@@ -7,6 +7,10 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+
+  width: 230px;
+  min-width: 230px;
+  max-width: 230px;
 }
 
 .productCard:hover {
@@ -210,7 +214,7 @@
   display: flex;
   gap: 0.5rem;
   margin-top: 0.25rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .actBtn {
