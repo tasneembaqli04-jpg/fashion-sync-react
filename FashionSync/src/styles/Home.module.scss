@@ -15,7 +15,7 @@
   color: var(--white);
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 :global(body.light) {
@@ -25,6 +25,8 @@
 
 .homePage {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .bgImage {
@@ -180,13 +182,13 @@
 }
 
 .hero {
+  flex: 1;
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: auto;
   text-align: center;
   padding: 2rem 2rem 1rem;
 }
@@ -400,7 +402,7 @@
   position: relative;
   z-index: 10;
   text-align: center;
-  padding: 1.4rem 2rem;
+  padding: 1rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.22);
   font-size: 0.82rem;
@@ -409,6 +411,9 @@
   justify-content: center;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-top: auto;
+  width: 100%;
+  background: inherit;
 }
 
 :global(body.light) .footerStrip {
@@ -722,14 +727,19 @@
 }
 
 @media (max-width: 720px) {
-  .nav {
-    padding: 1.2rem 1.2rem;
-  }
-
   .navTagline {
     display: none;
   }
 }
+
+@media (max-width: 480px) {
+  .nav {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
 .detailsModalBox {
   background: var(--surface2);
   border: 1px solid rgba(201, 168, 76, 0.18);
@@ -910,7 +920,7 @@
     flex-direction: column-reverse;
     align-items: flex-start;
   }
-  }
+}
 
 .intentCard {
   width: 420px;
@@ -948,6 +958,7 @@
   background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
+
 .intentTitle {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.65);
@@ -959,15 +970,6 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-.homePage {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.hero {
-  flex: 1;
-}
 :global(body.light) .fsHint {
   background: rgba(201, 168, 76, 0.12) !important;
   border: 1px solid rgba(201, 168, 76, 0.35) !important;
@@ -976,4 +978,75 @@
 
 :global(body.light) .fsHint strong {
   color: rgba(150, 100, 0, 0.9) !important;
+}
+/* התאמות למסכים קטנים (סמארטפונים) */
+@media (max-width: 600px) {
+  .heroTitle {
+    font-size: 2.8rem; /* הקטנת הכותרת הראשית למניעת חריגה */
+    margin-bottom: 1rem;
+  }
+
+  .heroSub {
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+
+  .roleCards {
+    gap: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .roleCard {
+    width: 100%; /* הקלפים יתפסו את כל רוחב המסך בטלפון */
+    max-width: 320px;
+    padding: 1.5rem 1rem;
+  }
+
+  .nav {
+    padding: 1rem;
+    flex-direction: column; /* סידור הלוגו והכפתורים אחד מעל השני במידת הצורך */
+    text-align: center;
+  }
+
+  .navRight {
+    justify-content: center;
+    width: 100%;
+  }
+}
+@media (max-height: 700px) {
+  .hero {
+    justify-content: flex-start;
+    padding-top: 2rem;
+  }
+  
+  .bgImage {
+    position: absolute; 
+  }
+}
+@media (max-width: 768px) {
+  :global(body) {
+    overflow-y: auto !important; 
+  }
+
+  .hero {
+    padding: 4rem 1rem 2rem;
+    justify-content: flex-start; 
+  }
+
+  .heroTitle {
+    font-size: 2.5rem; 
+    line-height: 1.2;
+  }
+
+  .roleCards {
+    flex-direction: column; 
+    align-items: center;
+    width: 100%;
+  }
+
+  .roleCard {
+    width: 90%; 
+    margin-bottom: 1rem;
+  }
 }
