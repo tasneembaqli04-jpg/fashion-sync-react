@@ -47,10 +47,10 @@
 .floatItem {
   position: fixed;
   font-size: 4rem;
-  opacity: 0.03;
+  opacity: 0.6; 
   pointer-events: none;
-  z-index: 2;
-  animation: floatAround 20s infinite linear;
+  z-index: 5;
+  animation: floatAround 8s infinite linear; 
 }
 
 @keyframes floatAround {
@@ -978,10 +978,9 @@
 :global(body.light) .fsHint strong {
   color: rgba(150, 100, 0, 0.9) !important;
 }
-/* התאמות למסכים קטנים (סמארטפונים) */
 @media (max-width: 600px) {
   .heroTitle {
-    font-size: 2.8rem; /* הקטנת הכותרת הראשית למניעת חריגה */
+    font-size: 2.8rem; 
     margin-bottom: 1rem;
   }
 
@@ -997,14 +996,14 @@
   }
 
   .roleCard {
-    width: 100%; /* הקלפים יתפסו את כל רוחב המסך בטלפון */
+    width: 100%; 
     max-width: 320px;
     padding: 1.5rem 1rem;
   }
 
   .nav {
     padding: 1rem;
-    flex-direction: column; /* סידור הלוגו והכפתורים אחד מעל השני במידת הצורך */
+    flex-direction: column; 
     text-align: center;
   }
 
