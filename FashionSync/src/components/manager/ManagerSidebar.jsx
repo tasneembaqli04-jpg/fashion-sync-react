@@ -1,5 +1,4 @@
-import styles from "../../styles/Manager.module.scss";
-
+import styles from "../../styles/manager/ManagerSidebar.module.scss";
 export default function ManagerSidebar({
   activeView,
   onChangeView,
@@ -56,33 +55,30 @@ export default function ManagerSidebar({
           {alertCount > 0 && <div className={styles.navDot} />}
         </button>
 
-        <button
+        
+        
+        <div className={styles.sbSec}>מכירות</div>
+                <button
           className={`${styles.navBtn} ${
-            activeView === "tasks" ? styles.active : ""
+            activeView === "orders" ? styles.active : ""
           }`}
-          onClick={() => onChangeView("tasks")}
+          onClick={() => onChangeView("orders")}
         >
-          <span className={styles.icon}>📋</span>
-          <span style={{ flex: 1 }}>משימות לעובדים</span>
-          {taskCount > 0 && (
-            <span
-              style={{
-                background: "var(--blue)",
-                color: "#fff",
-                fontSize: ".6rem",
-                fontWeight: 900,
-                padding: ".05rem .45rem",
-                borderRadius: "10px",
-                marginRight: ".1rem",
-              }}
-            >
-              {taskCount}
-            </span>
-          )}
+          <span className={styles.icon}>📦</span>
+          הזמנות לקוחות
         </button>
 
-        <div className={styles.sbSec}>מכירות</div>
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "deliveries" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("deliveries")}
+        >
+          <span className={styles.icon}>🚚</span>
+          מעקב משלוחים
+        </button>
 
+        
         <button
           className={`${styles.navBtn} ${
             activeView === "receipts" ? styles.active : ""

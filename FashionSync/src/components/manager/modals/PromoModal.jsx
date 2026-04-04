@@ -1,4 +1,6 @@
 import { createPortal } from "react-dom";
+import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
+import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 
 export default function PromoModal({
   open,
@@ -12,44 +14,17 @@ export default function PromoModal({
 
   return createPortal(
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.78)",
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backdropFilter: "blur(8px)",
-        padding: "1rem",
-      }}
+      className={modalStyles.modalOverlay}
       onClick={onClose}
     >
       <div
-        style={{
-          background: "var(--surface2, #161820)",
-          border: "1px solid rgba(255,107,53,0.3)",
-          borderRadius: "18px",
-          padding: "1.7rem",
-          width: "480px",
-          maxWidth: "96vw",
-          position: "relative",
-          direction: "rtl",
-        }}
+        className={modalStyles.promoModalBox}
+        style={{ direction: "rtl" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            left: "1rem",
-            background: "none",
-            border: "none",
-            color: "var(--muted, #5c6170)",
-            fontSize: "1.25rem",
-            cursor: "pointer",
-          }}
+          className={modalStyles.modalClose}
         >
           ✕
         </button>
@@ -89,10 +64,12 @@ export default function PromoModal({
               flexShrink: 0,
             }}
           />
+
           <div style={{ textAlign: "right" }}>
             <div style={{ fontWeight: 800, fontSize: "0.98rem" }}>
               {product.name}
             </div>
+
             <div
               style={{
                 color: "var(--muted, #5c6170)",
@@ -102,6 +79,7 @@ export default function PromoModal({
             >
               {product.cat} · ₪{product.price}
             </div>
+
             <div
               style={{
                 color: "#ff6b35",
@@ -139,17 +117,12 @@ export default function PromoModal({
               onCancelPromote && onCancelPromote();
               onClose();
             }}
+            className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
             style={{
               width: "100%",
-              padding: "0.72rem",
               background: "rgba(231,76,60,0.08)",
               border: "1px solid rgba(231,76,60,0.25)",
-              borderRadius: "10px",
               color: "#f1948a",
-              fontFamily: "Alef, sans-serif",
-              fontWeight: 700,
-              fontSize: "0.9rem",
-              cursor: "pointer",
               marginBottom: "0.65rem",
             }}
           >
@@ -160,40 +133,27 @@ export default function PromoModal({
         <div style={{ display: "flex", gap: "0.7rem", marginTop: "1.1rem" }}>
           <button
             onClick={() => onConfirm(product)}
+            className={`${uiStyles.btn} ${uiStyles.btnGold}`}
             style={{
               flex: 1,
-              padding: "0.82rem",
               background: isCurrentlyPromoted
                 ? "linear-gradient(135deg, #2ecc71, #27ae60)"
-                : "linear-gradient(135deg, #c9a84c, #e8c97a)",
-              border: "none",
-              borderRadius: "10px",
-              color: isCurrentlyPromoted ? "#ffffff" : "#07080c",
-              fontFamily: "Alef, sans-serif",
-              fontWeight: 700,
-              fontSize: "0.98rem",
-              cursor: "pointer",
+                : undefined,
+              color: isCurrentlyPromoted ? "#ffffff" : undefined,
             }}
           >
             🚀 הפעל פרסומת
           </button>
+
           <button
             onClick={onClose}
-            style={{
-              padding: "0.82rem 1.2rem",
-              background: "transparent",
-              border: "1px solid var(--border, rgba(255,255,255,0.06))",
-              borderRadius: "10px",
-              color: "var(--muted, #5c6170)",
-              fontFamily: "Alef, sans-serif",
-              cursor: "pointer",
-            }}
+            className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
           >
             ביטול
           </button>
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

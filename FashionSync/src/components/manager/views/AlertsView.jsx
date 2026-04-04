@@ -1,11 +1,20 @@
 import { useMemo, useState } from "react";
-import styles from "../../../styles/Manager.module.scss";
+import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
+import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
+import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
+import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 
 function alertClass(type) {
-  if (type === "danger") return `${styles.alert} ${styles.aDanger}`;
-  if (type === "warn") return `${styles.alert} ${styles.aWarn}`;
-  if (type === "info") return `${styles.alert} ${styles.aInfo}`;
-  return `${styles.alert} ${styles.aSuccess}`;
+  if (type === "danger") {
+    return `${alertStyles.alert} ${alertStyles.aDanger}`;
+  }
+  if (type === "warn") {
+    return `${alertStyles.alert} ${alertStyles.aWarn}`;
+  }
+  if (type === "info") {
+    return `${alertStyles.alert} ${alertStyles.aInfo}`;
+  }
+  return `${alertStyles.alert} ${alertStyles.aSuccess}`;
 }
 
 function fmtDate(date) {
@@ -25,7 +34,7 @@ const TABS = [
   { key: "demand", label: "🔥 ביקוש גבוה" },
 ];
 
-export default function AlertsView({ alerts, products }) {
+export default function AlertsView({ alerts = [], products = [] }) {
   const [typeFilter, setTypeFilter] = useState("");
   const [demandMin, setDemandMin] = useState(15);
 
@@ -36,16 +45,19 @@ export default function AlertsView({ alerts, products }) {
       low: alerts.filter((a) => a.key.startsWith("low_")).length,
       demand: alerts.filter((a) => a.isDemand).length,
     }),
-    [alerts],
+    [alerts]
   );
 
   const filteredAlerts = useMemo(() => {
     let list = [...alerts];
-    if (typeFilter === "oos")
+
+    if (typeFilter === "oos") {
       list = list.filter((a) => a.key.startsWith("oos_"));
-    else if (typeFilter === "low")
+    } else if (typeFilter === "low") {
       list = list.filter((a) => a.key.startsWith("low_"));
-    else if (typeFilter === "demand") list = list.filter((a) => a.isDemand);
+    } else if (typeFilter === "demand") {
+      list = list.filter((a) => a.isDemand);
+    }
 
     if (typeFilter === "demand") {
       list = list.filter((a) => (a.demandCount || 0) > demandMin);
@@ -55,9 +67,9 @@ export default function AlertsView({ alerts, products }) {
   }, [alerts, typeFilter, demandMin]);
 
   return (
-    <div className={`${styles.view} ${styles.active}`}>
-      <div className={styles.pageHd}>
-        <div className={styles.phLeft}>
+    <div className={layoutStyles.view}>
+      <div className={layoutStyles.pageHd}>
+        <div className={layoutStyles.phLeft}>
           <h2>התראות מערכת</h2>
           <p>נשמרות לשבוע אחד ומתעדכנות לפי מצב המוצרים</p>
         </div>
@@ -75,7 +87,7 @@ export default function AlertsView({ alerts, products }) {
         {TABS.map((tab) => (
           <button
             key={tab.key}
-            className={styles.filterTab}
+            className={uiStyles.filterTab}
             onClick={() => {
               setTypeFilter(tab.key);
               setDemandMin(15);
@@ -96,7 +108,7 @@ export default function AlertsView({ alerts, products }) {
 
         {typeFilter === "demand" && (
           <select
-            className={styles.fpInput}
+            className={formStyles.fpInput}
             style={{ maxWidth: 160 }}
             value={demandMin}
             onChange={(e) => setDemandMin(Number(e.target.value))}
@@ -165,9 +177,12 @@ export default function AlertsView({ alerts, products }) {
                       flexShrink: 0,
                     }}
                   />
+
                   <div style={{ flex: 1 }}>
                     <strong>{alert.title}</strong>
+
                     <div style={{ opacity: 0.92 }}>{alert.msg}</div>
+
                     <div
                       style={{
                         opacity: 0.65,
@@ -201,7 +216,7 @@ export default function AlertsView({ alerts, products }) {
             );
           })
         ) : (
-          <div className={`${styles.alert} ${styles.aSuccess}`}>
+          <div className={`${alertStyles.alert} ${alertStyles.aSuccess}`}>
             ✅ אין התראות בסינון הנוכחי
           </div>
         )}

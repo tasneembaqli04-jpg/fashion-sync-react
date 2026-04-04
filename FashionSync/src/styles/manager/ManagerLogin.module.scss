@@ -1,0 +1,78 @@
+.loginOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Alef", sans-serif;
+}
+
+.loginBox {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 20px;
+  padding: 2.6rem;
+  width: 420px;
+  max-width: 95vw;
+  animation: fadeUp 0.5s ease;
+}
+
+.loginBrand {
+  font-family: "Playfair Display", serif;
+  font-size: 1.9rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.15rem;
+}
+
+.loginSub {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.4);
+  margin-bottom: 2rem;
+}
+
+.errMsg {
+  color: var(--red);
+  font-size: 0.8rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.btnLogin {
+  width: 100%;
+  padding: 0.88rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+  border: none;
+  border-radius: 10px;
+  font-family: "Alef", sans-serif;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #07080c;
+  cursor: pointer;
+  transition: all 0.22s;
+  margin-top: 0.5rem;
+}
+
+.btnLogin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--gold-glow);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

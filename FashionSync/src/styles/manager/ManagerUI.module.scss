@@ -1,0 +1,226 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 9px;
+  border: none;
+  font-family: "Alef", sans-serif;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btnGold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+  color: #07080c;
+}
+
+.btnGold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--gold-glow);
+}
+
+.btnGhost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.btnGhost:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+.cardHd {
+  padding: 0.95rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 0.92rem;
+  color: var(--gold);
+}
+
+.cardBody {
+  padding: 1.2rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tGold {
+  background: var(--gold-dim);
+  color: var(--gold);
+}
+
+.tGreen {
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--green);
+}
+
+.tRed {
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--red);
+}
+
+.tBlue {
+  background: rgba(52, 152, 219, 0.1);
+  color: var(--blue);
+}
+
+.tYellow {
+  background: rgba(243, 156, 18, 0.1);
+  color: #f39c12;
+}
+
+.tOrange {
+  background: rgba(230, 126, 34, 0.1);
+  color: var(--orange);
+}
+
+.tPurple {
+  background: rgba(155, 89, 182, 0.1);
+  color: var(--purple);
+}
+
+.filterTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: "Alef", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.filterTab:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.ptb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.pname {
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.psku {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+.slowBadge {
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  border-radius: 20px;
+  color: #ff6b35;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  display: inline-block;
+}
+
+.btnPromote {
+  background: linear-gradient(135deg, #ff6b35, #f7c59f);
+  color: #1a0a00;
+  border: none;
+  border-radius: 9px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Alef", sans-serif;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btnPromote:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+}
+/* ===== RECEIPTS ===== */
+
+.receiptBlock {
+  background: rgba(201, 168, 76, 0.04);
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.receiptBlock:hover {
+  border-color: rgba(201, 168, 76, 0.25);
+  transform: translateY(-1px);
+}
+
+.receiptHd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.receiptId {
+  font-family: monospace;
+  font-size: 0.83rem;
+  color: var(--gold);
+}
+
+.receiptDate {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.receiptItem {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.receiptItem:last-child {
+  border-bottom: none;
+}

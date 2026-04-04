@@ -1,0 +1,155 @@
+:global(:root) {
+  --bg: #07080c;
+  --surface: #0f1018;
+  --surface2: #161820;
+  --border: rgba(255, 255, 255, 0.06);
+  --gold: #c9a84c;
+  --gold-lt: #e8c97a;
+  --gold-dim: rgba(201, 168, 76, 0.1);
+  --gold-glow: rgba(201, 168, 76, 0.22);
+  --border-gold: rgba(201, 168, 76, 0.18);
+  --green: #2ecc71;
+  --red: #e74c3c;
+  --blue: #3498db;
+  --orange: #e67e22;
+  --purple: #9b59b6;
+  --text: #eaeaf0;
+  --muted: #5c6170;
+  --sidebar: 258px;
+  --r: 13px;
+}
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+.appShell {
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  font-family: "Alef", sans-serif;
+  transition:
+    background 0.25s,
+    color 0.25s;
+  overflow: hidden;
+}
+
+.light {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface2: #eef0f4;
+  --border: rgba(0, 0, 0, 0.08);
+  --gold: #b8922e;
+  --gold-lt: #c9a84c;
+  --gold-dim: rgba(185, 146, 46, 0.1);
+  --gold-glow: rgba(185, 146, 46, 0.22);
+  --border-gold: rgba(185, 146, 46, 0.22);
+  --text: #1a1c24;
+  --muted: #8a90a0;
+}
+
+.dark {
+  background: #080808;
+  color: #fafaf8;
+}
+
+.mainWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.view {
+  animation: fadeUp 0.28s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pageHd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.4rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.phLeft h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.phLeft p {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.g3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  .g2,
+  .g3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainWrap {
+    width: 100%;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageHd {
+    margin-bottom: 1rem;
+  }
+
+  .phLeft h2 {
+    font-size: 1.2rem;
+  }
+}

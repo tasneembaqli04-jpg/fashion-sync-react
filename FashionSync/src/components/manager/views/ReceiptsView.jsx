@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import styles from "../../../styles/Manager.module.scss";
-
+import styles from "../../../styles/manager/ManagerUI.module.scss";
 function fmtDate(date) {
   return new Date(date).toLocaleString("he-IL", {
     day: "2-digit",

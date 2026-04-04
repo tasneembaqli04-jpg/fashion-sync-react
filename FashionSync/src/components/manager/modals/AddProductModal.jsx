@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import styles from "../../../styles/Manager.module.scss";
+import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
+
 export default function AddProductModal({
   isOpen,
   onClose,
@@ -35,6 +36,15 @@ export default function AddProductModal({
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setIsCameraActive(false);
   };
 
   const resetForm = () => {
@@ -72,6 +82,7 @@ export default function AddProductModal({
       });
       streamRef.current = stream;
       setIsCameraActive(true);
+
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -83,22 +94,16 @@ export default function AddProductModal({
     }
   };
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setIsCameraActive(false);
-  };
-
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
+
     const canvas = canvasRef.current;
     canvas.width = videoRef.current.videoWidth || 640;
     canvas.height = videoRef.current.videoHeight || 480;
+
     canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+
     handleChange("image", dataUrl);
     stopCamera();
     setUploadMode("file");
@@ -107,10 +112,12 @@ export default function AddProductModal({
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith("image/")) {
       setError("⚠️ יש לבחור קובץ תמונה");
       return;
     }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       handleChange("image", event.target?.result || "");
@@ -165,7 +172,6 @@ export default function AddProductModal({
       onClick={handleOverlayClick}
     >
       <div className={styles.addProductModal}>
-        
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
@@ -174,13 +180,12 @@ export default function AddProductModal({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-start", 
-            direction: "rtl", 
-            gap: "0.6rem", 
+            justifyContent: "flex-start",
+            direction: "rtl",
+            gap: "0.6rem",
             marginBottom: "1.8rem",
           }}
         >
-          
           <span
             style={{
               fontSize: "2rem",
@@ -204,9 +209,7 @@ export default function AddProductModal({
           </h2>
         </div>
 
-        
         <div className={styles.addProductGrid}>
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>קוד</label>
             <div style={{ display: "flex", gap: "0.45rem" }}>
@@ -238,7 +241,6 @@ export default function AddProductModal({
             </div>
           </div>
 
-         
           <div className={styles.addField}>
             <label className={styles.addLabel}>שם</label>
             <input
@@ -249,7 +251,6 @@ export default function AddProductModal({
             />
           </div>
 
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>קטגוריה</label>
             <select
@@ -264,7 +265,6 @@ export default function AddProductModal({
             </select>
           </div>
 
-         
           <div className={styles.addField}>
             <label className={styles.addLabel}>מגדר</label>
             <select
@@ -277,7 +277,6 @@ export default function AddProductModal({
             </select>
           </div>
 
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>עונה</label>
             <select
@@ -296,7 +295,6 @@ export default function AddProductModal({
             </select>
           </div>
 
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>כמות</label>
             <input
@@ -307,7 +305,6 @@ export default function AddProductModal({
             />
           </div>
 
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>מחיר (₪)</label>
             <input
@@ -318,7 +315,6 @@ export default function AddProductModal({
             />
           </div>
 
-          
           <div className={styles.addField}>
             <label className={styles.addLabel}>מינימום להתראה</label>
             <input
@@ -330,7 +326,6 @@ export default function AddProductModal({
           </div>
         </div>
 
-        
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תיאור</label>
           <input
@@ -341,11 +336,9 @@ export default function AddProductModal({
           />
         </div>
 
-       
         <div className={styles.addFieldFull}>
           <label className={styles.addLabel}>תמונת מוצר</label>
 
-          
           <div
             style={{
               display: "flex",
@@ -377,6 +370,7 @@ export default function AddProductModal({
             >
               📁 קובץ
             </button>
+
             <button
               type="button"
               onClick={() => {
@@ -392,7 +386,8 @@ export default function AddProductModal({
                   uploadMode === "camera" ? "var(--gold)" : "var(--border)",
                 background:
                   uploadMode === "camera" ? "var(--gold-dim)" : "transparent",
-                color: uploadMode === "camera" ? "var(--gold)" : "var(--muted)",
+                color:
+                  uploadMode === "camera" ? "var(--gold)" : "var(--muted)",
                 fontFamily: "Alef, sans-serif",
                 fontWeight: 700,
                 cursor: "pointer",
@@ -403,7 +398,6 @@ export default function AddProductModal({
             </button>
           </div>
 
-         
           {uploadMode === "file" && (
             <div
               className={styles.imageUploadBox}
@@ -428,19 +422,18 @@ export default function AddProductModal({
                   </button>
                 </>
               ) : (
-                <>
-                  <div
-                    style={{
-                      color: "var(--text)",
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      marginBottom: "0.3rem",
-                    }}
-                  >
-                    לחץ להעלאה
-                  </div>
-                </>
+                <div
+                  style={{
+                    color: "var(--text)",
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    marginBottom: "0.3rem",
+                  }}
+                >
+                  לחץ להעלאה
+                </div>
               )}
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -451,7 +444,6 @@ export default function AddProductModal({
             </div>
           )}
 
-       
           {uploadMode === "camera" && (
             <div
               style={{
@@ -565,6 +557,7 @@ export default function AddProductModal({
           >
             ביטול
           </button>
+
           <button
             className={styles.addSubmitBtn}
             style={{ flex: 2 }}
@@ -573,6 +566,7 @@ export default function AddProductModal({
             הוסף מוצר
           </button>
         </div>
+
         <ScanModal
           open={isScanOpen}
           onClose={() => setIsScanOpen(false)}

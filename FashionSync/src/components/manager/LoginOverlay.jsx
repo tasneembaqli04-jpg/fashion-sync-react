@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import styles from "../../styles/Manager.module.scss";
+import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
+import formStyles from "../../styles/manager/ManagerForms.module.scss";
 
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
@@ -20,8 +21,8 @@ export default function LoginOverlay({ onLoginSuccess }) {
   };
 
   return (
-    <div className={styles.loginOverlay}>
-      <div className={styles.loginBox}>
+    <div className={loginStyles.loginOverlay}>
+      <div className={loginStyles.loginBox}>
         <button
           onClick={() => navigate("/")}
           style={{
@@ -38,13 +39,14 @@ export default function LoginOverlay({ onLoginSuccess }) {
         >
           ✕
         </button>
-        <div className={styles.loginBrand}>FashionSync</div>
-        <div className={styles.loginSub}>👑 כניסת מנהל ראשי</div>
 
-        <div className={styles.fg}>
-          <div className={styles.fl}>שם משתמש</div>
+        <div className={loginStyles.loginBrand}>FashionSync</div>
+        <div className={loginStyles.loginSub}>👑 כניסת מנהל ראשי</div>
+
+        <div className={formStyles.fg}>
+          <div className={formStyles.fl}>שם משתמש</div>
           <input
-            className={styles.fi}
+            className={formStyles.fi}
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -52,10 +54,10 @@ export default function LoginOverlay({ onLoginSuccess }) {
           />
         </div>
 
-        <div className={styles.fg}>
-          <div className={styles.fl}>סיסמה</div>
+        <div className={formStyles.fg}>
+          <div className={formStyles.fl}>סיסמה</div>
           <input
-            className={styles.fi}
+            className={formStyles.fi}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -64,10 +66,10 @@ export default function LoginOverlay({ onLoginSuccess }) {
         </div>
 
         {errorVisible && (
-          <div className={styles.errMsg}>❌ שם משתמש או סיסמה שגויים</div>
+          <div className={loginStyles.errMsg}>❌ שם משתמש או סיסמה שגויים</div>
         )}
 
-        <button className={styles.btnLogin} onClick={handleLogin}>
+        <button className={loginStyles.btnLogin} onClick={handleLogin}>
           כניסה
         </button>
       </div>

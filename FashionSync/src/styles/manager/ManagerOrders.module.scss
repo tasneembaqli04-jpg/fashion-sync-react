@@ -1,0 +1,408 @@
+.orderCard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.75rem;
+  transition: var(--tr);
+}
+
+.orderCard:hover {
+  border-color: var(--border-gold);
+}
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.orderId {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.orderCustomer {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.orderItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.orderItemRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface3);
+  border-radius: 8px;
+}
+
+.orderItemImg {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.orderItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.orderItemName {
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.orderItemMeta {
+  font-size: 0.69rem;
+  color: var(--text-dim);
+}
+
+.orderStatusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.orderTotal {
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: var(--gold);
+}
+
+.orderPrepareBtn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.42rem 1rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.orderPrepareBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+}
+
+.done {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+/* Deliveries */
+
+.deliveriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.deliveryCard {
+  background: linear-gradient(
+    135deg,
+    rgba(20, 22, 35, 0.98),
+    rgba(15, 17, 29, 0.98)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 1.45rem 1.6rem 1.25rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    0 10px 26px rgba(0, 0, 0, 0.16);
+}
+
+.deliveryTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  margin-bottom: 1.2rem;
+}
+
+.deliveryHeadInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.22rem;
+  width: 100%;
+}
+
+.deliveryCustomerLine {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.deliveryCustomerName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.deliveryUserIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.deliveryMetaLine {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.deliveryMetaText {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.deliveryMetaDot {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.deliveryCurrentBtn {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 0.28rem 0.8rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: default;
+  box-shadow: inset 0 0 0 1px rgba(201, 168, 76, 0.06);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.deliveryDate {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.deliveryClock {
+  font-size: 0.78rem;
+}
+
+.deliveryTimeline {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0.5rem 0 1.35rem;
+  padding: 0 8%;
+  direction: rtl;
+}
+
+.deliveryTimelineLine {
+  position: absolute;
+  top: 15px;
+  right: 11%;
+  left: 11%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 0;
+}
+
+.deliveryStep {
+  position: relative;
+  z-index: 1;
+  width: 120px;
+  text-align: center;
+  direction: rtl;
+}
+
+.deliveryDot {
+  width: 31px;
+  height: 31px;
+  margin: 0 auto 0.42rem;
+  border-radius: 50%;
+  background: #202335;
+  border: 2px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: transparent;
+}
+
+.deliveryDotDone {
+  background: #23263a;
+  border-color: rgba(255, 255, 255, 0.13);
+  color: transparent;
+}
+
+.deliveryDotActive {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border-color: var(--gold);
+  color: #111;
+  box-shadow:
+    0 0 0 4px rgba(201, 168, 76, 0.09),
+    0 4px 14px rgba(201, 168, 76, 0.18);
+}
+
+.deliveryStepLabel {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.deliveryStepLabelActive {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.deliveryItemsStrip {
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 14px;
+  padding: 0.7rem 1rem;
+  min-height: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.deliveryItemRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+  gap: 0.6rem;
+  width: 100%;
+  direction: rtl; 
+}
+
+
+.deliveryItemImg {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.deliveryItemText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  text-align: right;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.deliveryItemName {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.deliveryItemMeta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.deliveryBottom {
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
+  width: 100%;
+  margin-top: 0.9rem;
+}
+
+.deliveryActionBtn {
+  background: linear-gradient(135deg, #d5bd68, #ecd887);
+  color: #111;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1.25rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+  margin-left: auto;
+}
+
+.deliveryActionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(201, 168, 76, 0.2);
+}
+
+@media (max-width: 950px) {
+  .deliveryCard {
+    padding: 1.1rem;
+  }
+
+  .deliveryTimeline {
+    padding: 0 2rem;
+  }
+
+  .deliveryTimelineLine {
+    right: 10%;
+    left: 10%;
+  }
+}
+
+@media (max-width: 760px) {
+  .deliveryTop {
+    justify-content: stretch;
+  }
+
+  .deliveryHeadInfo {
+    align-items: flex-end;
+  }
+
+  .deliveryMetaLine {
+    justify-content: flex-end;
+  }
+
+  .deliveryTimeline {
+    padding: 0;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .deliveryTimelineLine {
+    display: none;
+  }
+
+  .deliveryStep {
+    width: calc(50% - 0.4rem);
+  }
+
+  .deliveryBottom {
+    justify-content: stretch;
+  }
+
+  .deliveryActionBtn {
+    width: 100%;
+  }
+}

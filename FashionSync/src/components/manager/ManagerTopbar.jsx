@@ -1,5 +1,4 @@
-import styles from "../../styles/Manager.module.scss";
-
+import styles from "../../styles/manager/ManagerTopbar.module.scss";
 export default function ManagerTopbar({
   globalSearch,
   onGlobalSearchChange,

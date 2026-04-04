@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import styles from "../../../styles/Manager.module.scss";
+import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 
 export default function ScanModal({ open, onClose, onCodeScanned }) {
   const videoRef = useRef(null);
@@ -26,9 +26,11 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       pausedRef.current = false;
       return;
     }
+
     const timer = setTimeout(() => {
       if (mode === "cam") startCamera();
     }, 100);
+
     return () => clearTimeout(timer);
   }, [open, mode]);
 
@@ -37,10 +39,12 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
+
     if (videoRef.current) videoRef.current.srcObject = null;
   }
 
@@ -48,9 +52,11 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     stopAll();
     pausedRef.current = false;
     setCamStatus("🔍 מאתחל מצלמה...");
+
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       devicesRef.current = devices.filter((d) => d.kind === "videoinput");
+
       const deviceId =
         devicesRef.current[
           camIdxRef.current % Math.max(devicesRef.current.length, 1)
@@ -62,6 +68,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
           : { facingMode: "environment" },
         audio: false,
       });
+
       streamRef.current = stream;
 
       if (videoRef.current) {
@@ -88,10 +95,12 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
   function startAutoScan() {
     async function frame() {
       if (!videoRef.current || !canvasRef.current || pausedRef.current) return;
+
       const canvas = canvasRef.current;
       canvas.width = videoRef.current.videoWidth || 640;
       canvas.height = videoRef.current.videoHeight || 480;
       canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
+
       try {
         const detector = new window.BarcodeDetector({
           formats: [
@@ -105,21 +114,27 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             "qr_code",
           ],
         });
+
         const barcodes = await detector.detect(canvas);
+
         if (barcodes.length > 0 && !pausedRef.current) {
           handleScanned(barcodes[0].rawValue);
           return;
         }
       } catch (e) {}
+
       animFrameRef.current = requestAnimationFrame(frame);
     }
+
     animFrameRef.current = requestAnimationFrame(frame);
   }
 
   async function doManualCapture() {
     if (!videoRef.current || !canvasRef.current || pausedRef.current) return;
+
     setScanning(true);
     setCamStatus("🔍 סורק...");
+
     const canvas = canvasRef.current;
     canvas.width = videoRef.current.videoWidth || 640;
     canvas.height = videoRef.current.videoHeight || 480;
@@ -139,6 +154,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             "qr_code",
           ],
         });
+
         const barcodes = await detector.detect(canvas);
         if (barcodes.length > 0) {
           handleScanned(barcodes[0].rawValue);
@@ -184,6 +200,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     if (!streamRef.current) return;
     const track = streamRef.current.getVideoTracks()[0];
     if (!track) return;
+
     try {
       const next = !torchOn;
       await track.applyConstraints({ advanced: [{ torch: next }] });
@@ -206,33 +223,19 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
 
   return createPortal(
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.82)",
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backdropFilter: "blur(8px)",
-        padding: "1rem",
-      }}
+      className={modalStyles.modalOverlay}
       onClick={() => {
         stopAll();
         onClose();
       }}
     >
       <div
+        className={modalStyles.modalBox}
         style={{
-          background: "var(--surface2, #161820)",
-          border: "1px solid rgba(201,168,76,0.18)",
-          borderRadius: "18px",
-          padding: "1.7rem",
           width: "100%",
           maxWidth: "480px",
-          position: "relative",
-          animation: "fadeUp 0.28s ease",
           direction: "rtl",
+          animation: "fadeUp 0.28s ease",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -241,32 +244,18 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             stopAll();
             onClose();
           }}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            left: "1rem",
-            background: "none",
-            border: "none",
-            color: "var(--muted, #5c6170)",
-            fontSize: "1.25rem",
-            cursor: "pointer",
-            lineHeight: 1,
-          }}
+          className={modalStyles.modalClose}
         >
           ✕
         </button>
 
         <div
-          style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "1.25rem",
-            color: "var(--gold, #c9a84c)",
-            marginBottom: "0.3rem",
-            textAlign: "right",
-          }}
+          className={modalStyles.modalTitle}
+          style={{ marginBottom: "0.3rem", textAlign: "right" }}
         >
           סריקת ברקוד 📷
         </div>
+
         <p
           style={{
             color: "var(--muted, #5c6170)",
@@ -311,6 +300,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
           >
             📹 מצלמה
           </button>
+
           <button
             onClick={() => switchMode("manual")}
             style={{
@@ -373,7 +363,6 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                 pointerEvents: "none",
               }}
             >
-              
               <div
                 style={{
                   position: "absolute",
@@ -386,25 +375,14 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                   borderRadius: "8px",
                 }}
               />
-              
+
               <style>{`
-               @keyframes scanLine {
-               0%   { top: 35%; }
-               50%  { top: 65%; }
-               100% { top: 35%; }
-              }
-            `}</style>
-              <div
-                style={{
-                  position: "absolute",
-                  left: "15%",
-                  right: "15%",
-                  height: "2px",
-                  background:
-                    "linear-gradient(90deg, transparent, #e74c3c, transparent)",
-                  animation: "scanLine 1.8s ease-in-out infinite",
-                }}
-              />
+                @keyframes scanLine {
+                  0%   { top: 35%; }
+                  50%  { top: 65%; }
+                  100% { top: 35%; }
+                }
+              `}</style>
 
               <div
                 style={{
@@ -477,6 +455,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             >
               הכנס קוד מוצר ידנית:
             </div>
+
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <input
                 type="text"
@@ -499,6 +478,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                   outline: "none",
                 }}
               />
+
               <button
                 onClick={handleManualSubmit}
                 style={{
@@ -519,6 +499,6 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
         )}
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

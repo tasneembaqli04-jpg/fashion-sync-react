@@ -1,0 +1,218 @@
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.2rem;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.stat:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.stat::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: var(--r) var(--r) 0 0;
+}
+
+.gold::after {
+  background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+}
+
+.green::after {
+  background: var(--green);
+}
+
+.red::after {
+  background: var(--red);
+}
+
+.blue::after {
+  background: var(--blue);
+}
+
+.statIcon {
+  font-size: 1.6rem;
+  margin-bottom: 0.6rem;
+  opacity: 0.75;
+}
+
+.statLabel {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.statVal {
+  font-family: "Playfair Display", serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statSub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+.up {
+  color: var(--green);
+}
+
+.dn {
+  color: var(--red);
+}
+
+.miniBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 70px;
+}
+
+.mbar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: rgba(201, 168, 76, 0.22);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.mbar:hover,
+.hi {
+  background: var(--gold);
+}
+
+.receiptBlock {
+  background: rgba(201, 168, 76, 0.04);
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.receiptHd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.receiptId {
+  font-family: monospace;
+  font-size: 0.83rem;
+  color: var(--gold);
+}
+
+.receiptDate {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.receiptItem {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.receiptItem:last-child {
+  border-bottom: none;
+}
+
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.barLbl {
+  font-size: 0.74rem;
+  color: var(--muted);
+  width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.barTrk {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.barVal {
+  font-size: 0.74rem;
+  font-weight: 700;
+  width: 58px;
+}
+
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+  }
+
+  .stat {
+    padding: 0.9rem;
+  }
+
+  .statVal {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.2rem;
+  position: relative;
+  overflow: hidden;
+}

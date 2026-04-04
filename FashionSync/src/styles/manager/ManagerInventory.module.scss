@@ -1,0 +1,142 @@
+.tblWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  text-align: right;
+  padding: 0.75rem 1rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+  background: rgba(201, 168, 76, 0.03);
+  white-space: nowrap;
+}
+
+.td {
+  padding: 0.82rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.84rem;
+  vertical-align: middle;
+}
+
+.tr:hover .td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.ptb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.codeVal {
+  color: var(--gold);
+  font-size: 0.78rem;
+}
+
+.pname {
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+.psku {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+.stockVal {
+  font-weight: 700;
+}
+
+.priceVal {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.minVal {
+  color: var(--gold);
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.promoBtn {
+  background: linear-gradient(135deg, #ff6b35, #f7c59f);
+  color: #1a0a00;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: "Alef", sans-serif;
+  transition: all 0.2s ease;
+}
+
+.promoBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+}
+
+.promoBtnActive {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #fff;
+}
+
+.promoBtnActive:hover {
+  box-shadow: 0 4px 14px rgba(46, 204, 113, 0.35);
+}
+
+.deleteBtn {
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  color: #f1948a;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .th,
+  .td {
+    padding: 0.72rem 0.8rem;
+  }
+
+  .actions {
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .ptb {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pname {
+    font-size: 0.8rem;
+  }
+
+  .psku {
+    font-size: 0.62rem;
+  }
+}

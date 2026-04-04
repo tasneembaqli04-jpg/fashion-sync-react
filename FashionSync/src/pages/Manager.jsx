@@ -10,11 +10,13 @@ import OverviewView from "../components/manager/views/OverviewView";
 import AddProductModal from "../components/manager/modals/AddProductModal";
 import InventoryView from "../components/manager/views/InventoryView";
 import AlertsView from "../components/manager/views/AlertsView";
-import TasksView from "../components/manager/views/TasksView";
 import ReceiptsView from "../components/manager/views/ReceiptsView";
 import AnalyticsView from "../components/manager/views/AnalyticsView";
 import SettingsView from "../components/manager/views/SettingsView";
 import styles from "../styles/Manager.module.scss";
+import ManagerOrders from "../components/manager/views/ManagerOrders";
+import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
+import ManagerScanModal from "../components/manager/modals/ManagerScanModal";
 
 const INITIAL_PRODUCTS = [
   {
@@ -576,6 +578,19 @@ export default function Manager({ onPromote }) {
               onClearTasks={() => {
                 if (window.confirm("למחוק הכל?")) setTasks([]);
               }}
+            />
+          )}
+          {activeView === "orders" && (
+            <ManagerOrders
+              orders={receipts} // זמנית
+              onToggleOrderReady={() => {}}
+            />
+          )}
+
+          {activeView === "deliveries" && (
+            <ManagerDeliveries
+            deliveries={receipts} // זמנית
+            onUpdateStatus={() => {}}
             />
           )}
 

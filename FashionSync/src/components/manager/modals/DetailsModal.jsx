@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import styles from "../../../styles/Manager.module.scss";
+import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
+import formStyles from "../../../styles/manager/ManagerForms.module.scss";
+import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 
 const SEASONS = ["קיץ", "חורף", "אביב/סתיו", "כל העונות"];
 
 const SEASON_COLORS = {
-  "קיץ": { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
-  "חורף": { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
+  קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
+  חורף: { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
   "אביב/סתיו": { bg: "rgba(46,204,113,0.1)", color: "#2ecc71", icon: "🌸" },
   "כל העונות": { bg: "rgba(155,89,182,0.1)", color: "#9b59b6", icon: "🌀" },
 };
@@ -30,7 +32,13 @@ function calcVariantsTotal(variants = []) {
   }, 0);
 }
 
-export default function DetailsModal({ isOpen, product, onClose, onSave, theme }) {
+export default function DetailsModal({
+  isOpen,
+  product,
+  onClose,
+  onSave,
+  theme,
+}) {
   const [price, setPrice] = useState(0);
   const [minStock, setMinStock] = useState(10);
   const [season, setSeason] = useState("");
@@ -44,7 +52,10 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
     setVariantsDraft(deepCopyVariants(product.variants || []));
   }, [product]);
 
-  const totalStock = useMemo(() => calcVariantsTotal(variantsDraft), [variantsDraft]);
+  const totalStock = useMemo(
+    () => calcVariantsTotal(variantsDraft),
+    [variantsDraft]
+  );
 
   if (!isOpen || !product) return null;
 
@@ -74,53 +85,83 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
 
   return (
     <div
-      className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className={`${modalStyles.modalOverlay} ${
+        theme === "light" ? modalStyles.light : ""
+      }`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className={styles.detailsModalBox}>
-        <button className={styles.modalCloseBtn} onClick={onClose}>✕</button>
+      <div className={modalStyles.detailsModalBox}>
+        <button className={modalStyles.modalCloseBtn} onClick={onClose}>
+          ✕
+        </button>
 
-        <div className={styles.detailsTopSection}>
-          <div className={styles.detailsTopRight}>
-            <div className={styles.detailsTitle}>פרטים — {product.name}</div>
+        <div className={modalStyles.detailsTopSection}>
+          <div className={modalStyles.detailsTopRight}>
+            <div className={modalStyles.detailsTitle}>
+              פרטים — {product.name}
+            </div>
 
-            <div className={styles.detailsMeta}>
-              <span className={`${styles.tag} ${styles.tGold}`}>{product.code}</span>
-              <span className={`${styles.tag} ${styles.tBlue}`}>{product.cat}</span>
-              <span className={`${styles.tag} ${product.gender === "נשים" ? styles.tPurple : styles.tOrange}`}>
+            <div className={modalStyles.detailsMeta}>
+              <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
+                {product.code}
+              </span>
+              <span className={`${uiStyles.tag} ${uiStyles.tBlue}`}>
+                {product.cat}
+              </span>
+              <span
+                className={`${uiStyles.tag} ${
+                  product.gender === "נשים"
+                    ? uiStyles.tPurple
+                    : uiStyles.tOrange
+                }`}
+              >
                 {product.gender}
               </span>
+
               {season && (
-                <span style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.28rem",
-                  padding: "0.18rem 0.6rem",
-                  borderRadius: "20px",
-                  background: seasonStyle.bg,
-                  color: seasonStyle.color,
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.28rem",
+                    padding: "0.18rem 0.6rem",
+                    borderRadius: "20px",
+                    background: seasonStyle.bg,
+                    color: seasonStyle.color,
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                  }}
+                >
                   {seasonStyle.icon} {season}
                 </span>
               )}
-              <span className={`${styles.tag} ${styles.tGreen}`}>מלאי: {totalStock}</span>
-              <span className={`${styles.tag} ${styles.tGold}`}>₪{price}</span>
+
+              <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>
+                מלאי: {totalStock}
+              </span>
+              <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
+                ₪{price}
+              </span>
             </div>
 
-            <div className={styles.detailsName}>{product.name}</div>
-            <div className={styles.detailsDescription}>{product.desc}</div>
+            <div className={modalStyles.detailsName}>{product.name}</div>
+            <div className={modalStyles.detailsDescription}>{product.desc}</div>
           </div>
 
-          <img src={product.img} alt={product.name} className={styles.detailsProductImage} />
+          <img
+            src={product.img}
+            alt={product.name}
+            className={modalStyles.detailsProductImage}
+          />
         </div>
 
-        <div className={styles.detailsFieldsGrid}>
-          <div className={styles.fg}>
-            <div className={styles.fl}>מחיר (₪)</div>
+        <div className={modalStyles.detailsFieldsGrid}>
+          <div className={formStyles.fg}>
+            <div className={formStyles.fl}>מחיר (₪)</div>
             <input
-              className={styles.fi}
+              className={formStyles.fi}
               type="number"
               min="0"
               value={price}
@@ -128,10 +169,10 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
             />
           </div>
 
-          <div className={styles.fg}>
-            <div className={styles.fl}>מינימום להתראה</div>
+          <div className={formStyles.fg}>
+            <div className={formStyles.fl}>מינימום להתראה</div>
             <input
-              className={styles.fi}
+              className={formStyles.fi}
               type="number"
               min="0"
               value={minStock}
@@ -139,12 +180,13 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
             />
           </div>
 
-          <div className={styles.fg} style={{ gridColumn: "span 2" }}>
-            <div className={styles.fl}>עונה</div>
+          <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
+            <div className={formStyles.fl}>עונה</div>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               {SEASONS.map((s) => {
                 const sc = SEASON_COLORS[s];
                 const isSelected = season === s;
+
                 return (
                   <button
                     key={s}
@@ -155,7 +197,9 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
                       gap: "0.3rem",
                       padding: "0.45rem 0.9rem",
                       borderRadius: "20px",
-                      border: isSelected ? `1.5px solid ${sc.color}` : "1px solid var(--border)",
+                      border: isSelected
+                        ? `1.5px solid ${sc.color}`
+                        : "1px solid var(--border)",
                       background: isSelected ? sc.bg : "transparent",
                       color: isSelected ? sc.color : "var(--muted)",
                       fontFamily: "Alef, sans-serif",
@@ -164,6 +208,7 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
                       cursor: "pointer",
                       transition: "all 0.18s",
                     }}
+                    type="button"
                   >
                     {sc.icon} {s}
                   </button>
@@ -173,38 +218,52 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
           </div>
         </div>
 
-        <div className={styles.detailsSectionRow}>
-          <span className={styles.detailsSectionLabel}>עריכת כמות לפי צבע/מידה</span>
+        <div className={modalStyles.detailsSectionRow}>
+          <span className={modalStyles.detailsSectionLabel}>
+            עריכת כמות לפי צבע/מידה
+          </span>
         </div>
 
-        <div className={styles.detailsVariantsWrap}>
+        <div className={modalStyles.detailsVariantsWrap}>
           {variantsDraft.map((variant, variantIndex) => {
             const sizesEntries = Object.entries(variant.sizes || {});
             const variantTotal = sizesEntries.reduce(
-              (sum, [, qty]) => sum + (parseInt(qty, 10) || 0), 0
+              (sum, [, qty]) => sum + (parseInt(qty, 10) || 0),
+              0
             );
 
             return (
-              <div key={`${variant.colorName}-${variantIndex}`} className={styles.colorCard}>
-                <div className={styles.colorCardHead}>
-                  <span className={`${styles.tag} ${styles.tGold}`}>סה״כ: {variantTotal} יח׳</span>
-                  <div className={styles.colorCardTitleWrap}>
+              <div
+                key={`${variant.colorName}-${variantIndex}`}
+                className={modalStyles.colorCard}
+              >
+                <div className={modalStyles.colorCardHead}>
+                  <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
+                    סה״כ: {variantTotal} יח׳
+                  </span>
+
+                  <div className={modalStyles.colorCardTitleWrap}>
                     <strong>{variant.colorName || "צבע"}</strong>
-                    <span className={styles.dot} style={{ background: variant.colorHex || "#999" }} />
+                    <span
+                      className={modalStyles.dot}
+                      style={{ background: variant.colorHex || "#999" }}
+                    />
                   </div>
                 </div>
 
-                <div className={styles.sizesGrid}>
+                <div className={modalStyles.sizesGrid}>
                   {sizesEntries.map(([sizeKey, qty]) => (
-                    <label key={sizeKey} className={styles.sizePill}>
+                    <label key={sizeKey} className={modalStyles.sizePill}>
                       <strong>{sizeKey}</strong>
-                      <span className={styles.sizeSeparator}>•</span>
+                      <span className={modalStyles.sizeSeparator}>•</span>
                       <input
                         type="number"
                         min="0"
                         value={qty}
-                        onChange={(e) => handleQtyChange(variantIndex, sizeKey, e.target.value)}
-                        className={styles.sizeQtyInput}
+                        onChange={(e) =>
+                          handleQtyChange(variantIndex, sizeKey, e.target.value)
+                        }
+                        className={modalStyles.sizeQtyInput}
                       />
                     </label>
                   ))}
@@ -214,8 +273,13 @@ export default function DetailsModal({ isOpen, product, onClose, onSave, theme }
           })}
         </div>
 
-        <div className={styles.detailsFooter}>
-          <button className={styles.detailsSaveBtn} onClick={handleSave}>שמירה 💾</button>
+        <div className={modalStyles.detailsFooter}>
+          <button
+            className={modalStyles.detailsSaveBtn}
+            onClick={handleSave}
+          >
+            שמירה 💾
+          </button>
         </div>
       </div>
     </div>

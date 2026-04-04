@@ -1,4 +1,5 @@
-import styles from "../../../styles/Manager.module.scss";
+import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
+import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
 
 const SEASON_COLORS = {
   קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
@@ -13,6 +14,7 @@ function SeasonBadge({ season }) {
     color: "var(--muted)",
     icon: "—",
   };
+
   return (
     <span
       style={{
@@ -33,15 +35,19 @@ function SeasonBadge({ season }) {
 }
 
 function StatusBadge({ stock, minStock }) {
-  if (stock === 0)
-    return <span className={`${styles.tag} ${styles.tRed}`}>אזל</span>;
-  if (stock <= minStock)
-    return <span className={`${styles.tag} ${styles.tYellow}`}>נמוך</span>;
-  return <span className={`${styles.tag} ${styles.tGreen}`}>זמין</span>;
+  if (stock === 0) {
+    return <span className={`${uiStyles.tag} ${uiStyles.tRed}`}>אזל</span>;
+  }
+
+  if (stock <= minStock) {
+    return <span className={`${uiStyles.tag} ${uiStyles.tYellow}`}>נמוך</span>;
+  }
+
+  return <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>זמין</span>;
 }
 
 export default function InventoryView({
-  products,
+  products = [],
   onOpenDetails,
   onDeleteProduct,
   onOpenPromo,
@@ -49,9 +55,9 @@ export default function InventoryView({
   promotedCode,
 }) {
   return (
-    <div className={styles.view}>
-      <div className={styles.pageHd}>
-        <div className={styles.phLeft}>
+    <div className={uiStyles.view}>
+      <div className={uiStyles.pageHd}>
+        <div className={uiStyles.phLeft}>
           <h2>ניהול מלאי</h2>
           <p>
             {products.reduce((sum, p) => sum + p.stock, 0)} יחידות ·{" "}
@@ -60,114 +66,94 @@ export default function InventoryView({
         </div>
       </div>
 
-      <div className={styles.card}>
-        <div className={styles.tblWrap}>
-          <table>
+      <div className={uiStyles.card}>
+        <div className={inventoryStyles.tblWrap}>
+          <table className={inventoryStyles.table}>
             <thead>
-              <tr>
-                <th>תמונה</th>
-                <th>קוד</th>
-                <th>שם מוצר</th>
-                <th>עונה</th>
-                <th>מלאי</th>
-                <th>מחיר</th>
-                <th>מינימום</th>
-                <th>סטטוס</th>
-                <th>פעולות</th>
+              <tr className={inventoryStyles.tr}>
+                <th className={inventoryStyles.th}>תמונה</th>
+                <th className={inventoryStyles.th}>קוד</th>
+                <th className={inventoryStyles.th}>שם מוצר</th>
+                <th className={inventoryStyles.th}>עונה</th>
+                <th className={inventoryStyles.th}>מלאי</th>
+                <th className={inventoryStyles.th}>מחיר</th>
+                <th className={inventoryStyles.th}>מינימום</th>
+                <th className={inventoryStyles.th}>סטטוס</th>
+                <th className={inventoryStyles.th}>פעולות</th>
               </tr>
             </thead>
+
             <tbody>
               {products.map((p) => {
                 const isPromoted = promotedCode === p.code;
-                console.log(
-                  p.code,
-                  "isPromoted:",
-                  isPromoted,
-                  "promotedCode:",
-                  promotedCode,
-                );
 
                 return (
-                  <tr key={p.code}>
-                    <td>
-                      <img className={styles.ptb} src={p.img} alt={p.name} />
+                  <tr key={p.code} className={inventoryStyles.tr}>
+                    <td className={inventoryStyles.td}>
+                      <img
+                        className={inventoryStyles.ptb}
+                        src={p.img}
+                        alt={p.name}
+                      />
                     </td>
-                    <td>
-                      <code
-                        style={{ color: "var(--gold)", fontSize: ".78rem" }}
-                      >
-                        {p.code}
-                      </code>
+
+                    <td className={inventoryStyles.td}>
+                      <code className={inventoryStyles.codeVal}>{p.code}</code>
                     </td>
-                    <td>
-                      <div className={styles.pname}>{p.name}</div>
-                      <div className={styles.psku}>
+
+                    <td className={inventoryStyles.td}>
+                      <div className={inventoryStyles.pname}>{p.name}</div>
+                      <div className={inventoryStyles.psku}>
                         {p.gender} · {p.cat}
                       </div>
                     </td>
-                    <td>
+
+                    <td className={inventoryStyles.td}>
                       <SeasonBadge season={p.season} />
                     </td>
-                    <td style={{ fontWeight: 700 }}>{p.stock}</td>
-                    <td style={{ color: "var(--gold)", fontWeight: 700 }}>
+
+                    <td className={`${inventoryStyles.td} ${inventoryStyles.stockVal}`}>
+                      {p.stock}
+                    </td>
+
+                    <td className={`${inventoryStyles.td} ${inventoryStyles.priceVal}`}>
                       ₪{p.price}
                     </td>
-                    <td>
-                      <strong style={{ color: "var(--gold)" }}>
+
+                    <td className={inventoryStyles.td}>
+                      <strong className={inventoryStyles.minVal}>
                         {p.minStock}
                       </strong>
                     </td>
-                    <td>
+
+                    <td className={inventoryStyles.td}>
                       <StatusBadge stock={p.stock} minStock={p.minStock} />
                     </td>
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: ".35rem",
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                        }}
-                      >
+
+                    <td className={inventoryStyles.td}>
+                      <div className={inventoryStyles.actions}>
                         <button
-                          style={{
-                            background: isPromoted
-                              ? "linear-gradient(135deg, #2ecc71, #27ae60)"
-                              : "linear-gradient(135deg, #ff6b35, #f7c59f)",
-                            color: isPromoted ? "#fff" : "#1a0a00",
-                            padding: ".35rem .7rem",
-                            fontSize: ".75rem",
-                            border: "none",
-                            cursor: "pointer",
-                            borderRadius: "8px",
-                            fontWeight: 700,
-                            fontFamily: "Alef, sans-serif",
-                            transition: "all 0.2s ease",
-                          }}
+                          className={`${inventoryStyles.promoBtn} ${
+                            isPromoted ? inventoryStyles.promoBtnActive : ""
+                          }`}
                           onClick={() => onOpenPromo(p)}
                         >
                           {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
                         </button>
 
                         <button
-                          className={`${styles.btn} ${styles.btnGhost}`}
+                          className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
                           onClick={() => onOpenDetails(p)}
                         >
                           פרטים
                         </button>
 
                         <button
-                          className={styles.btn}
-                          style={{
-                            background: "rgba(231,76,60,.08)",
-                            border: "1px solid rgba(231,76,60,.2)",
-                            color: "#f1948a",
-                            padding: ".35rem .7rem",
-                            fontSize: ".75rem",
-                          }}
+                          className={`${uiStyles.btn} ${inventoryStyles.deleteBtn}`}
                           onClick={() => {
-                            if (window.confirm("למחוק מוצר?"))
+                            if (window.confirm("למחוק מוצר?")) {
                               onDeleteProduct(p.code);
+                            }
                           }}
                         >
                           🗑️
