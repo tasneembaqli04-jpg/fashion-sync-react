@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
 
@@ -54,6 +55,76 @@ export default function InventoryView({
   onCancelPromote,
   promotedCode,
 }) {
+  const [showFilters, setShowFilters] = useState(false);
+
+  const [categoryFilter, setCategoryFilter] = useState("כל הקטגוריות");
+  const [genderFilter, setGenderFilter] = useState("הכל");
+  const [stockStatusFilter, setStockStatusFilter] = useState("הכל");
+  const [productNameFilter, setProductNameFilter] = useState("");
+  const [productCodeFilter, setProductCodeFilter] = useState("");
+  const [promoOnlyFilter, setPromoOnlyFilter] = useState("הכל");
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const categoryMatch =
+        categoryFilter === "כל הקטגוריות" ? true : p.cat === categoryFilter;
+
+      const genderMatch =
+        genderFilter === "הכל" ? true : p.gender === genderFilter;
+
+      let stockStatusMatch = true;
+      if (stockStatusFilter === "זמין") {
+        stockStatusMatch = p.stock > p.minStock;
+      } else if (stockStatusFilter === "נמוך") {
+        stockStatusMatch = p.stock > 0 && p.stock <= p.minStock;
+      } else if (stockStatusFilter === "אזל") {
+        stockStatusMatch = p.stock === 0;
+      }
+
+      const productNameMatch = productNameFilter.trim()
+        ? p.name.toLowerCase().includes(productNameFilter.trim().toLowerCase())
+        : true;
+
+      const productCodeMatch = productCodeFilter.trim()
+        ? p.code.toLowerCase().includes(productCodeFilter.trim().toLowerCase())
+        : true;
+
+      let promoOnlyMatch = true;
+      if (promoOnlyFilter === "כן") {
+        promoOnlyMatch = promotedCode === p.code;
+      } else if (promoOnlyFilter === "לא") {
+        promoOnlyMatch = promotedCode !== p.code;
+      }
+
+      return (
+        categoryMatch &&
+        genderMatch &&
+        stockStatusMatch &&
+        productNameMatch &&
+        productCodeMatch &&
+        promoOnlyMatch
+      );
+    });
+  }, [
+    products,
+    categoryFilter,
+    genderFilter,
+    stockStatusFilter,
+    productNameFilter,
+    productCodeFilter,
+    promoOnlyFilter,
+    promotedCode,
+  ]);
+
+  const clearAllFilters = () => {
+    setCategoryFilter("כל הקטגוריות");
+    setGenderFilter("הכל");
+    setStockStatusFilter("הכל");
+    setProductNameFilter("");
+    setProductCodeFilter("");
+    setPromoOnlyFilter("הכל");
+  };
+
   return (
     <div className={uiStyles.view}>
       <div className={uiStyles.pageHd}>
@@ -65,6 +136,112 @@ export default function InventoryView({
           </p>
         </div>
       </div>
+
+      <div className={inventoryStyles.filtersHeader}>
+        <button
+          type="button"
+          className={inventoryStyles.filterToggleBtn}
+          onClick={() => setShowFilters((prev) => !prev)}
+        >
+          סינון ⬇
+        </button>
+      </div>
+
+      {showFilters && (
+        <div className={inventoryStyles.filtersPanel}>
+          <div className={inventoryStyles.filtersGrid}>
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>קטגוריה</label>
+              <select
+                className={inventoryStyles.filterSelect}
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                <option>כל הקטגוריות</option>
+                <option>חולצות</option>
+                <option>מכנסיים</option>
+                <option>שמלות</option>
+                <option>עליוניות</option>
+              </select>
+            </div>
+
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>מגדר</label>
+              <select
+                className={inventoryStyles.filterSelect}
+                value={genderFilter}
+                onChange={(e) => setGenderFilter(e.target.value)}
+              >
+                <option>הכל</option>
+                <option>גברים</option>
+                <option>נשים</option>
+                <option>ילדים</option>
+                <option>יוניסקס</option>
+              </select>
+            </div>
+
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>סטטוס מלאי</label>
+              <select
+                className={inventoryStyles.filterSelect}
+                value={stockStatusFilter}
+                onChange={(e) => setStockStatusFilter(e.target.value)}
+              >
+                <option>הכל</option>
+                <option>זמין</option>
+                <option>נמוך</option>
+                <option>אזל</option>
+              </select>
+            </div>
+
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>שם מוצר</label>
+              <input
+                className={inventoryStyles.filterInput}
+                placeholder="חיפוש לפי שם..."
+                value={productNameFilter}
+                onChange={(e) => setProductNameFilter(e.target.value)}
+              />
+            </div>
+
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>קוד מוצר</label>
+              <input
+                className={inventoryStyles.filterInput}
+                placeholder="לדוגמה: FS-001"
+                value={productCodeFilter}
+                onChange={(e) => setProductCodeFilter(e.target.value)}
+              />
+            </div>
+
+            <div className={inventoryStyles.filterGroup}>
+              <label className={inventoryStyles.filterLabel}>
+                מוצרים לפרסום בלבד
+              </label>
+              <select
+                className={inventoryStyles.filterSelect}
+                value={promoOnlyFilter}
+                onChange={(e) => setPromoOnlyFilter(e.target.value)}
+              >
+                <option>הכל</option>
+                <option>כן</option>
+                <option>לא</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={inventoryStyles.filtersActions}>
+           
+            <button
+              type="button"
+              className={inventoryStyles.clearBtn}
+              onClick={clearAllFilters}
+            >
+              אפס סינונים ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className={uiStyles.card}>
         <div className={inventoryStyles.tblWrap}>
@@ -84,7 +261,7 @@ export default function InventoryView({
             </thead>
 
             <tbody>
-              {products.map((p) => {
+              {filteredProducts.map((p) => {
                 const isPromoted = promotedCode === p.code;
 
                 return (
@@ -112,11 +289,15 @@ export default function InventoryView({
                       <SeasonBadge season={p.season} />
                     </td>
 
-                    <td className={`${inventoryStyles.td} ${inventoryStyles.stockVal}`}>
+                    <td
+                      className={`${inventoryStyles.td} ${inventoryStyles.stockVal}`}
+                    >
                       {p.stock}
                     </td>
 
-                    <td className={`${inventoryStyles.td} ${inventoryStyles.priceVal}`}>
+                    <td
+                      className={`${inventoryStyles.td} ${inventoryStyles.priceVal}`}
+                    >
                       ₪{p.price}
                     </td>
 
@@ -163,6 +344,14 @@ export default function InventoryView({
                   </tr>
                 );
               })}
+
+              {!filteredProducts.length && (
+                <tr className={inventoryStyles.tr}>
+                  <td className={inventoryStyles.emptyTd} colSpan={9}>
+                    אין מוצרים שמתאימים לסינון שנבחר
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

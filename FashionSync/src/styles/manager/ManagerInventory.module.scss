@@ -115,6 +115,146 @@
   font-size: 0.75rem;
 }
 
+.emptyTd {
+  text-align: center;
+  padding: 1.4rem 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* כפתור סינון - ימין */
+.filtersHeader {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.filterToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  background: transparent;
+  color: var(--gold);
+  font-family: "Alef", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.filterToggleBtn:hover {
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.filtersPanel {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 18, 33, 0.98),
+    rgba(10, 12, 24, 0.98)
+  );
+  border: 1px solid rgba(201, 168, 76, 0.12);
+  border-radius: 24px;
+  padding: 1.25rem 1.4rem 1.3rem;
+  margin-bottom: 1.1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.filtersGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.2rem;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.filterLabel {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.filterInput,
+.filterSelect {
+  width: 100%;
+  height: 56px;
+  background: #050812;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 0 1rem;
+  color: var(--text);
+  font-family: "Alef", sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filterInput::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+  border-color: rgba(201, 168, 76, 0.35);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+}
+
+.filterSelect {
+  cursor: pointer;
+}
+
+.filterSelect option {
+  background: #111522;
+  color: #fff;
+}
+
+/* אפס סינונים - שמאל */
+.filtersActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.clearBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  border-radius: 16px;
+  padding: 0.9rem 1.2rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.clearBtn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 1100px) {
+  .filtersGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .th,
   .td {
@@ -138,5 +278,19 @@
 
   .psku {
     font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .filtersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtersActions {
+    justify-content: stretch;
+  }
+
+  .clearBtn {
+    width: 100%;
   }
 }

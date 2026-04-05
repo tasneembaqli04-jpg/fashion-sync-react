@@ -67,24 +67,15 @@ export default function ManagerDeliveries({ deliveries = [], onUpdateStatus }) {
                     </div>
 
                     <div className={deliveriesStyles.deliveryMetaLine}>
-                      <span className={deliveriesStyles.deliveryMetaText}>
+                      <span className={deliveriesStyles.deliveryOrderId}>
                         {delivery.id}
                       </span>
 
-                      <span className={deliveriesStyles.deliveryMetaDot}>·</span>
 
-                      <button
-                        type="button"
-                        className={deliveriesStyles.deliveryCurrentBtn}
-                      >
-                        {currentStatus.label}
-                      </button>
 
-                      <span className={deliveriesStyles.deliveryMetaDot}>·</span>
+                   
 
-                      <span className={deliveriesStyles.deliveryMetaText}>
-                        הזמנה {delivery.orderId}
-                      </span>
+                      
                     </div>
 
                     {!!createdAtText && (
