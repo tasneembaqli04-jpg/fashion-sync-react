@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginOverlay from "../components/manager/LoginOverlay";
 import ManagerSidebar from "../components/manager/ManagerSidebar";
@@ -391,6 +391,68 @@ export default function Manager({ onPromote }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
 
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem("fs_orders");
+    if (saved) return JSON.parse(saved);
+
+    return [
+      {
+        id: "RCP-1000001",
+        customer: "לין קלאסית",
+        status: "pending",
+        items: [
+          {
+            name: "חולצת לינן קלאסית",
+            price: 189,
+            qty: 2,
+            size: "M",
+            img: INITIAL_PRODUCTS[0].img,
+          },
+          {
+            name: "חולצת טי בייסיק",
+            price: 99,
+            qty: 1,
+            size: "S",
+            img: INITIAL_PRODUCTS[4].img,
+          },
+        ],
+      },
+      {
+        id: "RCP-1000002",
+        customer: "ג'ינס סלים פיט",
+        status: "pending",
+        items: [
+          {
+            name: "ג'ינס סלים פיט",
+            price: 349,
+            qty: 1,
+            size: "32",
+            img: INITIAL_PRODUCTS[1].img,
+          },
+        ],
+      },
+      {
+        id: "RCP-1000003",
+        customer: "ז'קט עור שחור",
+        status: "pending",
+        items: [
+          {
+            name: "ז'קט עור שחור",
+            price: 699,
+            qty: 1,
+            size: "M",
+            img: INITIAL_PRODUCTS[3].img,
+          },
+        ],
+      },
+    ];
+  });
+
+  const [deliveries, setDeliveries] = useState(() => {
+    const saved = localStorage.getItem("fs_deliveries");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [currentPromotedCode, setCurrentPromotedCode] = useState(
     localStorage.getItem("featuredProductCode") || null,
   );
@@ -475,6 +537,85 @@ export default function Manager({ onPromote }) {
   const handleDelete = (code) => {
     setProducts((prev) => prev.filter((p) => p.code !== code));
   };
+
+  function handleToggleOrderReady(orderId) {
+    setOrders((prevOrders) => {
+      const updatedOrders = prevOrders.map((order) => {
+        if (order.id !== orderId) return order;
+
+        const newStatus = order.status === "ready" ? "pending" : "ready";
+        return { ...order, status: newStatus };
+      });
+
+      const changedOrder = updatedOrders.find((order) => order.id === orderId);
+
+      setDeliveries((prevDeliveries) => {
+        let updatedDeliveries = [...prevDeliveries];
+
+        if (changedOrder && changedOrder.status === "ready") {
+          const alreadyExists = updatedDeliveries.some(
+            (delivery) => delivery.orderId === changedOrder.id,
+          );
+
+          if (!alreadyExists) {
+            const delivery = {
+              id: `DEL-${Date.now()}`,
+              orderId: changedOrder.id,
+              customer: changedOrder.customer,
+              items: changedOrder.items || [],
+              status: "waiting",
+              createdAt: Date.now(),
+            };
+
+            updatedDeliveries = [delivery, ...updatedDeliveries];
+          }
+        } else {
+          updatedDeliveries = updatedDeliveries.filter(
+            (delivery) => delivery.orderId !== orderId,
+          );
+        }
+
+        localStorage.setItem("fs_deliveries", JSON.stringify(updatedDeliveries));
+        return updatedDeliveries;
+      });
+
+      localStorage.setItem("fs_orders", JSON.stringify(updatedOrders));
+      return updatedOrders;
+    });
+  }
+    function handleMarkAllPicked() {
+    setDeliveries((prevDeliveries) => {
+      const updatedDeliveries = prevDeliveries.map((delivery) => {
+        if (delivery.status === "waiting" || delivery.status === "on_the_way") {
+          return { ...delivery, status: "picked" };
+        }
+        return delivery;
+      });
+
+      localStorage.setItem("fs_deliveries", JSON.stringify(updatedDeliveries));
+      return updatedDeliveries;
+    });
+  }
+  function handleUpdateDeliveryStatus(deliveryId, nextStatus) {
+    setDeliveries((prevDeliveries) => {
+      const updatedDeliveries = prevDeliveries.map((delivery) =>
+        delivery.id === deliveryId
+          ? { ...delivery, status: nextStatus }
+          : delivery,
+      );
+
+      localStorage.setItem("fs_deliveries", JSON.stringify(updatedDeliveries));
+      return updatedDeliveries;
+    });
+  }
+
+  useEffect(() => {
+    localStorage.setItem("fs_orders", JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem("fs_deliveries", JSON.stringify(deliveries));
+  }, [deliveries]);
 
   const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
 
@@ -580,19 +721,21 @@ export default function Manager({ onPromote }) {
               }}
             />
           )}
+
           {activeView === "orders" && (
             <ManagerOrders
-              orders={receipts} // זמנית
-              onToggleOrderReady={() => {}}
+              orders={orders}
+              onToggleOrderReady={handleToggleOrderReady}
             />
           )}
-
           {activeView === "deliveries" && (
             <ManagerDeliveries
-            deliveries={receipts} // זמנית
-            onUpdateStatus={() => {}}
+              deliveries={deliveries}
+              onUpdateStatus={handleUpdateDeliveryStatus}
+              onMarkAllPicked={handleMarkAllPicked}
             />
           )}
+         
 
           {activeView === "receipts" && <ReceiptsView receipts={receipts} />}
           {activeView === "analytics" && <AnalyticsView />}

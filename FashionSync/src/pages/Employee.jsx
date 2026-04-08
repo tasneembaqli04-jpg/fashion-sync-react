@@ -249,30 +249,50 @@ export default function Employee() {
   }
 
   function handleToggleOrderReady(orderId) {
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (order.id !== orderId) return order;
-        const newStatus = order.status === "ready" ? "pending" : "ready";
-        if (newStatus === "ready") {
+  setOrders((prevOrders) => {
+    const updatedOrders = prevOrders.map((order) => {
+      if (order.id !== orderId) return order;
+
+      const newStatus = order.status === "ready" ? "pending" : "ready";
+      return { ...order, status: newStatus };
+    });
+
+    const changedOrder = updatedOrders.find((order) => order.id === orderId);
+
+    setDeliveries((prevDeliveries) => {
+      let updatedDeliveries = [...prevDeliveries];
+
+      if (changedOrder && changedOrder.status === "ready") {
+        const alreadyExists = updatedDeliveries.some(
+          (delivery) => delivery.orderId === changedOrder.id
+        );
+
+        if (!alreadyExists) {
           const delivery = {
             id: `DEL-${Date.now()}`,
-            orderId: order.id,
-            customer: order.customer,
-            items: order.items,
+            orderId: changedOrder.id,
+            customer: changedOrder.customer,
+            items: changedOrder.items || [],
             status: "waiting",
             createdAt: Date.now(),
           };
-          setDeliveries((prev) => {
-            const updated = [delivery, ...prev];
-            localStorage.setItem("fs_deliveries", JSON.stringify(updated));
-            return updated;
-          });
-        }
-        return { ...order, status: newStatus };
-      }),
-    );
-  }
 
+          updatedDeliveries = [delivery, ...updatedDeliveries];
+        }
+      } else {
+        updatedDeliveries = updatedDeliveries.filter(
+          (delivery) => delivery.orderId !== orderId
+        );
+      }
+
+      localStorage.setItem("fs_deliveries", JSON.stringify(updatedDeliveries));
+      return updatedDeliveries;
+    });
+
+    localStorage.setItem("fs_orders", JSON.stringify(updatedOrders));
+    return updatedOrders;
+  });
+}
   function handleUpdateDeliveryStatus(deliveryId, newStatus) {
     setDeliveries((prev) => {
       const updated = prev.map((d) =>

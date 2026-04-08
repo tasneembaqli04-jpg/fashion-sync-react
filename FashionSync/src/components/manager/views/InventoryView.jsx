@@ -313,22 +313,23 @@ export default function InventoryView({
 
                     <td className={inventoryStyles.td}>
                       <div className={inventoryStyles.actions}>
-                        <button
-                          className={`${inventoryStyles.promoBtn} ${
-                            isPromoted ? inventoryStyles.promoBtnActive : ""
-                          }`}
-                          onClick={() => onOpenPromo(p)}
-                        >
-                          {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
-                        </button>
-
+                        {p.stock > 0 && (  
+                          <button
+                            className={`${inventoryStyles.promoBtn} ${
+                              isPromoted ? inventoryStyles.promoBtnActive : ""
+                            }`}
+                            onClick={() => onOpenPromo(p)}
+                          >
+                            {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
+                          </button>
+                        )}
                         <button
                           className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
                           onClick={() => onOpenDetails(p)}
                         >
                           פרטים
                         </button>
-
+                        
                         <button
                           className={`${uiStyles.btn} ${inventoryStyles.deleteBtn}`}
                           onClick={() => {
