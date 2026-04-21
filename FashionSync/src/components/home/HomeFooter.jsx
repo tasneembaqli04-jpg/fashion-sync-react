@@ -6,7 +6,7 @@ export default function HomeFooter() {
     <div className={styles.footerStrip} style={{ marginTop: "auto" }}>
       <span>FashionSync · כל הזכויות שמורות · 2026</span>
       <span>•</span>
-      <Link to="/employee">כניסת עובד</Link>
+      
       <span>•</span>
       <Link to="/manager">כניסת מנהל</Link>
     </div>

@@ -7,7 +7,6 @@ const he = {
     nav: {
       dashboard: "דשבורד",
       inventory: "ניהול מלאי",
-      employees: "עובדים",
       receipts: "קבלות",
       settings: "הגדרות",
     },

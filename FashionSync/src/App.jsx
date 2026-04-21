@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react"; 
 import Home from "./pages/Home";
 import Customer from "./pages/Customer";
-import Employee from "./pages/Employee";
 import Manager from "./pages/Manager";
 import Checkout from "./pages/Checkout";
 
@@ -25,7 +24,7 @@ function App() {
           element={<Customer promotedProduct={promotedProduct} />}
         />
 
-        <Route path="/employee" element={<Employee />} />
+       
         <Route
           path="/manager"
           element={<Manager onPromote={handlePromote} />}

@@ -15,7 +15,6 @@ export const LS_KEYS = {
 export const ROUTES = {
   HOME:     "/",
   CUSTOMER: "/customer",
-  EMPLOYEE: "/employee",
   MANAGER:  "/manager",
   CHECKOUT: "/checkout",
 };
