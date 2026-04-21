@@ -5,7 +5,7 @@ const LS_KEYS = {
   RECEIPTS: "fs_receipts",
   PRODUCTS: "fs_products",
   DISCOUNT: "fs_applied_discount",
-  ORDERS_PREFIX: "fs_orders_", // חדש
+  ORDERS_PREFIX: "fs_orders_",
 };
 
 function safeParse(value, fallback) {
@@ -83,11 +83,6 @@ export function saveReceipt(receipt) {
 
   return receipt;
 }
-
-/* =========================
-   ORDERS
-========================= */
-
 export function loadOrders(email) {
   const userEmail = normalizeEmail(email || getCurrentUser()?.email);
 

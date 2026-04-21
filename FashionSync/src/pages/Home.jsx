@@ -123,6 +123,7 @@ export default function Home() {
   return (
     <div className={styles.homePage}>
       <HomeBackground featuredImage={featuredImage} />
+      <FloatingItems />
       <HomeNavbar isLight={isLight} onToggleTheme={handleToggleTheme} />
       <HomeHero onOpenLogin={openLoginModal} onBrowse={handleBrowse} />
       <HomeFooter />
