@@ -4,7 +4,6 @@ import Home from "./pages/Home";
 import Customer from "./pages/Customer";
 import Manager from "./pages/Manager";
 import Checkout from "./pages/Checkout";
-import { LanguageProvider } from "./context/LanguageContext";
 
 function App() {
   const [promotedProduct, setPromotedProduct] = useState(null);
@@ -17,25 +16,23 @@ function App() {
   };
 
   return (
-    <LanguageProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home promotedProduct={promotedProduct} />} />
-          <Route
-            path="/customer"
-            element={<Customer promotedProduct={promotedProduct} />}
-          />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home promotedProduct={promotedProduct} />} />
+        <Route
+          path="/customer"
+          element={<Customer promotedProduct={promotedProduct} />}
+        />
 
-         
-          <Route
-            path="/manager"
-            element={<Manager onPromote={handlePromote} />}
-          />
+       
+        <Route
+          path="/manager"
+          element={<Manager onPromote={handlePromote} />}
+        />
 
-          <Route path="/checkout" element={<Checkout />} />
-        </Routes>
-      </BrowserRouter>
-    </LanguageProvider>
+        <Route path="/checkout" element={<Checkout />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

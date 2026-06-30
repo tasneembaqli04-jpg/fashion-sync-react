@@ -1,15 +1,12 @@
 import styles from "../../styles/checkout/CheckoutSteps.module.scss";
-import { useLanguage } from "../../context/LanguageContext";
+const STEP_LABELS = [
+  "פרטים",
+  "משלוח",
+  "תשלום",
+  "אישור",
+];
 
 export default function CheckoutStepsBar({ currentStep = 1 }) {
-  const { t } = useLanguage();
-  const STEP_LABELS = [
-    t.checkout.steps.details,
-    t.checkout.steps.shipping,
-    t.checkout.steps.payment,
-    t.checkout.steps.confirm,
-  ];
-
   return (
     <div className={styles.stepsBar}>
       {STEP_LABELS.map((label, index) => {
