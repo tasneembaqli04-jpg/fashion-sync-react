@@ -19,11 +19,10 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
+import { getAllOrders, updateOrderStatus } from "../functions/orders/ordersService";
 import {
   loadTheme,
   saveTheme,
-  loadOrders,
-  saveOrders,
   loadDeliveries,
   saveDeliveries,
   loadFeaturedProductCode,
@@ -47,62 +46,29 @@ export default function Manager({ onPromote }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
 
-  const [orders, setOrders] = useState(() => {
-    const saved = loadOrders();
-    if (saved) return saved;
+  const [orders, setOrders] = useState([]);
 
-    return [
-      {
-        id: "RCP-1000001",
-        customer: "לין קלאסית",
-        status: "pending",
-        items: [
-          {
-            name: "חולצת לינן קלאסית",
-            price: 189,
-            qty: 2,
-            size: "M",
-            img: INITIAL_PRODUCTS[0].img,
-          },
-          {
-            name: "חולצת טי בייסיק",
-            price: 99,
-            qty: 1,
-            size: "S",
-            img: INITIAL_PRODUCTS[4].img,
-          },
-        ],
-      },
-      {
-        id: "RCP-1000002",
-        customer: "ג'ינס סלים פיט",
-        status: "pending",
-        items: [
-          {
-            name: "ג'ינס סלים פיט",
-            price: 349,
-            qty: 1,
-            size: "32",
-            img: INITIAL_PRODUCTS[1].img,
-          },
-        ],
-      },
-      {
-        id: "RCP-1000003",
-        customer: "ז'קט עור שחור",
-        status: "pending",
-        items: [
-          {
-            name: "ז'קט עור שחור",
-            price: 699,
-            qty: 1,
-            size: "M",
-            img: INITIAL_PRODUCTS[3].img,
-          },
-        ],
-      },
-    ];
-  });
+  useEffect(() => {
+    let cancelled = false;
+
+    getAllOrders().then((firestoreOrders) => {
+      if (cancelled) return;
+
+      const normalized = firestoreOrders.map((order) => ({
+        docId: order.docId,
+        id: order.id,
+        customer: order.customer?.name || order.customer?.email || "לקוח",
+        status: order.ready ? "ready" : "pending",
+        items: Array.isArray(order.items) ? order.items : [],
+      }));
+
+      setOrders(normalized);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [deliveries, setDeliveries] = useState(() => loadDeliveries());
 
@@ -211,6 +177,11 @@ export default function Manager({ onPromote }) {
         if (order.id !== orderId) return order;
 
         const newStatus = order.status === "ready" ? "pending" : "ready";
+
+        if (order.docId) {
+          updateOrderStatus(order.docId, newStatus === "ready");
+        }
+
         return { ...order, status: newStatus };
       });
 
@@ -272,10 +243,6 @@ export default function Manager({ onPromote }) {
       return updatedDeliveries;
     });
   }
-
-  useEffect(() => {
-    saveOrders(orders);
-  }, [orders]);
 
   useEffect(() => {
     saveDeliveries(deliveries);

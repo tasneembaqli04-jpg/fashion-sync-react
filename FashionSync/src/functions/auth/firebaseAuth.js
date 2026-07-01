@@ -2,6 +2,7 @@ import { auth } from "../../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   onAuthStateChanged,
   updateProfile,
@@ -61,4 +62,7 @@ export function watchAuthState(callback) {
       name: firebaseUser.displayName || firebaseUser.email.split("@")[0],
     });
   });
+}
+export async function signInAsManager() {
+  await signInAnonymously(auth);
 }
