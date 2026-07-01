@@ -34,10 +34,19 @@ export function createAlerts(products) {
   return alerts;
 }
 export function buildReceipts(products) {
-  const p0 = products[0],
-    p1 = products[1],
-    p3 = products[3],
-    p4 = products[4];
+  if (!Array.isArray(products) || products.length < 5) {
+    return [];
+  }
+
+  const p0 = products[0];
+  const p1 = products[1];
+  const p3 = products[3];
+  const p4 = products[4];
+
+  if (!p0 || !p1 || !p3 || !p4) {
+    return [];
+  }
+
   return [
     {
       id: "RCP-1000001",

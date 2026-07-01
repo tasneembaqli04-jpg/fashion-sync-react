@@ -18,6 +18,7 @@ import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
+import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
 import {
   loadTheme,
   saveTheme,
@@ -110,7 +111,11 @@ export default function Manager({ onPromote }) {
   );
 
   const alerts = useMemo(() => createAlerts(products), [products]);
-  const receipts = useMemo(() => buildReceipts(products), [products]);
+  const receipts = useMemo(() => {
+     if (!Array.isArray(products) || products.length === 0) return [];
+     return buildReceipts(products.filter(Boolean));
+  }, [products]);
+ 
 
   const stats = useMemo(() => {
     const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
@@ -185,10 +190,19 @@ export default function Manager({ onPromote }) {
   useEffect(() => {
     document.body.classList.toggle("light", theme === "light");
   }, [theme]);
+  useEffect(() => {
+  async function loadManagerProducts() {
+    const productsFromFirestore = await getProducts();
+    setProducts(productsFromFirestore);
+  }
+
+  loadManagerProducts();
+}, []);
  
 
-  const handleDelete = (code) => {
-    setProducts((prev) => prev.filter((p) => p.code !== code));
+  const handleDelete = async (code) => {
+     await deleteProduct(code);
+     setProducts((prev) => prev.filter((p) => p.code !== code));
   };
 
   function handleToggleOrderReady(orderId) {
@@ -382,7 +396,11 @@ export default function Manager({ onPromote }) {
         isOpen={isAddProductOpen}
         theme={theme}
         onClose={() => setIsAddProductOpen(false)}
-        onSubmit={(p) => setProducts((prev) => [...prev, p])}
+        onSubmit={async (p) => {
+           await addProduct(p);
+           setProducts((prev) => [...prev, p]);
+           setIsAddProductOpen(false);
+        }}
       />
 
       <DetailsModal
