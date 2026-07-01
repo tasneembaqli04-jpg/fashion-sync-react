@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { signInAsManager } from "../../functions/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
 
@@ -9,9 +10,10 @@ export default function LoginOverlay({ onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username.trim() === "manager" && password === "admin123") {
       setErrorVisible(false);
+      await signInAsManager();
       onLoginSuccess();
       return;
     }

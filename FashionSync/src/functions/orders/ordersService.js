@@ -5,6 +5,8 @@ import {
   getDocs,
   query,
   where,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 
 const ordersCollection = collection(db, "orders");
@@ -21,6 +23,7 @@ export async function addOrder(receipt) {
     items: receipt.items || [],
     total: Number(receipt.total) || 0,
     status: 0,
+    ready: false,
     steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
     payMethod: receipt.payMethod || "",
     shipping: receipt.shipping || null,
@@ -52,4 +55,8 @@ export async function getAllOrders() {
     docId: document.id,
     ...document.data(),
   }));
+}
+export async function updateOrderStatus(docId, ready) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, { ready: !!ready });
 }
