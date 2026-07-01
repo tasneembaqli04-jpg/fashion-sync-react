@@ -7,7 +7,6 @@ export default function ManagerSidebar({
   onToggleTheme,
   theme,
   alertCount,
-  taskCount,
   mobileOpen,
 }) {
   return (

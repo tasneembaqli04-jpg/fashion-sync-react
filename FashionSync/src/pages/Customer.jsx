@@ -137,6 +137,7 @@ export default function Customer() {
   }, [theme]);
 
   useEffect(() => {
+  async function init() {
     openDB();
 
     const auth = initAuth();
@@ -148,7 +149,12 @@ export default function Customer() {
 
     setCurrentUser(auth.currentUser || null);
     setIsGuest(Boolean(auth.isGuest));
-    setProducts(loadProducts());
+
+    const products = await loadProducts();
+    setProducts(products);
+  }
+
+  init();
   }, [navigate]);
 
   const selectedProduct = useMemo(() => {

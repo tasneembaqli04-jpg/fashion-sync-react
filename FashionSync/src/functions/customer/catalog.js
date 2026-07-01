@@ -1,5 +1,5 @@
 import { LS_KEYS } from "../../data/constants";
-import { PRODUCTS_SEED } from "../../data/products";
+import { getProducts } from "../productsService";
 
 export const SEASON_META = {
   summer: { emoji: "☀️", text: "עכשיו קיץ! מוצגים פריטי הקיץ", cls: "summer" },
@@ -7,20 +7,8 @@ export const SEASON_META = {
   "spring-autumn": { emoji: "🌸", text: "עכשיו אביב/סתיו!", cls: "spring" },
 };
 
-export function loadProducts() {
-  const stored = JSON.parse(localStorage.getItem(LS_KEYS.PRODUCTS) || "null");
-
-  if (Array.isArray(stored) && stored.length) {
-    return stored.map((product) => {
-      if (!product.season) {
-        const seed = PRODUCTS_SEED.find((item) => item.code === product.code);
-        return seed ? { ...product, season: seed.season } : { ...product, season: "all" };
-      }
-      return product;
-    });
-  }
-
-  return PRODUCTS_SEED;
+export async function loadProducts() {
+  return await getProducts();
 }
 
 export function filterProducts({

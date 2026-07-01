@@ -1,19 +1,39 @@
 import { useMemo, useState } from "react";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
+import { he } from "../../../translations/he";
+const t = he.manager.inventory;
+const common = he.common;
+const categories = he.manager.categories;
 
 const SEASON_COLORS = {
-  קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
-  חורף: { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
-  "אביב/סתיו": { bg: "rgba(46,204,113,0.1)", color: "#2ecc71", icon: "🌸" },
-  "כל העונות": { bg: "rgba(155,89,182,0.1)", color: "#9b59b6", icon: "🌀" },
+  [t.seasons.summer]: {
+    bg: "rgba(230,126,34,0.1)",
+    color: "#e67e22",
+    icon: "☀️",
+  },
+  [t.seasons.winter]: {
+    bg: "rgba(52,152,219,0.1)",
+    color: "#3498db",
+    icon: "❄️",
+  },
+  [t.seasons.springFall]: {
+    bg: "rgba(46,204,113,0.1)",
+    color: "#2ecc71",
+    icon: "🌸",
+  },
+  [t.seasons.allSeasons]: {
+    bg: "rgba(155,89,182,0.1)",
+    color: "#9b59b6",
+    icon: "🌀",
+  },
 };
 
 function SeasonBadge({ season }) {
   const s = SEASON_COLORS[season] || {
     bg: "rgba(255,255,255,0.06)",
     color: "var(--muted)",
-    icon: "—",
+    icon: common.none,
   };
 
   return (
@@ -30,21 +50,33 @@ function SeasonBadge({ season }) {
         fontWeight: 700,
       }}
     >
-      {s.icon} {season || "—"}
+      {s.icon} {season || common.none}
     </span>
   );
 }
 
 function StatusBadge({ stock, minStock }) {
   if (stock === 0) {
-    return <span className={`${uiStyles.tag} ${uiStyles.tRed}`}>אזל</span>;
+    return (
+      <span className={`${uiStyles.tag} ${uiStyles.tRed}`}>
+        {t.badges.out}
+      </span>
+    );
   }
 
   if (stock <= minStock) {
-    return <span className={`${uiStyles.tag} ${uiStyles.tYellow}`}>נמוך</span>;
+    return (
+      <span className={`${uiStyles.tag} ${uiStyles.tYellow}`}>
+        {t.badges.low}
+      </span>
+    );
   }
 
-  return <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>זמין</span>;
+  return (
+    <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>
+      {t.badges.available}
+    </span>
+  );
 }
 
 export default function InventoryView({
@@ -57,27 +89,29 @@ export default function InventoryView({
 }) {
   const [showFilters, setShowFilters] = useState(false);
 
-  const [categoryFilter, setCategoryFilter] = useState("כל הקטגוריות");
-  const [genderFilter, setGenderFilter] = useState("הכל");
-  const [stockStatusFilter, setStockStatusFilter] = useState("הכל");
+  const [categoryFilter, setCategoryFilter] = useState(t.options.allCategories);
+  const [genderFilter, setGenderFilter] = useState(common.all);
+  const [stockStatusFilter, setStockStatusFilter] = useState(common.all);
   const [productNameFilter, setProductNameFilter] = useState("");
   const [productCodeFilter, setProductCodeFilter] = useState("");
-  const [promoOnlyFilter, setPromoOnlyFilter] = useState("הכל");
+  const [promoOnlyFilter, setPromoOnlyFilter] = useState(common.all);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const categoryMatch =
-        categoryFilter === "כל הקטגוריות" ? true : p.cat === categoryFilter;
+        categoryFilter === t.options.allCategories
+          ? true
+          : p.cat === categoryFilter;
 
       const genderMatch =
-        genderFilter === "הכל" ? true : p.gender === genderFilter;
+        genderFilter === common.all ? true : p.gender === genderFilter;
 
       let stockStatusMatch = true;
-      if (stockStatusFilter === "זמין") {
+      if (stockStatusFilter === t.options.stockStatus.available) {
         stockStatusMatch = p.stock > p.minStock;
-      } else if (stockStatusFilter === "נמוך") {
+      } else if (stockStatusFilter === t.options.stockStatus.low) {
         stockStatusMatch = p.stock > 0 && p.stock <= p.minStock;
-      } else if (stockStatusFilter === "אזל") {
+      } else if (stockStatusFilter === t.options.stockStatus.out) {
         stockStatusMatch = p.stock === 0;
       }
 
@@ -90,9 +124,9 @@ export default function InventoryView({
         : true;
 
       let promoOnlyMatch = true;
-      if (promoOnlyFilter === "כן") {
+      if (promoOnlyFilter === common.yes) {
         promoOnlyMatch = promotedCode === p.code;
-      } else if (promoOnlyFilter === "לא") {
+      } else if (promoOnlyFilter === common.no) {
         promoOnlyMatch = promotedCode !== p.code;
       }
 
@@ -117,22 +151,22 @@ export default function InventoryView({
   ]);
 
   const clearAllFilters = () => {
-    setCategoryFilter("כל הקטגוריות");
-    setGenderFilter("הכל");
-    setStockStatusFilter("הכל");
+    setCategoryFilter(t.options.allCategories);
+    setGenderFilter(common.all);
+    setStockStatusFilter(common.all);
     setProductNameFilter("");
     setProductCodeFilter("");
-    setPromoOnlyFilter("הכל");
+    setPromoOnlyFilter(common.all);
   };
 
   return (
     <div className={uiStyles.view}>
       <div className={uiStyles.pageHd}>
         <div className={uiStyles.phLeft}>
-          <h2>ניהול מלאי</h2>
+          <h2>{t.title}</h2>
           <p>
-            {products.reduce((sum, p) => sum + p.stock, 0)} יחידות ·{" "}
-            {products.length} מוצרים
+            {products.reduce((sum, p) => sum + p.stock, 0)} {t.summary.units} ·{" "}
+            {products.length} {t.summary.products}
           </p>
         </div>
       </div>
@@ -143,7 +177,7 @@ export default function InventoryView({
           className={inventoryStyles.filterToggleBtn}
           onClick={() => setShowFilters((prev) => !prev)}
         >
-          סינון ⬇
+          {t.filterToggle} ⬇
         </button>
       </div>
 
@@ -151,64 +185,74 @@ export default function InventoryView({
         <div className={inventoryStyles.filtersPanel}>
           <div className={inventoryStyles.filtersGrid}>
             <div className={inventoryStyles.filterGroup}>
-              <label className={inventoryStyles.filterLabel}>קטגוריה</label>
+              <label className={inventoryStyles.filterLabel}>
+                {t.filters.category}
+              </label>
               <select
                 className={inventoryStyles.filterSelect}
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option>כל הקטגוריות</option>
-                <option>חולצות</option>
-                <option>מכנסיים</option>
-                <option>שמלות</option>
-                <option>עליוניות</option>
+                <option>{t.options.allCategories}</option>
+                <option>{categories.shirts}</option>
+                <option>{categories.pants}</option>
+                <option>{categories.dresses}</option>
+                <option>{categories.outerwear}</option>
               </select>
             </div>
 
             <div className={inventoryStyles.filterGroup}>
-              <label className={inventoryStyles.filterLabel}>מגדר</label>
+              <label className={inventoryStyles.filterLabel}>
+                {t.filters.gender}
+              </label>
               <select
                 className={inventoryStyles.filterSelect}
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
               >
-                <option>הכל</option>
-                <option>גברים</option>
-                <option>נשים</option>
-                <option>ילדים</option>
-                <option>יוניסקס</option>
+                <option>{common.all}</option>
+                <option>{t.options.genders.men}</option>
+                <option>{t.options.genders.women}</option>
+                <option>{t.options.genders.kids}</option>
+                <option>{t.options.genders.unisex}</option>
               </select>
             </div>
 
             <div className={inventoryStyles.filterGroup}>
-              <label className={inventoryStyles.filterLabel}>סטטוס מלאי</label>
+              <label className={inventoryStyles.filterLabel}>
+                {t.filters.stockStatus}
+              </label>
               <select
                 className={inventoryStyles.filterSelect}
                 value={stockStatusFilter}
                 onChange={(e) => setStockStatusFilter(e.target.value)}
               >
-                <option>הכל</option>
-                <option>זמין</option>
-                <option>נמוך</option>
-                <option>אזל</option>
+                <option>{common.all}</option>
+                <option>{t.options.stockStatus.available}</option>
+                <option>{t.options.stockStatus.low}</option>
+                <option>{t.options.stockStatus.out}</option>
               </select>
             </div>
 
             <div className={inventoryStyles.filterGroup}>
-              <label className={inventoryStyles.filterLabel}>שם מוצר</label>
+              <label className={inventoryStyles.filterLabel}>
+                {t.filters.productName}
+              </label>
               <input
                 className={inventoryStyles.filterInput}
-                placeholder="חיפוש לפי שם..."
+                placeholder={t.placeholders.productName}
                 value={productNameFilter}
                 onChange={(e) => setProductNameFilter(e.target.value)}
               />
             </div>
 
             <div className={inventoryStyles.filterGroup}>
-              <label className={inventoryStyles.filterLabel}>קוד מוצר</label>
+              <label className={inventoryStyles.filterLabel}>
+                {t.filters.productCode}
+              </label>
               <input
                 className={inventoryStyles.filterInput}
-                placeholder="לדוגמה: FS-001"
+                placeholder={t.placeholders.productCode}
                 value={productCodeFilter}
                 onChange={(e) => setProductCodeFilter(e.target.value)}
               />
@@ -216,28 +260,27 @@ export default function InventoryView({
 
             <div className={inventoryStyles.filterGroup}>
               <label className={inventoryStyles.filterLabel}>
-                מוצרים לפרסום בלבד
+                {t.filters.promoOnly}
               </label>
               <select
                 className={inventoryStyles.filterSelect}
                 value={promoOnlyFilter}
                 onChange={(e) => setPromoOnlyFilter(e.target.value)}
               >
-                <option>הכל</option>
-                <option>כן</option>
-                <option>לא</option>
+                <option>{common.all}</option>
+                <option>{common.yes}</option>
+                <option>{common.no}</option>
               </select>
             </div>
           </div>
 
           <div className={inventoryStyles.filtersActions}>
-           
             <button
               type="button"
               className={inventoryStyles.clearBtn}
               onClick={clearAllFilters}
             >
-              אפס סינונים ✕
+              {t.clearFilters} ✕
             </button>
           </div>
         </div>
@@ -248,15 +291,15 @@ export default function InventoryView({
           <table className={inventoryStyles.table}>
             <thead>
               <tr className={inventoryStyles.tr}>
-                <th className={inventoryStyles.th}>תמונה</th>
-                <th className={inventoryStyles.th}>קוד</th>
-                <th className={inventoryStyles.th}>שם מוצר</th>
-                <th className={inventoryStyles.th}>עונה</th>
-                <th className={inventoryStyles.th}>מלאי</th>
-                <th className={inventoryStyles.th}>מחיר</th>
-                <th className={inventoryStyles.th}>מינימום</th>
-                <th className={inventoryStyles.th}>סטטוס</th>
-                <th className={inventoryStyles.th}>פעולות</th>
+                <th className={inventoryStyles.th}>{t.table.image}</th>
+                <th className={inventoryStyles.th}>{t.table.code}</th>
+                <th className={inventoryStyles.th}>{t.table.name}</th>
+                <th className={inventoryStyles.th}>{t.table.season}</th>
+                <th className={inventoryStyles.th}>{t.table.stock}</th>
+                <th className={inventoryStyles.th}>{t.table.price}</th>
+                <th className={inventoryStyles.th}>{t.table.min}</th>
+                <th className={inventoryStyles.th}>{t.table.status}</th>
+                <th className={inventoryStyles.th}>{t.table.actions}</th>
               </tr>
             </thead>
 
@@ -313,32 +356,35 @@ export default function InventoryView({
 
                     <td className={inventoryStyles.td}>
                       <div className={inventoryStyles.actions}>
-                        {p.stock > 0 && (  
+                        {p.stock > 0 && (
                           <button
                             className={`${inventoryStyles.promoBtn} ${
                               isPromoted ? inventoryStyles.promoBtnActive : ""
                             }`}
                             onClick={() => onOpenPromo(p)}
                           >
-                            {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
+                            {isPromoted
+                              ? t.buttons.promoted
+                              : t.buttons.promote}
                           </button>
                         )}
+
                         <button
                           className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
                           onClick={() => onOpenDetails(p)}
                         >
-                          פרטים
+                          {t.buttons.details}
                         </button>
-                        
+
                         <button
                           className={`${uiStyles.btn} ${inventoryStyles.deleteBtn}`}
                           onClick={() => {
-                            if (window.confirm("למחוק מוצר?")) {
+                            if (window.confirm(t.messages.confirmDelete)) {
                               onDeleteProduct(p.code);
                             }
                           }}
                         >
-                          🗑️
+                          {t.buttons.delete}
                         </button>
                       </div>
                     </td>
@@ -349,7 +395,7 @@ export default function InventoryView({
               {!filteredProducts.length && (
                 <tr className={inventoryStyles.tr}>
                   <td className={inventoryStyles.emptyTd} colSpan={9}>
-                    אין מוצרים שמתאימים לסינון שנבחר
+                    {t.messages.noResults}
                   </td>
                 </tr>
               )}
