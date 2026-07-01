@@ -73,11 +73,8 @@ export function saveReceipt(receipt) {
     throw new Error("Receipt is invalid");
   }
 
-  const receipts = safeParse(localStorage.getItem(LS_KEYS.RECEIPTS), []);
-
-  if (!Array.isArray(receipts)) {
-    throw new Error("Stored receipts data is invalid");
-  }
+  const parsed = safeParse(localStorage.getItem(LS_KEYS.RECEIPTS), []);
+  const receipts = Array.isArray(parsed) ? parsed : [];
 
   receipts.push(receipt);
   localStorage.setItem(LS_KEYS.RECEIPTS, JSON.stringify(receipts));
