@@ -1,5 +1,6 @@
 import { LS_KEYS } from "../../data/constants";
 import { normEmail } from "./helpers";
+import { logOut } from "../auth/firebaseAuth";
 
 export function initAuth() {
   const qs = new URLSearchParams(window.location.search);
@@ -65,6 +66,7 @@ export function guestPrompt() {
 
 export function doLogout(setCart) {
   if (!window.confirm("להתנתק?")) return;
+  logOut();
   localStorage.removeItem(LS_KEYS.CURRENT_USER);
   localStorage.removeItem(LS_KEYS.MODE);
   setCart([]);
