@@ -258,7 +258,7 @@ export default function Checkout() {
 
     setProcessing(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         const receipt = {
           id: `RCP-${Date.now()}`,
@@ -286,7 +286,7 @@ export default function Checkout() {
           status: 0,
         };
 
-        saveReceiptAndOrder(receipt);
+        await saveReceiptAndOrder(receipt);
         updateProductsStock(cart);
         clearCheckoutCart();
         setProcessing(false);
