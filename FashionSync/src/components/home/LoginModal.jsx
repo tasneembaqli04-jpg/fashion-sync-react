@@ -5,6 +5,7 @@ export default function LoginModal({
   email,
   password,
   error,
+  loading,
   onEmailChange,
   onPasswordChange,
   onClose,
@@ -56,8 +57,12 @@ export default function LoginModal({
         {error ? <div className={styles.fsErrVisible}>{error}</div> : null}
 
         <div className={styles.fsActions}>
-          <button className={`${styles.fsBtn} ${styles.fsBtnPrimary}`} onClick={onSubmit}>
-            כניסה
+          <button
+            className={`${styles.fsBtn} ${styles.fsBtnPrimary}`}
+            onClick={onSubmit}
+            disabled={loading}
+          >
+            {loading ? "מתחברת..." : "כניסה"}
           </button>
           <button className={`${styles.fsBtn} ${styles.fsBtnGhost}`} onClick={onClose}>
             ביטול

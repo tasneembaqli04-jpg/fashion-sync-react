@@ -5,10 +5,10 @@ import HomeNavbar from "../components/home/HomeNavbar.jsx";
 import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
+import { signIn, signUp } from "../functions/auth/firebaseAuth.js";
 import styles from "../styles/Home.module.scss";
 
 const LS = {
-  USERS: "fs_users",
   CURRENT_USER: "fs_current_user",
   MODE: "fs_customer_mode",
   THEME: "fs_theme",
@@ -28,15 +28,6 @@ function isGmail(email) {
   return /^[a-z0-9._%+-]+@gmail\.com$/.test(String(email || "").trim().toLowerCase());
 }
 
-function loadUsers() {
-  const users = safeJsonParse(localStorage.getItem(LS.USERS), {});
-  return users && typeof users === "object" && !Array.isArray(users) ? users : {};
-}
-
-function saveUsers(users) {
-  localStorage.setItem(LS.USERS, JSON.stringify(users));
-}
-
 export default function Home() {
   const [isLight, setIsLight] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -44,6 +35,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem(LS.THEME);
@@ -85,7 +77,7 @@ export default function Home() {
     setLoginOpen(true);
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPass = password.trim();
     setError("");
@@ -99,22 +91,22 @@ export default function Home() {
       return;
     }
 
-    const users = loadUsers();
-    if (!users[normalizedEmail]) {
-      users[normalizedEmail] = {
-        password: normalizedPass,
-        name: normalizedEmail.split("@")[0],
-      };
-      saveUsers(users);
-    } else if (users[normalizedEmail].password !== normalizedPass) {
-      setError("אימייל/סיסמה לא נכונים");
+    setLoading(true);
+
+    let result = await signIn(normalizedEmail, normalizedPass);
+
+    if (result.error === "אימייל או סיסמה שגויים") {
+      result = await signUp(normalizedEmail, normalizedPass);
+    }
+
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error);
       return;
     }
 
-    const user = {
-      email: normalizedEmail,
-      name: users[normalizedEmail].name || normalizedEmail.split("@")[0],
-    };
+    const user = result.user;
     localStorage.setItem(LS.CURRENT_USER, JSON.stringify(user));
     localStorage.setItem(LS.MODE, "auth");
     window.location.href = `${CUSTOMER_PAGE}?mode=auth&email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}`;
@@ -133,6 +125,7 @@ export default function Home() {
         email={email}
         password={password}
         error={error}
+        loading={loading}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onClose={() => setLoginOpen(false)}
