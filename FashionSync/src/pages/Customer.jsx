@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { loadOrders } from "../functions/checkout/checkoutStorage";
+import { getOrdersByUser } from "../functions/orders/ordersService";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -128,8 +128,17 @@ export default function Customer() {
       return;
     }
 
-    const userOrders = loadOrders(currentUser.email);
-    setOrders(Array.isArray(userOrders) ? userOrders.slice().reverse() : []);
+    let cancelled = false;
+
+    getOrdersByUser(currentUser.email).then((userOrders) => {
+      if (!cancelled) {
+        setOrders(userOrders.slice().reverse());
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentUser, activePanel]);
 
   useEffect(() => {

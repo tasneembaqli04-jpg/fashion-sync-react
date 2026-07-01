@@ -1,3 +1,4 @@
+import { addOrder } from "../orders/ordersService";
 const LS_KEYS = {
   CURRENT_USER: "fs_current_user",
   CART: "fs_cart",
@@ -148,9 +149,9 @@ export function addReceiptToOrders(receipt) {
   return updatedOrders;
 }
 
-export function saveReceiptAndOrder(receipt) {
+export async function saveReceiptAndOrder(receipt) {
   const savedReceipt = saveReceipt(receipt);
-  addReceiptToOrders(savedReceipt);
+  await addOrder(savedReceipt);
   return savedReceipt;
 }
 
