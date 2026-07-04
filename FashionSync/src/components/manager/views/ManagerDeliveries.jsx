@@ -84,7 +84,9 @@ export default function ManagerDeliveries({
                   <div className={deliveriesStyles.deliveryHeadInfo}>
                     <div className={deliveriesStyles.deliveryCustomerLine}>
                       <span className={deliveriesStyles.deliveryCustomerName}>
-                        {delivery.customer}
+                        {typeof delivery.customer === "string"
+                          ? delivery.customer
+                          : delivery.customer?.name || "לקוח"}
                       </span>
                       <span className={deliveriesStyles.deliveryUserIcon}>👤</span>
                     </div>
