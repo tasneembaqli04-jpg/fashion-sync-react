@@ -1,4 +1,5 @@
 import { addOrder } from "../orders/ordersService";
+import { clearCartFromFirestore } from "../customer/cartFirestore";
 const LS_KEYS = {
   CURRENT_USER: "fs_current_user",
   CART: "fs_cart",
@@ -194,7 +195,13 @@ export function updateProductsStock(cartItems = []) {
   return products;
 }
 
-export function clearCheckoutCart() {
+export async function clearCheckoutCart() {
+  const email = getCurrentUser()?.email;
+
   localStorage.removeItem(LS_KEYS.PENDING_CART);
   localStorage.removeItem(LS_KEYS.CART);
+
+  if (email) {
+    await clearCartFromFirestore(email);
+  }
 }

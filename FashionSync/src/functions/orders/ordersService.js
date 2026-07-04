@@ -1,4 +1,5 @@
 import { db } from "../../firebase";
+import { saveCustomer } from "../customer/customerFirestore";
 import {
   collection,
   addDoc,
@@ -16,9 +17,13 @@ function normalizeEmail(email) {
 }
 
 export async function addOrder(receipt) {
+  await saveCustomer(receipt.customer);
+
+  const customerEmail = normalizeEmail(receipt.customer?.email);
+
   const order = {
     id: receipt.id,
-    userEmail: normalizeEmail(receipt.customer?.email),
+    customerEmail,
     date: receipt.date || new Date().toISOString(),
     items: receipt.items || [],
     total: Number(receipt.total) || 0,
@@ -27,7 +32,6 @@ export async function addOrder(receipt) {
     steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
     payMethod: receipt.payMethod || "",
     shipping: receipt.shipping || null,
-    customer: receipt.customer || null,
     createdAt: new Date().toISOString(),
   };
 
@@ -36,10 +40,14 @@ export async function addOrder(receipt) {
 }
 
 export async function getOrdersByUser(email) {
-  const userEmail = normalizeEmail(email);
-  if (!userEmail) return [];
+  const customerEmail = normalizeEmail(email);
+  if (!customerEmail) return [];
 
-  const q = query(ordersCollection, where("userEmail", "==", userEmail));
+  const q = query(
+    ordersCollection,
+    where("customerEmail", "==", customerEmail)
+  );
+
   const snapshot = await getDocs(q);
 
   return snapshot.docs.map((document) => ({

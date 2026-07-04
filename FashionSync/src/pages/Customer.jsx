@@ -26,6 +26,7 @@ import {
 } from "../functions/customer/catalog";
 import {
   loadCart,
+  loadCartFromBackend,
   addToCart as addToCartFn,
   changeQty as changeQtyFn,
   removeItem as removeItemFn,
@@ -165,6 +166,28 @@ export default function Customer() {
 
   init();
   }, [navigate]);
+  useEffect(() => {
+  if (!currentUser?.email || isGuest) {
+    setCart([]);
+    return;
+  }
+
+  let cancelled = false;
+
+  async function loadUserCart() {
+    const backendCart = await loadCartFromBackend(currentUser.email);
+
+    if (!cancelled) {
+      setCart(backendCart);
+    }
+  }
+
+  loadUserCart();
+
+  return () => {
+    cancelled = true;
+  };
+}, [currentUser, isGuest]);
 
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.code === selectedProductCode) || null;
@@ -302,8 +325,9 @@ export default function Customer() {
       color: selectedColor === "אחר" ? customColor || "אחר" : selectedColor,
     };
   }
+  
 
-  function addToCart(code, fromModal = false) {
+  async function addToCart(code, fromModal = false) {
     if (isGuest) {
       guestPrompt();
       return;
@@ -314,21 +338,24 @@ export default function Customer() {
 
     const variant = fromModal ? getChosenVariant() : { size: "", color: "" };
 
-    setCart((prevCart) => {
-      const nextCart = addToCartFn({ cart: prevCart, product, variant });
-      return nextCart;
+    const nextCart = await addToCartFn({
+      email: currentUser.email,
+      cart,
+      product,
+      variant,
     });
+    setCart(nextCart);
 
     if (fromModal) closeProductModal();
   }
 
-  function changeQty(key, delta) {
-    const nextCart = changeQtyFn(cart, key, delta, products);
+  async function changeQty(key, delta) {
+    const nextCart = await changeQtyFn(cart, key, delta, products,currentUser.email);
     setCart(nextCart);
   }
 
-  function removeItem(key) {
-    const nextCart = removeItemFn(cart, key);
+  async function removeItem(key) {
+    const nextCart = await removeItemFn(cart, key, currentUser.email);
     setCart(nextCart);
   }
 

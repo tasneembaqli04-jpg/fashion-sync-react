@@ -26,7 +26,7 @@ import CheckoutStep2Shipping from "../components/checkout/CheckoutStep2Shipping"
 import CheckoutStep3Payment from "../components/checkout/CheckoutStep3Payment";
 import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
-
+import { getCartFromFirestore } from "../functions/customer/cartFirestore";
 export default function Checkout() {
   const navigate = useNavigate();
 
@@ -260,6 +260,11 @@ export default function Checkout() {
 
     setTimeout(async () => {
       try {
+        const orderItems = await getCartFromFirestore(formData.email);
+
+        if (orderItems.length === 0) {
+          throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
+        }
         const receipt = {
           id: `RCP-${Date.now()}`,
           date: new Date().toISOString(),
@@ -274,7 +279,7 @@ export default function Checkout() {
             zip: formData.zip,
             notes: formData.notes,
           },
-          items: cart,
+          items: orderItems,
           subtotal,
           discountAmount,
           discountPct,
@@ -287,15 +292,15 @@ export default function Checkout() {
         };
 
         await saveReceiptAndOrder(receipt);
-        updateProductsStock(cart);
-        clearCheckoutCart();
+        updateProductsStock(orderItems);
+        await clearCheckoutCart();
         setProcessing(false);
 
         setSuccessData({
           receiptId: receipt.id,
           isCash: payMethod === "cash",
           email: formData.email,
-          items: cart,
+          items: orderItems,
           shippingCost,
           discountAmount,
           total,

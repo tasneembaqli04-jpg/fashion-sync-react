@@ -1,15 +1,22 @@
+import { useState } from "react";
+import CustomerDetailsModal from "../modals/CustomerDetailsModal";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 
 export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
   const pending = orders.filter(
     (o) => o.status === "pending" || o.status === "waiting" || !o.status
   ).length;
 
   const ready = orders.filter(
-    (o) => o.status === "ready" || o.status === "done" || o.status === "completed"
+    (o) =>
+      o.status === "ready" ||
+      o.status === "done" ||
+      o.status === "completed"
   ).length;
 
   return (
@@ -77,7 +84,8 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
           const items = Array.isArray(order.items) ? order.items : [];
 
           const total = items.reduce(
-            (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0),
+            (sum, item) =>
+              sum + (Number(item.price) || 0) * (Number(item.qty) || 0),
             0
           );
 
@@ -90,10 +98,21 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             <div className={ordersStyles.orderCard} key={order.id}>
               <div className={ordersStyles.orderHeader}>
                 <div>
-                  <div className={ordersStyles.orderCustomer}>
-                    👤 {order.customer}
-                  </div>
+                  <div className={ordersStyles.orderCustomer}>📦 הזמנה</div>
                   <div className={ordersStyles.orderId}>{order.id}</div>
+
+                  <button
+                    type="button"
+                    className={ordersStyles.orderPrepareBtn}
+                    onClick={() =>
+                      setSelectedCustomer({
+                        customer: order.customerDetails,
+                        email: order.customerEmail,
+                      })
+                    }
+                  >
+                    👤 פרטי לקוח
+                  </button>
                 </div>
 
                 <div>
@@ -146,6 +165,13 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
           );
         })
       )}
+
+      <CustomerDetailsModal
+        open={!!selectedCustomer}
+        customer={selectedCustomer?.customer}
+        email={selectedCustomer?.email}
+        onClose={() => setSelectedCustomer(null)}
+      />
     </div>
   );
 }

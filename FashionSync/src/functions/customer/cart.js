@@ -1,11 +1,21 @@
 import { LS_KEYS } from "../../data/constants";
+import {
+  saveCartToFirestore,
+  getCartFromFirestore,
+  clearCartFromFirestore,
+} from "./cartFirestore";
 
-export function loadCart() {
-  return JSON.parse(localStorage.getItem(LS_KEYS.CART) || "[]");
+export async function loadCartFromBackend(email) {
+  return await getCartFromFirestore(email);
 }
 
-export function saveCart(cart) {
-  localStorage.setItem(LS_KEYS.CART, JSON.stringify(cart));
+export async function saveCart(email, cart) {
+  await saveCartToFirestore(email, cart);
+  return cart;
+}
+
+export function loadCart() {
+  return [];
 }
 
 export function getCartCount(cart) {
@@ -19,7 +29,12 @@ export function getCartTotals(cart, appliedDiscount = 0) {
   return { raw, discount, total };
 }
 
-export function addToCart({ cart, product, variant = { size: "", color: "" } }) {
+export async function addToCart({
+  email,
+  cart,
+  product,
+  variant = { size: "", color: "" },
+}) {
   const key = `${product.code}|${variant.size || ""}|${variant.color || ""}`;
 
   const existingItem = cart.find((item) => item.key === key);
@@ -27,14 +42,14 @@ export function addToCart({ cart, product, variant = { size: "", color: "" } }) 
   let nextCart;
 
   if (existingItem) {
-    nextCart = cart.map((item) => {
-      if (item.key !== key) return item;
-
-      return {
-        ...item,
-        qty: Math.min(item.qty + 1, product.stock),
-      };
-    });
+    nextCart = cart.map((item) =>
+      item.key !== key
+        ? item
+        : {
+            ...item,
+            qty: Math.min(item.qty + 1, product.stock),
+          }
+    );
   } else {
     nextCart = [
       ...cart,
@@ -45,7 +60,7 @@ export function addToCart({ cart, product, variant = { size: "", color: "" } }) 
         img: product.img,
         price: product.price,
         originalPrice: product.originalPrice || product.price,
-        sale: product.sale,
+        sale: product.sale || false,
         qty: 1,
         size: variant.size || "",
         color: variant.color || "",
@@ -53,11 +68,11 @@ export function addToCart({ cart, product, variant = { size: "", color: "" } }) 
     ];
   }
 
-  saveCart(nextCart);
+  await saveCartToFirestore(email, nextCart);
   return nextCart;
 }
 
-export function changeQty(cart, key, delta, products) {
+export async function changeQty(cart, key, delta, products, email) {
   const currentItem = cart.find((item) => item.key === key);
   if (!currentItem) return cart;
 
@@ -77,12 +92,16 @@ export function changeQty(cart, key, delta, products) {
     );
   }
 
-  saveCart(nextCart);
+  await saveCartToFirestore(email, nextCart);
   return nextCart;
 }
 
-export function removeItem(cart, key) {
+export async function removeItem(cart, key, email) {
   const nextCart = cart.filter((item) => item.key !== key);
-  saveCart(nextCart);
+  await saveCartToFirestore(email, nextCart);
   return nextCart;
+}
+
+export async function clearCart(email) {
+  await clearCartFromFirestore(email);
 }
