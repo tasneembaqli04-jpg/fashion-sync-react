@@ -20,12 +20,16 @@ import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
 import { getAllOrders, updateOrderStatus } from "../functions/orders/ordersService";
+import {
+  getAllDeliveries,
+  addDelivery,
+  updateDeliveryStatus,
+  deleteDelivery,
+} from "../functions/deliveries/deliveriesService";
 import { getAllCustomers } from "../functions/customer/customerFirestore";
 import {
   loadTheme,
   saveTheme,
-  loadDeliveries,
-  saveDeliveries,
   loadFeaturedProductCode,
   saveFeaturedProduct,
   clearFeaturedProduct,
@@ -50,6 +54,8 @@ export default function Manager({ onPromote }) {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
+  if (!isLoggedIn) return;
+
   let cancelled = false;
 
   async function loadOrdersWithCustomers() {
@@ -89,9 +95,25 @@ export default function Manager({ onPromote }) {
   return () => {
     cancelled = true;
   };
-}, []);
+}, [isLoggedIn]);
 
-  const [deliveries, setDeliveries] = useState(() => loadDeliveries());
+  const [deliveries, setDeliveries] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    let cancelled = false;
+
+    getAllDeliveries().then((firestoreDeliveries) => {
+      if (!cancelled) {
+        setDeliveries(firestoreDeliveries);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   const [currentPromotedCode, setCurrentPromotedCode] = useState(
     loadFeaturedProductCode(),
@@ -178,13 +200,15 @@ export default function Manager({ onPromote }) {
     document.body.classList.toggle("light", theme === "light");
   }, [theme]);
   useEffect(() => {
+  if (!isLoggedIn) return;
+
   async function loadManagerProducts() {
     const productsFromFirestore = await getProducts();
     setProducts(productsFromFirestore);
   }
 
   loadManagerProducts();
-}, []);
+}, [isLoggedIn]);
  
 
   const handleDelete = async (code) => {
@@ -220,15 +244,29 @@ export default function Manager({ onPromote }) {
             const delivery = {
               id: `DEL-${Date.now()}`,
               orderId: changedOrder.id,
-              customer: changedOrder.customer,
+              customer:
+                changedOrder.customerDetails?.name ||
+                changedOrder.customerDetails?.email ||
+                changedOrder.customerEmail ||
+                "לקוח",
+              customerEmail: changedOrder.customerEmail || null,
               items: changedOrder.items || [],
               status: "waiting",
               createdAt: Date.now(),
             };
 
+            addDelivery(delivery);
             updatedDeliveries = [delivery, ...updatedDeliveries];
           }
         } else {
+          const removedDelivery = updatedDeliveries.find(
+            (delivery) => delivery.orderId === orderId,
+          );
+
+          if (removedDelivery) {
+            deleteDelivery(removedDelivery.id);
+          }
+
           updatedDeliveries = updatedDeliveries.filter(
             (delivery) => delivery.orderId !== orderId,
           );
@@ -239,20 +277,22 @@ export default function Manager({ onPromote }) {
       return updatedOrders;
     });
   }
-    function handleMarkAllPicked() {
+  function handleMarkAllPicked() {
     setDeliveries((prevDeliveries) => {
       const updatedDeliveries = prevDeliveries.map((delivery) => {
         if (delivery.status === "waiting" || delivery.status === "on_the_way") {
+          updateDeliveryStatus(delivery.id, "picked");
           return { ...delivery, status: "picked" };
         }
         return delivery;
       });
 
-      saveDeliveries(updatedDeliveries);
       return updatedDeliveries;
     });
   }
   function handleUpdateDeliveryStatus(deliveryId, nextStatus) {
+    updateDeliveryStatus(deliveryId, nextStatus);
+
     setDeliveries((prevDeliveries) => {
       const updatedDeliveries = prevDeliveries.map((delivery) =>
         delivery.id === deliveryId
@@ -260,14 +300,9 @@ export default function Manager({ onPromote }) {
           : delivery,
       );
 
-      saveDeliveries(updatedDeliveries);
       return updatedDeliveries;
     });
   }
-
-  useEffect(() => {
-    saveDeliveries(deliveries);
-  }, [deliveries]);
 
   const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
 
