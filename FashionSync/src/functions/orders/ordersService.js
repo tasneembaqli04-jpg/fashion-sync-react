@@ -66,5 +66,5 @@ export async function getAllOrders() {
 }
 export async function updateOrderStatus(docId, ready) {
   const orderRef = doc(db, "orders", docId);
-  await updateDoc(orderRef, { ready: !!ready });
+  await updateDoc(orderRef, { ready: !!ready, status: ready ? 1 : 0 });
 }
