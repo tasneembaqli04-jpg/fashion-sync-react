@@ -84,6 +84,10 @@ export default function Manager({ onPromote }) {
 
         status: order.ready ? "ready" : "pending",
         items: Array.isArray(order.items) ? order.items : [],
+        total: Number(order.total) || 0,
+        date: order.date || order.createdAt || null,
+        payMethod: order.payMethod || "",
+        shipping: order.shipping || null,
       };
     });
 
