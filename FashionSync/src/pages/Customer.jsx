@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser } from "../functions/orders/ordersService";
+import { getFeaturedProduct } from "../functions/settings/featuredProductService";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -66,6 +67,7 @@ export default function Customer() {
   const [isGuest, setIsGuest] = useState(false);
 
   const [products, setProducts] = useState([]);
+  const [featuredCode, setFeaturedCode] = useState("");
   const [cart, setCart] = useState(loadCart());
 
   const [searchValue, setSearchValue] = useState("");
@@ -87,7 +89,6 @@ export default function Customer() {
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
-  
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -147,47 +148,50 @@ export default function Customer() {
   }, [theme]);
 
   useEffect(() => {
-  async function init() {
-    openDB();
+    async function init() {
+      openDB();
 
-    const auth = initAuth();
+      const auth = initAuth();
 
-    if (!auth.mode) {
-      navigate("/");
+      if (!auth.mode) {
+        navigate("/");
+        return;
+      }
+
+      setCurrentUser(auth.currentUser || null);
+      setIsGuest(Boolean(auth.isGuest));
+
+      const products = await loadProducts();
+      setProducts(products);
+
+      const featured = await getFeaturedProduct();
+      setFeaturedCode(featured?.code || "");
+    }
+
+    init();
+  }, [navigate]);
+  useEffect(() => {
+    if (!currentUser?.email || isGuest) {
+      setCart([]);
       return;
     }
 
-    setCurrentUser(auth.currentUser || null);
-    setIsGuest(Boolean(auth.isGuest));
+    let cancelled = false;
 
-    const products = await loadProducts();
-    setProducts(products);
-  }
+    async function loadUserCart() {
+      const backendCart = await loadCartFromBackend(currentUser.email);
 
-  init();
-  }, [navigate]);
-  useEffect(() => {
-  if (!currentUser?.email || isGuest) {
-    setCart([]);
-    return;
-  }
-
-  let cancelled = false;
-
-  async function loadUserCart() {
-    const backendCart = await loadCartFromBackend(currentUser.email);
-
-    if (!cancelled) {
-      setCart(backendCart);
+      if (!cancelled) {
+        setCart(backendCart);
+      }
     }
-  }
 
-  loadUserCart();
+    loadUserCart();
 
-  return () => {
-    cancelled = true;
-  };
-}, [currentUser, isGuest]);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser, isGuest]);
 
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.code === selectedProductCode) || null;
@@ -203,6 +207,7 @@ export default function Customer() {
       sale: saleValue,
       seasonTab: currentSeasonTab,
       listMode: currentListMode,
+      promotedCode: featuredCode,
     });
 
     return filtered.map((product) => ({
@@ -219,6 +224,7 @@ export default function Customer() {
     currentSeasonTab,
     currentListMode,
     wishlistCodes,
+    featuredCode,
   ]);
 
   const wishlistProducts = useMemo(() => {
@@ -299,7 +305,7 @@ export default function Customer() {
     setWishlistCodes((prev) =>
       prev.includes(code)
         ? prev.filter((item) => item !== code)
-        : [...prev, code]
+        : [...prev, code],
     );
   }
 
@@ -325,7 +331,6 @@ export default function Customer() {
       color: selectedColor === "אחר" ? customColor || "אחר" : selectedColor,
     };
   }
-  
 
   async function addToCart(code, fromModal = false) {
     if (isGuest) {
@@ -350,7 +355,13 @@ export default function Customer() {
   }
 
   async function changeQty(key, delta) {
-    const nextCart = await changeQtyFn(cart, key, delta, products,currentUser.email);
+    const nextCart = await changeQtyFn(
+      cart,
+      key,
+      delta,
+      products,
+      currentUser.email,
+    );
     setCart(nextCart);
   }
 
@@ -400,7 +411,7 @@ export default function Customer() {
     setPcfTopics((prev) =>
       prev.includes(topic)
         ? prev.filter((item) => item !== topic)
-        : [...prev, topic]
+        : [...prev, topic],
     );
   }
 
@@ -453,7 +464,7 @@ export default function Customer() {
     } else if (type === "whatsapp") {
       window.open(
         "https://wa.me/?text=" + encodeURIComponent(`${text} ${url}`),
-        "_blank"
+        "_blank",
       );
     } else if (type === "email") {
       window.location.href =
@@ -721,9 +732,7 @@ export default function Customer() {
         cartPoints={total}
         cartTotal={total}
         discountText={
-          appliedDiscount
-            ? `${Math.round(appliedDiscount * 100)}% הנחה`
-            : ""
+          appliedDiscount ? `${Math.round(appliedDiscount * 100)}% הנחה` : ""
         }
         couponValue={couponValue}
         setCouponValue={setCouponValue}

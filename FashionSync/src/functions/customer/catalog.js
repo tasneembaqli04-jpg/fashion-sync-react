@@ -1,4 +1,3 @@
-import { LS_KEYS } from "../../data/constants";
 import { getProducts } from "../productsService";
 
 export const SEASON_META = {
@@ -20,6 +19,7 @@ export function filterProducts({
   sale = "",
   seasonTab = "all",
   listMode = "all",
+  promotedCode = "",
 }) {
   let list = products.filter((product) => {
     const matchSearch =
@@ -52,9 +52,9 @@ export function filterProducts({
   if (listMode === "bestsellers") list = list.filter((p) => p.bestseller);
   if (listMode === "sale") list = list.filter((p) => p.sale);
 
-  const promotedCode = (localStorage.getItem("featuredProductCode") || "").toUpperCase();
-  if (promotedCode) {
-    const idx = list.findIndex((p) => p.code.toUpperCase() === promotedCode);
+  const normalizedPromotedCode = (promotedCode || "").toUpperCase();
+  if (normalizedPromotedCode) {
+    const idx = list.findIndex((p) => p.code.toUpperCase() === normalizedPromotedCode);
     if (idx > 0) {
       const [item] = list.splice(idx, 1);
       list.unshift(item);
