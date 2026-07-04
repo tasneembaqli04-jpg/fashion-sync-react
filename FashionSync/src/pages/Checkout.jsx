@@ -265,6 +265,12 @@ export default function Checkout() {
         if (orderItems.length === 0) {
           throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
         }
+
+        const orderSubtotal = getSubtotal(orderItems);
+        const orderDiscountAmount = getDiscountAmount(orderSubtotal, discountPct);
+        const orderShippingCost = getShippingCost(selectedShipping, orderSubtotal);
+        const orderTotal = orderSubtotal - orderDiscountAmount + orderShippingCost;
+
         const receipt = {
           id: `RCP-${Date.now()}`,
           date: new Date().toISOString(),
@@ -280,12 +286,12 @@ export default function Checkout() {
             notes: formData.notes,
           },
           items: orderItems,
-          subtotal,
-          discountAmount,
+          subtotal: orderSubtotal,
+          discountAmount: orderDiscountAmount,
           discountPct,
           shipping: selectedShipping,
-          shippingCost,
-          total,
+          shippingCost: orderShippingCost,
+          total: orderTotal,
           payMethod,
           installments: payMethod === "card" ? selectedInstallments : 1,
           status: 0,
@@ -301,9 +307,9 @@ export default function Checkout() {
           isCash: payMethod === "cash",
           email: formData.email,
           items: orderItems,
-          shippingCost,
-          discountAmount,
-          total,
+          shippingCost: orderShippingCost,
+          discountAmount: orderDiscountAmount,
+          total: orderTotal,
         });
 
         setCurrentStep(4);
