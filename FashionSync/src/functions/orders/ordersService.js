@@ -12,6 +12,8 @@ import {
 
 const ordersCollection = collection(db, "orders");
 
+const STEPS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
+
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
@@ -28,8 +30,9 @@ export async function addOrder(receipt) {
     items: receipt.items || [],
     total: Number(receipt.total) || 0,
     status: 0,
+    statusLabel: STEPS[0],
     ready: false,
-    steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
+    steps: STEPS,
     payMethod: receipt.payMethod || "",
     shipping: receipt.shipping || null,
     createdAt: new Date().toISOString(),
@@ -66,5 +69,18 @@ export async function getAllOrders() {
 }
 export async function updateOrderStatus(docId, ready) {
   const orderRef = doc(db, "orders", docId);
-  await updateDoc(orderRef, { ready: !!ready, status: ready ? 1 : 0 });
+  const statusIndex = ready ? 1 : 0;
+  await updateDoc(orderRef, {
+    ready: !!ready,
+    status: statusIndex,
+    statusLabel: STEPS[statusIndex],
+  });
+}
+
+export async function advanceOrderStatus(docId, statusIndex) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, {
+    status: statusIndex,
+    statusLabel: STEPS[statusIndex] || "",
+  });
 }
