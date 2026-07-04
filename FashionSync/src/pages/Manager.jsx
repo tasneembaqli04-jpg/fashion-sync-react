@@ -20,6 +20,7 @@ import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
 import { getAllOrders, updateOrderStatus } from "../functions/orders/ordersService";
+import { getAllCustomers } from "../functions/customer/customerFirestore";
 import {
   loadTheme,
   saveTheme,
@@ -49,26 +50,46 @@ export default function Manager({ onPromote }) {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    getAllOrders().then((firestoreOrders) => {
-      if (cancelled) return;
+  async function loadOrdersWithCustomers() {
+    const [firestoreOrders, customers] = await Promise.all([
+      getAllOrders(),
+      getAllCustomers(),
+    ]);
+    console.log("Orders:", firestoreOrders);
+    console.log("Customers:", customers);
 
-      const normalized = firestoreOrders.map((order) => ({
+    if (cancelled) return;
+
+    const customersMap = new Map(
+      customers.map((customer) => [customer.email, customer])
+    );
+
+    const normalized = firestoreOrders.map((order) => {
+      const customer = customersMap.get(order.customerEmail);
+
+      return {
         docId: order.docId,
         id: order.id,
-        customer: order.customer?.name || order.customer?.email || "לקוח",
+
+        customerDetails: customer || null,
+        customerEmail: order.customerEmail,
+
         status: order.ready ? "ready" : "pending",
         items: Array.isArray(order.items) ? order.items : [],
-      }));
-
-      setOrders(normalized);
+      };
     });
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    setOrders(normalized);
+  }
+
+  loadOrdersWithCustomers();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const [deliveries, setDeliveries] = useState(() => loadDeliveries());
 
