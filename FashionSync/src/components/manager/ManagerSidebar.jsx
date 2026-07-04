@@ -11,9 +11,7 @@ export default function ManagerSidebar({
 }) {
   return (
     <aside
-      className={`${styles.sidebar} ${
-        mobileOpen ? "" : styles.mobHidden
-      }`}
+      className={`${styles.sidebar} ${mobileOpen ? "" : styles.mobHidden}`}
     >
       <div className={styles.sbBrand}>
         <div className={styles.sbLogo}>FashionSync</div>
@@ -54,10 +52,8 @@ export default function ManagerSidebar({
           {alertCount > 0 && <div className={styles.navDot} />}
         </button>
 
-        
-        
         <div className={styles.sbSec}>מכירות</div>
-                <button
+        <button
           className={`${styles.navBtn} ${
             activeView === "orders" ? styles.active : ""
           }`}
@@ -77,7 +73,6 @@ export default function ManagerSidebar({
           מעקב משלוחים
         </button>
 
-        
         <button
           className={`${styles.navBtn} ${
             activeView === "receipts" ? styles.active : ""
@@ -98,6 +93,16 @@ export default function ManagerSidebar({
           אנליטיקה
         </button>
 
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "feedback" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("feedback")}
+        >
+          <span className={styles.icon}>💬</span>
+          משוב לקוחות
+        </button>
+
         <div className={styles.sbSec}>הגדרות</div>
 
         <button
@@ -113,9 +118,7 @@ export default function ManagerSidebar({
 
       <div className={styles.sbFooter}>
         <button className={styles.navBtn} onClick={onToggleTheme}>
-          <span className={styles.icon}>
-            {theme === "light" ? "☀️" : "🌙"}
-          </span>
+          <span className={styles.icon}>{theme === "light" ? "☀️" : "🌙"}</span>
           <span>{theme === "light" ? "מצב כהה/בהיר" : "מצב כהה/בהיר"}</span>
         </button>
 

@@ -4,7 +4,7 @@ import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser } from "../functions/orders/ordersService";
 import { getFeaturedProduct } from "../functions/settings/featuredProductService";
 import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
-import { LS_KEYS } from "../data/constants";
+import { addFeedback } from "../functions/feedback/feedbackService";
 import { COUPONS } from "../data/coupons";
 
 import {
@@ -448,10 +448,7 @@ export default function Customer() {
   }
 
   function submitPreCheckoutFeedback() {
-    const existing = JSON.parse(localStorage.getItem(LS_KEYS.FEEDBACK) || "[]");
-
-    existing.push({
-      date: new Date().toISOString(),
+    addFeedback({
       type: "pre-checkout",
       user: currentUser?.email || "אורח",
       rating: pcfRating,
@@ -459,7 +456,6 @@ export default function Customer() {
       text: pcfText.trim(),
     });
 
-    localStorage.setItem(LS_KEYS.FEEDBACK, JSON.stringify(existing));
     setPreCheckoutOpen(false);
     navigate("/checkout");
   }
