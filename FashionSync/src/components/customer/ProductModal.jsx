@@ -138,12 +138,13 @@ export default function ProductModal({
               </div>
 
               <div className={modalStyles.pdField}>
-                <label>מידה</label>
+                <label>מידה *</label>
                 <select
                   id="pd-size"
-                  value={selectedSize || sizesFromVariants[0] || ""}
+                  value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
+                  <option value="">בחר/י מידה...</option>
                   {allSizes.map((size) => (
                     <option key={size} value={size}>{size}</option>
                   ))}
@@ -161,6 +162,12 @@ export default function ProductModal({
               </div>
             </div>
 
+            {!selectedSize && (
+              <div style={{ color: "#e07a5f", fontSize: "0.85rem", textAlign: "center", marginTop: "0.5rem" }}>
+                יש לבחור מידה לפני ההוספה לסל
+              </div>
+            )}
+
             <div className={modalStyles.pdActions}>
               {isGuest ? (
                 <>
@@ -169,7 +176,13 @@ export default function ProductModal({
                 </>
               ) : product.stock > 0 ? (
                 <>
-                  <button className={`${baseStyles.btn} ${baseStyles.btnGold}`} onClick={() => addToCart(product.code, true)}>🛒 הוסף לסל</button>
+                  <button
+                    className={`${baseStyles.btn} ${baseStyles.btnGold}`}
+                    onClick={() => addToCart(product.code, true)}
+                    disabled={!selectedSize || (selectedSize === "אחר" && !customSize.trim())}
+                  >
+                    🛒 הוסף לסל
+                  </button>
                   <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>📷 נסה עליי</button>
                 </>
               ) : (

@@ -19,7 +19,7 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
-import { getAllOrders, updateOrderStatus } from "../functions/orders/ordersService";
+import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
 import {
   getAllDeliveries,
   addDelivery,
@@ -248,6 +248,7 @@ export default function Manager({ onPromote }) {
             const delivery = {
               id: `DEL-${Date.now()}`,
               orderId: changedOrder.id,
+              orderDocId: changedOrder.docId || null,
               customer:
                 changedOrder.customerDetails?.name ||
                 changedOrder.customerDetails?.email ||
@@ -255,7 +256,7 @@ export default function Manager({ onPromote }) {
                 "לקוח",
               customerEmail: changedOrder.customerEmail || null,
               items: changedOrder.items || [],
-              status: "waiting",
+              status: 1,
               createdAt: Date.now(),
             };
 
@@ -284,9 +285,13 @@ export default function Manager({ onPromote }) {
   function handleMarkAllPicked() {
     setDeliveries((prevDeliveries) => {
       const updatedDeliveries = prevDeliveries.map((delivery) => {
-        if (delivery.status === "waiting" || delivery.status === "on_the_way") {
-          updateDeliveryStatus(delivery.id, "picked");
-          return { ...delivery, status: "picked" };
+        if (delivery.status < 3) {
+          const nextIndex = delivery.status + 1;
+          updateDeliveryStatus(delivery.id, nextIndex);
+          if (delivery.orderDocId) {
+            advanceOrderStatus(delivery.orderDocId, nextIndex);
+          }
+          return { ...delivery, status: nextIndex };
         }
         return delivery;
       });
@@ -294,15 +299,19 @@ export default function Manager({ onPromote }) {
       return updatedDeliveries;
     });
   }
-  function handleUpdateDeliveryStatus(deliveryId, nextStatus) {
-    updateDeliveryStatus(deliveryId, nextStatus);
+  function handleUpdateDeliveryStatus(deliveryId, nextIndex) {
+    updateDeliveryStatus(deliveryId, nextIndex);
 
     setDeliveries((prevDeliveries) => {
-      const updatedDeliveries = prevDeliveries.map((delivery) =>
-        delivery.id === deliveryId
-          ? { ...delivery, status: nextStatus }
-          : delivery,
-      );
+      const updatedDeliveries = prevDeliveries.map((delivery) => {
+        if (delivery.id !== deliveryId) return delivery;
+
+        if (delivery.orderDocId) {
+          advanceOrderStatus(delivery.orderDocId, nextIndex);
+        }
+
+        return { ...delivery, status: nextIndex };
+      });
 
       return updatedDeliveries;
     });

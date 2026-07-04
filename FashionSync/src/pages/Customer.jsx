@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser } from "../functions/orders/ordersService";
 import { getFeaturedProduct } from "../functions/settings/featuredProductService";
+import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -193,6 +194,25 @@ export default function Customer() {
     };
   }, [currentUser, isGuest]);
 
+  useEffect(() => {
+    if (!currentUser?.email || isGuest) {
+      setWishlistCodes([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    getWishlist(currentUser.email).then((codes) => {
+      if (!cancelled) {
+        setWishlistCodes(codes);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser, isGuest]);
+
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.code === selectedProductCode) || null;
   }, [products, selectedProductCode]);
@@ -302,20 +322,30 @@ export default function Customer() {
       return;
     }
 
-    setWishlistCodes((prev) =>
-      prev.includes(code)
+    setWishlistCodes((prev) => {
+      const next = prev.includes(code)
         ? prev.filter((item) => item !== code)
-        : [...prev, code],
-    );
+        : [...prev, code];
+
+      if (currentUser?.email) {
+        saveWishlist(currentUser.email, next);
+      }
+
+      return next;
+    });
   }
 
   function openProductModal(code) {
     const product = products.find((item) => item.code === code);
     if (!product) return;
 
+    const colorsFromVariants = product.variants
+      ? product.variants.map((v) => v.colorName)
+      : product.colors || [];
+
     setSelectedProductCode(code);
-    setSelectedColor(product.colors?.[0] || "");
-    setSelectedSize(product.sizes?.[0] || "");
+    setSelectedColor(colorsFromVariants[0] || "");
+    setSelectedSize("");
     setCustomColor("");
     setCustomSize("");
     setProductModalOpen(true);
@@ -340,6 +370,8 @@ export default function Customer() {
 
     const product = products.find((item) => item.code === code);
     if (!product || product.stock <= 0) return;
+
+    if (fromModal && !selectedSize) return;
 
     const variant = fromModal ? getChosenVariant() : { size: "", color: "" };
 

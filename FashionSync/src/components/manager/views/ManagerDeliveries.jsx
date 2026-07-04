@@ -1,13 +1,21 @@
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
 
-const STATUS_LABELS = {
-  waiting: { label: "ממתין לשליחה", color: "var(--gold)" },
-  picked: { label: "נאסף על ידי שליח", color: "var(--blue)" },
-  delivered: { label: "נמסר ללקוח", color: "var(--green)" },
+// אותם 4 שלבים בדיוק כמו אצל הלקוח (order.steps): אושרה, בהכנה, נשלחה, נמסרה
+const STEP_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
+
+// תאימות לאחור: אם יש עדיין רשומות ישנות עם סטטוס טקסטואלי (waiting/picked/delivered)
+const LEGACY_STATUS_MAP = {
+  waiting: 1,
+  on_the_way: 2,
+  picked: 2,
+  delivered: 3,
 };
 
-const STATUS_STEPS = ["waiting", "picked", "delivered"];
+function toStatusIndex(status) {
+  if (typeof status === "number") return status;
+  return LEGACY_STATUS_MAP[status] ?? 1;
+}
 
 function fmtDate(ts) {
   if (!ts) return "";
@@ -28,8 +36,7 @@ export default function ManagerDeliveries({
   onMarkAllPicked,
 }) {
   const waitingCount = deliveries.filter(
-    (delivery) =>
-      delivery.status === "waiting" || delivery.status === "on_the_way"
+    (delivery) => toStatusIndex(delivery.status) < 3
   ).length;
 
   return (
@@ -48,7 +55,7 @@ export default function ManagerDeliveries({
             className={deliveriesStyles.deliveryActionBtn}
             onClick={onMarkAllPicked}
           >
-            ✓ סמן הכל כנאסף על ידי שליח
+            ✓ סמן הכל כנשלח
           </button>
         </div>
       )}
@@ -61,22 +68,9 @@ export default function ManagerDeliveries({
       ) : (
         <div className={deliveriesStyles.deliveriesList}>
           {deliveries.map((delivery) => {
-            const normalizedStatus =
-              delivery.status === "on_the_way" ? "picked" : delivery.status;
-
-            const currentIndex = Math.max(
-              0,
-              STATUS_STEPS.indexOf(normalizedStatus)
-            );
-
-            const nextStatus =
-              currentIndex < STATUS_STEPS.length - 1
-                ? STATUS_STEPS[currentIndex + 1]
-                : null;
-
+            const currentIndex = toStatusIndex(delivery.status);
+            const nextIndex = currentIndex < 3 ? currentIndex + 1 : null;
             const createdAtText = fmtDate(delivery.createdAt);
-            const currentStatus =
-              STATUS_LABELS[normalizedStatus] || STATUS_LABELS.waiting;
 
             return (
               <div className={deliveriesStyles.deliveryCard} key={delivery.id}>
@@ -93,7 +87,7 @@ export default function ManagerDeliveries({
 
                     <div className={deliveriesStyles.deliveryMetaLine}>
                       <span className={deliveriesStyles.deliveryOrderId}>
-                        {delivery.id}
+                        {delivery.orderId}
                       </span>
                     </div>
 
@@ -109,18 +103,18 @@ export default function ManagerDeliveries({
                 <div className={deliveriesStyles.deliveryTimeline}>
                   <div className={deliveriesStyles.deliveryTimelineLine} />
 
-                  {STATUS_STEPS.map((step, i) => {
+                  {STEP_LABELS.map((label, i) => {
                     const isDone = i <= currentIndex;
                     const isActive = i === currentIndex;
 
                     return (
-                      <div className={deliveriesStyles.deliveryStep} key={step}>
+                      <div className={deliveriesStyles.deliveryStep} key={label}>
                         <div
                           className={`${deliveriesStyles.deliveryDot} ${
                             isDone ? deliveriesStyles.deliveryDotDone : ""
                           } ${isActive ? deliveriesStyles.deliveryDotActive : ""}`}
                         >
-                          {isActive ? "✓" : ""}
+                          {isDone ? "✓" : ""}
                         </div>
 
                         <div
@@ -130,7 +124,7 @@ export default function ManagerDeliveries({
                               : ""
                           }`}
                         >
-                          {STATUS_LABELS[step].label}
+                          {label}
                         </div>
                       </div>
                     );
@@ -158,14 +152,14 @@ export default function ManagerDeliveries({
                   ))}
                 </div>
 
-                {normalizedStatus !== "delivered" && nextStatus && (
+                {nextIndex !== null && (
                   <div className={deliveriesStyles.deliveryBottom}>
                     <button
                       type="button"
                       className={deliveriesStyles.deliveryActionBtn}
-                      onClick={() => onUpdateStatus?.(delivery.id, nextStatus)}
+                      onClick={() => onUpdateStatus?.(delivery.id, nextIndex)}
                     >
-                      ✓ עדכן ל: {STATUS_LABELS[nextStatus]?.label}
+                      ✓ עדכן ל: {STEP_LABELS[nextIndex]}
                     </button>
                   </div>
                 )}
