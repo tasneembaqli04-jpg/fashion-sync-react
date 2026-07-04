@@ -1,34 +1,10 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 
-const DEMO_ORDERS = [
-  {
-    id: "ORD-DEMO-001",
-    date: "15/03/2025",
-    items: [
-      { name: "שמלת קיץ פרחונית", qty: 1 },
-      { name: "חולצת טי בייסיק", qty: 2 },
-    ],
-    total: 477,
-    status: 1,
-    steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-  },
-  {
-    id: "ORD-DEMO-002",
-    date: "08/03/2025",
-    items: [
-      { name: "ג'ינס סלים פיט", qty: 1 },
-    ],
-    total: 349,
-    status: 3,
-    steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-  },
-];
-
 export default function CustomerOrders({ show, orders = [] }) {
   if (!show) return null;
 
-  const allOrders = [...DEMO_ORDERS, ...orders];
+  const allOrders = orders;
 
   return (
     <div>
@@ -37,8 +13,13 @@ export default function CustomerOrders({ show, orders = [] }) {
 
       {allOrders.length ? (
         allOrders.map((order) => {
+          const steps = Array.isArray(order.steps) && order.steps.length
+            ? order.steps
+            : ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
+          const status = Number(order.status) || 0;
+
           const percent = Math.round(
-            (order.status / (order.steps.length - 1)) * 100
+            (status / (steps.length - 1)) * 100
           );
 
           return (
@@ -77,10 +58,10 @@ export default function CustomerOrders({ show, orders = [] }) {
               </div>
 
               <div className={modalStyles.progressSteps}>
-                {order.steps.map((step, index) => (
+                {steps.map((step, index) => (
                   <span
                     key={index}
-                    className={index <= order.status ? modalStyles.done : ""}
+                    className={index <= status ? modalStyles.done : ""}
                   >
                     {step}
                   </span>

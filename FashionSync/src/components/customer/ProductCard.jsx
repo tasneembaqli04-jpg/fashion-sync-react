@@ -167,7 +167,7 @@ export default function ProductCard({
           ) : isInCart ? (
             <button
               className={`${cardStyles.actBtn} ${cardStyles.inCartBtn}`}
-              onClick={(e) => { e.stopPropagation(); addToCart(product.code); }}
+              onClick={(e) => { e.stopPropagation(); openProductModal(product.code); }}
               disabled={product.stock === 0}
             >
               ✓ בסל ({cartQty}) – הוסף עוד
@@ -175,7 +175,7 @@ export default function ProductCard({
           ) : (
             <button
               className={`${cardStyles.actBtn} ${cardStyles.goldBtn}`}
-              onClick={(e) => { e.stopPropagation(); addToCart(product.code); }}
+              onClick={(e) => { e.stopPropagation(); openProductModal(product.code); }}
               disabled={product.stock === 0}
             >
               🛒 הוסף לסל
