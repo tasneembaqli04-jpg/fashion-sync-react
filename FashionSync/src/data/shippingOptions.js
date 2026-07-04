@@ -4,7 +4,7 @@ export const SHIPPING_OPTIONS = [
     icon: "📦",
     label: "משלוח רגיל",
     days: "5–7 ימי עסקים",
-    price: 0,
+    price: 25,
     note: "חינם לרכישות מעל ₪200",
   },
   {

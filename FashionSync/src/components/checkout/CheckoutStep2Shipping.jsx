@@ -1,5 +1,6 @@
 import styles from "../../styles/checkout/CheckoutForms.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
+import { getShippingCost } from "../../functions/checkout/checkoutPricing";
 
 export default function CheckoutStep2Shipping({
   shippingOptions = [],
@@ -21,6 +22,7 @@ export default function CheckoutStep2Shipping({
         <div className={styles.shipOptWrap}>
           {shippingOptions.map((option) => {
             const isSelected = selectedShipping?.id === option.id;
+            const displayPrice = getShippingCost(option, subtotal);
 
             return (
               <div
@@ -46,9 +48,7 @@ export default function CheckoutStep2Shipping({
                 </div>
 
                 <div className={styles.shipPrice}>
-                  {option.price === 0 && option.id !== "pickup"
-                    ? "חינם"
-                    : `₪${option.price}`}
+                  {displayPrice === 0 ? "חינם" : `₪${displayPrice}`}
                 </div>
 
                 <div className={styles.radioDot}></div>

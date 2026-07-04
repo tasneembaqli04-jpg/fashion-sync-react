@@ -33,7 +33,7 @@ export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(
-    SHIPPING_OPTIONS?.[0] || null
+    SHIPPING_OPTIONS?.[0] || null,
   );
   const [discountPct, setDiscountPct] = useState(0);
   const [payMethod, setPayMethod] = useState("card");
@@ -61,8 +61,6 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    const nextCart = buildCart();
-    setCart(Array.isArray(nextCart) ? nextCart : []);
     setDiscountPct(getAppliedDiscountPercent());
 
     const currentUser = getCurrentUser();
@@ -81,23 +79,35 @@ export default function Checkout() {
           prev.lastName || (parts.length > 1 ? parts.slice(1).join(" ") : ""),
       }));
     }
+
+    async function loadCart() {
+      if (currentUser?.email) {
+        const firestoreCart = await getCartFromFirestore(currentUser.email);
+        setCart(Array.isArray(firestoreCart) ? firestoreCart : []);
+      } else {
+        const nextCart = buildCart();
+        setCart(Array.isArray(nextCart) ? nextCart : []);
+      }
+    }
+
+    loadCart();
   }, []);
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart]);
 
   const discountAmount = useMemo(
     () => getDiscountAmount(subtotal, discountPct),
-    [subtotal, discountPct]
+    [subtotal, discountPct],
   );
 
   const shippingCost = useMemo(
     () => getShippingCost(selectedShipping, subtotal),
-    [selectedShipping, subtotal]
+    [selectedShipping, subtotal],
   );
 
   const total = useMemo(
     () => getTotal(cart, discountPct, selectedShipping),
-    [cart, discountPct, selectedShipping]
+    [cart, discountPct, selectedShipping],
   );
 
   const installmentOptions = useMemo(() => {
@@ -267,9 +277,16 @@ export default function Checkout() {
         }
 
         const orderSubtotal = getSubtotal(orderItems);
-        const orderDiscountAmount = getDiscountAmount(orderSubtotal, discountPct);
-        const orderShippingCost = getShippingCost(selectedShipping, orderSubtotal);
-        const orderTotal = orderSubtotal - orderDiscountAmount + orderShippingCost;
+        const orderDiscountAmount = getDiscountAmount(
+          orderSubtotal,
+          discountPct,
+        );
+        const orderShippingCost = getShippingCost(
+          selectedShipping,
+          orderSubtotal,
+        );
+        const orderTotal =
+          orderSubtotal - orderDiscountAmount + orderShippingCost;
 
         const receipt = {
           id: `RCP-${Date.now()}`,
@@ -319,7 +336,9 @@ export default function Checkout() {
         console.error("message:", error?.message);
         console.error("stack:", error?.stack);
         setProcessing(false);
-        alert(`אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`);
+        alert(
+          `אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`,
+        );
       }
     }, 1500);
   }
@@ -338,7 +357,6 @@ export default function Checkout() {
   }
 
   const backToStore = () => {
-  
     setCart([]);
     setSuccessData(null);
     setCurrentStep(1);
