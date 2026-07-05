@@ -47,15 +47,15 @@ export default function OrderDetailsModal({ open, order, onClose }) {
     >
       <div
         style={{
-          background: "#15151f",
-          color: "white",
+          background: "var(--surface)",
+          color: "var(--text)",
           padding: "28px",
           borderRadius: "18px",
           minWidth: "380px",
           maxWidth: "480px",
           maxHeight: "85vh",
           overflowY: "auto",
-          border: "1px solid #d6b65c",
+          border: "1px solid var(--border-gold)",
           direction: "rtl",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -71,7 +71,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         </p>
         <p>🕒 תאריך: {fmtDate(order.date)}</p>
 
-        <hr style={{ borderColor: "#333", margin: "16px 0" }} />
+        <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
         <h3 style={{ marginBottom: "8px" }}>👤 פרטי לקוח</h3>
         <p>שם מלא: {fullName}</p>
@@ -82,7 +82,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         <p>📮 מיקוד: {customer.zip || "לא הוזן"}</p>
         {customer.notes && <p>📝 הערות: {customer.notes}</p>}
 
-        <hr style={{ borderColor: "#333", margin: "16px 0" }} />
+        <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
         <h3 style={{ marginBottom: "8px" }}>🛍️ פריטים</h3>
         {items.map((item, index) => (
@@ -114,7 +114,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           </div>
         ))}
 
-        <hr style={{ borderColor: "#333", margin: "16px 0" }} />
+        <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
         <h3 style={{ marginBottom: "8px" }}>🚚 משלוח ותשלום</h3>
         <p>שיטת משלוח: {order.shipping?.label || "לא ידוע"}</p>

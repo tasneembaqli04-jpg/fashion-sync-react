@@ -5,12 +5,8 @@
 }
 
 .deliveryCard {
-  background: linear-gradient(
-    135deg,
-    rgba(20, 22, 35, 0.98),
-    rgba(15, 17, 29, 0.98)
-  );
-  border: 1px solid rgba(201, 168, 76, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
   border-radius: 22px;
   padding: 0.9rem 1.1rem 0.85rem;
   box-shadow:
@@ -48,7 +44,7 @@
 
 .deliveryOrderId {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--muted);
   font-family: "Roboto Mono", monospace;
   font-weight: 500;
 }
@@ -102,7 +98,7 @@
   right: 9%;
   left: 9%;
   height: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border);
   z-index: 0;
 }
 
@@ -119,8 +115,8 @@
   height: 24px;
   margin: 0 auto 0.42rem;
   border-radius: 50%;
-  background: #202335;
-  border: 2px solid rgba(255, 255, 255, 0.09);
+  background: var(--surface2);
+  border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,8 +126,8 @@
 }
 
 .deliveryDotDone {
-  background: #23263a;
-  border-color: rgba(255, 255, 255, 0.13);
+  background: var(--surface2);
+  border-color: var(--gold);
   color: transparent;
 }
 
@@ -157,7 +153,7 @@
 }
 
 .deliveryItemsStrip {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface2);
   border-radius: 14px;
   padding: 0.55rem 0.7rem;
   min-height: unset;

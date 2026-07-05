@@ -18,10 +18,6 @@ export default function CustomerOrders({ show, orders = [] }) {
             : ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
           const status = Number(order.status) || 0;
 
-          const percent = Math.round(
-            (status / (steps.length - 1)) * 100
-          );
-
           return (
             <div key={order.id} className={modalStyles.orderCard}>
               <div className={modalStyles.orderTop}>
@@ -50,22 +46,33 @@ export default function CustomerOrders({ show, orders = [] }) {
                 ))}
               </div>
 
-              <div className={modalStyles.progressBar}>
-                <div
-                  className={modalStyles.progressFill}
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
+              <div className={modalStyles.orderTimeline}>
+                <div className={modalStyles.orderTimelineLine} />
 
-              <div className={modalStyles.progressSteps}>
-                {steps.map((step, index) => (
-                  <span
-                    key={index}
-                    className={index <= status ? modalStyles.done : ""}
-                  >
-                    {step}
-                  </span>
-                ))}
+                {steps.map((step, index) => {
+                  const isDone = index <= status;
+                  const isActive = index === status;
+
+                  return (
+                    <div className={modalStyles.orderStep} key={index}>
+                      <div
+                        className={`${modalStyles.orderDot} ${
+                          isDone ? modalStyles.orderDotDone : ""
+                        } ${isActive ? modalStyles.orderDotActive : ""}`}
+                      >
+                        {isDone ? "✓" : ""}
+                      </div>
+
+                      <div
+                        className={`${modalStyles.orderStepLabel} ${
+                          isActive ? modalStyles.orderStepLabelActive : ""
+                        }`}
+                      >
+                        {step}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
