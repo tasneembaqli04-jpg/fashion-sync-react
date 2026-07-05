@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
+import { getGiftCard, redeemGiftCardAmount } from "../functions/giftcard/giftCardService";
 import {
   getAppliedDiscountPercent,
   buildCart,
@@ -37,6 +38,7 @@ export default function Checkout() {
   );
   const [discountPct, setDiscountPct] = useState(0);
   const [payMethod, setPayMethod] = useState("card");
+  const [giftCardCode, setGiftCardCode] = useState("");
   const [selectedInstallments, setSelectedInstallments] = useState(1);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -95,19 +97,24 @@ export default function Checkout() {
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart]);
 
+  const isGiftCardOnly = cart.length > 0 && cart.every((item) => item.isGiftCard);
+
   const discountAmount = useMemo(
     () => getDiscountAmount(subtotal, discountPct),
     [subtotal, discountPct],
   );
 
   const shippingCost = useMemo(
-    () => getShippingCost(selectedShipping, subtotal),
-    [selectedShipping, subtotal],
+    () => (isGiftCardOnly ? 0 : getShippingCost(selectedShipping, subtotal)),
+    [selectedShipping, subtotal, isGiftCardOnly],
   );
 
   const total = useMemo(
-    () => getTotal(cart, discountPct, selectedShipping),
-    [cart, discountPct, selectedShipping],
+    () =>
+      isGiftCardOnly
+        ? subtotal - discountAmount
+        : getTotal(cart, discountPct, selectedShipping),
+    [cart, discountPct, selectedShipping, isGiftCardOnly, subtotal, discountAmount],
   );
 
   const installmentOptions = useMemo(() => {
@@ -122,6 +129,12 @@ export default function Checkout() {
       setSelectedInstallments(1);
     }
   }, [installmentOptions, selectedInstallments]);
+
+  useEffect(() => {
+    if (isGiftCardOnly && (payMethod === "cash" || payMethod === "giftcard")) {
+      setPayMethod("card");
+    }
+  }, [isGiftCardOnly, payMethod]);
 
   function handleInputChange(event) {
     const { name, value } = event.target;
@@ -235,6 +248,12 @@ export default function Checkout() {
       }
     }
 
+    if (payMethod === "giftcard") {
+      if (!giftCardCode.trim()) {
+        nextErrors.giftCardCode = true;
+      }
+    }
+
     return nextErrors;
   }
 
@@ -244,7 +263,7 @@ export default function Checkout() {
 
     if (Object.keys(stepErrors).length > 0) return;
 
-    setCurrentStep(2);
+    setCurrentStep(isGiftCardOnly ? 3 : 2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -281,12 +300,34 @@ export default function Checkout() {
           orderSubtotal,
           discountPct,
         );
-        const orderShippingCost = getShippingCost(
-          selectedShipping,
-          orderSubtotal,
-        );
+        const orderIsGiftCardOnly = orderItems.every((item) => item.isGiftCard);
+        const orderShippingCost = orderIsGiftCardOnly
+          ? 0
+          : getShippingCost(selectedShipping, orderSubtotal);
         const orderTotal =
           orderSubtotal - orderDiscountAmount + orderShippingCost;
+
+        if (payMethod === "giftcard") {
+          const card = await getGiftCard(giftCardCode);
+
+          if (!card) {
+            setErrors({ giftCardCode: true });
+            setProcessing(false);
+            return;
+          }
+
+          if (card.status !== "active" || Number(card.balance) <= 0) {
+            setErrors({ giftCardCode: true });
+            setProcessing(false);
+            return;
+          }
+
+          if (Number(card.balance) < orderTotal) {
+            setErrors({ giftCardCode: true });
+            setProcessing(false);
+            return;
+          }
+        }
 
         const receipt = {
           id: `RCP-${Date.now()}`,
@@ -317,11 +358,17 @@ export default function Checkout() {
         await saveReceiptAndOrder(receipt);
         updateProductsStock(orderItems);
         await clearCheckoutCart();
+
+        if (payMethod === "giftcard") {
+          await redeemGiftCardAmount(giftCardCode, orderTotal);
+        }
+
         setProcessing(false);
 
         setSuccessData({
           receiptId: receipt.id,
           isCash: payMethod === "cash",
+          isGiftCardOnly: orderIsGiftCardOnly,
           email: formData.email,
           items: orderItems,
           shippingCost: orderShippingCost,
@@ -401,6 +448,9 @@ export default function Checkout() {
           <CheckoutStep3Payment
             payMethod={payMethod}
             setPayMethod={setPayMethod}
+            giftCardCode={giftCardCode}
+            setGiftCardCode={setGiftCardCode}
+            isGiftCardOnly={isGiftCardOnly}
             form={formData}
             errors={errors}
             onChange={handleInputChange}
@@ -413,7 +463,7 @@ export default function Checkout() {
             total={total}
             termsAccepted={termsAccepted}
             onToggleTerms={handleToggleTerms}
-            onBack={() => goBack(2)}
+            onBack={() => goBack(isGiftCardOnly ? 1 : 2)}
             onPay={handlePay}
             isPayDisabled={isPayDisabled}
           />
@@ -422,6 +472,7 @@ export default function Checkout() {
         {currentStep === 4 && successData && (
           <CheckoutStep4Success
             isCash={successData.isCash}
+            isGiftCardOnly={successData.isGiftCardOnly}
             email={successData.email}
             receiptId={successData.receiptId}
             items={successData.items}

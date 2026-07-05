@@ -18,7 +18,7 @@ import styles from "../styles/Manager.module.scss";
 import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
-import { createAlerts, buildReceipts } from "../functions/manager/managerHelpers";
+import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
 import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
 import {
@@ -126,9 +126,13 @@ export default function Manager({ onPromote }) {
 
   const alerts = useMemo(() => createAlerts(products), [products]);
   const receipts = useMemo(() => {
-     if (!Array.isArray(products) || products.length === 0) return [];
-     return buildReceipts(products.filter(Boolean));
-  }, [products]);
+    return orders.map((order) => ({
+      id: order.id,
+      date: order.date || order.createdAt || new Date().toISOString(),
+      total: Number(order.total) || 0,
+      items: Array.isArray(order.items) ? order.items : [],
+    }));
+  }, [orders]);
  
 
   const stats = useMemo(() => {
