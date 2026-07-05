@@ -4,6 +4,9 @@ import CheckoutPriceBox from "./CheckoutPriceBox";
 export default function CheckoutStep3Payment({
   payMethod = "card",
   setPayMethod,
+  giftCardCode = "",
+  setGiftCardCode,
+  isGiftCardOnly = false,
   form,
   errors,
   onChange,
@@ -57,15 +60,29 @@ export default function CheckoutStep3Payment({
             PayPal
           </div>
 
-          <div
-            className={`${styles.payOpt} ${payMethod === "cash" ? styles.selected : ""}`}
-            onClick={() => setPayMethod("cash")}
-            role="button"
-            tabIndex={0}
-          >
-            <span className={styles.payIcon}>💵</span>
-            מזומן באיסוף
-          </div>
+          {!isGiftCardOnly && (
+            <div
+              className={`${styles.payOpt} ${payMethod === "cash" ? styles.selected : ""}`}
+              onClick={() => setPayMethod("cash")}
+              role="button"
+              tabIndex={0}
+            >
+              <span className={styles.payIcon}>💵</span>
+              מזומן באיסוף
+            </div>
+          )}
+
+          {!isGiftCardOnly && (
+            <div
+              className={`${styles.payOpt} ${payMethod === "giftcard" ? styles.selected : ""}`}
+              onClick={() => setPayMethod("giftcard")}
+              role="button"
+              tabIndex={0}
+            >
+              <span className={styles.payIcon}>🎁</span>
+              כרטיס מתנה
+            </div>
+          )}
         </div>
 
         {payMethod === "card" && (
@@ -239,6 +256,25 @@ export default function CheckoutStep3Payment({
             💵 תשלום במזומן יבוצע בעת איסוף הסחורה מהחנות.
             <br />
             ההזמנה תישמר <strong>48 שעות</strong> בלבד.
+          </div>
+        )}
+
+        {payMethod === "giftcard" && (
+          <div className={styles.fg}>
+            <label htmlFor="f-giftcard">קוד כרטיס מתנה</label>
+            <input
+              id="f-giftcard"
+              type="text"
+              value={giftCardCode}
+              onChange={(e) => setGiftCardCode(e.target.value)}
+              placeholder="GC-XXXXXXXX"
+              className={errors.giftCardCode ? styles.invalid : ""}
+            />
+            {errors.giftCardCode && (
+              <div className={styles.fieldErr}>
+                קוד לא תקין, כרטיס מנוצל, או שהיתרה נמוכה מסכום ההזמנה
+              </div>
+            )}
           </div>
         )}
       </div>

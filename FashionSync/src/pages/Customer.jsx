@@ -40,7 +40,7 @@ import {
   buildGiftCardPreview,
   buyGiftCard as buyGiftCardFn,
 } from "../functions/customer/giftCard";
-
+import { getGiftCard } from "../functions/giftcard/giftCardService";
 import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";
@@ -124,6 +124,9 @@ export default function Customer() {
   const [giftMessage, setGiftMessage] = useState("");
   const [giftPreviewCode, setGiftPreviewCode] = useState("—");
   const [giftError, setGiftError] = useState("");
+  const [giftCheckCode, setGiftCheckCode] = useState("");
+  const [giftCheckResult, setGiftCheckResult] = useState(null);
+  const [giftCheckError, setGiftCheckError] = useState("");
 
   useEffect(() => {
     if (!currentUser?.email) {
@@ -563,12 +566,34 @@ export default function Customer() {
   }
 
   function updateGiftPreview() {}
+  async function checkGiftCardBalance() {
+    const code = giftCheckCode.trim();
+    setGiftCheckError("");
+    setGiftCheckResult(null);
 
-  function buyGiftCard() {
-    const result = buyGiftCardFn({
+    if (!code) {
+      setGiftCheckError("נא להזין קוד כרטיס מתנה");
+      return;
+    }
+
+    const card = await getGiftCard(code);
+
+    if (!card) {
+      setGiftCheckError("קוד כרטיס מתנה לא נמצא");
+      return;
+    }
+
+    setGiftCheckResult(card);
+  }
+
+  async function buyGiftCard() {
+    const result = await buyGiftCardFn({
       amount: giftAmount,
       customAmount: giftCustomAmount,
       name: giftName,
+      message: giftMessage,
+      email: currentUser?.email,
+      cart,
     });
 
     if (!result.ok) {
@@ -578,6 +603,7 @@ export default function Customer() {
 
     setGiftError("");
     setGiftPreviewCode(result.code);
+    setCart(result.nextCart);
     navigate("/checkout");
   }
 
@@ -712,6 +738,11 @@ export default function Customer() {
           setGiftCustomAmount={setGiftCustomAmount}
           setGiftName={setGiftName}
           setGiftMessage={setGiftMessage}
+          giftCheckCode={giftCheckCode}
+          setGiftCheckCode={setGiftCheckCode}
+          giftCheckResult={giftCheckResult}
+          giftCheckError={giftCheckError}
+          checkGiftCardBalance={checkGiftCardBalance}
         />
 
         <CustomerPolicy show={activePanel === "policy"} />

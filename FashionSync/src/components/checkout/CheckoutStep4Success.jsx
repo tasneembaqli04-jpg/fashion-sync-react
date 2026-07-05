@@ -1,6 +1,7 @@
 import styles from "../../styles/checkout/CheckoutSuccess.module.scss";
 export default function CheckoutStep4Success({
   isCash = false,
+  isGiftCardOnly = false,
   email = "",
   receiptId = "",
   items = [],
@@ -14,22 +15,32 @@ export default function CheckoutStep4Success({
     <div className={styles.stepPanel}>
       <div className={styles.successWrap}>
         <div className={styles.successCircle}>
-          {isCash ? "🕐" : "✅"}
+          {isGiftCardOnly ? "🎁" : isCash ? "🕐" : "✅"}
         </div>
 
         <div className={styles.successTitle}>
-          {isCash ? "ההזמנה נשמרה!" : "ההזמנה בוצעה!"}
+          {isGiftCardOnly
+            ? "כרטיס המתנה נרכש בהצלחה!"
+            : isCash
+              ? "ההזמנה נשמרה!"
+              : "ההזמנה בוצעה!"}
         </div>
 
         <div className={styles.successSub}>
-          {isCash ? "הזמנתך נשמרה בהצלחה." : "אישור הזמנה נשלח לאימייל:"}
+          {isGiftCardOnly
+            ? "פרטי הרכישה קשורים לחשבון:"
+            : isCash
+              ? "הזמנתך נשמרה בהצלחה."
+              : "אישור הזמנה נשלח לאימייל:"}
         </div>
 
         <div className={styles.successSubGold}>
-          {isCash ? "תשלום יבוצע בעת האיסוף מהחנות" : email}
+          {isCash && !isGiftCardOnly ? "תשלום יבוצע בעת האיסוף מהחנות" : email}
         </div>
 
-        <div className={styles.receiptNum}>🧾 מספר הזמנה: {receiptId}</div>
+        <div className={styles.receiptNum}>
+          🧾 מספר {isGiftCardOnly ? "רכישה" : "הזמנה"}: {receiptId}
+        </div>
 
         <div className={`${styles.card} ${styles.successOrderBox}`}>
           <div className={styles.secTitle}>📋 פרטי ההזמנה</div>
@@ -44,6 +55,22 @@ export default function CheckoutStep4Success({
                   <div className={styles.successItemMeta}>
                     {[item.size, item.color].filter(Boolean).join(" · ")} × {item.qty}
                   </div>
+                  {item.isGiftCard && (
+                    <div
+                      style={{
+                        marginTop: "0.4rem",
+                        padding: "0.4rem 0.7rem",
+                        borderRadius: "8px",
+                        border: "1px dashed var(--gold)",
+                        color: "var(--gold)",
+                        fontWeight: 900,
+                        fontSize: "0.9rem",
+                        display: "inline-block",
+                      }}
+                    >
+                      🎁 קוד כרטיס המתנה: {item.code}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.successItemPrice}>
@@ -84,15 +111,13 @@ export default function CheckoutStep4Success({
             ← חזרה לחנות
           </button>
 
-          {!isCash && (
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.btnGold}`}
-              onClick={onPrint}
-            >
-              🖨️ הדפס קבלה
-            </button>
-          )}
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.btnGold}`}
+            onClick={onPrint}
+          >
+            🖨️ הדפס קבלה
+          </button>
         </div>
       </div>
     </div>

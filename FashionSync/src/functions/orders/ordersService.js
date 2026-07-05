@@ -1,5 +1,6 @@
 import { db } from "../../firebase";
 import { saveCustomer } from "../customer/customerFirestore";
+import { issueGiftCard } from "../giftcard/giftCardService";
 import {
   collection,
   addDoc,
@@ -39,6 +40,19 @@ export async function addOrder(receipt) {
   };
 
   await addDoc(ordersCollection, order);
+
+  const giftCardItems = (receipt.items || []).filter((item) => item.isGiftCard);
+
+  for (const item of giftCardItems) {
+    await issueGiftCard({
+      code: item.code,
+      amount: item.price,
+      buyerEmail: customerEmail,
+      recipientName: item.giftRecipient || "",
+      message: item.giftMessage || "",
+    });
+  }
+
   return order;
 }
 

@@ -15,6 +15,8 @@ const PAY_METHOD_LABELS = {
   card: "כרטיס אשראי",
   cash: "מזומן",
   bit: "Bit",
+  paypal: "PayPal",
+  giftcard: "כרטיס מתנה",
 };
 
 export default function OrderDetailsModal({ open, order, onClose }) {
