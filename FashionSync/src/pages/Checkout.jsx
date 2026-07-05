@@ -11,8 +11,8 @@ import {
   getCurrentUser,
   clearCheckoutCart,
   saveReceiptAndOrder,
-  updateProductsStock,
 } from "../functions/checkout/checkoutStorage";
+import { decrementProductsStock } from "../functions/productsService";
 import {
   getDiscountAmount,
   getShippingCost,
@@ -356,7 +356,7 @@ export default function Checkout() {
         };
 
         await saveReceiptAndOrder(receipt);
-        updateProductsStock(orderItems);
+        await decrementProductsStock(orderItems);
         await clearCheckoutCart();
 
         if (payMethod === "giftcard") {
