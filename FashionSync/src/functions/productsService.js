@@ -2,7 +2,9 @@ import { db, storage } from "../firebase";
 import {
   collection,
   getDocs,
+  getDoc,
   setDoc,
+  updateDoc,
   doc,
   deleteDoc,
 } from "firebase/firestore";
@@ -36,4 +38,20 @@ export async function addProduct(product) {
 }
 export async function deleteProduct(code) {
   await deleteDoc(doc(db, "products", code));
+}
+export async function decrementProductsStock(cartItems = []) {
+  for (const item of cartItems) {
+    if (item.isGiftCard || !item.code) continue;
+
+    const productRef = doc(db, "products", item.code);
+    const snapshot = await getDoc(productRef);
+
+    if (!snapshot.exists()) continue;
+
+    const currentStock = Number(snapshot.data().stock) || 0;
+    const qty = Number(item.qty) || 0;
+    const newStock = Math.max(0, currentStock - qty);
+
+    await updateDoc(productRef, { stock: newStock });
+  }
 }
