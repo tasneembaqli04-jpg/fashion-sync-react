@@ -6,6 +6,7 @@ import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
 import { signIn, signUp } from "../functions/auth/firebaseAuth.js";
+import { getFeaturedProduct } from "../functions/settings/featuredProductService.js";
 import styles from "../styles/Home.module.scss";
 
 const LS = {
@@ -48,15 +49,9 @@ export default function Home() {
   }, [isLight]);
 
   useEffect(() => {
-    const image = localStorage.getItem("featuredProductImage") || "";
-    setFeaturedImage(image);
-    function handleStorage(e) {
-      if (e.key === "featuredProductImage" || e.key === null) {
-        setFeaturedImage(localStorage.getItem("featuredProductImage") || "");
-      }
-    }
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    getFeaturedProduct().then((featured) => {
+      setFeaturedImage(featured?.img || "");
+    });
   }, []);
 
   function handleToggleTheme() {
