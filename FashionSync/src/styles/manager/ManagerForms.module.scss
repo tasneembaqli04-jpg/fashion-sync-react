@@ -51,7 +51,6 @@
   margin-bottom: 1rem;
 }
 
-/* select RTL fix */
 .mtfInput option {
   direction: rtl;
 }
@@ -59,8 +58,6 @@
 select.mtfInput {
   direction: rtl;
 }
-
-/* responsive */
 
 @media (max-width: 768px) {
   .fg2 {
