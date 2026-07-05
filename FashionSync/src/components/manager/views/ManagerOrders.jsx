@@ -137,9 +137,9 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             maxWidth: "320px",
             padding: "10px 14px",
             borderRadius: "10px",
-            border: "1px solid #444",
-            background: "#1a1a24",
-            color: "white",
+            border: "1px solid var(--border)",
+            background: "var(--surface2)",
+            color: "var(--text)",
             fontSize: "0.95rem",
             textAlign: "right",
           }}

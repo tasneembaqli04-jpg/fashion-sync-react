@@ -47,27 +47,28 @@ export default function FeedbackView() {
           <div
             key={item.id}
             style={{
-              background: "var(--card-bg, #1a1a24)",
-              border: "1px solid #333",
+              background: "var(--surface)",
+              border: "1px solid var(--border-gold)",
               borderRadius: "14px",
               padding: "16px",
               marginBottom: "12px",
+              color: "var(--text)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <strong>{item.user}</strong>
-              <span style={{ opacity: 0.6, fontSize: "0.85rem" }}>
+              <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
                 {fmtDate(item.createdAt)}
               </span>
             </div>
 
             <div style={{ margin: "6px 0", color: "var(--gold)" }}>
               {"⭐".repeat(item.rating || 0)}
-              {!item.rating && <span style={{ opacity: 0.6 }}>ללא דירוג</span>}
+              {!item.rating && <span style={{ color: "var(--muted)" }}>ללא דירוג</span>}
             </div>
 
             {!!item.topics?.length && (
-              <div style={{ marginBottom: "6px", opacity: 0.8 }}>
+              <div style={{ marginBottom: "6px", color: "var(--muted)" }}>
                 {item.topics.join(" · ")}
               </div>
             )}
