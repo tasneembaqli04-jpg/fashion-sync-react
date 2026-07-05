@@ -108,7 +108,7 @@
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--border);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1rem;
