@@ -5,6 +5,9 @@ import { getOrdersByUser } from "../functions/orders/ordersService";
 import { getFeaturedProduct } from "../functions/settings/featuredProductService";
 import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
 import { addFeedback } from "../functions/feedback/feedbackService";
+import { getLoyaltyPoints } from "../functions/customer/customerFirestore";
+import { requestStockNotification } from "../functions/notifications/notificationsService";
+import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
 import {
@@ -90,6 +93,7 @@ export default function Customer() {
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -105,6 +109,7 @@ export default function Customer() {
 
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
   const [notifyText, setNotifyText] = useState("");
+  const [notifyProduct, setNotifyProduct] = useState(null);
 
   const [cartOpen, setCartOpen] = useState(false);
   const [couponValue, setCouponValue] = useState("");
@@ -131,6 +136,7 @@ export default function Customer() {
   useEffect(() => {
     if (!currentUser?.email) {
       setOrders([]);
+      setLoyaltyPoints(0);
       return;
     }
 
@@ -139,6 +145,12 @@ export default function Customer() {
     getOrdersByUser(currentUser.email).then((userOrders) => {
       if (!cancelled) {
         setOrders(userOrders.slice().reverse());
+      }
+    });
+
+    getLoyaltyPoints(currentUser.email).then((points) => {
+      if (!cancelled) {
+        setLoyaltyPoints(points);
       }
     });
 
@@ -419,14 +431,15 @@ export default function Customer() {
 
   function applyCoupon() {
     const code = couponValue.trim().toUpperCase();
-    const discount = COUPONS[code];
+    const coupon = COUPONS.find((c) => c.code === code && c.active);
 
-    if (!discount) {
+    if (!coupon) {
       alert("קוד קופון לא תקין.");
       return;
     }
 
-    setAppliedDiscount(discount);
+    setAppliedDiscount(coupon.discount);
+    localStorage.setItem(LS_KEYS.DISCOUNT, String(coupon.discount));
   }
 
   function startCheckout() {
@@ -511,6 +524,7 @@ export default function Customer() {
     if (!product) return;
 
     setNotifyText(`נעדכן אותך כש<strong>${product.name}</strong> יחזור למלאי.`);
+    setNotifyProduct(product);
     setNotifyModalOpen(true);
   }
 
@@ -528,6 +542,13 @@ export default function Customer() {
       alert("יש להזין כתובת Gmail תקינה");
       return;
     }
+
+    requestStockNotification({
+      productCode: notifyProduct?.code,
+      productName: notifyProduct?.name,
+      email,
+      phone,
+    });
 
     alert("נשלח! נודיע לך כשהמוצר יחזור למלאי.");
     setNotifyModalOpen(false);
@@ -720,6 +741,7 @@ export default function Customer() {
         <CustomerLoyalty
           show={activePanel === "loyalty"}
           copyCoupon={copyCoupon}
+          points={loyaltyPoints}
         />
 
         <CustomerGiftCard

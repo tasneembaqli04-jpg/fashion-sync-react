@@ -22,11 +22,6 @@ export const ROUTES = {
 export const DEFAULT_BG =
   "https://images.pexels.com/photos/1884581/pexels-photo-1884581.jpeg?auto=compress&cs=tinysrgb&w=1600";
 
-export const COUPONS = {
-  SAVE20:   0.2,
-  FREE50:   0.1,
-  SUMMER15: 0.15,
-};
 export const STALE_DAYS = 30;
 
 export const SEASON_NAMES = {

@@ -46,6 +46,25 @@ export async function getCustomer(email) {
 
   return snapshot.data();
 }
+export async function getLoyaltyPoints(email) {
+  const customer = await getCustomer(email);
+  return Number(customer?.loyaltyPoints) || 0;
+}
+
+export async function addLoyaltyPoints(email, orderTotal) {
+  const customerEmail = normalizeEmail(email);
+  if (!customerEmail) return;
+
+  const customerRef = doc(db, "customers", customerEmail);
+  const current = await getLoyaltyPoints(customerEmail);
+  const earned = Math.round(Number(orderTotal) || 0);
+
+  await setDoc(
+    customerRef,
+    { loyaltyPoints: current + earned },
+    { merge: true }
+  );
+}
 export async function getAllCustomers() {
   const snapshot = await getDocs(collection(db, "customers"));
 
