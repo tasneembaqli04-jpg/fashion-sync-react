@@ -29,11 +29,13 @@ import {
 } from "../functions/deliveries/deliveriesService";
 import { getAllCustomers } from "../functions/customer/customerFirestore";
 import {
+  getFeaturedProduct,
+  setFeaturedProduct,
+  clearFeaturedProduct,
+} from "../functions/settings/featuredProductService";
+import {
   loadTheme,
   saveTheme,
-  loadFeaturedProductCode,
-  saveFeaturedProduct,
-  clearFeaturedProduct,
 } from "../functions/manager/managerStorage";
 
 export default function Manager({ onPromote }) {
@@ -120,9 +122,15 @@ export default function Manager({ onPromote }) {
     };
   }, [isLoggedIn]);
 
-  const [currentPromotedCode, setCurrentPromotedCode] = useState(
-    loadFeaturedProductCode(),
-  );
+  const [currentPromotedCode, setCurrentPromotedCode] = useState(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getFeaturedProduct().then((featured) => {
+      setCurrentPromotedCode(featured?.code || null);
+    });
+  }, [isLoggedIn]);
 
   const alerts = useMemo(() => createAlerts(products), [products]);
   const receipts = useMemo(() => {
@@ -173,7 +181,7 @@ export default function Manager({ onPromote }) {
   const handlePromoteAction = (product) => {
     if (onPromote) onPromote(product);
     setCurrentPromotedCode(product.code);
-    saveFeaturedProduct(product);
+    setFeaturedProduct(product);
     setPromoMessage(product.name);
     setIsPromoOpen(false);
     setTimeout(() => setSelectedProduct(null), 0);
