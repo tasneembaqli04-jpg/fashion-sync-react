@@ -22,9 +22,7 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
-function getOrdersKey(email) {
-  return `${LS_KEYS.ORDERS_PREFIX}${normalizeEmail(email)}`;
-}
+
 
 export function getCurrentUser() {
   const user = safeParse(localStorage.getItem(LS_KEYS.CURRENT_USER), null);
@@ -69,88 +67,20 @@ export function buildCart() {
   return [];
 }
 
-export function saveReceipt(receipt) {
-  if (!receipt || typeof receipt !== "object") {
-    throw new Error("Receipt is invalid");
-  }
 
-  const parsed = safeParse(localStorage.getItem(LS_KEYS.RECEIPTS), []);
-  const receipts = Array.isArray(parsed) ? parsed : [];
 
-  receipts.push(receipt);
-  localStorage.setItem(LS_KEYS.RECEIPTS, JSON.stringify(receipts));
 
-  return receipt;
-}
-export function loadOrders(email) {
-  const userEmail = normalizeEmail(email || getCurrentUser()?.email);
 
-  if (!userEmail) {
-    return [];
-  }
 
-  const orders = safeParse(localStorage.getItem(getOrdersKey(userEmail)), []);
-  return Array.isArray(orders) ? orders : [];
-}
 
-export function saveOrders(orders, email) {
-  const userEmail = normalizeEmail(email || getCurrentUser()?.email);
-
-  if (!userEmail) {
-    throw new Error("User email is missing");
-  }
-
-  if (!Array.isArray(orders)) {
-    throw new Error("Orders must be an array");
-  }
-
-  localStorage.setItem(getOrdersKey(userEmail), JSON.stringify(orders));
-  return orders;
-}
-
-export function addReceiptToOrders(receipt) {
-  if (!receipt || typeof receipt !== "object") {
-    throw new Error("Receipt is invalid");
-  }
-
-  const customerEmail = normalizeEmail(
-    receipt?.customer?.email || getCurrentUser()?.email
-  );
-
-  if (!customerEmail) {
-    throw new Error("Customer email is missing");
-  }
-
-  const existingOrders = loadOrders(customerEmail);
-
-  const alreadyExists = existingOrders.some((order) => order.id === receipt.id);
-  if (alreadyExists) {
-    return existingOrders;
-  }
-
-  const newOrder = {
-    id: receipt.id,
-    date: receipt.date
-      ? new Date(receipt.date).toLocaleDateString("he-IL")
-      : new Date().toLocaleDateString("he-IL"),
-    items: Array.isArray(receipt.items) ? receipt.items : [],
-    total: Number(receipt.total) || 0,
-    status: 0,
-    steps: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-    payMethod: receipt.payMethod || "",
-    shipping: receipt.shipping || null,
-  };
-
-  const updatedOrders = [...existingOrders, newOrder];
-  saveOrders(updatedOrders, customerEmail);
-
-  return updatedOrders;
-}
 
 export async function saveReceiptAndOrder(receipt) {
-  const savedReceipt = saveReceipt(receipt);
-  await addOrder(savedReceipt);
-  return savedReceipt;
+  if (!receipt || typeof receipt !== "object") {
+    throw new Error("Receipt is invalid");
+  }
+
+  await addOrder(receipt);
+  return receipt;
 }
 
 export function updateProductsStock(cartItems = []) {
