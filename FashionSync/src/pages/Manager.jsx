@@ -436,7 +436,9 @@ export default function Manager({ onPromote }) {
          
 
           {activeView === "receipts" && <ReceiptsView receipts={receipts} />}
-          {activeView === "analytics" && <AnalyticsView />}
+          {activeView === "analytics" && (
+            <AnalyticsView orders={orders} products={products} />
+          )}
           {activeView === "feedback" && <FeedbackView />}
           {activeView === "settings" && <SettingsView />}
         </div>
