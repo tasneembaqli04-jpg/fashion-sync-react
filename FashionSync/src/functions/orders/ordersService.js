@@ -1,5 +1,5 @@
 import { db } from "../../firebase";
-import { saveCustomer } from "../customer/customerFirestore";
+import { saveCustomer, addLoyaltyPoints } from "../customer/customerFirestore";
 import { issueGiftCard } from "../giftcard/giftCardService";
 import {
   collection,
@@ -40,6 +40,9 @@ export async function addOrder(receipt) {
   };
 
   await addDoc(ordersCollection, order);
+  if (!order.items.every((item) => item.isGiftCard)) {
+    await addLoyaltyPoints(customerEmail, order.total);
+  }
 
   const giftCardItems = (receipt.items || []).filter((item) => item.isGiftCard);
 

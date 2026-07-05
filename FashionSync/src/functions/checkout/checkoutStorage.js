@@ -130,6 +130,7 @@ export async function clearCheckoutCart() {
 
   localStorage.removeItem(LS_KEYS.PENDING_CART);
   localStorage.removeItem(LS_KEYS.CART);
+  localStorage.removeItem(LS_KEYS.DISCOUNT);
 
   if (email) {
     await clearCartFromFirestore(email);

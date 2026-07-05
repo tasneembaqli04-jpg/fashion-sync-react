@@ -1,8 +1,10 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 
-export default function CustomerLoyalty({ show, copyCoupon }) {
+export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
   if (!show) return null;
+
+  const redemptionValue = (points * 0.05).toFixed(2);
 
   return (
     <div>
@@ -20,7 +22,7 @@ export default function CustomerLoyalty({ show, copyCoupon }) {
           הנקודות שלי
         </div>
 
-        <div className={browseStyles.pointsAmount}>1,250 נק'</div>
+        <div className={browseStyles.pointsAmount}>{points.toLocaleString()} נק'</div>
 
         <div
           style={{
@@ -29,7 +31,7 @@ export default function CustomerLoyalty({ show, copyCoupon }) {
             marginTop: "0.4rem",
           }}
         >
-          = ₪62.5 לשימוש בקנייה הבאה
+          = ₪{redemptionValue} לשימוש בקנייה הבאה
         </div>
       </div>
 
