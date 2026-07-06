@@ -54,6 +54,10 @@ export default function StockNotificationsView() {
           <p>
             {pendingCount} בקשות ממתינות מתוך {items.length} סה"כ
           </p>
+          <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.3rem" }}>
+            💡 סימון ידני כאן הוא רק לניהול פנימי — הלקוחה תראה "חזר למלאי" רק
+            אם למוצר יש בפועל מלאי גדול מ-0.
+          </p>
         </div>
       </div>
 

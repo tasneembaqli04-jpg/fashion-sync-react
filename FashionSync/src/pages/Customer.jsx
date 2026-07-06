@@ -94,7 +94,7 @@ export default function Customer() {
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
-  const [stockAlerts, setStockAlerts] = useState([]);
+  const [rawStockAlerts, setRawStockAlerts] = useState([]);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -138,7 +138,7 @@ export default function Customer() {
     if (!currentUser?.email) {
       setOrders([]);
       setLoyaltyPoints(0);
-      setStockAlerts([]);
+      setRawStockAlerts([]);
       return;
     }
 
@@ -158,7 +158,7 @@ export default function Customer() {
 
     getMyStockAlerts(currentUser.email).then((alerts) => {
       if (!cancelled) {
-        setStockAlerts(alerts);
+        setRawStockAlerts(alerts);
       }
     });
 
@@ -275,6 +275,13 @@ export default function Customer() {
       .filter((product) => wishlistCodes.includes(product.code))
       .map((product) => ({ ...product, wished: true }));
   }, [products, wishlistCodes]);
+
+  const stockAlerts = useMemo(() => {
+    return rawStockAlerts.filter((alert) => {
+      const product = products.find((p) => p.code === alert.productCode);
+      return product && Number(product.stock) > 0;
+    });
+  }, [rawStockAlerts, products]);
 
   const cartCount = getCartCount(cart);
   const { total } = getCartTotals(cart, appliedDiscount);
@@ -637,7 +644,7 @@ export default function Customer() {
   }
   async function dismissStockAlert(id) {
     await markStockAlertSeen(id);
-    setStockAlerts((prev) => prev.filter((item) => item.id !== id));
+    setRawStockAlerts((prev) => prev.filter((item) => item.id !== id));
   }
 
   function handleLogout() {
