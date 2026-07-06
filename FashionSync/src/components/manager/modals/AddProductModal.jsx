@@ -71,10 +71,6 @@ export default function AddProductModal({
     onClose();
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) handleClose();
-  };
-
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -170,7 +166,6 @@ export default function AddProductModal({
   return (
     <div
       className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
-      onClick={handleOverlayClick}
     >
       <div className={styles.addProductModal}>
         <button className={styles.modalCloseBtn} onClick={handleClose}>
