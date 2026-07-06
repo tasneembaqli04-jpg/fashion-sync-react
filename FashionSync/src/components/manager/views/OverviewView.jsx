@@ -42,11 +42,32 @@ export default function OverviewView({
     day: "numeric",
   });
 
-  const weekSales = [4200, 5800, 3900, 7200, 6100, 8450, 5300];
-  const weekLabels = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
-  const max = Math.max(...weekSales);
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
 
-  const slowProducts = products.filter((p) => p.stock > 0 && p.salesLastMonth <= 2);
+  const weekLabels = weekDays.map((d) =>
+    d.toLocaleDateString("he-IL", { weekday: "short" })
+  );
+
+  const weekSales = weekDays.map((day) => {
+    const dayEnd = new Date(day);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    return receipts
+      .filter((r) => {
+        const rDate = new Date(r.date);
+        return rDate >= day && rDate <= dayEnd;
+      })
+      .reduce((sum, r) => sum + (Number(r.total) || 0), 0);
+  });
+
+  const max = Math.max(1, ...weekSales);
+
+  const slowProducts = products.filter((p) => p.stock > 0 && (p.salesLastMonth || 0) <= 2);
 
   return (
     <div className={layoutStyles.view}>
