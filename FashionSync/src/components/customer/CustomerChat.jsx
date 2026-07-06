@@ -66,6 +66,8 @@ export default function CustomerChat({
             <button className={chatStyles.pill} onClick={() => quickMsg("יש מכנסיים?")}>מכנסיים</button>
             <button className={chatStyles.pill} onClick={() => quickMsg("יש שמלות?")}>שמלות</button>
             <button className={chatStyles.pill} onClick={() => quickMsg("יש עליוניות?")}>עליוניות</button>
+            <button className={chatStyles.pill} onClick={() => quickMsg("יש נעליים?")}>נעליים</button>
+            <button className={chatStyles.pill} onClick={() => quickMsg("יש אביזרים?")}>אביזרים</button>
             <button className={chatStyles.pill} onClick={() => quickMsg("יש מידות?")}>מידות</button>
             <button className={chatStyles.pill} onClick={() => quickMsg("יש צבעים?")}>צבעים</button>
             <button className={chatStyles.pill} onClick={() => quickMsg("איך עובדות הנקודות?")}>נקודות</button>

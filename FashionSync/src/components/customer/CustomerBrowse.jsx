@@ -1,6 +1,7 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import ProductCard from "./ProductCard";
+import { CATEGORIES } from "../../data/categories";
 
 export default function CustomerBrowse({
   show = false,
@@ -94,10 +95,11 @@ export default function CustomerBrowse({
             onChange={(e) => setCategoryValue(e.target.value)}
           >
             <option value="">כל הקטגוריות</option>
-            <option value="חולצות">חולצות</option>
-            <option value="מכנסיים">מכנסיים</option>
-            <option value="שמלות">שמלות</option>
-            <option value="עליוניות">עליוניות</option>
+            {CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
 
           <select

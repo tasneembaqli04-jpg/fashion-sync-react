@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
 import { he } from "../../../translations/he";
+import { CATEGORIES } from "../../../data/categories";
 const t = he.manager.inventory;
 const common = he.common;
-const categories = he.manager.categories;
 
 const SEASON_COLORS = {
   [t.seasons.summer]: {
@@ -194,10 +194,9 @@ export default function InventoryView({
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
                 <option>{t.options.allCategories}</option>
-                <option>{categories.shirts}</option>
-                <option>{categories.pants}</option>
-                <option>{categories.dresses}</option>
-                <option>{categories.outerwear}</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category}>{category}</option>
+                ))}
               </select>
             </div>
 
