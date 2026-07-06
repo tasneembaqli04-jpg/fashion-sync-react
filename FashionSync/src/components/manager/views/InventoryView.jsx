@@ -6,23 +6,27 @@ import { CATEGORIES } from "../../../data/categories";
 const t = he.manager.inventory;
 const common = he.common;
 
-const SEASON_COLORS = {
-  [t.seasons.summer]: {
+const SEASON_META = {
+  summer: {
+    label: t.seasons.summer,
     bg: "rgba(230,126,34,0.1)",
     color: "#e67e22",
     icon: "☀️",
   },
-  [t.seasons.winter]: {
+  winter: {
+    label: t.seasons.winter,
     bg: "rgba(52,152,219,0.1)",
     color: "#3498db",
     icon: "❄️",
   },
-  [t.seasons.springFall]: {
+  "spring-autumn": {
+    label: t.seasons.springFall,
     bg: "rgba(46,204,113,0.1)",
     color: "#2ecc71",
     icon: "🌸",
   },
-  [t.seasons.allSeasons]: {
+  all: {
+    label: t.seasons.allSeasons,
     bg: "rgba(155,89,182,0.1)",
     color: "#9b59b6",
     icon: "🌀",
@@ -30,7 +34,8 @@ const SEASON_COLORS = {
 };
 
 function SeasonBadge({ season }) {
-  const s = SEASON_COLORS[season] || {
+  const s = SEASON_META[season] || {
+    label: season || common.none,
     bg: "rgba(255,255,255,0.06)",
     color: "var(--muted)",
     icon: common.none,
@@ -50,7 +55,7 @@ function SeasonBadge({ season }) {
         fontWeight: 700,
       }}
     >
-      {s.icon} {season || common.none}
+      {s.icon} {s.label}
     </span>
   );
 }
