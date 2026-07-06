@@ -153,9 +153,10 @@ export default function ProductModal({
                   <input
                     id="pd-size-other"
                     type="text"
-                    placeholder="מידה…"
+                    placeholder="מידה… "
                     value={customSize}
-                    onChange={(e) => setCustomSize(e.target.value)}
+                    onChange={(e) => setCustomSize(e.target.value.slice(0, 10))}
+                    maxLength={10}
                     style={{ marginTop: "0.4rem" }}
                   />
                 )}
