@@ -6,7 +6,7 @@ import { getFeaturedProduct } from "../functions/settings/featuredProductService
 import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
 import { addFeedback } from "../functions/feedback/feedbackService";
 import { getLoyaltyPoints } from "../functions/customer/customerFirestore";
-import { requestStockNotification } from "../functions/notifications/notificationsService";
+import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../functions/notifications/notificationsService";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -94,6 +94,7 @@ export default function Customer() {
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [stockAlerts, setStockAlerts] = useState([]);
 
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [selectedProductCode, setSelectedProductCode] = useState("");
@@ -137,6 +138,7 @@ export default function Customer() {
     if (!currentUser?.email) {
       setOrders([]);
       setLoyaltyPoints(0);
+      setStockAlerts([]);
       return;
     }
 
@@ -151,6 +153,12 @@ export default function Customer() {
     getLoyaltyPoints(currentUser.email).then((points) => {
       if (!cancelled) {
         setLoyaltyPoints(points);
+      }
+    });
+
+    getMyStockAlerts(currentUser.email).then((alerts) => {
+      if (!cancelled) {
+        setStockAlerts(alerts);
       }
     });
 
@@ -627,6 +635,10 @@ export default function Customer() {
     setCart(result.nextCart);
     navigate("/checkout");
   }
+  async function dismissStockAlert(id) {
+    await markStockAlertSeen(id);
+    setStockAlerts((prev) => prev.filter((item) => item.id !== id));
+  }
 
   function handleLogout() {
     doLogoutFn(setCart);
@@ -670,6 +682,44 @@ export default function Customer() {
       />
 
       <main className={styles.main}>
+        {stockAlerts.length > 0 && (
+          <div
+            style={{
+              background: "rgba(39,174,96,0.1)",
+              border: "1px solid var(--green)",
+              borderRadius: "12px",
+              padding: "0.9rem 1.1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            {stockAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  padding: "0.3rem 0",
+                }}
+              >
+                <span>
+                  🎉 <strong>{alert.productName || alert.productCode}</strong> חזר
+                  למלאי!
+                </span>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${styles.btnGhost}`}
+                  onClick={() => dismissStockAlert(alert.id)}
+                  style={{ flexShrink: 0 }}
+                >
+                  ✕ הבנתי
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {activePanel === "chat" && (
           <CustomerChat
             chatMessages={chatMessages}

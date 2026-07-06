@@ -40,3 +40,37 @@ export async function markStockNotificationDone(id) {
 export async function deleteStockNotification(id) {
   await deleteDoc(doc(db, "stockNotifications", id));
 }
+export async function resolveStockNotifications(productCode) {
+  const snapshot = await getDocs(notificationsCollection);
+
+  const matches = snapshot.docs.filter(
+    (d) => d.data().productCode === productCode && !d.data().notified
+  );
+
+  for (const document of matches) {
+    await updateDoc(doc(db, "stockNotifications", document.id), {
+      notified: true,
+      resolvedAt: new Date().toISOString(),
+    });
+  }
+}
+
+export async function getMyStockAlerts(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return [];
+
+  const snapshot = await getDocs(notificationsCollection);
+
+  return snapshot.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter(
+      (item) =>
+        item.email?.trim().toLowerCase() === normalizedEmail &&
+        item.notified &&
+        !item.seenByCustomer
+    );
+}
+
+export async function markStockAlertSeen(id) {
+  await updateDoc(doc(db, "stockNotifications", id), { seenByCustomer: true });
+}

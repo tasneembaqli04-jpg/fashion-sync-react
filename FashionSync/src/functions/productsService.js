@@ -39,6 +39,15 @@ export async function addProduct(product) {
 export async function deleteProduct(code) {
   await deleteDoc(doc(db, "products", code));
 }
+export async function updateProduct(product) {
+  let imageUrl = product.img;
+
+  if (imageUrl && imageUrl.startsWith("data:")) {
+    imageUrl = await uploadProductImage(product.code, imageUrl);
+  }
+
+  await setDoc(doc(db, "products", product.code), { ...product, img: imageUrl });
+}
 export async function decrementProductsStock(cartItems = []) {
   for (const item of cartItems) {
     if (item.isGiftCard || !item.code) continue;
