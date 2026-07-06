@@ -103,6 +103,16 @@ export default function ManagerSidebar({
           משוב לקוחות
         </button>
 
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "stockNotifications" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("stockNotifications")}
+        >
+          <span className={styles.icon}>🔔</span>
+          בקשות מלאי
+        </button>
+
         <div className={styles.sbSec}>הגדרות</div>
 
         <button

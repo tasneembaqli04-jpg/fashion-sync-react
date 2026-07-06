@@ -1,5 +1,14 @@
 import { db } from "../../firebase";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
 const notificationsCollection = collection(db, "stockNotifications");
 
@@ -12,4 +21,22 @@ export async function requestStockNotification({ productCode, productName, email
     notified: false,
     createdAt: new Date().toISOString(),
   });
+}
+
+export async function getAllStockNotifications() {
+  const q = query(notificationsCollection, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((document) => ({
+    id: document.id,
+    ...document.data(),
+  }));
+}
+
+export async function markStockNotificationDone(id) {
+  await updateDoc(doc(db, "stockNotifications", id), { notified: true });
+}
+
+export async function deleteStockNotification(id) {
+  await deleteDoc(doc(db, "stockNotifications", id));
 }
