@@ -20,7 +20,8 @@ import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts } from "../functions/manager/managerHelpers";
-import { getProducts, addProduct, deleteProduct } from "../functions/productsService";
+import { getProducts, addProduct, deleteProduct, updateProduct } from "../functions/productsService";
+import { resolveStockNotifications } from "../functions/notifications/notificationsService";
 import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
 import {
   getAllDeliveries,
@@ -466,6 +467,15 @@ export default function Manager({ onPromote }) {
           setSelectedProduct(null);
         }}
         onSave={(updated) => {
+          const previousStock = Number(selectedProduct?.stock) || 0;
+          const newStock = Number(updated.stock) || 0;
+
+          updateProduct(updated);
+
+          if (previousStock <= 0 && newStock > 0) {
+            resolveStockNotifications(updated.code);
+          }
+
           setProducts((prev) =>
             prev.map((p) => (p.code === updated.code ? updated : p)),
           );
