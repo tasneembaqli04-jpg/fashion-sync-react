@@ -48,10 +48,15 @@ export async function decrementProductsStock(cartItems = []) {
 
     if (!snapshot.exists()) continue;
 
-    const currentStock = Number(snapshot.data().stock) || 0;
+    const data = snapshot.data();
+    const currentStock = Number(data.stock) || 0;
+    const currentSales = Number(data.salesLastMonth) || 0;
     const qty = Number(item.qty) || 0;
     const newStock = Math.max(0, currentStock - qty);
 
-    await updateDoc(productRef, { stock: newStock });
+    await updateDoc(productRef, {
+      stock: newStock,
+      salesLastMonth: currentSales + qty,
+    });
   }
 }
