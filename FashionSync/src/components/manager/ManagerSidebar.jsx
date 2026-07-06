@@ -3,10 +3,12 @@ export default function ManagerSidebar({
   activeView,
   onChangeView,
   onLogout,
-  onGoHome,
   onToggleTheme,
   theme,
   alertCount,
+  pendingOrdersCount = 0,
+  pendingDeliveriesCount = 0,
+  pendingStockRequestsCount = 0,
   mobileOpen,
 }) {
   return (
@@ -60,7 +62,10 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("orders")}
         >
           <span className={styles.icon}>📦</span>
-          הזמנות לקוחות
+          <span style={{ flex: 1 }}>הזמנות לקוחות</span>
+          {pendingOrdersCount > 0 && (
+            <span className={styles.navBadge}>{pendingOrdersCount}</span>
+          )}
         </button>
 
         <button
@@ -70,7 +75,10 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("deliveries")}
         >
           <span className={styles.icon}>🚚</span>
-          מעקב משלוחים
+          <span style={{ flex: 1 }}>מעקב משלוחים</span>
+          {pendingDeliveriesCount > 0 && (
+            <span className={styles.navBadge}>{pendingDeliveriesCount}</span>
+          )}
         </button>
 
         <button
@@ -110,7 +118,10 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("stockNotifications")}
         >
           <span className={styles.icon}>🔔</span>
-          בקשות מלאי
+          <span style={{ flex: 1 }}>בקשות מלאי</span>
+          {pendingStockRequestsCount > 0 && (
+            <span className={styles.navBadge}>{pendingStockRequestsCount}</span>
+          )}
         </button>
 
         <div className={styles.sbSec}>הגדרות</div>
