@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
+import { CATEGORIES } from "../../../data/categories";
 
 export default function AddProductModal({
   isOpen,
@@ -258,10 +259,11 @@ export default function AddProductModal({
               value={form.cat}
               onChange={(e) => handleChange("cat", e.target.value)}
             >
-              <option value="חולצות">חולצות</option>
-              <option value="מכנסיים">מכנסיים</option>
-              <option value="שמלות">שמלות</option>
-              <option value="עליוניות">עליוניות</option>
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
           </div>
 
