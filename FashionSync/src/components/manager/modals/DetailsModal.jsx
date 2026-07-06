@@ -43,6 +43,7 @@ export default function DetailsModal({
   const [minStock, setMinStock] = useState(10);
   const [season, setSeason] = useState("");
   const [variantsDraft, setVariantsDraft] = useState([]);
+  const [simpleStock, setSimpleStock] = useState(0);
 
   useEffect(() => {
     if (!product) return;
@@ -50,12 +51,16 @@ export default function DetailsModal({
     setMinStock(product.minStock || 10);
     setSeason(product.season || "כל העונות");
     setVariantsDraft(deepCopyVariants(product.variants || []));
+    setSimpleStock(product.stock || 0);
   }, [product]);
 
   const totalStock = useMemo(
     () => calcVariantsTotal(variantsDraft),
     [variantsDraft]
   );
+
+  const usesVariants = variantsDraft.length > 0;
+  const displayedStock = usesVariants ? totalStock : simpleStock;
 
   if (!isOpen || !product) return null;
 
@@ -72,6 +77,34 @@ export default function DetailsModal({
     );
   };
 
+  const handleColorNameChange = (variantIndex, value) => {
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex ? variant : { ...variant, colorName: value }
+      )
+    );
+  };
+
+  const handleColorHexChange = (variantIndex, value) => {
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex ? variant : { ...variant, colorHex: value }
+      )
+    );
+  };
+
+  const addColorVariant = () => {
+    setVariantsDraft((prev) => [
+      ...prev,
+      { colorName: "", colorHex: "#999999", sizes: { S: 0, M: 0, L: 0 } },
+    ]);
+  };
+
+  const removeColorVariant = (variantIndex) => {
+    if (!window.confirm("להסיר את הצבע הזה מהמוצר?")) return;
+    setVariantsDraft((prev) => prev.filter((_, index) => index !== variantIndex));
+  };
+
   const handleSave = () => {
     onSave({
       ...product,
@@ -79,7 +112,7 @@ export default function DetailsModal({
       minStock: Number(minStock),
       season,
       variants: variantsDraft,
-      stock: totalStock,
+      stock: usesVariants ? totalStock : Number(simpleStock),
     });
   };
 
@@ -139,7 +172,7 @@ export default function DetailsModal({
               )}
 
               <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>
-                מלאי: {totalStock}
+                מלאי: {displayedStock}
               </span>
               <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
                 ₪{price}
@@ -218,9 +251,23 @@ export default function DetailsModal({
           </div>
         </div>
 
+        {!usesVariants && (
+          <div className={formStyles.fg} style={{ marginBottom: "1rem" }}>
+            <label>מלאי כללי</label>
+            <input
+              type="number"
+              min="0"
+              value={simpleStock}
+              onChange={(e) =>
+                setSimpleStock(Math.max(0, parseInt(e.target.value || "0", 10) || 0))
+              }
+            />
+          </div>
+        )}
+
         <div className={modalStyles.detailsSectionRow}>
           <span className={modalStyles.detailsSectionLabel}>
-            עריכת כמות לפי צבע/מידה
+            עריכת כמות לפי צבע/מידה (אופציונלי)
           </span>
         </div>
 
@@ -234,7 +281,7 @@ export default function DetailsModal({
 
             return (
               <div
-                key={`${variant.colorName}-${variantIndex}`}
+                key={variantIndex}
                 className={modalStyles.colorCard}
               >
                 <div className={modalStyles.colorCardHead}>
@@ -243,11 +290,30 @@ export default function DetailsModal({
                   </span>
 
                   <div className={modalStyles.colorCardTitleWrap}>
-                    <strong>{variant.colorName || "צבע"}</strong>
-                    <span
-                      className={modalStyles.dot}
-                      style={{ background: variant.colorHex || "#999" }}
+                    <input
+                      type="text"
+                      placeholder="שם הצבע"
+                      value={variant.colorName || ""}
+                      onChange={(e) =>
+                        handleColorNameChange(variantIndex, e.target.value)
+                      }
+                      style={{ width: "90px" }}
                     />
+                    <input
+                      type="color"
+                      value={variant.colorHex || "#999999"}
+                      onChange={(e) =>
+                        handleColorHexChange(variantIndex, e.target.value)
+                      }
+                      style={{ width: "28px", height: "28px", padding: 0, border: "none" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeColorVariant(variantIndex)}
+                      style={{ background: "none", border: "none", cursor: "pointer" }}
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
 
@@ -272,6 +338,15 @@ export default function DetailsModal({
             );
           })}
         </div>
+
+        <button
+          type="button"
+          className={modalStyles.uploadBtn}
+          onClick={addColorVariant}
+          style={{ marginBottom: "1rem" }}
+        >
+          ➕ הוסף פילוח לפי צבע
+        </button>
 
         <div className={modalStyles.detailsFooter}>
           <button
