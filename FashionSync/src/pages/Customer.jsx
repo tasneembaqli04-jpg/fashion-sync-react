@@ -282,6 +282,10 @@ export default function Customer() {
       return product && Number(product.stock) > 0;
     });
   }, [rawStockAlerts, products]);
+  const activeOrdersCount = useMemo(
+    () => orders.filter((o) => (Number(o.status) || 0) < 3).length,
+    [orders],
+  );
 
   const cartCount = getCartCount(cart);
   const { total } = getCartTotals(cart, appliedDiscount);
@@ -686,6 +690,8 @@ export default function Customer() {
         showPanel={showPanel}
         navProtected={navProtected}
         closeSidebar={closeSidebar}
+        stockAlertsCount={stockAlerts.length}
+        activeOrdersCount={activeOrdersCount}
       />
 
       <main className={styles.main}>

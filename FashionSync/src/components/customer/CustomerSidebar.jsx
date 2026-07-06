@@ -6,12 +6,13 @@ export default function CustomerSidebar({
   currentUser = null,
   sidebarOpen = false,
   toggleTheme,
-  goHome,
   goLogin,
   doLogout,
   showPanel,
   navProtected,
   closeSidebar,
+  stockAlertsCount = 0,
+  activeOrdersCount = 0,
 }) {
   return (
     <>
@@ -80,8 +81,30 @@ export default function CustomerSidebar({
             showPanel("browse");
             closeSidebar();
           }}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
-          <span className={sidebarStyles.navIcon}>🏬</span> קטלוג
+          <span className={sidebarStyles.navIcon}>🏬</span>
+          <span style={{ flex: 1 }}>קטלוג</span>
+          {stockAlertsCount > 0 && (
+            <span
+              style={{
+                background: "var(--red)",
+                color: "#fff",
+                fontSize: "0.68rem",
+                fontWeight: 800,
+                minWidth: "18px",
+                height: "18px",
+                borderRadius: "999px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 5px",
+                flexShrink: 0,
+              }}
+            >
+              {stockAlertsCount}
+            </span>
+          )}
         </button>
 
         <button
@@ -100,8 +123,30 @@ export default function CustomerSidebar({
           } ${isGuest ? sidebarStyles.locked : ""}`}
           id="nav-orders"
           onClick={() => navProtected("orders")}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
-          <span className={sidebarStyles.navIcon}>📦</span> ההזמנות שלי
+          <span className={sidebarStyles.navIcon}>📦</span>
+          <span style={{ flex: 1 }}>ההזמנות שלי</span>
+          {activeOrdersCount > 0 && (
+            <span
+              style={{
+                background: "var(--gold)",
+                color: "#111",
+                fontSize: "0.68rem",
+                fontWeight: 800,
+                minWidth: "18px",
+                height: "18px",
+                borderRadius: "999px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 5px",
+                flexShrink: 0,
+              }}
+            >
+              {activeOrdersCount}
+            </span>
+          )}
         </button>
 
         <button

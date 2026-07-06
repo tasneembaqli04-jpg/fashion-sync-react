@@ -21,7 +21,7 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../functions/productsService";
-import { resolveStockNotifications } from "../functions/notifications/notificationsService";
+import { resolveStockNotifications, getAllStockNotifications } from "../functions/notifications/notificationsService";
 import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
 import {
   getAllDeliveries,
@@ -107,6 +107,15 @@ export default function Manager({ onPromote }) {
 }, [isLoggedIn]);
 
   const [deliveries, setDeliveries] = useState([]);
+  const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getAllStockNotifications().then((items) => {
+      setPendingStockRequestsCount(items.filter((item) => !item.notified).length);
+    });
+  }, [isLoggedIn, activeView]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -135,6 +144,16 @@ export default function Manager({ onPromote }) {
   }, [isLoggedIn]);
 
   const alerts = useMemo(() => createAlerts(products), [products]);
+
+  const pendingOrdersCount = useMemo(
+    () => orders.filter((o) => o.status !== "ready").length,
+    [orders],
+  );
+
+  const pendingDeliveriesCount = useMemo(
+    () => deliveries.filter((d) => (Number(d.status) || 0) < 3).length,
+    [deliveries],
+  );
   const receipts = useMemo(() => {
     return orders.map((order) => ({
       id: order.id,
@@ -341,6 +360,10 @@ export default function Manager({ onPromote }) {
     <div className={shellClassName}>
       <ManagerSidebar
         activeView={activeView}
+        alertCount={alerts.length}
+        pendingOrdersCount={pendingOrdersCount}
+        pendingDeliveriesCount={pendingDeliveriesCount}
+        pendingStockRequestsCount={pendingStockRequestsCount}
         onChangeView={(view) => {
           setActiveView(view);
           setMobileSidebarOpen(false);
@@ -357,7 +380,6 @@ export default function Manager({ onPromote }) {
         }}
         onToggleTheme={handleToggleTheme}
         theme={theme}
-        alertCount={alerts.length}
         mobileOpen={mobileSidebarOpen}
       />
 
