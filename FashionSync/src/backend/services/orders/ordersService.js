@@ -1,6 +1,6 @@
 import { db } from "../../firebase";
 import { saveCustomer, addLoyaltyPoints } from "../../../functions/customer/customerFirestore";
-import { issueGiftCard } from "../../../functions/giftcard/giftCardService";
+import { issueGiftCard } from "../giftcard/giftCardService";
 import {
   collection,
   addDoc,

@@ -21,14 +21,14 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../backend/services/products/productsService";
-import { resolveStockNotifications, getAllStockNotifications } from "../functions/notifications/notificationsService";
+import { resolveStockNotifications, getAllStockNotifications } from "../backend/services/notifications/notificationsService";
 import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../backend/services/orders/ordersService";
 import {
   getAllDeliveries,
   addDelivery,
   updateDeliveryStatus,
   deleteDelivery,
-} from "../functions/deliveries/deliveriesService";
+} from "../backend/services/deliveries/deliveriesService";
 import { getAllCustomers } from "../functions/customer/customerFirestore";
 import {
   getFeaturedProduct,

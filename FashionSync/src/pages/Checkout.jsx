@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
-import { getGiftCard, redeemGiftCardAmount } from "../functions/giftcard/giftCardService";
+import { getGiftCard, redeemGiftCardAmount } from "../backend/services/giftcard/giftCardService";
 import {
   getAppliedDiscountPercent,
   getCurrentUser,
