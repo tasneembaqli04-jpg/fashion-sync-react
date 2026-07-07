@@ -20,7 +20,7 @@ import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts } from "../functions/manager/managerHelpers";
-import { getProducts, addProduct, deleteProduct, updateProduct } from "../functions/productsService";
+import { getProducts, addProduct, deleteProduct, updateProduct } from "../functions/products/productsService";
 import { resolveStockNotifications, getAllStockNotifications } from "../functions/notifications/notificationsService";
 import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
 import {

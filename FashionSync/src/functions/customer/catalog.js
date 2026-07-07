@@ -1,5 +1,4 @@
-import { getProducts } from "../productsService";
-
+import { getProducts } from "../products/productsService";
 export const SEASON_META = {
   summer: { emoji: "☀️", text: "עכשיו קיץ! מוצגים פריטי הקיץ", cls: "summer" },
   winter: { emoji: "❄️", text: "עכשיו חורף! מוצגים פריטי החורף", cls: "winter" },

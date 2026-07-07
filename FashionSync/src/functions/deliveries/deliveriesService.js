@@ -1,4 +1,4 @@
-import { db } from "../../firebase";
+import { db } from "../../backend/firebase";
 import { collection, doc, setDoc, deleteDoc, getDocs } from "firebase/firestore";
 
 const deliveriesCollection = collection(db, "deliveries");

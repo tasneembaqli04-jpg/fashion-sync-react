@@ -7,12 +7,11 @@ import { SHIPPING_OPTIONS } from "../data/shippingOptions";
 import { getGiftCard, redeemGiftCardAmount } from "../functions/giftcard/giftCardService";
 import {
   getAppliedDiscountPercent,
-  buildCart,
   getCurrentUser,
   clearCheckoutCart,
   saveReceiptAndOrder,
 } from "../functions/checkout/checkoutStorage";
-import { decrementProductsStock } from "../functions/productsService";
+import { decrementProductsStock } from "../functions/products/productsService";
 import {
   getDiscountAmount,
   getShippingCost,
