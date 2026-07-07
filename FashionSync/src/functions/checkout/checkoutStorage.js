@@ -1,4 +1,4 @@
-import { addOrder } from "../orders/ordersService";
+import { addOrder } from "../../backend/services/orders/ordersService";
 import { clearCartFromFirestore } from "../customer/cartFirestore";
 const LS_KEYS = {
   CURRENT_USER: "fs_current_user",

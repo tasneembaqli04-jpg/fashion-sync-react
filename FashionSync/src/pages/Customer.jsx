@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { getOrdersByUser } from "../functions/orders/ordersService";
+import { getOrdersByUser } from "../backend/services/orders/ordersService";
 import { getFeaturedProduct } from "../functions/settings/featuredProductService";
 import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
 import { addFeedback } from "../functions/feedback/feedbackService";

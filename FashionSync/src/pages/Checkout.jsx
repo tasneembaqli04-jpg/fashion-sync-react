@@ -11,7 +11,7 @@ import {
   clearCheckoutCart,
   saveReceiptAndOrder,
 } from "../functions/checkout/checkoutStorage";
-import { decrementProductsStock } from "../functions/products/productsService";
+import { decrementProductsStock } from "../backend/services/products/productsService";
 import {
   getDiscountAmount,
   getShippingCost,
