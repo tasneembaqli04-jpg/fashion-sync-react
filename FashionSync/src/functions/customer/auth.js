@@ -64,12 +64,14 @@ export function guestPrompt() {
   }
 }
 
-export function doLogout(setCart) {
+export async function doLogout(setCart) {
   if (!window.confirm("להתנתק?")) return;
-  logOut();
+
+  await logOut();
+
   localStorage.removeItem(LS_KEYS.CURRENT_USER);
   localStorage.removeItem(LS_KEYS.MODE);
+
   setCart([]);
-  localStorage.setItem(LS_KEYS.CART, JSON.stringify([]));
   window.location.href = "/";
 }
