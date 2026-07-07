@@ -4,15 +4,13 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
-import { getGiftCard, redeemGiftCardAmount } from "../functions/giftcard/giftCardService";
 import {
   getAppliedDiscountPercent,
-  buildCart,
   getCurrentUser,
   clearCheckoutCart,
   saveReceiptAndOrder,
+  updateProductsStock,
 } from "../functions/checkout/checkoutStorage";
-import { decrementProductsStock } from "../functions/productsService";
 import {
   getDiscountAmount,
   getShippingCost,
@@ -34,11 +32,10 @@ export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(
-    SHIPPING_OPTIONS?.[0] || null,
+    SHIPPING_OPTIONS?.[0] || null
   );
   const [discountPct, setDiscountPct] = useState(0);
   const [payMethod, setPayMethod] = useState("card");
-  const [giftCardCode, setGiftCardCode] = useState("");
   const [selectedInstallments, setSelectedInstallments] = useState(1);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -63,7 +60,20 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    setDiscountPct(getAppliedDiscountPercent());
+    async function loadCheckoutCart() {
+      const currentUser = getCurrentUser();
+
+      if (currentUser?.email) {
+        const firestoreCart = await getCartFromFirestore(currentUser.email);
+        setCart(Array.isArray(firestoreCart) ? firestoreCart : []);
+      } else {
+        setCart([]);
+      }
+
+      setDiscountPct(getAppliedDiscountPercent());
+    }
+
+    loadCheckoutCart();
 
     const currentUser = getCurrentUser();
 
@@ -81,40 +91,23 @@ export default function Checkout() {
           prev.lastName || (parts.length > 1 ? parts.slice(1).join(" ") : ""),
       }));
     }
-
-    async function loadCart() {
-      if (currentUser?.email) {
-        const firestoreCart = await getCartFromFirestore(currentUser.email);
-        setCart(Array.isArray(firestoreCart) ? firestoreCart : []);
-      } else {
-        const nextCart = buildCart();
-        setCart(Array.isArray(nextCart) ? nextCart : []);
-      }
-    }
-
-    loadCart();
   }, []);
 
   const subtotal = useMemo(() => getSubtotal(cart), [cart]);
 
-  const isGiftCardOnly = cart.length > 0 && cart.every((item) => item.isGiftCard);
-
   const discountAmount = useMemo(
     () => getDiscountAmount(subtotal, discountPct),
-    [subtotal, discountPct],
+    [subtotal, discountPct]
   );
 
   const shippingCost = useMemo(
-    () => (isGiftCardOnly ? 0 : getShippingCost(selectedShipping, subtotal)),
-    [selectedShipping, subtotal, isGiftCardOnly],
+    () => getShippingCost(selectedShipping, subtotal),
+    [selectedShipping, subtotal]
   );
 
   const total = useMemo(
-    () =>
-      isGiftCardOnly
-        ? subtotal - discountAmount
-        : getTotal(cart, discountPct, selectedShipping),
-    [cart, discountPct, selectedShipping, isGiftCardOnly, subtotal, discountAmount],
+    () => getTotal(cart, discountPct, selectedShipping),
+    [cart, discountPct, selectedShipping]
   );
 
   const installmentOptions = useMemo(() => {
@@ -129,12 +122,6 @@ export default function Checkout() {
       setSelectedInstallments(1);
     }
   }, [installmentOptions, selectedInstallments]);
-
-  useEffect(() => {
-    if (isGiftCardOnly && (payMethod === "cash" || payMethod === "giftcard")) {
-      setPayMethod("card");
-    }
-  }, [isGiftCardOnly, payMethod]);
 
   function handleInputChange(event) {
     const { name, value } = event.target;
@@ -248,12 +235,6 @@ export default function Checkout() {
       }
     }
 
-    if (payMethod === "giftcard") {
-      if (!giftCardCode.trim()) {
-        nextErrors.giftCardCode = true;
-      }
-    }
-
     return nextErrors;
   }
 
@@ -263,7 +244,7 @@ export default function Checkout() {
 
     if (Object.keys(stepErrors).length > 0) return;
 
-    setCurrentStep(isGiftCardOnly ? 3 : 2);
+    setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -294,41 +275,6 @@ export default function Checkout() {
         if (orderItems.length === 0) {
           throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
         }
-
-        const orderSubtotal = getSubtotal(orderItems);
-        const orderDiscountAmount = getDiscountAmount(
-          orderSubtotal,
-          discountPct,
-        );
-        const orderIsGiftCardOnly = orderItems.every((item) => item.isGiftCard);
-        const orderShippingCost = orderIsGiftCardOnly
-          ? 0
-          : getShippingCost(selectedShipping, orderSubtotal);
-        const orderTotal =
-          orderSubtotal - orderDiscountAmount + orderShippingCost;
-
-        if (payMethod === "giftcard") {
-          const card = await getGiftCard(giftCardCode);
-
-          if (!card) {
-            setErrors({ giftCardCode: true });
-            setProcessing(false);
-            return;
-          }
-
-          if (card.status !== "active" || Number(card.balance) <= 0) {
-            setErrors({ giftCardCode: true });
-            setProcessing(false);
-            return;
-          }
-
-          if (Number(card.balance) < orderTotal) {
-            setErrors({ giftCardCode: true });
-            setProcessing(false);
-            return;
-          }
-        }
-
         const receipt = {
           id: `RCP-${Date.now()}`,
           date: new Date().toISOString(),
@@ -344,36 +290,30 @@ export default function Checkout() {
             notes: formData.notes,
           },
           items: orderItems,
-          subtotal: orderSubtotal,
-          discountAmount: orderDiscountAmount,
+          subtotal,
+          discountAmount,
           discountPct,
           shipping: selectedShipping,
-          shippingCost: orderShippingCost,
-          total: orderTotal,
+          shippingCost,
+          total,
           payMethod,
           installments: payMethod === "card" ? selectedInstallments : 1,
           status: 0,
         };
 
         await saveReceiptAndOrder(receipt);
-        await decrementProductsStock(orderItems);
+        await updateProductsStock(orderItems);
         await clearCheckoutCart();
-
-        if (payMethod === "giftcard") {
-          await redeemGiftCardAmount(giftCardCode, orderTotal);
-        }
-
         setProcessing(false);
 
         setSuccessData({
           receiptId: receipt.id,
           isCash: payMethod === "cash",
-          isGiftCardOnly: orderIsGiftCardOnly,
           email: formData.email,
           items: orderItems,
-          shippingCost: orderShippingCost,
-          discountAmount: orderDiscountAmount,
-          total: orderTotal,
+          shippingCost,
+          discountAmount,
+          total,
         });
 
         setCurrentStep(4);
@@ -383,9 +323,7 @@ export default function Checkout() {
         console.error("message:", error?.message);
         console.error("stack:", error?.stack);
         setProcessing(false);
-        alert(
-          `אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`,
-        );
+        alert(`אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`);
       }
     }, 1500);
   }
@@ -404,6 +342,7 @@ export default function Checkout() {
   }
 
   const backToStore = () => {
+  
     setCart([]);
     setSuccessData(null);
     setCurrentStep(1);
@@ -448,9 +387,6 @@ export default function Checkout() {
           <CheckoutStep3Payment
             payMethod={payMethod}
             setPayMethod={setPayMethod}
-            giftCardCode={giftCardCode}
-            setGiftCardCode={setGiftCardCode}
-            isGiftCardOnly={isGiftCardOnly}
             form={formData}
             errors={errors}
             onChange={handleInputChange}
@@ -463,7 +399,7 @@ export default function Checkout() {
             total={total}
             termsAccepted={termsAccepted}
             onToggleTerms={handleToggleTerms}
-            onBack={() => goBack(isGiftCardOnly ? 1 : 2)}
+            onBack={() => goBack(2)}
             onPay={handlePay}
             isPayDisabled={isPayDisabled}
           />
@@ -472,7 +408,6 @@ export default function Checkout() {
         {currentStep === 4 && successData && (
           <CheckoutStep4Success
             isCash={successData.isCash}
-            isGiftCardOnly={successData.isGiftCardOnly}
             email={successData.email}
             receiptId={successData.receiptId}
             items={successData.items}
