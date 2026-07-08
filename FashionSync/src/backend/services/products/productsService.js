@@ -65,7 +65,6 @@ export async function decrementProductsStock(cartItems = []) {
     if (hasVariants) {
       const variants = data.variants.map((variant) => ({
         colorName: variant.colorName,
-        colorHex: variant.colorHex,
         sizes: { ...(variant.sizes || {}) },
       }));
 
