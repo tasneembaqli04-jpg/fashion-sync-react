@@ -1,4 +1,4 @@
-export function createAlerts(products) {
+export function createAlerts(products, orders = []) {
   const alerts = [];
   products.forEach((p) => {
     if (p.stock === 0)
@@ -31,6 +31,32 @@ export function createAlerts(products) {
         createdAt: Date.now(),
       });
   });
+
+  orders.forEach((order) => {
+    const isDone =
+      order.status === "ready" ||
+      order.status === "done" ||
+      order.status === "completed" ||
+      Number(order.status) >= 3;
+
+    if (isDone) return;
+
+    const customItems = Array.isArray(order.items)
+      ? order.items.filter((item) => item.isCustomSize)
+      : [];
+
+    customItems.forEach((item) => {
+      alerts.push({
+        key: `customsize_${order.id}_${item.code}`,
+        type: "warn",
+        code: order.id,
+        title: '🔍 בקשת מידה מיוחדת',
+        msg: `הזמנה ${order.id} — ${item.name} · מידה: "${item.size}" — דורש אישור ידני`,
+        createdAt: Date.now(),
+      });
+    });
+  });
+
   return alerts;
 }
 export function buildReceipts(products) {

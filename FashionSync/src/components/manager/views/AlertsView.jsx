@@ -32,6 +32,7 @@ const TABS = [
   { key: "oos", label: "🚫 אזל מהמלאי" },
   { key: "low", label: "⚠️ מלאי נמוך" },
   { key: "demand", label: "🔥 ביקוש גבוה" },
+  { key: "customsize", label: "🔍 מידה מיוחדת" },
 ];
 
 export default function AlertsView({ alerts = [], products = [] }) {
@@ -44,6 +45,7 @@ export default function AlertsView({ alerts = [], products = [] }) {
       oos: alerts.filter((a) => a.key.startsWith("oos_")).length,
       low: alerts.filter((a) => a.key.startsWith("low_")).length,
       demand: alerts.filter((a) => a.isDemand).length,
+      customsize: alerts.filter((a) => a.key.startsWith("customsize_")).length,
     }),
     [alerts]
   );
@@ -57,6 +59,8 @@ export default function AlertsView({ alerts = [], products = [] }) {
       list = list.filter((a) => a.key.startsWith("low_"));
     } else if (typeFilter === "demand") {
       list = list.filter((a) => a.isDemand);
+    } else if (typeFilter === "customsize") {
+      list = list.filter((a) => a.key.startsWith("customsize_"));
     }
 
     if (typeFilter === "demand") {

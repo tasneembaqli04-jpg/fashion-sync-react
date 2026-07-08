@@ -142,7 +142,7 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn]);
 
-  const alerts = useMemo(() => createAlerts(products), [products]);
+  const alerts = useMemo(() => createAlerts(products, orders), [products, orders]);
 
   const pendingOrdersCount = useMemo(
     () => orders.filter((o) => o.status !== "ready").length,
