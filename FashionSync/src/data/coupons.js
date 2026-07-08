@@ -16,5 +16,6 @@ export const COUPONS = [
     discount: 0.15,
     type: "percent",
     active: true,
+    seasonOnly: "summer",
   },
 ];
