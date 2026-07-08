@@ -416,7 +416,12 @@ export default function AddProductModal({
 
         <div style={{ marginTop: "0.6rem" }}>
           {variantsDraft.map((variant, variantIndex) => {
-            const sizesEntries = Object.entries(variant.sizes || {});
+            const canonicalOrder =
+              CATEGORY_SIZE_OPTIONS[form.cat] || ["S", "M", "L"];
+            const sizesEntries = Object.entries(variant.sizes || {}).sort(
+              ([sizeA], [sizeB]) =>
+                canonicalOrder.indexOf(sizeA) - canonicalOrder.indexOf(sizeB)
+            );
             const variantTotal = sizesEntries.reduce(
               (sum, [, qty]) => sum + (parseInt(qty, 10) || 0),
               0
