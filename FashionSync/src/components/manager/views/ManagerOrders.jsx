@@ -18,7 +18,7 @@ function fmtDate(value) {
 
 export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("all"); // all | pending | ready
+  const [statusFilter, setStatusFilter] = useState("pending"); 
   const [phoneSearch, setPhoneSearch] = useState("");
 
   const pending = orders.filter(
@@ -72,6 +72,22 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
         style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
       >
         <div
+          className={`${overviewStyles.stat} ${overviewStyles.gold}`}
+          style={cardStyle(statusFilter === "pending")}
+          onClick={() => setStatusFilter("pending")}
+        >
+          <div className={overviewStyles.statIcon}>⏳</div>
+          <div className={overviewStyles.statLabel}>ממתינות</div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: "var(--orange)" }}
+          >
+            {pending}
+          </div>
+          <div className={overviewStyles.statSub}>לטיפול</div>
+        </div>
+
+        <div
           className={`${overviewStyles.stat} ${overviewStyles.blue}`}
           style={cardStyle(statusFilter === "all")}
           onClick={() => setStatusFilter("all")}
@@ -106,22 +122,6 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             {ready}
           </div>
           <div className={overviewStyles.statSub}>להגשה</div>
-        </div>
-
-        <div
-          className={`${overviewStyles.stat} ${overviewStyles.gold}`}
-          style={cardStyle(statusFilter === "pending")}
-          onClick={() => setStatusFilter("pending")}
-        >
-          <div className={overviewStyles.statIcon}>⏳</div>
-          <div className={overviewStyles.statLabel}>ממתינות</div>
-          <div
-            className={overviewStyles.statVal}
-            style={{ color: "var(--orange)" }}
-          >
-            {pending}
-          </div>
-          <div className={overviewStyles.statSub}>לטיפול</div>
         </div>
       </div>
 
