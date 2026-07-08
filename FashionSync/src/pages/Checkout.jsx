@@ -8,9 +8,13 @@ import { getGiftCard, redeemGiftCardAmount } from "../backend/services/giftcard/
 import {
   getAppliedDiscountPercent,
   getCurrentUser,
+  buildCart,
+} from "../functions/checkout/checkoutStorage";
+
+import {
   clearCheckoutCart,
   saveReceiptAndOrder,
-} from "../functions/checkout/checkoutStorage";
+} from "../functions/checkout/checkoutActions";
 import { decrementProductsStock } from "../backend/services/products/productsService";
 import {
   getDiscountAmount,

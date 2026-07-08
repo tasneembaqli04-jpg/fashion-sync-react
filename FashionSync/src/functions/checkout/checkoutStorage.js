@@ -1,6 +1,5 @@
-import { addOrder } from "../../backend/services/orders/ordersService";
-import { clearCartFromFirestore } from "../../backend/services/customer/cartFirestore";
-const LS_KEYS = {
+
+export const LS_KEYS = {
   CURRENT_USER: "fs_current_user",
   CART: "fs_cart",
   PENDING_CART: "fs_pending_cart",
@@ -74,14 +73,6 @@ export function buildCart() {
 
 
 
-export async function saveReceiptAndOrder(receipt) {
-  if (!receipt || typeof receipt !== "object") {
-    throw new Error("Receipt is invalid");
-  }
-
-  await addOrder(receipt);
-  return receipt;
-}
 
 export function updateProductsStock(cartItems = []) {
   if (!Array.isArray(cartItems)) {
@@ -125,14 +116,3 @@ export function updateProductsStock(cartItems = []) {
   return products;
 }
 
-export async function clearCheckoutCart() {
-  const email = getCurrentUser()?.email;
-
-  localStorage.removeItem(LS_KEYS.PENDING_CART);
-  localStorage.removeItem(LS_KEYS.CART);
-  localStorage.removeItem(LS_KEYS.DISCOUNT);
-
-  if (email) {
-    await clearCartFromFirestore(email);
-  }
-}
