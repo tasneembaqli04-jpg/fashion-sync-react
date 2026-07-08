@@ -107,16 +107,10 @@
   top: 1rem;
   left: 1rem;
   z-index: 5;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  background: none;
+  border: none;
   color: var(--muted);
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -294,6 +288,7 @@
   max-width: 96vw;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
 }
 
 .detailsTitle {

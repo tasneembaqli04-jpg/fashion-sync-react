@@ -3,6 +3,15 @@ import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
 
+const CATEGORY_SIZE_OPTIONS = {
+  חולצות: ["S", "M", "L", "XL"],
+  מכנסיים: ["28", "30", "32", "34"],
+  שמלות: ["S", "M", "L", "XL"],
+  עליוניות: ["S", "M", "L", "XL"],
+  נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
+  אביזרים: ["אחיד"],
+};
+
 export default function AddProductModal({
   isOpen,
   onClose,
@@ -32,11 +41,56 @@ export default function AddProductModal({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [error, setError] = useState("");
   const [isScanOpen, setIsScanOpen] = useState(false);
+  const [variantsDraft, setVariantsDraft] = useState([]);
 
   if (!isOpen) return null;
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const addColorVariant = () => {
+    const sizeKeys = CATEGORY_SIZE_OPTIONS[form.cat] || ["S", "M", "L"];
+    const sizes = {};
+    sizeKeys.forEach((key) => {
+      sizes[key] = 0;
+    });
+
+    setVariantsDraft((prev) => [
+      ...prev,
+      { colorName: "", colorHex: "#999999", sizes },
+    ]);
+  };
+
+  const removeColorVariant = (variantIndex) => {
+    setVariantsDraft((prev) => prev.filter((_, index) => index !== variantIndex));
+  };
+
+  const handleColorNameChange = (variantIndex, value) => {
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex ? variant : { ...variant, colorName: value }
+      )
+    );
+  };
+
+  const handleColorHexChange = (variantIndex, value) => {
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex ? variant : { ...variant, colorHex: value }
+      )
+    );
+  };
+
+  const handleVariantQtyChange = (variantIndex, sizeKey, value) => {
+    const safeValue = Math.max(0, parseInt(value || "0", 10) || 0);
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex
+          ? variant
+          : { ...variant, sizes: { ...variant.sizes, [sizeKey]: safeValue } }
+      )
+    );
   };
 
   const stopCamera = () => {
@@ -63,6 +117,7 @@ export default function AddProductModal({
     });
     setError("");
     setUploadMode("file");
+    setVariantsDraft([]);
     stopCamera();
   };
 
@@ -141,13 +196,27 @@ export default function AddProductModal({
       return;
     }
 
+    const cleanedVariants = variantsDraft.filter(
+      (variant) => (variant.colorName || "").trim() !== ""
+    );
+    const hasVariants = cleanedVariants.length > 0;
+    const variantsTotal = cleanedVariants.reduce(
+      (sum, variant) =>
+        sum +
+        Object.values(variant.sizes || {}).reduce(
+          (innerSum, qty) => innerSum + (Number(qty) || 0),
+          0
+        ),
+      0
+    );
+
     const newProduct = {
       code: form.code.trim().toUpperCase(),
       name: form.name.trim(),
       cat: form.cat,
       gender: form.gender,
       season: form.season,
-      stock: Number(form.stock),
+      stock: hasVariants ? variantsTotal : Number(form.stock),
       price: Number(form.price),
       minStock: Number(form.minStock),
       desc: form.desc.trim(),
@@ -156,7 +225,7 @@ export default function AddProductModal({
       trending: false,
       bestseller: false,
       salesLastMonth: 0,
-      variants: [],
+      variants: cleanedVariants,
     };
 
     onSubmit(newProduct);
@@ -252,7 +321,21 @@ export default function AddProductModal({
             <select
               className={styles.addInput}
               value={form.cat}
-              onChange={(e) => handleChange("cat", e.target.value)}
+              onChange={(e) => {
+                const newCat = e.target.value;
+                handleChange("cat", newCat);
+
+                const sizeKeys = CATEGORY_SIZE_OPTIONS[newCat] || ["S", "M", "L"];
+                setVariantsDraft((prev) =>
+                  prev.map((variant) => {
+                    const sizes = {};
+                    sizeKeys.forEach((key) => {
+                      sizes[key] = 0;
+                    });
+                    return { ...variant, sizes };
+                  })
+                );
+              }}
             >
               {CATEGORIES.map((category) => (
                 <option key={category} value={category}>
@@ -321,6 +404,77 @@ export default function AddProductModal({
               onChange={(e) => handleChange("minStock", e.target.value)}
             />
           </div>
+        </div>
+
+        <div style={{ marginTop: "0.6rem" }}>
+          {variantsDraft.map((variant, variantIndex) => {
+            const sizesEntries = Object.entries(variant.sizes || {});
+            const variantTotal = sizesEntries.reduce(
+              (sum, [, qty]) => sum + (parseInt(qty, 10) || 0),
+              0
+            );
+
+            return (
+              <div key={variantIndex} className={styles.colorCard} style={{ marginBottom: "0.7rem" }}>
+                <div className={styles.colorCardHead}>
+                  <span>סה״כ: {variantTotal} יח׳</span>
+
+                  <div className={styles.colorCardTitleWrap}>
+                    <input
+                      type="text"
+                      placeholder="שם הצבע"
+                      value={variant.colorName || ""}
+                      onChange={(e) =>
+                        handleColorNameChange(variantIndex, e.target.value)
+                      }
+                      style={{ width: "90px" }}
+                    />
+                    <input
+                      type="color"
+                      value={variant.colorHex || "#999999"}
+                      onChange={(e) =>
+                        handleColorHexChange(variantIndex, e.target.value)
+                      }
+                      style={{ width: "28px", height: "28px", padding: 0, border: "none" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeColorVariant(variantIndex)}
+                      style={{ background: "none", border: "none", cursor: "pointer" }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.sizesGrid}>
+                  {sizesEntries.map(([sizeKey, qty]) => (
+                    <label key={sizeKey} className={styles.sizePill}>
+                      <strong>{sizeKey}</strong>
+                      <span className={styles.sizeSeparator}>•</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={qty}
+                        onChange={(e) =>
+                          handleVariantQtyChange(variantIndex, sizeKey, e.target.value)
+                        }
+                        className={styles.sizeQtyInput}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          <button
+            type="button"
+            className={styles.uploadBtn}
+            onClick={addColorVariant}
+          >
+            ➕ הוסף פילוח לפי צבע
+          </button>
         </div>
 
         <div className={styles.addFieldFull}>

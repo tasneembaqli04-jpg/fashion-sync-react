@@ -58,14 +58,68 @@ export async function decrementProductsStock(cartItems = []) {
     if (!snapshot.exists()) continue;
 
     const data = snapshot.data();
-    const currentStock = Number(data.stock) || 0;
     const currentSales = Number(data.salesLastMonth) || 0;
     const qty = Number(item.qty) || 0;
-    const newStock = Math.max(0, currentStock - qty);
+    const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
-    await updateDoc(productRef, {
-      stock: newStock,
-      salesLastMonth: currentSales + qty,
-    });
+    if (hasVariants) {
+      const variants = data.variants.map((variant) => ({
+        colorName: variant.colorName,
+        colorHex: variant.colorHex,
+        sizes: { ...(variant.sizes || {}) },
+      }));
+
+      const variantIndex = variants.findIndex(
+        (variant) => variant.colorName === item.color
+      );
+
+      if (variantIndex !== -1) {
+        const sizesInColor = variants[variantIndex].sizes || {};
+
+        if (item.size && sizesInColor[item.size] !== undefined) {
+          const currentSizeQty = Number(sizesInColor[item.size]) || 0;
+          variants[variantIndex].sizes[item.size] = Math.max(
+            0,
+            currentSizeQty - qty
+          );
+        } else {
+          let remaining = qty;
+
+          for (const sizeKey of Object.keys(sizesInColor)) {
+            if (remaining <= 0) break;
+
+            const current = Number(sizesInColor[sizeKey]) || 0;
+            const deduct = Math.min(current, remaining);
+
+            variants[variantIndex].sizes[sizeKey] = current - deduct;
+            remaining -= deduct;
+          }
+        }
+      }
+
+      const newStock = variants.reduce(
+        (sum, variant) =>
+          sum +
+          Object.values(variant.sizes || {}).reduce(
+            (innerSum, sizeQty) => innerSum + (Number(sizeQty) || 0),
+            0
+          ),
+        0
+      );
+
+      await updateDoc(productRef, {
+        stock: newStock,
+        variants,
+        salesLastMonth: currentSales + qty,
+      });
+    } else {
+      const currentStock = Number(data.stock) || 0;
+      const newStock = Math.max(0, currentStock - qty);
+
+      await updateDoc(productRef, {
+        stock: newStock,
+        salesLastMonth: currentSales + qty,
+      });
+    }
   }
 }

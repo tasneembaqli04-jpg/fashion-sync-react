@@ -5,6 +5,15 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 
 const SEASONS = ["קיץ", "חורף", "אביב/סתיו", "כל העונות"];
 
+const CATEGORY_SIZE_OPTIONS = {
+  חולצות: ["S", "M", "L", "XL"],
+  מכנסיים: ["28", "30", "32", "34"],
+  שמלות: ["S", "M", "L", "XL"],
+  עליוניות: ["S", "M", "L", "XL"],
+  נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
+  אביזרים: ["אחיד"],
+};
+
 const SEASON_COLORS = {
   קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
   חורף: { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
@@ -94,25 +103,36 @@ export default function DetailsModal({
   };
 
   const addColorVariant = () => {
+    const sizeKeys = CATEGORY_SIZE_OPTIONS[product.cat] || ["S", "M", "L"];
+    const sizes = {};
+    sizeKeys.forEach((key) => {
+      sizes[key] = 0;
+    });
+
     setVariantsDraft((prev) => [
       ...prev,
-      { colorName: "", colorHex: "#999999", sizes: { S: 0, M: 0, L: 0 } },
+      { colorName: "", colorHex: "#999999", sizes },
     ]);
   };
 
   const removeColorVariant = (variantIndex) => {
-    if (!window.confirm("להסיר את הצבע הזה מהמוצר?")) return;
     setVariantsDraft((prev) => prev.filter((_, index) => index !== variantIndex));
   };
 
   const handleSave = () => {
+    const cleanedVariants = variantsDraft.filter(
+      (variant) => (variant.colorName || "").trim() !== ""
+    );
+    const cleanedUsesVariants = cleanedVariants.length > 0;
+    const cleanedTotal = calcVariantsTotal(cleanedVariants);
+
     onSave({
       ...product,
       price: Number(price),
       minStock: Number(minStock),
       season,
-      variants: variantsDraft,
-      stock: usesVariants ? totalStock : Number(simpleStock),
+      variants: cleanedVariants,
+      stock: cleanedUsesVariants ? cleanedTotal : Number(simpleStock),
     });
   };
 

@@ -403,11 +403,26 @@ export default function Customer() {
     }
 
     const product = products.find((item) => item.code === code);
-    if (!product || product.stock <= 0) return;
+    if (!product) return;
 
     if (fromModal && !selectedSize) return;
 
     const variant = fromModal ? getChosenVariant() : { size: "", color: "" };
+    const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+
+    if (fromModal && hasVariants && selectedSize !== "אחר") {
+      const matchingVariant = product.variants.find(
+        (v) => v.colorName === variant.color
+      );
+      const availableQty = Number(matchingVariant?.sizes?.[variant.size]) || 0;
+
+      if (availableQty <= 0) {
+        alert("מצטערים, הצבע/מידה שבחרת אזלו מהמלאי");
+        return;
+      }
+    } else if (!hasVariants && product.stock <= 0) {
+      return;
+    }
 
     const nextCart = await addToCartFn({
       email: currentUser.email,
