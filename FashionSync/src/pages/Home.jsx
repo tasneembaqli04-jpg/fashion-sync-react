@@ -6,7 +6,7 @@ import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
 import { signIn, signUp } from "../backend/services/auth/firebaseAuth.js";
-import { getFeaturedProduct } from "../functions/settings/featuredProductService.js";
+import { getFeaturedProduct } from "../backend/services/settings/featuredProductService.js";
 import styles from "../styles/Home.module.scss";
 
 const LS = {

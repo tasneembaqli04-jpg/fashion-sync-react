@@ -1,5 +1,5 @@
 import { db } from "../../firebase";
-import { saveCustomer, addLoyaltyPoints } from "../../../functions/customer/customerFirestore";
+import { saveCustomer, addLoyaltyPoints } from "../customer/customerFirestore";
 import { issueGiftCard } from "../giftcard/giftCardService";
 import {
   collection,

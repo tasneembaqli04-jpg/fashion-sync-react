@@ -1,5 +1,4 @@
-import { saveCartToFirestore } from "./cartFirestore";
-
+import { saveCartToFirestore } from "../../backend/services/customer/cartFirestore";
 export function buildGiftCardPreview({ amount, customAmount, name, message }) {
   const previewAmount = amount === "other" ? customAmount || "?" : amount;
 

@@ -1,5 +1,5 @@
 import { addOrder } from "../../backend/services/orders/ordersService";
-import { clearCartFromFirestore } from "../customer/cartFirestore";
+import { clearCartFromFirestore } from "../../backend/services/customer/cartFirestore";
 const LS_KEYS = {
   CURRENT_USER: "fs_current_user",
   CART: "fs_cart",

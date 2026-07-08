@@ -1,4 +1,4 @@
-import { db } from "../../backend/firebase";
+import { db } from "../../firebase";
 import { doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 
 const FEATURED_DOC = doc(db, "settings", "featuredProduct");

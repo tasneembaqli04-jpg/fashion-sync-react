@@ -29,12 +29,12 @@ import {
   updateDeliveryStatus,
   deleteDelivery,
 } from "../backend/services/deliveries/deliveriesService";
-import { getAllCustomers } from "../functions/customer/customerFirestore";
+import { getAllCustomers } from "../backend/services/customer/customerFirestore";
 import {
   getFeaturedProduct,
   setFeaturedProduct,
   clearFeaturedProduct,
-} from "../functions/settings/featuredProductService";
+} from "../backend/services/settings/featuredProductService";
 import {
   loadTheme,
   saveTheme,

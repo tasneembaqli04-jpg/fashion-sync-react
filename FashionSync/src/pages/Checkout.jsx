@@ -26,7 +26,7 @@ import CheckoutStep2Shipping from "../components/checkout/CheckoutStep2Shipping"
 import CheckoutStep3Payment from "../components/checkout/CheckoutStep3Payment";
 import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
-import { getCartFromFirestore } from "../functions/customer/cartFirestore";
+import { getCartFromFirestore } from "../backend/services/customer/cartFirestore";
 export default function Checkout() {
   const navigate = useNavigate();
 

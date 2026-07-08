@@ -1,4 +1,4 @@
-import { db } from "../../backend/firebase";
+import { db } from "../../firebase";
 import {
   doc,
   setDoc,

@@ -3,7 +3,7 @@ import {
   saveCartToFirestore,
   getCartFromFirestore,
   clearCartFromFirestore,
-} from "./cartFirestore";
+} from "../../backend/services/customer/cartFirestore";
 
 export async function loadCartFromBackend(email) {
   return await getCartFromFirestore(email);
