@@ -79,10 +79,12 @@ export async function getOrdersByUser(email) {
 export async function getAllOrders() {
   const snapshot = await getDocs(ordersCollection);
 
-  return snapshot.docs.map((document) => ({
+  const orders = snapshot.docs.map((document) => ({
     docId: document.id,
     ...document.data(),
   }));
+
+  return orders.sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 export async function updateOrderStatus(docId, ready) {
   const orderRef = doc(db, "orders", docId);
