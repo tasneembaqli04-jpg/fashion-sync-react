@@ -3,7 +3,12 @@ import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 
-const SEASONS = ["קיץ", "חורף", "אביב/סתיו", "כל העונות"];
+const SEASONS = [
+  { value: "summer", label: "קיץ" },
+  { value: "winter", label: "חורף" },
+  { value: "spring-autumn", label: "אביב/סתיו" },
+  { value: "all", label: "כל השנה" },
+];
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -23,10 +28,10 @@ function clampNumberString(value, max) {
 }
 
 const SEASON_COLORS = {
-  קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
-  חורף: { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
-  "אביב/סתיו": { bg: "rgba(46,204,113,0.1)", color: "#2ecc71", icon: "🌸" },
-  "כל העונות": { bg: "rgba(155,89,182,0.1)", color: "#9b59b6", icon: "🌀" },
+  summer: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
+  winter: { bg: "rgba(52,152,219,0.1)", color: "#3498db", icon: "❄️" },
+  "spring-autumn": { bg: "rgba(46,204,113,0.1)", color: "#2ecc71", icon: "🌸" },
+  all: { bg: "rgba(155,89,182,0.1)", color: "#9b59b6", icon: "🌀" },
 };
 
 function deepCopyVariants(variants = []) {
@@ -66,7 +71,7 @@ export default function DetailsModal({
     if (!product) return;
     setPrice(product.price || 0);
     setMinStock(product.minStock || 10);
-    setSeason(product.season || "כל העונות");
+    setSeason(product.season || "all");
     setVariantsDraft(deepCopyVariants(product.variants || []));
     setSimpleStock(product.stock || 0);
   }, [product]);
@@ -195,7 +200,7 @@ export default function DetailsModal({
                     fontWeight: 700,
                   }}
                 >
-                  {seasonStyle.icon} {season}
+                  {seasonStyle.icon} {SEASONS.find((s) => s.value === season)?.label || season}
                 </span>
               )}
 
@@ -246,14 +251,14 @@ export default function DetailsModal({
           <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
             <div className={formStyles.fl}>עונה</div>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              {SEASONS.map((s) => {
-                const sc = SEASON_COLORS[s];
-                const isSelected = season === s;
+              {SEASONS.map(({ value, label }) => {
+                const sc = SEASON_COLORS[value];
+                const isSelected = season === value;
 
                 return (
                   <button
-                    key={s}
-                    onClick={() => setSeason(s)}
+                    key={value}
+                    onClick={() => setSeason(value)}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -273,7 +278,7 @@ export default function DetailsModal({
                     }}
                     type="button"
                   >
-                    {sc.icon} {s}
+                    {sc.icon} {label}
                   </button>
                 );
               })}
