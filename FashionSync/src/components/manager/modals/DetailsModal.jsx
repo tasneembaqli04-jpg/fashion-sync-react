@@ -37,7 +37,6 @@ const SEASON_COLORS = {
 function deepCopyVariants(variants = []) {
   return variants.map((variant) => ({
     colorName: variant.colorName,
-    colorHex: variant.colorHex,
     sizes: { ...(variant.sizes || {}) },
   }));
 }
@@ -107,14 +106,6 @@ export default function DetailsModal({
     );
   };
 
-  const handleColorHexChange = (variantIndex, value) => {
-    setVariantsDraft((prev) =>
-      prev.map((variant, index) =>
-        index !== variantIndex ? variant : { ...variant, colorHex: value }
-      )
-    );
-  };
-
   const addColorVariant = () => {
     const sizeKeys = CATEGORY_SIZE_OPTIONS[product.cat] || ["S", "M", "L"];
     const sizes = {};
@@ -124,7 +115,7 @@ export default function DetailsModal({
 
     setVariantsDraft((prev) => [
       ...prev,
-      { colorName: "", colorHex: "#999999", sizes },
+      { colorName: "", sizes },
     ]);
   };
 
@@ -336,14 +327,6 @@ export default function DetailsModal({
                         handleColorNameChange(variantIndex, e.target.value)
                       }
                       style={{ width: "90px" }}
-                    />
-                    <input
-                      type="color"
-                      value={variant.colorHex || "#999999"}
-                      onChange={(e) =>
-                        handleColorHexChange(variantIndex, e.target.value)
-                      }
-                      style={{ width: "28px", height: "28px", padding: 0, border: "none" }}
                     />
                     <button
                       type="button"
