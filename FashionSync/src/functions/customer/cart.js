@@ -64,6 +64,7 @@ export async function addToCart({
         qty: 1,
         size: variant.size || "",
         color: variant.color || "",
+        isCustomSize: Boolean(variant.isCustomSize),
       },
     ];
   }
