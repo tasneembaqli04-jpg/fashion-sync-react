@@ -110,6 +110,24 @@ export default function OrderDetailsModal({ open, order, onClose }) {
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
                 מידה: {item.size} · כמות: {item.qty} · ₪{item.price}
               </div>
+              {item.isCustomSize && (
+                <div
+                  style={{
+                    marginTop: "0.3rem",
+                    padding: "0.3rem 0.6rem",
+                    borderRadius: "8px",
+                    background: "rgba(230,126,34,0.12)",
+                    border: "1px solid #e67e22",
+                    color: "#e67e22",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    display: "inline-block",
+                  }}
+                >
+                  ⚠️ בקשת מידה מיוחדת ("{item.size}") — דורש אישור ידני לפני
+                  משלוח
+                </div>
+              )}
             </div>
           </div>
         ))}

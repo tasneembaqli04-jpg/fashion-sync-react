@@ -170,6 +170,8 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             order.status === "done" ||
             order.status === "completed";
 
+          const hasCustomSize = items.some((item) => item.isCustomSize);
+
           const dateText = fmtDate(order.date);
 
           return (
@@ -193,6 +195,20 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
                   >
                     {isReady ? "✅ מוכן להגשה" : "⏳ ממתין להכנה"}
                   </span>
+
+                  {hasCustomSize && (
+                    <span
+                      className={uiStyles.tag}
+                      style={{
+                        marginRight: "0.4rem",
+                        background: "rgba(230,126,34,0.12)",
+                        border: "1px solid #e67e22",
+                        color: "#e67e22",
+                      }}
+                    >
+                      ⚠️ מידה מיוחדת
+                    </span>
+                  )}
                 </div>
               </div>
 

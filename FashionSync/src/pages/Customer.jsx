@@ -393,6 +393,7 @@ export default function Customer() {
     return {
       size: selectedSize === "אחר" ? customSize || "אחר" : selectedSize,
       color: selectedColor === "אחר" ? customColor || "אחר" : selectedColor,
+      isCustomSize: selectedSize === "אחר",
     };
   }
 
