@@ -11,6 +11,14 @@ const CATEGORY_SIZE_OPTIONS = {
   נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
   אביזרים: ["אחיד"],
 };
+const MAX_STOCK = 99999;
+const MAX_PRICE = 999999;
+
+function clampNumberString(value, max) {
+  const num = parseInt(value, 10);
+  if (Number.isNaN(num)) return "";
+  return String(Math.max(0, Math.min(num, max)));
+}
 
 export default function AddProductModal({
   isOpen,
@@ -83,7 +91,7 @@ export default function AddProductModal({
   };
 
   const handleVariantQtyChange = (variantIndex, sizeKey, value) => {
-    const safeValue = Math.max(0, parseInt(value || "0", 10) || 0);
+    const safeValue = Math.max(0, Math.min(parseInt(value || "0", 10) || 0, MAX_STOCK));
     setVariantsDraft((prev) =>
       prev.map((variant, index) =>
         index !== variantIndex
@@ -380,8 +388,11 @@ export default function AddProductModal({
             <input
               className={styles.addInput}
               type="number"
+              max={MAX_STOCK}
               value={form.stock}
-              onChange={(e) => handleChange("stock", e.target.value)}
+              onChange={(e) =>
+                handleChange("stock", clampNumberString(e.target.value, MAX_STOCK))
+              }
             />
           </div>
 
@@ -390,8 +401,11 @@ export default function AddProductModal({
             <input
               className={styles.addInput}
               type="number"
+              max={MAX_PRICE}
               value={form.price}
-              onChange={(e) => handleChange("price", e.target.value)}
+              onChange={(e) =>
+                handleChange("price", clampNumberString(e.target.value, MAX_PRICE))
+              }
             />
           </div>
 
@@ -400,8 +414,11 @@ export default function AddProductModal({
             <input
               className={styles.addInput}
               type="number"
+              max={MAX_STOCK}
               value={form.minStock}
-              onChange={(e) => handleChange("minStock", e.target.value)}
+              onChange={(e) =>
+                handleChange("minStock", clampNumberString(e.target.value, MAX_STOCK))
+              }
             />
           </div>
         </div>
@@ -455,6 +472,7 @@ export default function AddProductModal({
                       <input
                         type="number"
                         min="0"
+                        max={MAX_STOCK}
                         value={qty}
                         onChange={(e) =>
                           handleVariantQtyChange(variantIndex, sizeKey, e.target.value)

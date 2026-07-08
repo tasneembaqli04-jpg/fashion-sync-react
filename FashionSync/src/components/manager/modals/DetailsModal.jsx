@@ -13,6 +13,14 @@ const CATEGORY_SIZE_OPTIONS = {
   נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
   אביזרים: ["אחיד"],
 };
+const MAX_STOCK = 99999;
+const MAX_PRICE = 999999;
+
+function clampNumberString(value, max) {
+  const num = parseInt(value, 10);
+  if (Number.isNaN(num)) return "";
+  return String(Math.max(0, Math.min(num, max)));
+}
 
 const SEASON_COLORS = {
   קיץ: { bg: "rgba(230,126,34,0.1)", color: "#e67e22", icon: "☀️" },
@@ -76,7 +84,7 @@ export default function DetailsModal({
   const seasonStyle = SEASON_COLORS[season] || {};
 
   const handleQtyChange = (variantIndex, sizeKey, value) => {
-    const safeValue = Math.max(0, parseInt(value || "0", 10) || 0);
+    const safeValue = Math.max(0, Math.min(parseInt(value || "0", 10) || 0, MAX_STOCK));
     setVariantsDraft((prev) =>
       prev.map((variant, index) =>
         index !== variantIndex
@@ -217,8 +225,9 @@ export default function DetailsModal({
               className={formStyles.fi}
               type="number"
               min="0"
+              max={MAX_PRICE}
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => setPrice(clampNumberString(e.target.value, MAX_PRICE))}
             />
           </div>
 
@@ -228,8 +237,9 @@ export default function DetailsModal({
               className={formStyles.fi}
               type="number"
               min="0"
+              max={MAX_STOCK}
               value={minStock}
-              onChange={(e) => setMinStock(e.target.value)}
+              onChange={(e) => setMinStock(clampNumberString(e.target.value, MAX_STOCK))}
             />
           </div>
 
@@ -277,9 +287,12 @@ export default function DetailsModal({
             <input
               type="number"
               min="0"
+              max={MAX_STOCK}
               value={simpleStock}
               onChange={(e) =>
-                setSimpleStock(Math.max(0, parseInt(e.target.value || "0", 10) || 0))
+                setSimpleStock(
+                  Math.max(0, Math.min(parseInt(e.target.value || "0", 10) || 0, MAX_STOCK))
+                )
               }
             />
           </div>
@@ -345,6 +358,7 @@ export default function DetailsModal({
                       <input
                         type="number"
                         min="0"
+                        max={MAX_STOCK}
                         value={qty}
                         onChange={(e) =>
                           handleQtyChange(variantIndex, sizeKey, e.target.value)
