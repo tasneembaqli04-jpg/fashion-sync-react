@@ -66,7 +66,7 @@ export default function AddProductModal({
 
     setVariantsDraft((prev) => [
       ...prev,
-      { colorName: "", colorHex: "#999999", sizes },
+      { colorName: "", sizes },
     ]);
   };
 
@@ -81,15 +81,6 @@ export default function AddProductModal({
       )
     );
   };
-
-  const handleColorHexChange = (variantIndex, value) => {
-    setVariantsDraft((prev) =>
-      prev.map((variant, index) =>
-        index !== variantIndex ? variant : { ...variant, colorHex: value }
-      )
-    );
-  };
-
   const handleVariantQtyChange = (variantIndex, sizeKey, value) => {
     const safeValue = Math.max(0, Math.min(parseInt(value || "0", 10) || 0, MAX_STOCK));
     setVariantsDraft((prev) =>
@@ -445,14 +436,6 @@ export default function AddProductModal({
                         handleColorNameChange(variantIndex, e.target.value)
                       }
                       style={{ width: "90px" }}
-                    />
-                    <input
-                      type="color"
-                      value={variant.colorHex || "#999999"}
-                      onChange={(e) =>
-                        handleColorHexChange(variantIndex, e.target.value)
-                      }
-                      style={{ width: "28px", height: "28px", padding: 0, border: "none" }}
                     />
                     <button
                       type="button"
