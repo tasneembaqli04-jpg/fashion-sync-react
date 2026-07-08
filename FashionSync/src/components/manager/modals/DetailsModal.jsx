@@ -65,6 +65,7 @@ export default function DetailsModal({
   const [season, setSeason] = useState("");
   const [variantsDraft, setVariantsDraft] = useState([]);
   const [simpleStock, setSimpleStock] = useState(0);
+  const [desc, setDesc] = useState("");
 
   useEffect(() => {
     if (!product) return;
@@ -73,6 +74,7 @@ export default function DetailsModal({
     setSeason(product.season || "all");
     setVariantsDraft(deepCopyVariants(product.variants || []));
     setSimpleStock(product.stock || 0);
+    setDesc(product.desc || "");
   }, [product]);
 
   const totalStock = useMemo(
@@ -135,6 +137,7 @@ export default function DetailsModal({
       price: Number(price),
       minStock: Number(minStock),
       season,
+      desc: desc.trim(),
       variants: cleanedVariants,
       stock: cleanedUsesVariants ? cleanedTotal : Number(simpleStock),
     });
@@ -204,7 +207,19 @@ export default function DetailsModal({
             </div>
 
             <div className={modalStyles.detailsName}>{product.name}</div>
-            <div className={modalStyles.detailsDescription}>{product.desc}</div>
+            <div className={formStyles.fg} style={{ marginTop: "0.5rem" }}>
+              <label>תיאור המוצר</label>
+              <textarea
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                rows={2}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  fontFamily: "Alef, sans-serif",
+                }}
+              />
+            </div>
           </div>
 
           <img
