@@ -5,7 +5,7 @@ import {
   getAllStockNotifications,
   markStockNotificationDone,
   deleteStockNotification,
-} from "../../../functions/notifications/notificationsService";
+} from "../../../backend/services/notifications/notificationsService";
 
 function fmtDate(value) {
   if (!value) return "";

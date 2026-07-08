@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { getOrdersByUser } from "../functions/orders/ordersService";
-import { getFeaturedProduct } from "../functions/settings/featuredProductService";
-import { getWishlist, saveWishlist } from "../functions/wishlist/wishlistService";
-import { addFeedback } from "../functions/feedback/feedbackService";
-import { getLoyaltyPoints } from "../functions/customer/customerFirestore";
-import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../functions/notifications/notificationsService";
+import { getOrdersByUser } from "../backend/services/orders/ordersService";
+import { getFeaturedProduct } from "../backend/services/settings/featuredProductService";
+import { getWishlist, saveWishlist } from "../backend/services/wishlist/wishlistService";
+import { addFeedback } from "../backend/services/feedback/feedbackService";
+import { getLoyaltyPoints } from "../backend/services/customer/customerFirestore";
+import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../backend/services/notifications/notificationsService";
 import { LS_KEYS } from "../data/constants";
 import { COUPONS } from "../data/coupons";
 
@@ -43,7 +43,7 @@ import {
   buildGiftCardPreview,
   buyGiftCard as buyGiftCardFn,
 } from "../functions/customer/giftCard";
-import { getGiftCard } from "../functions/giftcard/giftCardService";
+import { getGiftCard } from "../backend/services/giftcard/giftCardService";
 import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";

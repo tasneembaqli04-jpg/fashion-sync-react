@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
-import { getAllFeedback } from "../../../functions/feedback/feedbackService";
+import { getAllFeedback } from "../../../backend/services/feedback/feedbackService";
 
 function fmtDate(value) {
   if (!value) return "";

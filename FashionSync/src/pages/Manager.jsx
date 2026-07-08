@@ -18,23 +18,22 @@ import SettingsView from "../components/manager/views/SettingsView";
 import styles from "../styles/Manager.module.scss";
 import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
-import { INITIAL_PRODUCTS } from "../data/managerInitialProducts";
 import { createAlerts } from "../functions/manager/managerHelpers";
-import { getProducts, addProduct, deleteProduct, updateProduct } from "../functions/productsService";
-import { resolveStockNotifications, getAllStockNotifications } from "../functions/notifications/notificationsService";
-import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../functions/orders/ordersService";
+import { getProducts, addProduct, deleteProduct, updateProduct } from "../backend/services/products/productsService";
+import { resolveStockNotifications, getAllStockNotifications } from "../backend/services/notifications/notificationsService";
+import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../backend/services/orders/ordersService";
 import {
   getAllDeliveries,
   addDelivery,
   updateDeliveryStatus,
   deleteDelivery,
-} from "../functions/deliveries/deliveriesService";
-import { getAllCustomers } from "../functions/customer/customerFirestore";
+} from "../backend/services/deliveries/deliveriesService";
+import { getAllCustomers } from "../backend/services/customer/customerFirestore";
 import {
   getFeaturedProduct,
   setFeaturedProduct,
   clearFeaturedProduct,
-} from "../functions/settings/featuredProductService";
+} from "../backend/services/settings/featuredProductService";
 import {
   loadTheme,
   saveTheme,
@@ -50,7 +49,7 @@ export default function Manager({ onPromote }) {
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isPromoOpen, setIsPromoOpen] = useState(false);
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [promoMessage, setPromoMessage] = useState(null);
   const [theme, setTheme] = useState(loadTheme);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

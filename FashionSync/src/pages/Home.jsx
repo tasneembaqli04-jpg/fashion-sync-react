@@ -5,29 +5,20 @@ import HomeNavbar from "../components/home/HomeNavbar.jsx";
 import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
-import { signIn, signUp } from "../functions/auth/firebaseAuth.js";
-import { getFeaturedProduct } from "../functions/settings/featuredProductService.js";
+import { loginOrCreateUser } from "../functions/home/auth.js";
+import { loadFeaturedImage } from "../functions/home/featuredProduct.js";
 import styles from "../styles/Home.module.scss";
+import { loadTheme, saveTheme } from "../functions/home/theme.js";
+import {
+  LS,
+  CUSTOMER_PAGE,
+  getSavedUser,
+  saveGuestMode,
+  saveAuthUser,
+} from "../functions/home/storage.js";
 
-const LS = {
-  CURRENT_USER: "fs_current_user",
-  MODE: "fs_customer_mode",
-  THEME: "fs_theme",
-};
 
-const CUSTOMER_PAGE = "/customer";
 
-function safeJsonParse(value, fallback) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
-}
-
-function isGmail(email) {
-  return /^[a-z0-9._%+-]+@gmail\.com$/.test(String(email || "").trim().toLowerCase());
-}
 
 export default function Home() {
   const [isLight, setIsLight] = useState(false);
@@ -39,19 +30,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem(LS.THEME);
-    setIsLight(savedTheme === "light");
+    setIsLight(loadTheme());
   }, []);
 
   useEffect(() => {
-    document.body.classList.toggle("light", isLight);
-    localStorage.setItem(LS.THEME, isLight ? "light" : "dark");
+    saveTheme(isLight);
   }, [isLight]);
 
   useEffect(() => {
-    getFeaturedProduct().then((featured) => {
-      setFeaturedImage(featured?.img || "");
-    });
+    loadFeaturedImage().then(setFeaturedImage);
   }, []);
 
   function handleToggleTheme() {
@@ -59,13 +46,13 @@ export default function Home() {
   }
 
   function handleBrowse() {
-    localStorage.setItem(LS.MODE, "guest");
-    localStorage.removeItem(LS.CURRENT_USER);
+    saveGuestMode();
     window.location.href = CUSTOMER_PAGE;
   }
+  
 
   function openLoginModal() {
-    const saved = safeJsonParse(localStorage.getItem(LS.CURRENT_USER), null);
+    const saved = getSavedUser();
     setError("");
     setEmail(saved?.email || "");
     setPassword("");
@@ -73,26 +60,10 @@ export default function Home() {
   }
 
   async function handleLogin() {
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPass = password.trim();
     setError("");
-
-    if (!isGmail(normalizedEmail)) {
-      setError("אימייל לא תקין — חייב להיות ‎@gmail.com");
-      return;
-    }
-    if (normalizedPass.length < 8) {
-      setError("הסיסמה חייבת להכיל לפחות 8 תווים");
-      return;
-    }
-
     setLoading(true);
 
-    let result = await signIn(normalizedEmail, normalizedPass);
-
-    if (result.error === "אימייל או סיסמה שגויים") {
-      result = await signUp(normalizedEmail, normalizedPass);
-    }
+    const result = await loginOrCreateUser(email, password);
 
     setLoading(false);
 
@@ -101,11 +72,9 @@ export default function Home() {
       return;
     }
 
-    const user = result.user;
-    localStorage.setItem(LS.CURRENT_USER, JSON.stringify(user));
-    localStorage.setItem(LS.MODE, "auth");
-    window.location.href = `${CUSTOMER_PAGE}?mode=auth&email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}`;
+    window.location.href = result.redirectUrl;
   }
+
 
   return (
     <div className={styles.homePage}>

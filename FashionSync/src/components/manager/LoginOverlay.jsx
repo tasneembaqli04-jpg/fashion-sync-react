@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { signInAsManager } from "../../functions/auth/firebaseAuth";
+import { signInAsManager } from "../../backend/services/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
 

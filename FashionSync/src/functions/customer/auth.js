@@ -1,6 +1,6 @@
 import { LS_KEYS } from "../../data/constants";
 import { normEmail } from "./helpers";
-import { logOut } from "../auth/firebaseAuth";
+import { logOut } from "../../backend/services/auth/firebaseAuth";
 
 export function initAuth() {
   const qs = new URLSearchParams(window.location.search);
