@@ -6,7 +6,7 @@ export const COUPONS = [
     active: true,
   },
   {
-    code: "FREE50",
+    code: "SAVE10",
     discount: 0.1,
     type: "percent",
     active: true,
