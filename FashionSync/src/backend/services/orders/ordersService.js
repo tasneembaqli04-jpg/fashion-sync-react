@@ -9,6 +9,7 @@ import {
   where,
   doc,
   updateDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 const ordersCollection = collection(db, "orders");
@@ -85,6 +86,16 @@ export async function getAllOrders() {
   }));
 
   return orders.sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+export function subscribeToOrders(onUpdate) {
+  return onSnapshot(ordersCollection, (snapshot) => {
+    const orders = snapshot.docs.map((document) => ({
+      docId: document.id,
+      ...document.data(),
+    }));
+
+    onUpdate(orders.sort((a, b) => new Date(a.date) - new Date(b.date)));
+  });
 }
 export async function updateOrderStatus(docId, ready) {
   const orderRef = doc(db, "orders", docId);
