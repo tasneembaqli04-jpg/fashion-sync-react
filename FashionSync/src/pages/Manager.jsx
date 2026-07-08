@@ -21,7 +21,7 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../backend/services/products/productsService";
 import { resolveStockNotifications, getAllStockNotifications } from "../backend/services/notifications/notificationsService";
-import { getAllOrders, updateOrderStatus, advanceOrderStatus } from "../backend/services/orders/ordersService";
+import { subscribeToOrders, updateOrderStatus, advanceOrderStatus } from "../backend/services/orders/ordersService";
 import {
   getAllDeliveries,
   addDelivery,
@@ -58,52 +58,47 @@ export default function Manager({ onPromote }) {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-  if (!isLoggedIn) return;
+    if (!isLoggedIn) return;
 
-  let cancelled = false;
+    let unsubscribe = null;
 
-  async function loadOrdersWithCustomers() {
-    const [firestoreOrders, customers] = await Promise.all([
-      getAllOrders(),
-      getAllCustomers(),
-    ]);
-    console.log("Orders:", firestoreOrders);
-    console.log("Customers:", customers);
+    async function init() {
+      const customers = await getAllCustomers();
 
-    if (cancelled) return;
+      const customersMap = new Map(
+        customers.map((customer) => [customer.email, customer])
+      );
 
-    const customersMap = new Map(
-      customers.map((customer) => [customer.email, customer])
-    );
+      unsubscribe = subscribeToOrders((firestoreOrders) => {
+        const normalized = firestoreOrders.map((order) => {
+          const customer = customersMap.get(order.customerEmail);
 
-    const normalized = firestoreOrders.map((order) => {
-      const customer = customersMap.get(order.customerEmail);
+          return {
+            docId: order.docId,
+            id: order.id,
 
-      return {
-        docId: order.docId,
-        id: order.id,
+            customerDetails: customer || null,
+            customerEmail: order.customerEmail,
 
-        customerDetails: customer || null,
-        customerEmail: order.customerEmail,
+            status: order.ready ? "ready" : "pending",
+            items: Array.isArray(order.items) ? order.items : [],
+            total: Number(order.total) || 0,
+            date: order.date || order.createdAt || null,
+            payMethod: order.payMethod || "",
+            shipping: order.shipping || null,
+          };
+        });
 
-        status: order.ready ? "ready" : "pending",
-        items: Array.isArray(order.items) ? order.items : [],
-        total: Number(order.total) || 0,
-        date: order.date || order.createdAt || null,
-        payMethod: order.payMethod || "",
-        shipping: order.shipping || null,
-      };
-    });
+        setOrders(normalized);
+      });
+    }
 
-    setOrders(normalized);
-  }
+    init();
 
-  loadOrdersWithCustomers();
-
-  return () => {
-    cancelled = true;
-  };
-}, [isLoggedIn]);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [isLoggedIn]);
 
   const [deliveries, setDeliveries] = useState([]);
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
