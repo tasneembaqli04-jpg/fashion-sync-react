@@ -43,7 +43,7 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
         {[
           ["SAVE20", "20% הנחה על כל הקנייה"],
           ["SAVE10", "10% הנחה על כל הקנייה"],
-          ["SUMMER15", "15% הנחה על כל הקנייה"],
+          ["SUMMER15", "15% הנחה על כל הקנייה — בתוקף רק בקיץ"],
         ].map(([code, desc]) => (
           <div key={code} className={browseStyles.couponItem}>
             <div>

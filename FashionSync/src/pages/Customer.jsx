@@ -473,6 +473,11 @@ export default function Customer() {
       return;
     }
 
+    if (coupon.seasonOnly && getCurrentSeason() !== coupon.seasonOnly) {
+      alert("קוד הקופון תקף רק בעונה המתאימה לו.");
+      return;
+    }
+
     setAppliedDiscount(coupon.discount);
     localStorage.setItem(LS_KEYS.DISCOUNT, String(coupon.discount));
   }
