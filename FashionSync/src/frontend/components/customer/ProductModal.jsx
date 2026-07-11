@@ -1,6 +1,15 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 
+const CATEGORY_SIZE_OPTIONS = {
+  חולצות: ["S", "M", "L", "XL"],
+  מכנסיים: ["28", "30", "32", "34"],
+  שמלות: ["S", "M", "L", "XL"],
+  עליוניות: ["S", "M", "L", "XL"],
+  נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
+  אביזרים: ["אחיד"],
+};
+
 export default function ProductModal({
   open = false,
   product = null,
@@ -29,17 +38,24 @@ export default function ProductModal({
     product.originalPrice &&
     product.originalPrice > product.price;
 
-  const colorsFromVariants = product.variants
-    ? product.variants.map((v) => v.colorName)
-    : product.colors || [];
+  const colorsFromVariants = (
+    product.variants ? product.variants.map((v) => v.colorName) : product.colors || []
+  )
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "he"));
 
   const sizesFromVariants = product.variants
     ? [...new Set(product.variants.flatMap((v) => Object.keys(v.sizes || {})))]
     : product.sizes || [];
 
-  const allSizes = sizesFromVariants.includes("אחר")
-    ? sizesFromVariants
-    : [...sizesFromVariants, "אחר"];
+  const canonicalSizeOrder = CATEGORY_SIZE_OPTIONS[product.cat] || [];
+  const sortedSizes = [...sizesFromVariants].sort(
+    (a, b) => canonicalSizeOrder.indexOf(a) - canonicalSizeOrder.indexOf(b)
+  );
+
+  const allSizes = sortedSizes.includes("אחר")
+    ? sortedSizes
+    : [...sortedSizes, "אחר"];
 
   const seasonIcon =
     product.season === "summer" ? "☀️" :
