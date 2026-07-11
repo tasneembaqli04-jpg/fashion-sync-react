@@ -340,7 +340,7 @@ export default function DetailsModal({
                     marginTop: "0.3rem",
                   }}
                 >
-                  המחיר הרגיל (האמיתי, לפני המבצע): ₪{regularPrice} → מחיר
+                  המחיר הרגיל (האמיתי, לפני המבצע): ₪{regularPrice} ← מחיר
                   המבצע: ₪{price}
                   <br />
                   ⓘ ברגע שתבטלי את המבצע, המחיר יחזור אוטומטית ל-₪
