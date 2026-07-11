@@ -7,7 +7,7 @@ import { getWishlist, saveWishlist } from "../../backend/services/wishlist/wishl
 import { addFeedback } from "../../backend/services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../../backend/services/customer/customerFirestore";
 import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../../backend/services/notifications/notificationsService";
-import { LS_KEYS } from "../data/constants";
+import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { getCoupon } from "../../backend/services/coupons/couponsService";
 
 import {
