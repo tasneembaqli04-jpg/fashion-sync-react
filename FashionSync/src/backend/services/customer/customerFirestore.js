@@ -65,6 +65,18 @@ export async function addLoyaltyPoints(email, orderTotal) {
     { merge: true }
   );
 }
+
+export async function redeemLoyaltyPoints(email, pointsToDeduct) {
+  const customerEmail = normalizeEmail(email);
+  if (!customerEmail) return;
+
+  const customerRef = doc(db, "customers", customerEmail);
+  const current = await getLoyaltyPoints(customerEmail);
+  const newBalance = Math.max(0, current - Math.round(Number(pointsToDeduct) || 0));
+
+  await setDoc(customerRef, { loyaltyPoints: newBalance }, { merge: true });
+}
+
 export async function getAllCustomers() {
   const snapshot = await getDocs(collection(db, "customers"));
 
