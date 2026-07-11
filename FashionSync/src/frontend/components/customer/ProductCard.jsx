@@ -1,6 +1,36 @@
 import cardStyles from "../../styles/customer/ProductCard.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 
+const CATEGORY_SIZE_OPTIONS = {
+  חולצות: ["S", "M", "L", "XL"],
+  מכנסיים: ["28", "30", "32", "34"],
+  שמלות: ["S", "M", "L", "XL"],
+  עליוניות: ["S", "M", "L", "XL"],
+  נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
+  אביזרים: ["אחיד"],
+};
+
+function variantSummary(product) {
+  if (!Array.isArray(product.variants) || !product.variants.length) {
+    return { colors: [], sizes: [] };
+  }
+
+  const colors = [
+    ...new Set(product.variants.map((v) => v.colorName).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, "he"));
+
+  const canonicalOrder = CATEGORY_SIZE_OPTIONS[product.cat] || [];
+  const sizes = [
+    ...new Set(
+      product.variants.flatMap((v) => Object.keys(v.sizes || {}))
+    ),
+  ].sort(
+    (a, b) => canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b)
+  );
+
+  return { colors, sizes };
+}
+
 function stockBadge(stock, minStock) {
   if (stock === 0) {
     return (
@@ -98,6 +128,7 @@ export default function ProductCard({
   const cartItem = cart.find((item) => item.code === product.code);
   const isInCart = Boolean(cartItem);
   const cartQty = cartItem ? cartItem.qty : 0;
+  const { colors, sizes } = variantSummary(product);
 
   const badgeHtml = product.sale ? (
     <div className={cardStyles.saleRibbon}>🏷️ -20%</div>
@@ -149,6 +180,18 @@ export default function ProductCard({
           <div className={cardStyles.productCode}>
             {product.code} · {product.gender} · {product.cat}
           </div>
+          {(colors.length > 0 || sizes.length > 0) && (
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--light-gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              {colors.length > 0 && <div>צבעים: {colors.join(", ")}</div>}
+              {sizes.length > 0 && <div>מידות: {sizes.join(", ")}</div>}
+            </div>
+          )}
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
