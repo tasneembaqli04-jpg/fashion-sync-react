@@ -1,10 +1,10 @@
+import { useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
+import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
 
-// אותם 4 שלבים בדיוק כמו אצל הלקוח (order.steps): אושרה, בהכנה, נשלחה, נמסרה
 const STEP_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
 
-// תאימות לאחור: אם יש עדיין רשומות ישנות עם סטטוס טקסטואלי (waiting/picked/delivered)
 const LEGACY_STATUS_MAP = {
   waiting: 1,
   on_the_way: 2,
@@ -15,6 +15,13 @@ const LEGACY_STATUS_MAP = {
 function toStatusIndex(status) {
   if (typeof status === "number") return status;
   return LEGACY_STATUS_MAP[status] ?? 1;
+}
+
+function cardStyle(isSelected) {
+  return {
+    cursor: "pointer",
+    border: isSelected ? "1.5px solid var(--gold)" : undefined,
+  };
 }
 
 function fmtDate(ts) {
@@ -35,9 +42,36 @@ export default function ManagerDeliveries({
   onUpdateStatus,
   onMarkAllPicked,
 }) {
+  const [statusFilter, setStatusFilter] = useState("pending"); // pending | delivered | all
+
   const waitingCount = deliveries.filter(
     (delivery) => toStatusIndex(delivery.status) < 3
   ).length;
+
+  const deliveredCount = deliveries.filter(
+    (delivery) => toStatusIndex(delivery.status) >= 3
+  ).length;
+
+  const sortedDeliveries = useMemo(() => {
+    return [...deliveries].sort((a, b) => {
+      const aDone = toStatusIndex(a.status) >= 3;
+      const bDone = toStatusIndex(b.status) >= 3;
+
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    });
+  }, [deliveries]);
+
+  const visibleDeliveries = useMemo(() => {
+    if (statusFilter === "pending") {
+      return sortedDeliveries.filter((d) => toStatusIndex(d.status) < 3);
+    }
+    if (statusFilter === "delivered") {
+      return sortedDeliveries.filter((d) => toStatusIndex(d.status) >= 3);
+    }
+    return sortedDeliveries;
+  }, [sortedDeliveries, statusFilter]);
 
   return (
     <div className={layoutStyles.view}>
@@ -45,6 +79,52 @@ export default function ManagerDeliveries({
         <div className={layoutStyles.phLeft}>
           <h2>מעקב משלוחים</h2>
           <p>עדכן סטטוס משלוח עבור כל הזמנה מוכנה</p>
+        </div>
+      </div>
+
+      <div
+        className={overviewStyles.statsGrid}
+        style={{ gridTemplateColumns: "repeat(3, 1fr)", marginBottom: "1rem" }}
+      >
+        <div
+          className={`${overviewStyles.stat} ${overviewStyles.gold}`}
+          style={cardStyle(statusFilter === "pending")}
+          onClick={() => setStatusFilter("pending")}
+        >
+          <div className={overviewStyles.statIcon}>🚚</div>
+          <div className={overviewStyles.statLabel}>בתהליך</div>
+          <div className={overviewStyles.statVal} style={{ color: "var(--orange)" }}>
+            {waitingCount}
+          </div>
+          <div className={overviewStyles.statSub}>עדיין בדרך</div>
+        </div>
+
+        <div
+          className={`${overviewStyles.stat} ${overviewStyles.green}`}
+          style={cardStyle(statusFilter === "delivered")}
+          onClick={() => setStatusFilter("delivered")}
+        >
+          <div className={overviewStyles.statIcon}>✅</div>
+          <div className={overviewStyles.statLabel} style={{ color: "var(--green)" }}>
+            נמסרו
+          </div>
+          <div className={overviewStyles.statVal} style={{ color: "var(--green)" }}>
+            {deliveredCount}
+          </div>
+          <div className={overviewStyles.statSub}>הושלמו</div>
+        </div>
+
+        <div
+          className={`${overviewStyles.stat} ${overviewStyles.blue}`}
+          style={cardStyle(statusFilter === "all")}
+          onClick={() => setStatusFilter("all")}
+        >
+          <div className={overviewStyles.statIcon}>📋</div>
+          <div className={overviewStyles.statLabel}>סה"כ</div>
+          <div className={overviewStyles.statVal} style={{ color: "var(--blue)" }}>
+            {deliveries.length}
+          </div>
+          <div className={overviewStyles.statSub}>משלוחים</div>
         </div>
       </div>
 
@@ -60,14 +140,14 @@ export default function ManagerDeliveries({
         </div>
       )}
 
-      {!deliveries.length ? (
+      {!visibleDeliveries.length ? (
         <div className={deliveriesStyles.emptyState}>
           <div className={deliveriesStyles.emptyIcon}>🚚</div>
-          <div className={deliveriesStyles.emptyText}>אין משלוחים פעילים</div>
+          <div className={deliveriesStyles.emptyText}>אין משלוחים להצגה</div>
         </div>
       ) : (
         <div className={deliveriesStyles.deliveriesList}>
-          {deliveries.map((delivery) => {
+          {visibleDeliveries.map((delivery) => {
             const currentIndex = toStatusIndex(delivery.status);
             const nextIndex = currentIndex < 3 ? currentIndex + 1 : null;
             const createdAtText = fmtDate(delivery.createdAt);
