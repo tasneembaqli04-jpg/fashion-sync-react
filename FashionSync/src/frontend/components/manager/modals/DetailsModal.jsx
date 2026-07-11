@@ -131,6 +131,18 @@ export default function DetailsModal({
     const cleanedVariants = variantsDraft.filter(
       (variant) => (variant.colorName || "").trim() !== ""
     );
+
+    const colorNamesLower = cleanedVariants.map((v) =>
+      v.colorName.trim().toLowerCase()
+    );
+    const hasDuplicateColor =
+      new Set(colorNamesLower).size !== colorNamesLower.length;
+
+    if (hasDuplicateColor) {
+      alert("יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי למוצר.");
+      return;
+    }
+
     const cleanedUsesVariants = cleanedVariants.length > 0;
     const cleanedTotal = calcVariantsTotal(cleanedVariants);
 
@@ -151,9 +163,6 @@ export default function DetailsModal({
       className={`${modalStyles.modalOverlay} ${
         theme === "light" ? modalStyles.light : ""
       }`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
       <div className={modalStyles.detailsModalBox}>
         <button className={modalStyles.modalCloseBtn} onClick={onClose}>
