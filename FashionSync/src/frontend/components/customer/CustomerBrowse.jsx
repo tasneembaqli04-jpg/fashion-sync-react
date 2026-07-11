@@ -213,7 +213,7 @@ export default function CustomerBrowse({
             }`}
             onClick={() => setListMode("bestsellers")}
           >
-            ⭐ נמכרים
+            ⭐ נמכרים ביותר
           </button>
           <button
             className={`${commonStyles.tabBtn} ${
