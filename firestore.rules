@@ -11,8 +11,46 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /customers/{customerEmail} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /carts/{customerEmail} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /deliveries/{deliveryId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /wishlists/{email} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /feedback/{feedbackId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /giftCards/{code} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /stockNotifications/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /coupons/{code} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    match /couponUsage/{id} {
+      allow read, write: if request.auth != null;
     }
   }
 }
