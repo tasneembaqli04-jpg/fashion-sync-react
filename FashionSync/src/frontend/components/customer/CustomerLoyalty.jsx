@@ -70,9 +70,10 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
                   {coupon.code}
                 </div>
                 <div className={browseStyles.couponDesc}>
-                  {Math.round(coupon.discount * 100)}% הנחה על כל הקנייה
-                  {coupon.seasonOnly &&
-                    ` — ${SEASON_LABELS[coupon.seasonOnly] || ""}`}
+                  {Math.round(coupon.discount * 100)}% הנחה
+                  {coupon.seasonOnly
+                    ? ` — ${SEASON_LABELS[coupon.seasonOnly] || ""}`
+                    : " על כל הקנייה"}
                 </div>
               </div>
 
