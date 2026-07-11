@@ -135,22 +135,36 @@ export default function CartDrawer({
           )}
 
           {availablePoints > 0 && (
-            <div className={modalStyles.couponRow} style={{ marginTop: "0.5rem" }}>
-              <input
-                className={modalStyles.couponInput}
-                type="number"
-                min="1"
-                max={availablePoints}
-                placeholder={`יש לך ${availablePoints.toLocaleString()} נק'...`}
-                value={pointsInput}
-                onChange={(e) => setPointsInput(e.target.value)}
-              />
-              <button
-                className={modalStyles.couponApply}
-                onClick={applyPointsRedemption}
+            <div style={{ marginTop: "0.5rem" }}>
+              <div className={modalStyles.couponRow}>
+                <input
+                  className={modalStyles.couponInput}
+                  type="number"
+                  min="1"
+                  max={availablePoints}
+                  placeholder={`כמה נקודות להשתמש? (יש לך ${availablePoints.toLocaleString()})`}
+                  value={pointsInput}
+                  onChange={(e) => setPointsInput(e.target.value)}
+                />
+                <button
+                  className={modalStyles.couponApply}
+                  onClick={applyPointsRedemption}
+                >
+                  השתמש
+                </button>
+              </div>
+
+              <div
+                style={{
+                  fontSize: "0.78rem",
+                  color: "var(--light-gray)",
+                  marginTop: "0.25rem",
+                }}
               >
-                השתמש
-              </button>
+                כל 20 נק' = ₪1 — {pointsInput && Number(pointsInput) > 0
+                  ? `זה שווה ₪${(Number(pointsInput) * 0.05).toFixed(2)} הנחה`
+                  : `סה"כ יש לך ₪${(availablePoints * 0.05).toFixed(2)} זמינים`}
+              </div>
             </div>
           )}
 

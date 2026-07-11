@@ -2,6 +2,7 @@ import styles from "../../styles/checkout/CheckoutPayment.module.scss";
 export default function CheckoutPriceBox({
   subtotal = 0,
   discount = 0,
+  pointsDiscount = 0,
   shipping = 0,
   total = 0,
   payMethod = "card",
@@ -21,6 +22,13 @@ export default function CheckoutPriceBox({
         <div className={`${styles.pline} ${styles.disc}`}>
           <span className={styles.pl}>הנחה</span>
           <span>−₪{discount.toLocaleString()}</span>
+        </div>
+      )}
+
+      {pointsDiscount > 0 && (
+        <div className={`${styles.pline} ${styles.disc}`}>
+          <span className={styles.pl}>הנחת נקודות נאמנות</span>
+          <span>−₪{pointsDiscount.toFixed(2)}</span>
         </div>
       )}
 

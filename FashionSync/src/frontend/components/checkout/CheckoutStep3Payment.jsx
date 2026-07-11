@@ -15,6 +15,7 @@ export default function CheckoutStep3Payment({
   onSelectInstallments,
   subtotal = 0,
   discount = 0,
+  pointsDiscount = 0,
   shippingCost = 0,
   total = 0,
   termsAccepted = false,
@@ -282,6 +283,7 @@ export default function CheckoutStep3Payment({
       <CheckoutPriceBox
         subtotal={subtotal}
         discount={discount}
+        pointsDiscount={pointsDiscount}
         shipping={shippingCost}
         total={total}
         payMethod={payMethod}

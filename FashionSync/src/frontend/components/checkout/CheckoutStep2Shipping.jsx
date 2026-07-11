@@ -8,6 +8,7 @@ export default function CheckoutStep2Shipping({
   deliveryText,
   subtotal = 0,
   discount = 0,
+  pointsDiscount = 0,
   shippingCost = 0,
   total = 0,
   onBack,
@@ -65,6 +66,7 @@ export default function CheckoutStep2Shipping({
       <CheckoutPriceBox
         subtotal={subtotal}
         discount={discount}
+        pointsDiscount={pointsDiscount}
         shipping={shippingCost}
         total={total}
       />
