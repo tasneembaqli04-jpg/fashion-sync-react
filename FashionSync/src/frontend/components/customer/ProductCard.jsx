@@ -146,7 +146,7 @@ export default function ProductCard({
   ) : product.trending ? (
     <div className={cardStyles.trendingBadge}>🔥 טרנד</div>
   ) : product.bestseller ? (
-    <div className={cardStyles.bestsellerBadge}>⭐ נמכר</div>
+    <div className={cardStyles.bestsellerBadge}>⭐ נמכר ביותר</div>
   ) : null;
 
   return (
