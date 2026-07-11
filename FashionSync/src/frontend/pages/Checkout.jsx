@@ -42,6 +42,7 @@ export default function Checkout() {
     SHIPPING_OPTIONS?.[0] || null,
   );
   const [discountPct, setDiscountPct] = useState(0);
+  const [pointsRedeemed, setPointsRedeemed] = useState(0);
   const [payMethod, setPayMethod] = useState("card");
   const [giftCardCode, setGiftCardCode] = useState("");
   const [selectedInstallments, setSelectedInstallments] = useState(1);
@@ -69,6 +70,9 @@ export default function Checkout() {
 
   useEffect(() => {
     setDiscountPct(getAppliedDiscountPercent());
+    setPointsRedeemed(
+      parseInt(localStorage.getItem(LS_KEYS.POINTS_REDEEMED) || "0", 10) || 0
+    );
 
     const currentUser = getCurrentUser();
 
@@ -109,6 +113,11 @@ export default function Checkout() {
     [subtotal, discountPct],
   );
 
+  const pointsDiscountAmount = useMemo(
+    () => pointsRedeemed * 0.05,
+    [pointsRedeemed],
+  );
+
   const shippingCost = useMemo(
     () => (isGiftCardOnly ? 0 : getShippingCost(selectedShipping, subtotal)),
     [selectedShipping, subtotal, isGiftCardOnly],
@@ -117,9 +126,17 @@ export default function Checkout() {
   const total = useMemo(
     () =>
       isGiftCardOnly
-        ? subtotal - discountAmount
-        : getTotal(cart, discountPct, selectedShipping),
-    [cart, discountPct, selectedShipping, isGiftCardOnly, subtotal, discountAmount],
+        ? Math.max(0, subtotal - discountAmount - pointsDiscountAmount)
+        : getTotal(cart, discountPct, selectedShipping, pointsDiscountAmount),
+    [
+      cart,
+      discountPct,
+      selectedShipping,
+      isGiftCardOnly,
+      subtotal,
+      discountAmount,
+      pointsDiscountAmount,
+    ],
   );
 
   const installmentOptions = useMemo(() => {
@@ -466,6 +483,7 @@ export default function Checkout() {
             deliveryText={getDeliveryText()}
             subtotal={subtotal}
             discount={discountAmount}
+            pointsDiscount={pointsDiscountAmount}
             shippingCost={shippingCost}
             total={total}
             onBack={() => goBack(1)}
@@ -488,6 +506,7 @@ export default function Checkout() {
             onSelectInstallments={setSelectedInstallments}
             subtotal={subtotal}
             discount={discountAmount}
+            pointsDiscount={pointsDiscountAmount}
             shippingCost={shippingCost}
             total={total}
             termsAccepted={termsAccepted}
