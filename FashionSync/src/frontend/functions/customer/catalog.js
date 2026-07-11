@@ -1,4 +1,7 @@
 import { getProducts } from "../../../backend/services/products/productsService";
+
+const BESTSELLER_COUNT = 10;
+
 export const SEASON_META = {
   summer: { emoji: "☀️", text: "עכשיו קיץ! מוצגים פריטי הקיץ", cls: "summer" },
   winter: { emoji: "❄️", text: "עכשיו חורף! מוצגים פריטי החורף", cls: "winter" },
@@ -6,7 +9,20 @@ export const SEASON_META = {
 };
 
 export async function loadProducts() {
-  return await getProducts();
+  const products = await getProducts();
+
+  const bestsellerCodes = new Set(
+    [...products]
+      .filter((product) => Number(product.salesLastMonth) > 0)
+      .sort((a, b) => Number(b.salesLastMonth) - Number(a.salesLastMonth))
+      .slice(0, BESTSELLER_COUNT)
+      .map((product) => product.code)
+  );
+
+  return products.map((product) => ({
+    ...product,
+    bestseller: bestsellerCodes.has(product.code),
+  }));
 }
 
 export function filterProducts({
