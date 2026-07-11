@@ -293,8 +293,29 @@ export default function Customer() {
   const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
   const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
 
-  const seasonMeta =
-    currentSeasonTab !== "all" ? SEASON_META[currentSeasonTab] : null;
+  const realCurrentSeason = getCurrentSeason();
+
+  const seasonMeta = useMemo(() => {
+    if (currentSeasonTab === "all") return null;
+
+    const base = SEASON_META[currentSeasonTab];
+    if (!base) return null;
+
+    if (currentSeasonTab === realCurrentSeason) {
+      return base;
+    }
+
+    const neutralTextByTab = {
+      summer: "מוצגים פריטי הקיץ",
+      winter: "מוצגים פריטי החורף",
+      "spring-autumn": "מוצגים פריטי אביב/סתיו",
+    };
+
+    return {
+      ...base,
+      text: neutralTextByTab[currentSeasonTab] || base.text,
+    };
+  }, [currentSeasonTab, realCurrentSeason]);
 
   const giftPreview = buildGiftCardPreview({
     amount: giftAmount,
