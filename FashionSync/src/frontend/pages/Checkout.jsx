@@ -6,6 +6,7 @@ import styles from "../styles/checkout/Checkout.module.scss";
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
 import { getGiftCard, redeemGiftCardAmount } from "../../backend/services/giftcard/giftCardService";
 import { logCouponUsage } from "../../backend/services/coupons/couponsService";
+import { redeemLoyaltyPoints } from "../../backend/services/customer/customerFirestore";
 import {
   getAppliedDiscountPercent,
   getCurrentUser,
@@ -304,12 +305,19 @@ export default function Checkout() {
           orderSubtotal,
           discountPct,
         );
+        const orderPointsRedeemed =
+          parseInt(localStorage.getItem(LS_KEYS.POINTS_REDEEMED) || "0", 10) ||
+          0;
+        const orderPointsDiscountAmount = orderPointsRedeemed * 0.05;
         const orderIsGiftCardOnly = orderItems.every((item) => item.isGiftCard);
         const orderShippingCost = orderIsGiftCardOnly
           ? 0
           : getShippingCost(selectedShipping, orderSubtotal);
         const orderTotal =
-          orderSubtotal - orderDiscountAmount + orderShippingCost;
+          Math.max(
+            0,
+            orderSubtotal - orderDiscountAmount - orderPointsDiscountAmount
+          ) + orderShippingCost;
 
         if (payMethod === "giftcard") {
           const card = await getGiftCard(giftCardCode);
@@ -351,6 +359,8 @@ export default function Checkout() {
           subtotal: orderSubtotal,
           discountAmount: orderDiscountAmount,
           discountPct,
+          pointsRedeemed: orderPointsRedeemed,
+          pointsDiscountAmount: orderPointsDiscountAmount,
           shipping: selectedShipping,
           shippingCost: orderShippingCost,
           total: orderTotal,
@@ -370,6 +380,10 @@ export default function Checkout() {
             orderId: receipt.id,
             discountAmount: orderDiscountAmount,
           });
+        }
+
+        if (orderPointsRedeemed > 0) {
+          await redeemLoyaltyPoints(formData.email, orderPointsRedeemed);
         }
 
         await clearCheckoutCart();

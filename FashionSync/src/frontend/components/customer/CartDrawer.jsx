@@ -13,8 +13,14 @@ export default function CartDrawer({
   removeItem,
   applyCoupon,
   startCheckout,
+  availablePoints = 0,
+  pointsInput = "",
+  setPointsInput,
+  applyPointsRedemption,
+  removePointsRedemption,
+  appliedPointsRedeemed = 0,
+  pointsDiscountAmount = 0,
 }) {
-  console.log("CartDrawer open =", open);
   return (
     <>
       <div
@@ -125,6 +131,44 @@ export default function CartDrawer({
           {discountText && (
             <div className={modalStyles.discountRow}>
               ✅ הנחה הוחלה: <span>{discountText}</span>
+            </div>
+          )}
+
+          {availablePoints > 0 && (
+            <div className={modalStyles.couponRow} style={{ marginTop: "0.5rem" }}>
+              <input
+                className={modalStyles.couponInput}
+                type="number"
+                min="1"
+                max={availablePoints}
+                placeholder={`יש לך ${availablePoints.toLocaleString()} נק'...`}
+                value={pointsInput}
+                onChange={(e) => setPointsInput(e.target.value)}
+              />
+              <button
+                className={modalStyles.couponApply}
+                onClick={applyPointsRedemption}
+              >
+                השתמש
+              </button>
+            </div>
+          )}
+
+          {appliedPointsRedeemed > 0 && (
+            <div
+              className={modalStyles.discountRow}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+            >
+              <span>
+                ✅ נוצלו {appliedPointsRedeemed.toLocaleString()} נק' = ₪
+                {pointsDiscountAmount.toFixed(2)} הנחה
+              </span>
+              <button
+                onClick={removePointsRedemption}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "inherit" }}
+              >
+                ✕
+              </button>
             </div>
           )}
 

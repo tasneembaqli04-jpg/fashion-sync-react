@@ -7,6 +7,7 @@ export const LS_KEYS = {
   PRODUCTS: "fs_products",
   DISCOUNT: "fs_applied_discount",
   COUPON_CODE: "fs_applied_coupon_code",
+  POINTS_REDEEMED: "fs_points_redeemed",
   ORDERS_PREFIX: "fs_orders_",
 };
 

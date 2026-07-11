@@ -18,10 +18,14 @@ export function getShippingCost(selectedShipping, subtotal = 0) {
   return Number(selectedShipping.price || 0);
 }
 
-export function getTotal(cart = [], discountPct = 0, selectedShipping) {
+export function getTotal(cart = [], discountPct = 0, selectedShipping, pointsDiscountAmount = 0) {
   const subtotal = getSubtotal(cart);
   const discountAmount = getDiscountAmount(subtotal, discountPct);
   const shippingCost = getShippingCost(selectedShipping, subtotal);
+  const afterDiscounts = Math.max(
+    0,
+    subtotal - discountAmount - (Number(pointsDiscountAmount) || 0)
+  );
 
-  return subtotal - discountAmount + shippingCost;
+  return afterDiscounts + shippingCost;
 }
