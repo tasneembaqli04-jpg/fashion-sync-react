@@ -14,6 +14,7 @@ import ReceiptsView from "../components/manager/views/ReceiptsView";
 import AnalyticsView from "../components/manager/views/AnalyticsView";
 import FeedbackView from "../components/manager/views/FeedbackView";
 import StockNotificationsView from "../components/manager/views/StockNotificationsView";
+import CouponsView from "../components/manager/views/CouponsView";
 import SettingsView from "../components/manager/views/SettingsView";
 import styles from "../styles/Manager.module.scss";
 import ManagerOrders from "../components/manager/views/ManagerOrders";
@@ -459,6 +460,7 @@ export default function Manager({ onPromote }) {
           )}
           {activeView === "feedback" && <FeedbackView />}
           {activeView === "stockNotifications" && <StockNotificationsView />}
+          {activeView === "coupons" && <CouponsView />}
           {activeView === "settings" && <SettingsView />}
         </div>
       </div>

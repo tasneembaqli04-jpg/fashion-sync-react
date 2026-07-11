@@ -5,10 +5,12 @@ import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
 import { getGiftCard, redeemGiftCardAmount } from "../../backend/services/giftcard/giftCardService";
+import { logCouponUsage } from "../../backend/services/coupons/couponsService";
 import {
   getAppliedDiscountPercent,
   getCurrentUser,
   buildCart,
+  LS_KEYS,
 } from "../functions/checkout/checkoutStorage";
 
 import {
@@ -359,6 +361,17 @@ export default function Checkout() {
 
         await saveReceiptAndOrder(receipt);
         await decrementProductsStock(orderItems);
+
+        const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
+        if (usedCouponCode && orderDiscountAmount > 0) {
+          await logCouponUsage({
+            code: usedCouponCode,
+            email: formData.email,
+            orderId: receipt.id,
+            discountAmount: orderDiscountAmount,
+          });
+        }
+
         await clearCheckoutCart();
 
         if (payMethod === "giftcard") {

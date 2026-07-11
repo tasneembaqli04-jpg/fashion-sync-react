@@ -123,6 +123,15 @@ export default function ManagerSidebar({
             <span className={styles.navBadge}>{pendingStockRequestsCount}</span>
           )}
         </button>
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "coupons" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("coupons")}
+        >
+          <span className={styles.icon}>🎟️</span>
+          קופונים
+        </button>
 
         <div className={styles.sbSec}>הגדרות</div>
 

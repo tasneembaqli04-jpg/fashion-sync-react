@@ -8,7 +8,7 @@ import { addFeedback } from "../../backend/services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../../backend/services/customer/customerFirestore";
 import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../../backend/services/notifications/notificationsService";
 import { LS_KEYS } from "../data/constants";
-import { COUPONS } from "../data/coupons";
+import { getCoupon } from "../../backend/services/coupons/couponsService";
 
 import {
   applyTheme,
@@ -464,11 +464,11 @@ export default function Customer() {
     setCartOpen(false);
   }
 
-  function applyCoupon() {
+  async function applyCoupon() {
     const code = couponValue.trim().toUpperCase();
-    const coupon = COUPONS.find((c) => c.code === code && c.active);
+    const coupon = await getCoupon(code);
 
-    if (!coupon) {
+    if (!coupon || !coupon.active) {
       alert("קוד קופון לא תקין.");
       return;
     }
@@ -480,6 +480,7 @@ export default function Customer() {
 
     setAppliedDiscount(coupon.discount);
     localStorage.setItem(LS_KEYS.DISCOUNT, String(coupon.discount));
+    localStorage.setItem(LS_KEYS.COUPON_CODE, coupon.code);
   }
 
   function startCheckout() {
