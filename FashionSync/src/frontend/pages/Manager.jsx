@@ -483,6 +483,7 @@ export default function Manager({ onPromote }) {
       <AddProductModal
         isOpen={isAddProductOpen}
         theme={theme}
+        products={products}
         onClose={() => setIsAddProductOpen(false)}
         onSubmit={async (p) => {
            await addProduct(p);
