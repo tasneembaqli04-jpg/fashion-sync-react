@@ -94,6 +94,10 @@ function priceHtml(product) {
     product.originalPrice &&
     product.originalPrice > product.price
   ) {
+    const discountPct = Math.round(
+      ((product.originalPrice - product.price) / product.originalPrice) * 100
+    );
+
     return (
       <div className={cardStyles.priceRow}>
         <span className={cardStyles.productPriceOriginal}>
@@ -102,7 +106,7 @@ function priceHtml(product) {
         <span className={`${cardStyles.productPrice} ${cardStyles.salePrice}`}>
           ₪{product.price}
         </span>
-        <span className={cardStyles.saleInlineTag}>🏷️ -20%</span>
+        <span className={cardStyles.saleInlineTag}>🏷️ -{discountPct}%</span>
       </div>
     );
   }
@@ -130,8 +134,15 @@ export default function ProductCard({
   const cartQty = cartItem ? cartItem.qty : 0;
   const { colors, sizes } = variantSummary(product);
 
+  const saleDiscountPct =
+    product.sale && product.originalPrice && product.originalPrice > product.price
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) * 100
+        )
+      : 0;
+
   const badgeHtml = product.sale ? (
-    <div className={cardStyles.saleRibbon}>🏷️ -20%</div>
+    <div className={cardStyles.saleRibbon}>🏷️ -{saleDiscountPct}%</div>
   ) : product.trending ? (
     <div className={cardStyles.trendingBadge}>🔥 טרנד</div>
   ) : product.bestseller ? (
