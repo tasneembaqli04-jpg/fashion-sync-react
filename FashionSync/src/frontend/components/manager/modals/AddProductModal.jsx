@@ -200,6 +200,18 @@ export default function AddProductModal({
     const cleanedVariants = variantsDraft.filter(
       (variant) => (variant.colorName || "").trim() !== ""
     );
+
+    const colorNamesLower = cleanedVariants.map((v) =>
+      v.colorName.trim().toLowerCase()
+    );
+    const hasDuplicateColor =
+      new Set(colorNamesLower).size !== colorNamesLower.length;
+
+    if (hasDuplicateColor) {
+      setError("❌ יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי");
+      return;
+    }
+
     const hasVariants = cleanedVariants.length > 0;
     const variantsTotal = cleanedVariants.reduce(
       (sum, variant) =>
