@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginOverlay from "../components/manager/LoginOverlay";
 import ManagerSidebar from "../components/manager/ManagerSidebar";
@@ -44,6 +44,8 @@ export default function Manager({ onPromote }) {
   const navigate = useNavigate();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const contentRef = useRef(null);
   const [activeView, setActiveView] = useState("overview");
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -112,7 +114,7 @@ export default function Manager({ onPromote }) {
     getAllStockNotifications().then((items) => {
       setPendingStockRequestsCount(items.filter((item) => !item.notified).length);
     });
-  }, [isLoggedIn, activeView]);
+  }, [isLoggedIn, activeView, refreshKey]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -243,7 +245,7 @@ export default function Manager({ onPromote }) {
   }
 
   loadManagerProducts();
-}, [isLoggedIn]);
+}, [isLoggedIn, refreshKey]);
  
 
   const handleDelete = async (code) => {
@@ -404,14 +406,17 @@ export default function Manager({ onPromote }) {
             setGlobalSearch(val);
             if (val.trim()) setActiveView("inventory");
           }}
-          onRefresh={() => window.location.reload()}
+          onRefresh={() => {
+            setRefreshKey((prev) => prev + 1);
+            contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           onAddProductClick={() => setIsAddProductOpen(true)}
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           onOpenScan={() => setIsScanOpen(true)}
           onCancelPromote={handleCancelPromote}
         />
 
-        <div className={styles.content}>
+        <div className={styles.content} ref={contentRef}>
           {activeView === "overview" && (
             <OverviewView
               stats={stats}
