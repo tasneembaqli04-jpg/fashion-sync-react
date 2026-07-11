@@ -22,10 +22,11 @@ export function getCartCount(cart) {
   return cart.reduce((sum, item) => sum + (item.qty || 0), 0);
 }
 
-export function getCartTotals(cart, appliedDiscount = 0) {
+export function getCartTotals(cart, appliedDiscount = 0, pointsDiscountAmount = 0) {
   const raw = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discount = Math.round(raw * appliedDiscount);
-  const total = raw - discount;
+  const afterCoupon = Math.max(0, raw - discount);
+  const total = Math.max(0, afterCoupon - (Number(pointsDiscountAmount) || 0));
   return { raw, discount, total };
 }
 

@@ -18,6 +18,7 @@ export async function clearCheckoutCart() {
   localStorage.removeItem(LS_KEYS.CART);
   localStorage.removeItem(LS_KEYS.DISCOUNT);
   localStorage.removeItem(LS_KEYS.COUPON_CODE);
+  localStorage.removeItem(LS_KEYS.POINTS_REDEEMED);
 
   if (email) {
     await clearCartFromFirestore(email);

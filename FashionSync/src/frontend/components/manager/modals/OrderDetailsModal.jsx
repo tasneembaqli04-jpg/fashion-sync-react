@@ -146,6 +146,12 @@ export default function OrderDetailsModal({ open, order, onClose }) {
             {Number(order.discountAmount || 0).toLocaleString()})
           </p>
         )}
+        {Number(order.pointsRedeemed) > 0 && (
+          <p>
+            נוצלו {Number(order.pointsRedeemed).toLocaleString()} נקודות
+            נאמנות (−₪{Number(order.pointsDiscountAmount || 0).toFixed(2)})
+          </p>
+        )}
 
         <p style={{ fontSize: "1.2rem", marginTop: "12px" }}>
           💰 סה"כ לתשלום: <strong>₪{Number(order.total || 0).toLocaleString()}</strong>

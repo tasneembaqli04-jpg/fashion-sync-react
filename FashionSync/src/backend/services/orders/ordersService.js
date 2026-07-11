@@ -32,6 +32,8 @@ export async function addOrder(receipt) {
     items: receipt.items || [],
     subtotal: Number(receipt.subtotal) || 0,
     discountAmount: Number(receipt.discountAmount) || 0,
+    pointsRedeemed: Number(receipt.pointsRedeemed) || 0,
+    pointsDiscountAmount: Number(receipt.pointsDiscountAmount) || 0,
     discountPct: Number(receipt.discountPct) || 0,
     shippingCost: Number(receipt.shippingCost) || 0,
     total: Number(receipt.total) || 0,

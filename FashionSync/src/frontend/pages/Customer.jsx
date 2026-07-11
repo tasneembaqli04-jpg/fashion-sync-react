@@ -115,6 +115,8 @@ export default function Customer() {
   const [cartOpen, setCartOpen] = useState(false);
   const [couponValue, setCouponValue] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [pointsInput, setPointsInput] = useState("");
+  const [appliedPointsRedeemed, setAppliedPointsRedeemed] = useState(0);
 
   const [preCheckoutOpen, setPreCheckoutOpen] = useState(false);
   const [pcfRating, setPcfRating] = useState(0);
@@ -288,7 +290,8 @@ export default function Customer() {
   );
 
   const cartCount = getCartCount(cart);
-  const { total } = getCartTotals(cart, appliedDiscount);
+  const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
+  const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
 
   const seasonMeta =
     currentSeasonTab !== "all" ? SEASON_META[currentSeasonTab] : null;
@@ -481,6 +484,39 @@ export default function Customer() {
     setAppliedDiscount(coupon.discount);
     localStorage.setItem(LS_KEYS.DISCOUNT, String(coupon.discount));
     localStorage.setItem(LS_KEYS.COUPON_CODE, coupon.code);
+  }
+  function applyPointsRedemption() {
+    const requested = parseInt(pointsInput, 10) || 0;
+
+    if (requested <= 0) {
+      alert("יש להזין מספר נקודות תקין");
+      return;
+    }
+
+    if (requested > loyaltyPoints) {
+      alert(`אין לך מספיק נקודות. יש לך ${loyaltyPoints.toLocaleString()} נקודות זמינות.`);
+      return;
+    }
+
+    const { raw, discount } = getCartTotals(cart, appliedDiscount);
+    const afterCoupon = Math.max(0, raw - discount);
+    const maxPointsUsable = Math.floor(afterCoupon / 0.05);
+
+    if (maxPointsUsable <= 0) {
+      alert("הסכום בעגלה כבר מכוסה, אין צורך בנקודות נוספות.");
+      return;
+    }
+
+    const finalPoints = Math.min(requested, maxPointsUsable);
+
+    setAppliedPointsRedeemed(finalPoints);
+    localStorage.setItem(LS_KEYS.POINTS_REDEEMED, String(finalPoints));
+  }
+
+  function removePointsRedemption() {
+    setAppliedPointsRedeemed(0);
+    setPointsInput("");
+    localStorage.removeItem(LS_KEYS.POINTS_REDEEMED);
   }
 
   function startCheckout() {
@@ -907,6 +943,13 @@ export default function Customer() {
         removeItem={removeItem}
         applyCoupon={applyCoupon}
         startCheckout={startCheckout}
+        availablePoints={loyaltyPoints}
+        pointsInput={pointsInput}
+        setPointsInput={setPointsInput}
+        applyPointsRedemption={applyPointsRedemption}
+        removePointsRedemption={removePointsRedemption}
+        appliedPointsRedeemed={appliedPointsRedeemed}
+        pointsDiscountAmount={pointsDiscountAmount}
       />
 
       <PreCheckoutFeedback
