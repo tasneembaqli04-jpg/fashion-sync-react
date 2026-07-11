@@ -96,7 +96,15 @@ export default function ProductModal({
                   borderRadius: "999px",
                 }}
               >
-                🏷️ -20%
+                🏷️ -{
+                  product.originalPrice && product.originalPrice > product.price
+                    ? Math.round(
+                        ((product.originalPrice - product.price) /
+                          product.originalPrice) *
+                          100
+                      )
+                    : 0
+                }%
               </div>
             )}
           </div>
