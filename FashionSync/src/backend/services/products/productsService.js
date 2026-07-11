@@ -28,6 +28,12 @@ export async function getProducts() {
   }));
 }
 export async function addProduct(product) {
+  const existing = await getDoc(doc(db, "products", product.code));
+
+  if (existing.exists()) {
+    throw new Error(`מוצר עם הקוד ${product.code} כבר קיים`);
+  }
+
   let imageUrl = product.img;
 
   if (imageUrl && imageUrl.startsWith("data:")) {

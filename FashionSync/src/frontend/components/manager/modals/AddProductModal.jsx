@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
@@ -26,6 +26,7 @@ export default function AddProductModal({
   onSubmit,
   onOpenScanner,
   theme,
+  products = [],
 }) {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -51,6 +52,28 @@ export default function AddProductModal({
   const [error, setError] = useState("");
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [variantsDraft, setVariantsDraft] = useState([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (form.code) return;
+
+    const numericSuffixes = products
+      .map((p) => {
+        const match = (p.code || "").match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((n) => n !== null);
+
+    if (numericSuffixes.length === 0) return;
+
+    const maxNumber = Math.max(...numericSuffixes);
+    const digits = String(maxNumber).length;
+    const nextNumber = String(maxNumber + 1).padStart(digits, "0");
+    const prefixMatch = products[0]?.code?.match(/^([A-Za-z]+-?)/);
+    const prefix = prefixMatch ? prefixMatch[1] : "FS-";
+
+    setForm((prev) => ({ ...prev, code: `${prefix}${nextNumber}` }));
+  }, [isOpen, products]);
 
   if (!isOpen) return null;
 
@@ -194,6 +217,18 @@ export default function AddProductModal({
       !form.image
     ) {
       setError("❌ יש למלא את כל השדות ולהוסיף תמונה");
+      return;
+    }
+
+    const normalizedCode = form.code.trim().toUpperCase();
+    const codeAlreadyExists = products.some(
+      (p) => p.code.toUpperCase() === normalizedCode
+    );
+
+    if (codeAlreadyExists) {
+      setError(
+        `❌ הקוד ${normalizedCode} כבר קיים במלאי — כל מוצר חייב קוד ייחודי`
+      );
       return;
     }
 
