@@ -1,6 +1,6 @@
 import { getProducts } from "../../../backend/services/products/productsService";
 
-const BESTSELLER_COUNT = 10;
+const BESTSELLERS_PER_CATEGORY = 5;
 
 export const SEASON_META = {
   summer: { emoji: "☀️", text: "עכשיו קיץ! מוצגים פריטי הקיץ", cls: "summer" },
@@ -11,13 +11,22 @@ export const SEASON_META = {
 export async function loadProducts() {
   const products = await getProducts();
 
-  const bestsellerCodes = new Set(
-    [...products]
+  const productsByCategory = {};
+  products.forEach((product) => {
+    const category = product.cat || "אחר";
+    if (!productsByCategory[category]) productsByCategory[category] = [];
+    productsByCategory[category].push(product);
+  });
+
+  const bestsellerCodes = new Set();
+
+  Object.values(productsByCategory).forEach((categoryProducts) => {
+    categoryProducts
       .filter((product) => Number(product.salesLastMonth) > 0)
       .sort((a, b) => Number(b.salesLastMonth) - Number(a.salesLastMonth))
-      .slice(0, BESTSELLER_COUNT)
-      .map((product) => product.code)
-  );
+      .slice(0, BESTSELLERS_PER_CATEGORY)
+      .forEach((product) => bestsellerCodes.add(product.code));
+  });
 
   return products.map((product) => ({
     ...product,
