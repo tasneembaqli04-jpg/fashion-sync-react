@@ -142,7 +142,7 @@
 }
 
 .sbNav::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--muted);
   border-radius: 2px;
 }
 
@@ -337,7 +337,7 @@
 }
 
 .content::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--muted);
   border-radius: 2px;
 }
 
@@ -1192,7 +1192,7 @@ tr:last-child td {
 }
 
 .addProductModal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--muted);
   border-radius: 10px;
 }
 
