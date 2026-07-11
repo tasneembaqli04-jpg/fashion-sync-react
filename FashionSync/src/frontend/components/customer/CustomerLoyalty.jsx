@@ -1,7 +1,25 @@
+import { useEffect, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
+import { getAllCoupons } from "../../../backend/services/coupons/couponsService";
+
+const SEASON_LABELS = {
+  summer: "בקיץ בלבד",
+  winter: "בחורף בלבד",
+  "spring-autumn": "באביב/סתיו בלבד",
+};
 
 export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
+  const [coupons, setCoupons] = useState([]);
+
+  useEffect(() => {
+    if (!show) return;
+
+    getAllCoupons().then((allCoupons) => {
+      setCoupons(allCoupons.filter((coupon) => coupon.active));
+    });
+  }, [show]);
+
   if (!show) return null;
 
   const redemptionValue = (points * 0.05).toFixed(2);
@@ -40,25 +58,33 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
       <div className={commonStyles.secTitle}>הקופונים שלי</div>
 
       <div className={browseStyles.couponList}>
-        {[
-          ["SAVE20", "20% הנחה על כל הקנייה"],
-          ["SAVE10", "10% הנחה על כל הקנייה"],
-          ["SUMMER15", "15% הנחה — בקיץ בלבד"],
-        ].map(([code, desc]) => (
-          <div key={code} className={browseStyles.couponItem}>
-            <div>
-              <div className={browseStyles.couponCodeDisplay}>{code}</div>
-              <div className={browseStyles.couponDesc}>{desc}</div>
-            </div>
-
-            <button
-              className={`${commonStyles.btn} ${commonStyles.btnGold}`}
-              onClick={(e) => copyCoupon(code, e.currentTarget)}
-            >
-              העתק
-            </button>
+        {!coupons.length ? (
+          <div style={{ color: "var(--light-gray)", padding: "0.8rem" }}>
+            אין כרגע קופונים פעילים
           </div>
-        ))}
+        ) : (
+          coupons.map((coupon) => (
+            <div key={coupon.code} className={browseStyles.couponItem}>
+              <div>
+                <div className={browseStyles.couponCodeDisplay}>
+                  {coupon.code}
+                </div>
+                <div className={browseStyles.couponDesc}>
+                  {Math.round(coupon.discount * 100)}% הנחה על כל הקנייה
+                  {coupon.seasonOnly &&
+                    ` — ${SEASON_LABELS[coupon.seasonOnly] || ""}`}
+                </div>
+              </div>
+
+              <button
+                className={`${commonStyles.btn} ${commonStyles.btnGold}`}
+                onClick={(e) => copyCoupon(coupon.code, e.currentTarget)}
+              >
+                העתק
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
