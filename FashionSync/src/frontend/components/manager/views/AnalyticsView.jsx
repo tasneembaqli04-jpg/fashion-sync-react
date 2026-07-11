@@ -31,6 +31,26 @@ export default function AnalyticsView({ orders = [], products = [] }) {
     const salesCount = monthOrders.length;
     const avgOrder = salesCount ? Math.round(monthRevenue / salesCount) : 0;
 
+    let missingCostCount = 0;
+    const monthExpenses = monthOrders.reduce((sum, order) => {
+      const orderExpense = (order.items || []).reduce((itemSum, item) => {
+        if (item.isGiftCard) return itemSum;
+
+        const product = products.find((p) => p.code === item.code);
+        const cost = Number(product?.cost) || 0;
+
+        if (!product || !product.cost) {
+          missingCostCount += 1;
+        }
+
+        return itemSum + cost * (Number(item.qty) || 0);
+      }, 0);
+
+      return sum + orderExpense;
+    }, 0);
+
+    const monthProfit = monthRevenue - monthExpenses;
+
     const categoryMap = {};
     monthOrders.forEach((order) => {
       (order.items || []).forEach((item) => {
@@ -64,6 +84,9 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
     return {
       monthRevenue,
+      monthExpenses,
+      monthProfit,
+      missingCostCount,
       salesCount,
       avgOrder,
       categorySales,
@@ -133,6 +156,28 @@ export default function AnalyticsView({ orders = [], products = [] }) {
             {stats.repeatPct}%
           </div>
         </div>
+
+        <div className={`${overviewStyles.stat} ${overviewStyles.orange}`}>
+          <div className={overviewStyles.statIcon}>📉</div>
+          <div className={overviewStyles.statLabel}>הוצאות החודש</div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: "var(--orange)" }}
+          >
+            ₪{stats.monthExpenses.toLocaleString()}
+          </div>
+        </div>
+
+        <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
+          <div className={overviewStyles.statIcon}>💵</div>
+          <div className={overviewStyles.statLabel}>רווח החודש</div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: stats.monthProfit >= 0 ? "var(--green)" : "var(--red)" }}
+          >
+            ₪{stats.monthProfit.toLocaleString()}
+          </div>
+        </div>
       </div>
 
       <div className={uiStyles.card}>
@@ -177,18 +222,22 @@ export default function AnalyticsView({ orders = [], products = [] }) {
         </div>
       </div>
 
-      <div className={uiStyles.card}>
-        <div className={uiStyles.cardHd}>
-          <div className={uiStyles.cardTitle}>💡 הערה</div>
+      {stats.missingCostCount > 0 && (
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>💡 הערה</div>
+          </div>
+          <div
+            className={uiStyles.cardBody}
+            style={{ color: "var(--muted)", fontSize: "0.9rem" }}
+          >
+            {stats.missingCostCount} פריטים שנמכרו החודש נמכרו ממוצר בלי "עלות
+            מוצר" רשומה — עבורם ההוצאה נספרה כ-₪0, כך שההוצאות/הרווח בפועל
+            עשויים להיות שונים. אפשר להוסיף עלות לכל מוצר דרך "פרטים" בניהול
+            מלאי.
+          </div>
         </div>
-        <div
-          className={uiStyles.cardBody}
-          style={{ color: "var(--muted)", fontSize: "0.9rem" }}
-        >
-          נתוני הוצאות ורווח דורשים מעקב עלות מוצר, שעדיין לא קיים במערכת —
-          לכן אינם מוצגים כרגע.
-        </div>
-      </div>
+      )}
     </div>
   );
 }
