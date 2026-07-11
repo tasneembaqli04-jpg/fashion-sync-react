@@ -40,6 +40,7 @@ export default function AddProductModal({
     season: "",
     stock: "0",
     price: "0",
+    cost: "0",
     minStock: "10",
     desc: "",
     image: "",
@@ -110,6 +111,7 @@ export default function AddProductModal({
       season: "",
       stock: "0",
       price: "0",
+      cost: "0",
       minStock: "10",
       desc: "",
       image: "",
@@ -217,6 +219,7 @@ export default function AddProductModal({
       season: form.season,
       stock: hasVariants ? variantsTotal : Number(form.stock),
       price: Number(form.price),
+      cost: Number(form.cost) || 0,
       minStock: Number(form.minStock),
       desc: form.desc.trim(),
       img: form.image,
@@ -397,6 +400,19 @@ export default function AddProductModal({
               onChange={(e) =>
                 handleChange("price", clampNumberString(e.target.value, MAX_PRICE))
               }
+            />
+          </div>
+          <div className={styles.addField}>
+            <label className={styles.addLabel}>עלות מוצר (₪)</label>
+            <input
+              className={styles.addInput}
+              type="number"
+              max={MAX_PRICE}
+              value={form.cost}
+              onChange={(e) =>
+                handleChange("cost", clampNumberString(e.target.value, MAX_PRICE))
+              }
+              placeholder="כמה עולה לכן לייצר/לקנות את הפריט"
             />
           </div>
 

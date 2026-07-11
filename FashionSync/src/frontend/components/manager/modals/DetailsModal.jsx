@@ -61,6 +61,7 @@ export default function DetailsModal({
   theme,
 }) {
   const [price, setPrice] = useState(0);
+  const [cost, setCost] = useState(0);
   const [minStock, setMinStock] = useState(10);
   const [season, setSeason] = useState("");
   const [variantsDraft, setVariantsDraft] = useState([]);
@@ -70,6 +71,7 @@ export default function DetailsModal({
   useEffect(() => {
     if (!product) return;
     setPrice(product.price || 0);
+    setCost(product.cost || 0);
     setMinStock(product.minStock || 10);
     setSeason(product.season || "all");
     setVariantsDraft(deepCopyVariants(product.variants || []));
@@ -135,6 +137,7 @@ export default function DetailsModal({
     onSave({
       ...product,
       price: Number(price),
+      cost: Number(cost) || 0,
       minStock: Number(minStock),
       season,
       desc: desc.trim(),
@@ -239,6 +242,17 @@ export default function DetailsModal({
               max={MAX_PRICE}
               value={price}
               onChange={(e) => setPrice(clampNumberString(e.target.value, MAX_PRICE))}
+            />
+          </div>
+          <div className={formStyles.fg}>
+            <div className={formStyles.fl}>עלות מוצר (₪)</div>
+            <input
+              className={formStyles.fi}
+              type="number"
+              min="0"
+              max={MAX_PRICE}
+              value={cost}
+              onChange={(e) => setCost(clampNumberString(e.target.value, MAX_PRICE))}
             />
           </div>
 
