@@ -62,6 +62,9 @@ export default function DetailsModal({
 }) {
   const [price, setPrice] = useState(0);
   const [cost, setCost] = useState(0);
+  const [isOnSale, setIsOnSale] = useState(false);
+  const [originalPrice, setOriginalPrice] = useState(0);
+  const [isTrending, setIsTrending] = useState(false);
   const [minStock, setMinStock] = useState(10);
   const [season, setSeason] = useState("");
   const [variantsDraft, setVariantsDraft] = useState([]);
@@ -72,6 +75,9 @@ export default function DetailsModal({
     if (!product) return;
     setPrice(product.price || 0);
     setCost(product.cost || 0);
+    setIsOnSale(Boolean(product.sale));
+    setOriginalPrice(product.originalPrice || product.price || 0);
+    setIsTrending(Boolean(product.trending));
     setMinStock(product.minStock || 10);
     setSeason(product.season || "all");
     setVariantsDraft(deepCopyVariants(product.variants || []));
@@ -150,6 +156,9 @@ export default function DetailsModal({
       ...product,
       price: Number(price),
       cost: Number(cost) || 0,
+      sale: isOnSale,
+      originalPrice: isOnSale ? Number(originalPrice) || 0 : null,
+      trending: isTrending,
       minStock: Number(minStock),
       season,
       desc: desc.trim(),
@@ -263,6 +272,49 @@ export default function DetailsModal({
               value={cost}
               onChange={(e) => setCost(clampNumberString(e.target.value, MAX_PRICE))}
             />
+          </div>
+
+          <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <input
+                type="checkbox"
+                checked={isOnSale}
+                onChange={(e) => setIsOnSale(e.target.checked)}
+              />
+              🏷️ מוצר במבצע
+            </label>
+
+            {isOnSale && (
+              <div style={{ marginTop: "0.5rem" }}>
+                <div className={formStyles.fl}>מחיר מקורי (לפני ההנחה, ₪)</div>
+                <input
+                  className={formStyles.fi}
+                  type="number"
+                  min="0"
+                  max={MAX_PRICE}
+                  value={originalPrice}
+                  onChange={(e) =>
+                    setOriginalPrice(clampNumberString(e.target.value, MAX_PRICE))
+                  }
+                />
+              </div>
+            )}
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginTop: "0.7rem",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={isTrending}
+                onChange={(e) => setIsTrending(e.target.checked)}
+              />
+              🔥 מוצר טרנדי
+            </label>
           </div>
 
           <div className={formStyles.fg}>
