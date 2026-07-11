@@ -85,6 +85,21 @@ export default function CartDrawer({
                           </span>{" "}
                           <span className={modalStyles.saleItemPrice}>
                             ₪{item.price * item.qty}
+                          </span>{" "}
+                          <span
+                            style={{
+                              color: "var(--red)",
+                              fontWeight: 700,
+                              fontSize: "0.78rem",
+                            }}
+                          >
+                            (-
+                            {Math.round(
+                              ((item.originalPrice - item.price) /
+                                item.originalPrice) *
+                                100
+                            )}
+                            %)
                           </span>
                         </>
                       ) : (
