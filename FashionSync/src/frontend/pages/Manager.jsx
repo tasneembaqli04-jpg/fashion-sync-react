@@ -82,9 +82,11 @@ export default function Manager({ onPromote }) {
             customerEmail: order.customerEmail,
 
             status: order.ready ? "ready" : "pending",
+            stageIndex: Number(order.status) || 0,
             items: Array.isArray(order.items) ? order.items : [],
             total: Number(order.total) || 0,
             date: order.date || order.createdAt || null,
+            createdAt: order.date || order.createdAt || null,
             payMethod: order.payMethod || "",
             shipping: order.shipping || null,
           };
@@ -345,6 +347,15 @@ export default function Manager({ onPromote }) {
       return updatedDeliveries;
     });
   }
+  function handleAdvanceOrderStage(orderDocId, nextIndex) {
+    advanceOrderStatus(orderDocId, nextIndex);
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.docId === orderDocId ? { ...order, stageIndex: nextIndex } : order
+      )
+    );
+  }
 
   const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
 
@@ -447,9 +458,8 @@ export default function Manager({ onPromote }) {
           )}
           {activeView === "deliveries" && (
             <ManagerDeliveries
-              deliveries={deliveries}
-              onUpdateStatus={handleUpdateDeliveryStatus}
-              onMarkAllPicked={handleMarkAllPicked}
+              orders={orders}
+              onAdvanceStatus={handleAdvanceOrderStage}
             />
           )}
          

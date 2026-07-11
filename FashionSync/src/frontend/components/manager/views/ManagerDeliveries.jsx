@@ -1,28 +1,17 @@
 import { useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
-import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
+import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
 
 const STEP_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
 
-const LEGACY_STATUS_MAP = {
-  waiting: 1,
-  on_the_way: 2,
-  picked: 2,
-  delivered: 3,
-};
-
-function toStatusIndex(status) {
-  if (typeof status === "number") return status;
-  return LEGACY_STATUS_MAP[status] ?? 1;
-}
-
-function cardStyle(isSelected) {
-  return {
-    cursor: "pointer",
-    border: isSelected ? "1.5px solid var(--gold)" : undefined,
-  };
-}
+const STAGE_TABS = [
+  { value: "all", label: "🔔 הכל" },
+  { value: 0, label: "אושרה" },
+  { value: 1, label: "בהכנה" },
+  { value: 2, label: "נשלחה" },
+  { value: 3, label: "נמסרה" },
+];
 
 function fmtDate(ts) {
   if (!ts) return "";
@@ -37,137 +26,97 @@ function fmtDate(ts) {
   });
 }
 
-export default function ManagerDeliveries({
-  deliveries = [],
-  onUpdateStatus,
-  onMarkAllPicked,
-}) {
-  const [statusFilter, setStatusFilter] = useState("pending"); // pending | delivered | all
+export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
+  const [stageFilter, setStageFilter] = useState("all");
 
-  const waitingCount = deliveries.filter(
-    (delivery) => toStatusIndex(delivery.status) < 3
-  ).length;
-
-  const deliveredCount = deliveries.filter(
-    (delivery) => toStatusIndex(delivery.status) >= 3
-  ).length;
-
-  const sortedDeliveries = useMemo(() => {
-    return [...deliveries].sort((a, b) => {
-      const aDone = toStatusIndex(a.status) >= 3;
-      const bDone = toStatusIndex(b.status) >= 3;
+  const sortedOrders = useMemo(() => {
+    return [...orders].sort((a, b) => {
+      const aDone = (a.stageIndex ?? 0) >= 3;
+      const bDone = (b.stageIndex ?? 0) >= 3;
 
       if (aDone !== bDone) return aDone ? 1 : -1;
 
       return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
     });
-  }, [deliveries]);
+  }, [orders]);
 
-  const visibleDeliveries = useMemo(() => {
-    if (statusFilter === "pending") {
-      return sortedDeliveries.filter((d) => toStatusIndex(d.status) < 3);
-    }
-    if (statusFilter === "delivered") {
-      return sortedDeliveries.filter((d) => toStatusIndex(d.status) >= 3);
-    }
-    return sortedDeliveries;
-  }, [sortedDeliveries, statusFilter]);
+  const visibleOrders = useMemo(() => {
+    if (stageFilter === "all") return sortedOrders;
+    return sortedOrders.filter((order) => (order.stageIndex ?? 0) === stageFilter);
+  }, [sortedOrders, stageFilter]);
+
+  function countFor(stageValue) {
+    if (stageValue === "all") return orders.length;
+    return orders.filter((order) => (order.stageIndex ?? 0) === stageValue).length;
+  }
 
   return (
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
           <h2>מעקב משלוחים</h2>
-          <p>עדכן סטטוס משלוח עבור כל הזמנה מוכנה</p>
+          <p>עדכן סטטוס משלוח עבור כל הזמנה</p>
         </div>
       </div>
 
       <div
-        className={overviewStyles.statsGrid}
-        style={{ gridTemplateColumns: "repeat(3, 1fr)", marginBottom: "1rem" }}
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          marginBottom: "1.2rem",
+        }}
       >
-        <div
-          className={`${overviewStyles.stat} ${overviewStyles.gold}`}
-          style={cardStyle(statusFilter === "pending")}
-          onClick={() => setStatusFilter("pending")}
-        >
-          <div className={overviewStyles.statIcon}>🚚</div>
-          <div className={overviewStyles.statLabel}>בתהליך</div>
-          <div className={overviewStyles.statVal} style={{ color: "var(--orange)" }}>
-            {waitingCount}
-          </div>
-          <div className={overviewStyles.statSub}>עדיין בדרך</div>
-        </div>
-
-        <div
-          className={`${overviewStyles.stat} ${overviewStyles.green}`}
-          style={cardStyle(statusFilter === "delivered")}
-          onClick={() => setStatusFilter("delivered")}
-        >
-          <div className={overviewStyles.statIcon}>✅</div>
-          <div className={overviewStyles.statLabel} style={{ color: "var(--green)" }}>
-            נמסרו
-          </div>
-          <div className={overviewStyles.statVal} style={{ color: "var(--green)" }}>
-            {deliveredCount}
-          </div>
-          <div className={overviewStyles.statSub}>הושלמו</div>
-        </div>
-
-        <div
-          className={`${overviewStyles.stat} ${overviewStyles.blue}`}
-          style={cardStyle(statusFilter === "all")}
-          onClick={() => setStatusFilter("all")}
-        >
-          <div className={overviewStyles.statIcon}>📋</div>
-          <div className={overviewStyles.statLabel}>סה"כ</div>
-          <div className={overviewStyles.statVal} style={{ color: "var(--blue)" }}>
-            {deliveries.length}
-          </div>
-          <div className={overviewStyles.statSub}>משלוחים</div>
-        </div>
+        {STAGE_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            className={uiStyles.filterTab}
+            onClick={() => setStageFilter(tab.value)}
+            style={
+              stageFilter === tab.value
+                ? {
+                    background: "var(--gold-dim)",
+                    color: "var(--gold)",
+                    borderColor: "var(--border-gold)",
+                  }
+                : {}
+            }
+          >
+            {tab.label} ({countFor(tab.value)})
+          </button>
+        ))}
       </div>
 
-      {!!waitingCount && (
-        <div style={{ marginBottom: "1rem", display: "flex", justifyContent: "flex-start" }}>
-          <button
-            type="button"
-            className={deliveriesStyles.deliveryActionBtn}
-            onClick={onMarkAllPicked}
-          >
-            ✓ סמן הכל כנשלח
-          </button>
-        </div>
-      )}
-
-      {!visibleDeliveries.length ? (
+      {!visibleOrders.length ? (
         <div className={deliveriesStyles.emptyState}>
           <div className={deliveriesStyles.emptyIcon}>🚚</div>
-          <div className={deliveriesStyles.emptyText}>אין משלוחים להצגה</div>
+          <div className={deliveriesStyles.emptyText}>אין הזמנות בשלב הזה</div>
         </div>
       ) : (
         <div className={deliveriesStyles.deliveriesList}>
-          {visibleDeliveries.map((delivery) => {
-            const currentIndex = toStatusIndex(delivery.status);
+          {visibleOrders.map((order) => {
+            const currentIndex = order.stageIndex ?? 0;
             const nextIndex = currentIndex < 3 ? currentIndex + 1 : null;
-            const createdAtText = fmtDate(delivery.createdAt);
+            const createdAtText = fmtDate(order.createdAt);
 
             return (
-              <div className={deliveriesStyles.deliveryCard} key={delivery.id}>
+              <div className={deliveriesStyles.deliveryCard} key={order.docId}>
                 <div className={deliveriesStyles.deliveryTop}>
                   <div className={deliveriesStyles.deliveryHeadInfo}>
                     <div className={deliveriesStyles.deliveryCustomerLine}>
                       <span className={deliveriesStyles.deliveryCustomerName}>
-                        {typeof delivery.customer === "string"
-                          ? delivery.customer
-                          : delivery.customer?.name || "לקוח"}
+                        {order.customerDetails?.name ||
+                          order.customerDetails?.email ||
+                          order.customerEmail ||
+                          "לקוח"}
                       </span>
                       <span className={deliveriesStyles.deliveryUserIcon}>👤</span>
                     </div>
 
                     <div className={deliveriesStyles.deliveryMetaLine}>
                       <span className={deliveriesStyles.deliveryOrderId}>
-                        {delivery.orderId}
+                        {order.id}
                       </span>
                     </div>
 
@@ -212,7 +161,7 @@ export default function ManagerDeliveries({
                 </div>
 
                 <div className={deliveriesStyles.deliveryItemsStrip}>
-                  {delivery.items?.map((item, index) => (
+                  {order.items?.map((item, index) => (
                     <div className={deliveriesStyles.deliveryItemRow} key={index}>
                       <img
                         className={deliveriesStyles.deliveryItemImg}
@@ -237,7 +186,7 @@ export default function ManagerDeliveries({
                     <button
                       type="button"
                       className={deliveriesStyles.deliveryActionBtn}
-                      onClick={() => onUpdateStatus?.(delivery.id, nextIndex)}
+                      onClick={() => onAdvanceStatus?.(order.docId, nextIndex)}
                     >
                       ✓ עדכן ל: {STEP_LABELS[nextIndex]}
                     </button>
