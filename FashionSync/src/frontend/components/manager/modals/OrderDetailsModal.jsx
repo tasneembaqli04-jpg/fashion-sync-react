@@ -137,6 +137,15 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         <h3 style={{ marginBottom: "8px" }}>🚚 משלוח ותשלום</h3>
         <p>שיטת משלוח: {order.shipping?.label || "לא ידוע"}</p>
         <p>אמצעי תשלום: {PAY_METHOD_LABELS[order.payMethod] || "לא ידוע"}</p>
+        {order.payMethod === "card" && Number(order.installments) > 1 && (
+          <p>מספר תשלומים: {order.installments}</p>
+        )}
+        {Number(order.discountPct) > 0 && (
+          <p>
+            הנחה: {order.discountPct}% (−₪
+            {Number(order.discountAmount || 0).toLocaleString()})
+          </p>
+        )}
 
         <p style={{ fontSize: "1.2rem", marginTop: "12px" }}>
           💰 סה"כ לתשלום: <strong>₪{Number(order.total || 0).toLocaleString()}</strong>
