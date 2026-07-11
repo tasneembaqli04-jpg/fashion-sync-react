@@ -21,11 +21,13 @@ export default function CustomerPolicy({ show }) {
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>🚚 מדיניות משלוחים</div>
         <div className={modalStyles.policyText}>
-          משלוח רגיל: 3–5 ימי עסקים — ₪25
+          משלוח רגיל: 5–7 ימי עסקים — ₪25 (חינם לרכישות מעל ₪200)
           <br />
-          משלוח מהיר: 1–2 ימי עסקים — ₪49
+          משלוח מהיר: 2–3 ימי עסקים — ₪29
           <br />
-          משלוח חינם: לכל רכישה מעל ₪350
+          משלוח באותו יום: עד 23:59 היום — ₪59 (מרכז בלבד)
+          <br />
+          איסוף עצמי: מחר 10:00–20:00, חינם — הרצל 42, ת״א
         </div>
       </div>
 
