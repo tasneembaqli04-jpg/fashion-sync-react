@@ -61,6 +61,7 @@ export default function DetailsModal({
   theme,
 }) {
   const [price, setPrice] = useState(0);
+  const [regularPrice, setRegularPrice] = useState(0);
   const [cost, setCost] = useState(0);
   const [isOnSale, setIsOnSale] = useState(false);
   const [salePercent, setSalePercent] = useState(20);
@@ -76,6 +77,11 @@ export default function DetailsModal({
     setPrice(product.price || 0);
     setCost(product.cost || 0);
     setIsOnSale(Boolean(product.sale));
+    setRegularPrice(
+      product.sale && product.originalPrice
+        ? product.originalPrice
+        : product.price || 0
+    );
 
     if (product.sale && product.originalPrice && product.originalPrice > product.price) {
       const computedPct = Math.round(
@@ -142,6 +148,23 @@ export default function DetailsModal({
     setVariantsDraft((prev) => prev.filter((_, index) => index !== variantIndex));
   };
 
+  const handleToggleSale = (checked) => {
+    if (checked) {
+      const currentRegular = price;
+      setRegularPrice(currentRegular);
+      setPrice(Math.round(currentRegular * (1 - salePercent / 100)));
+    } else {
+      setPrice(regularPrice);
+    }
+    setIsOnSale(checked);
+  };
+
+  const handleSalePercentChange = (value) => {
+    const safeValue = Math.max(1, Math.min(90, parseInt(value, 10) || 0));
+    setSalePercent(safeValue);
+    setPrice(Math.round(regularPrice * (1 - safeValue / 100)));
+  };
+
   const handleSave = () => {
     const cleanedVariants = variantsDraft.filter(
       (variant) => (variant.colorName || "").trim() !== ""
@@ -166,9 +189,7 @@ export default function DetailsModal({
       price: Number(price),
       cost: Number(cost) || 0,
       sale: isOnSale,
-      originalPrice: isOnSale
-        ? Math.round(Number(price) / (1 - Number(salePercent) / 100))
-        : null,
+      originalPrice: isOnSale ? Number(regularPrice) || 0 : null,
       trending: isTrending,
       minStock: Number(minStock),
       season,
@@ -270,8 +291,14 @@ export default function DetailsModal({
               min="0"
               max={MAX_PRICE}
               value={price}
+              disabled={isOnSale}
               onChange={(e) => setPrice(clampNumberString(e.target.value, MAX_PRICE))}
             />
+            {isOnSale && (
+              <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.2rem" }}>
+                נעול בזמן מבצע — נשלט לפי אחוז ההנחה למטה
+              </div>
+            )}
           </div>
           <div className={formStyles.fg}>
             <div className={formStyles.fl}>עלות מוצר (₪)</div>
@@ -290,7 +317,7 @@ export default function DetailsModal({
               <input
                 type="checkbox"
                 checked={isOnSale}
-                onChange={(e) => setIsOnSale(e.target.checked)}
+                onChange={(e) => handleToggleSale(e.target.checked)}
               />
               🏷️ מוצר במבצע
             </label>
@@ -304,11 +331,7 @@ export default function DetailsModal({
                   min="1"
                   max="90"
                   value={salePercent}
-                  onChange={(e) =>
-                    setSalePercent(
-                      Math.max(1, Math.min(90, parseInt(e.target.value, 10) || 0))
-                    )
-                  }
+                  onChange={(e) => handleSalePercentChange(e.target.value)}
                 />
                 <div
                   style={{
@@ -317,9 +340,11 @@ export default function DetailsModal({
                     marginTop: "0.3rem",
                   }}
                 >
-                  מחיר לפני ההנחה שיוצג ללקוחה: ₪
-                  {Math.round(Number(price) / (1 - Number(salePercent) / 100))}
-                  {" "}→ מחיר אחרי הנחה: ₪{price}
+                  המחיר הרגיל (האמיתי, לפני המבצע): ₪{regularPrice} → מחיר
+                  המבצע: ₪{price}
+                  <br />
+                  ⓘ ברגע שתבטלי את המבצע, המחיר יחזור אוטומטית ל-₪
+                  {regularPrice}.
                 </div>
               </div>
             )}
