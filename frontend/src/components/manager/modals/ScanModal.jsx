@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { BrowserMultiFormatReader } from "@zxing/library";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 
 export default function ScanModal({ open, onClose, onCodeScanned }) {
@@ -7,9 +8,9 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const pausedRef = useRef(false);
-  const animFrameRef = useRef(null);
   const devicesRef = useRef([]);
   const camIdxRef = useRef(0);
+  const codeReaderRef = useRef(null);
 
   const [mode, setMode] = useState("cam");
   const [camStatus, setCamStatus] = useState("🔍 מחפש ברקוד...");
@@ -34,10 +35,20 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     return () => clearTimeout(timer);
   }, [open, mode]);
 
+  function getReader() {
+    if (!codeReaderRef.current) {
+      codeReaderRef.current = new BrowserMultiFormatReader();
+    }
+    return codeReaderRef.current;
+  }
+
   function stopAll() {
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = null;
+    if (codeReaderRef.current) {
+      try {
+        codeReaderRef.current.reset();
+      } catch (e) {
+        console.error("ZXing reset error:", e);
+      }
     }
 
     if (streamRef.current) {
@@ -62,28 +73,32 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
           camIdxRef.current % Math.max(devicesRef.current.length, 1)
         ]?.deviceId;
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: deviceId
-          ? { deviceId: { exact: deviceId } }
-          : { facingMode: "environment" },
-        audio: false,
-      });
+      const reader = getReader();
 
-      streamRef.current = stream;
+      setCamStatus("🔍 מחפש ברקוד...");
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = async () => {
-          try {
-            await videoRef.current.play();
-            setCamStatus("🔍 מחפש ברקוד...");
-            if ("BarcodeDetector" in window) startAutoScan();
-          } catch (e) {
-            setCamStatus("⚠️ שגיאה בהפעלת וידאו");
+      reader.decodeFromVideoDevice(
+        deviceId || null,
+        videoRef.current,
+        (result, err) => {
+          if (pausedRef.current) return;
+
+          if (result) {
+            streamRef.current = videoRef.current?.srcObject || null;
+            handleScanned(result.getText());
+            return;
           }
-        };
-      }
+
+          // NotFoundException נזרקת כל פריים שלא נמצא בו כלום - זה תקין, לא באג
+          if (err && err.name !== "NotFoundException") {
+            console.error("ZXing decode error:", err);
+          }
+        }
+      );
+
+      streamRef.current = videoRef.current?.srcObject || null;
     } catch (err) {
+      console.error("Camera start error:", err);
       if (err.name === "NotAllowedError") {
         setCamStatus("⚠️ יש לאשר גישה למצלמה");
       } else {
@@ -92,91 +107,25 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     }
   }
 
-  function startAutoScan() {
-    async function frame() {
-      if (!videoRef.current || !canvasRef.current || pausedRef.current) return;
-
-      const canvas = canvasRef.current;
-      canvas.width = videoRef.current.videoWidth || 640;
-      canvas.height = videoRef.current.videoHeight || 480;
-      canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
-
-      try {
-        const detector = new window.BarcodeDetector({
-          formats: [
-            "code_128",
-            "code_39",
-            "code_93",
-            "ean_13",
-            "ean_8",
-            "upc_a",
-            "upc_e",
-            "qr_code",
-          ],
-        });
-
-        const barcodes = await detector.detect(canvas);
-
-        if (barcodes.length > 0 && !pausedRef.current) {
-          handleScanned(barcodes[0].rawValue);
-          return;
-        }
-      } catch (e) {}
-
-      animFrameRef.current = requestAnimationFrame(frame);
-    }
-
-    animFrameRef.current = requestAnimationFrame(frame);
-  }
-
   async function doManualCapture() {
-    if (!videoRef.current || !canvasRef.current || pausedRef.current) return;
+    if (!videoRef.current || pausedRef.current) return;
 
     setScanning(true);
     setCamStatus("🔍 סורק...");
 
-    const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth || 640;
-    canvas.height = videoRef.current.videoHeight || 480;
-    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
+    try {
+      const reader = getReader();
+      const result = await reader.decodeOnceFromVideoDevice(
+        undefined,
+        videoRef.current
+      );
 
-    if ("BarcodeDetector" in window) {
-      try {
-        const detector = new window.BarcodeDetector({
-          formats: [
-            "code_128",
-            "code_39",
-            "code_93",
-            "ean_13",
-            "ean_8",
-            "upc_a",
-            "upc_e",
-            "qr_code",
-          ],
-        });
-
-        const barcodes = await detector.detect(canvas);
-        if (barcodes.length > 0) {
-          handleScanned(barcodes[0].rawValue);
-          return;
-        }
-      } catch (e) {}
-    }
-
-    if (window.ZXing) {
-      try {
-        const reader = new window.ZXing.BrowserMultiFormatReader();
-        const img = new Image();
-        img.src = canvas.toDataURL("image/png");
-        await new Promise((res) => {
-          img.onload = res;
-        });
-        const result = await reader.decodeFromImageElement(img);
-        if (result) {
-          handleScanned(result.getText());
-          return;
-        }
-      } catch (e) {}
+      if (result) {
+        handleScanned(result.getText());
+        return;
+      }
+    } catch (e) {
+      console.error("Manual scan error:", e);
     }
 
     setCamStatus("❌ לא זוהה — נסה שוב");
@@ -198,14 +147,16 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
 
   async function toggleTorch() {
     if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
+    const track = streamRef.current.getVideoTracks?.()[0];
     if (!track) return;
 
     try {
       const next = !torchOn;
       await track.applyConstraints({ advanced: [{ torch: next }] });
       setTorchOn(next);
-    } catch (e) {}
+    } catch (e) {
+      console.error("Torch toggle error:", e);
+    }
   }
 
   function handleManualSubmit() {
@@ -369,8 +320,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  width: "70%",
-                  aspectRatio: "3/1",
+                  width: "85%",
+                  aspectRatio: "1/1",
                   border: "2px solid var(--gold, #c9a84c)",
                   borderRadius: "8px",
                 }}
@@ -387,8 +338,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
               <div
                 style={{
                   position: "absolute",
-                  left: "15%",
-                  right: "15%",
+                  left: "7.5%",
+                  right: "7.5%",
                   height: "2px",
                   background:
                     "linear-gradient(90deg, transparent, #e74c3c, transparent)",
