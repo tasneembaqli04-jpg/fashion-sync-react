@@ -1,0 +1,260 @@
+import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import baseStyles from "../../styles/customer/Customer.module.scss";
+
+export default function VisualSearchModal({
+  open = false,
+  tryonSelfie = "",
+  tryOnResult = null,
+  tryOnLoading = false,
+  tryOnError = "",
+  closeVisualModal,
+  tryOnSelfieUpload,
+  clearTryonSelfie,
+  onTryOn,
+}) {
+  const resultImageUrl =
+    tryOnResult?.resultImageUrl ||
+    tryOnResult?.imageUrl ||
+    (tryOnResult?.imageBase64
+      ? `data:${tryOnResult.mimeType || "image/png"};base64,${
+          tryOnResult.imageBase64
+        }`
+      : "");
+
+  const handleSaveImage = () => {
+    if (!resultImageUrl) return;
+
+    const link = document.createElement("a");
+    link.href = resultImageUrl;
+    link.download = "fashionsync-tryon-result.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleShareImage = async () => {
+    if (!resultImageUrl) return;
+
+    try {
+      const response = await fetch(resultImageUrl);
+      const blob = await response.blob();
+
+      const file = new File([blob], "fashionsync-tryon.png", {
+        type: blob.type || "image/png",
+      });
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: "FashionSync - נסה עליי",
+          text: "שיתוף תמונת נסה עליי",
+          files: [file],
+        });
+
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = resultImageUrl;
+      link.download = "fashionsync-tryon.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert("הדפדפן לא תומך בשיתוף ישיר, לכן התמונה נשמרה למחשב.");
+    } catch (error) {
+      console.error("Share failed:", error);
+      alert("השיתוף לא נתמך בדפדפן הזה.");
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div
+      className={`${modalStyles.modalWrap} ${modalStyles.open}`}
+      id="visual-modal"
+    >
+      <div className={modalStyles.modalBox}>
+        <button
+          type="button"
+          className={modalStyles.modalClose}
+          onClick={closeVisualModal}
+        >
+          ✕
+        </button>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.75rem",
+            marginBottom: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: '"Playfair Display", serif',
+              fontSize: "1.3rem",
+              color: "var(--gold)",
+            }}
+          >
+            📸 נסה עליי
+          </div>
+        </div>
+
+        <div className={modalStyles.vsLayout}>
+          <div className={modalStyles.card}>
+            <div className={baseStyles.secTitle}>🤳 העלאת תמונה</div>
+
+            {!tryonSelfie ? (
+              <div className={modalStyles.uploadDrop}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={tryOnSelfieUpload}
+                />
+
+                <div className={modalStyles.uploadIcon}>📸</div>
+                <div className={modalStyles.uploadText}>העלה תמונה שלך</div>
+              </div>
+            ) : (
+              <div style={{ marginTop: "1rem" }}>
+                <img
+                  src={tryonSelfie}
+                  alt="תמונה שהועלתה"
+                  style={{
+                    width: "100%",
+                    height: "420px",
+                    borderRadius: "14px",
+                    border: "1px solid var(--border)",
+                    display: "block",
+                    objectFit: "contain",
+                    objectPosition: "center",
+                  }}
+                />
+
+                <div
+                  style={{
+                    marginTop: "1rem",
+                    display: "flex",
+                    gap: ".6rem",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                  }}
+                >
+                  <label
+                    className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
+                    style={{ cursor: "pointer" }}
+                  >
+                    🔁 החלף תמונה
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={tryOnSelfieUpload}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
+                    onClick={clearTryonSelfie}
+                    disabled={tryOnLoading}
+                  >
+                    🗑️ מחק תמונה
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`${baseStyles.btn} ${baseStyles.btnGold}`}
+                    onClick={onTryOn}
+                    disabled={tryOnLoading}
+                  >
+                    {tryOnLoading ? "⏳ מעבד תמונה..." : "✨ הפעל נסה עליי"}
+                  </button>
+                </div>
+
+                {tryOnError && (
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      color: "#ff6b6b",
+                      textAlign: "center",
+                    }}
+                  >
+                    {tryOnError}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={modalStyles.card}>
+            <div className={baseStyles.secTitle}>🪞 התוצאה</div>
+
+            <div
+              style={{
+                color: "var(--light-gray)",
+                textAlign: "center",
+                padding: "1.2rem",
+              }}
+            >
+              {tryOnLoading ? (
+                <div style={{ padding: "4rem 1rem" }}>
+                  ⏳ יוצר את תמונת ה־Try-On...
+                </div>
+              ) : resultImageUrl ? (
+                <>
+                  <img
+                    src={resultImageUrl}
+                    alt="תוצאת נסה עליי"
+                    style={{
+                      width: "100%",
+                      height: "420px",
+                      borderRadius: "14px",
+                      objectFit: "contain",
+                      objectPosition: "center",
+                      border: "1px solid var(--border)",
+                      display: "block",
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      display: "flex",
+                      gap: ".6rem",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className={`${baseStyles.btn} ${baseStyles.btnGold}`}
+                      onClick={handleSaveImage}
+                    >
+                      💾 שמור תמונה
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
+                      onClick={handleShareImage}
+                    >
+                      🔗 שתף
+                    </button>
+                  </div>
+                </>
+              ) : (
+                "העלה תמונה ולחץ על „הפעל נסה עליי”"
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
