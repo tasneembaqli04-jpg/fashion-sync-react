@@ -219,10 +219,15 @@ export default function Manager({ onPromote }) {
   };
 
   const handleScanCode = (code) => {
-    const found = products.find(
-      (p) => p.code.toUpperCase() === code.trim().toUpperCase(),
-    );
-    setGlobalSearch(found ? found.code : code);
+    const trimmedCode = code.trim().toUpperCase();
+    const found = products.find((p) => p.code.toUpperCase() === trimmedCode);
+
+    if (!found) {
+      alert(`⚠️ מוצר עם הקוד "${trimmedCode}" לא נמצא במלאי`);
+      return;
+    }
+
+    setGlobalSearch(found.code);
     setActiveView("inventory");
   };
   const handleToggleTheme = () => {
