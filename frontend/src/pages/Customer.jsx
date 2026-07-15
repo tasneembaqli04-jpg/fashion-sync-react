@@ -57,7 +57,6 @@ import CustomerGiftCard from "../components/customer/CustomerGiftCard";
 import CustomerPolicy from "../components/customer/CustomerPolicy";
 import ProductModal from "../components/customer/ProductModal";
 import ShareModal from "../components/customer/ShareModal";
-import NotifyModal from "../components/customer/NotifyModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
 import VisualSearchModal from "../components/customer/VisualSearchModal";
@@ -110,10 +109,6 @@ export default function Customer() {
   const [shareItemName, setShareItemName] = useState("");
   const [shareProductCode, setShareProductCode] = useState("");
   const [shareCopied, setShareCopied] = useState(false);
-
-  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-  const [notifyText, setNotifyText] = useState("");
-  const [notifyProduct, setNotifyProduct] = useState(null);
 
   const [cartOpen, setCartOpen] = useState(false);
   const [couponValue, setCouponValue] = useState("");
@@ -662,38 +657,26 @@ export default function Customer() {
   }
 
   function openNotifyModal(code) {
+    if (isGuest) {
+      guestPrompt();
+      return;
+    }
+
     const product = products.find((item) => item.code === code);
     if (!product) return;
 
-    setNotifyText(`נעדכן אותך כש<strong>${product.name}</strong> יחזור למלאי.`);
-    setNotifyProduct(product);
-    setNotifyModalOpen(true);
-  }
-
-  function closeNotifyModal() {
-    setNotifyModalOpen(false);
-  }
-
-  function submitNotify(email, phone) {
-    if (!email && !phone) {
-      alert("יש למלא כתובת Gmail או מספר טלפון");
-      return;
-    }
-
-    if (email && !email.toLowerCase().endsWith("@gmail.com")) {
-      alert("יש להזין כתובת Gmail תקינה");
-      return;
-    }
+    const confirmed = window.confirm(
+      `נעדכן אותך באזור האישי שלך ("ההתראות שלי") כש${product.name} יחזור למלאי. להמשיך?`
+    );
+    if (!confirmed) return;
 
     requestStockNotification({
-      productCode: notifyProduct?.code,
-      productName: notifyProduct?.name,
-      email,
-      phone,
+      productCode: product.code,
+      productName: product.name,
+      email: currentUser?.email || "",
     });
 
-    alert("נשלח! נודיע לך כשהמוצר יחזור למלאי.");
-    setNotifyModalOpen(false);
+    alert("נרשמת בהצלחה! נעדכן אותך באזור האישי שלך כשהמוצר יחזור למלאי.");
   }
 
   function openVisualModal() {
@@ -1050,13 +1033,6 @@ export default function Customer() {
         copied={shareCopied}
         closeShareModal={closeShareModal}
         doShare={doShare}
-      />
-
-      <NotifyModal
-        open={notifyModalOpen}
-        notifyText={notifyText}
-        closeNotifyModal={closeNotifyModal}
-        submitNotify={submitNotify}
       />
 
       <CartDrawer
