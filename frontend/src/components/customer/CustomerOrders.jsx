@@ -12,8 +12,26 @@ const FILTERS = [
   { key: 3, label: "נמסרה" },
 ];
 
+const MONTH_NAMES = [
+  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
+];
+
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getMonthLabel(monthKey) {
+  if (monthKey === "unknown") return "ללא תאריך";
+  const [year, month] = monthKey.split("-");
+  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+}
+
 export default function CustomerOrders({ show, orders = [] }) {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
 
   const sortedOrders = useMemo(() => {
     const withStatus = orders.map((order) => ({
@@ -38,18 +56,30 @@ export default function CustomerOrders({ show, orders = [] }) {
     });
   }, [orders]);
 
+  const availableMonths = useMemo(() => {
+    const keys = new Set(sortedOrders.map((o) => getMonthKey(o.createdAt || o.date)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [sortedOrders]);
+
+  const monthFilteredOrders = useMemo(() => {
+    if (monthFilter === "all") return sortedOrders;
+    return sortedOrders.filter(
+      (order) => getMonthKey(order.createdAt || order.date) === monthFilter
+    );
+  }, [sortedOrders, monthFilter]);
+
   const filteredOrders = useMemo(() => {
-    if (activeFilter === "all") return sortedOrders;
-    return sortedOrders.filter((order) => order._statusNum === activeFilter);
-  }, [sortedOrders, activeFilter]);
+    if (activeFilter === "all") return monthFilteredOrders;
+    return monthFilteredOrders.filter((order) => order._statusNum === activeFilter);
+  }, [monthFilteredOrders, activeFilter]);
 
   const countsByStatus = useMemo(() => {
-    const counts = { all: sortedOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
-    sortedOrders.forEach((order) => {
+    const counts = { all: monthFilteredOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
+    monthFilteredOrders.forEach((order) => {
       counts[order._statusNum] = (counts[order._statusNum] || 0) + 1;
     });
     return counts;
-  }, [sortedOrders]);
+  }, [monthFilteredOrders]);
 
   if (!show) return null;
 
@@ -57,6 +87,28 @@ export default function CustomerOrders({ show, orders = [] }) {
     <div>
       <div className={commonStyles.pageTitle}>📦 ההזמנות שלי</div>
       <div className={commonStyles.pageSub}>מעקב אחרי הזמנות ומשלוחים</div>
+
+      <div style={{ marginBottom: "0.8rem" }}>
+        <select
+          value={monthFilter}
+          onChange={(e) => setMonthFilter(e.target.value)}
+          style={{
+            padding: "0.5rem 1rem",
+            borderRadius: "10px",
+            border: "1px solid var(--border)",
+            background: "var(--surface2, transparent)",
+            color: "var(--text)",
+            fontSize: "0.9rem",
+          }}
+        >
+          <option value="all">📅 כל החודשים</option>
+          {availableMonths.map((key) => (
+            <option key={key} value={key}>
+              {getMonthLabel(key)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div
         style={{

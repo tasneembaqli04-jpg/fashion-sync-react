@@ -7,6 +7,7 @@ import { SHIPPING_OPTIONS } from "../data/shippingOptions";
 import { getGiftCard, redeemGiftCardAmount } from "../services/giftcard/giftCardService";
 import { logCouponUsage } from "../services/coupons/couponsService";
 import { redeemLoyaltyPoints } from "../services/customer/customerFirestore";
+import { sendOrderConfirmationEmail } from "../services/email/emailService";
 import {
   getAppliedDiscountPercent,
   getCurrentUser,
@@ -388,6 +389,15 @@ export default function Checkout() {
 
         await saveReceiptAndOrder(receipt);
         await decrementProductsStock(orderItems);
+        sendOrderConfirmationEmail({
+          toEmail: formData.email,
+          order: {
+            id: receipt.id,
+            customerName: formData.firstName || "",
+            items: orderItems,
+            total: orderTotal,
+          },
+        });
 
         const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
         if (usedCouponCode && orderDiscountAmount > 0) {

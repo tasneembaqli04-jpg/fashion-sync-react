@@ -40,6 +40,7 @@ export async function addOrder(receipt) {
     installments: Number(receipt.installments) || 1,
     status: 0,
     statusLabel: STEPS[0],
+    confirmed: false,
     ready: false,
     steps: STEPS,
     payMethod: receipt.payMethod || "",
@@ -119,5 +120,11 @@ export async function advanceOrderStatus(docId, statusIndex) {
   await updateDoc(orderRef, {
     status: statusIndex,
     statusLabel: STEPS[statusIndex] || "",
+  });
+}
+export async function confirmOrder(docId) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, {
+    confirmed: true,
   });
 }
