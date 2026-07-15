@@ -40,6 +40,7 @@ import {
   getCartTotals,
 } from "../functions/customer/cart";
 import { getReply } from "../functions/customer/chat";
+import { requestChatReplyStream } from "../services/chat/chatService";
 import {
   buildGiftCardPreview,
   buyGiftCard as buyGiftCardFn,
@@ -91,6 +92,7 @@ export default function Customer() {
       html: `שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?`,
     },
   ]);
+  const [isChatTyping, setIsChatTyping] = useState(false);
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -360,19 +362,56 @@ export default function Customer() {
     setTimeout(() => sendMsg(text), 0);
   }
 
-  function sendMsg(forcedText) {
+  async function sendMsg(forcedText) {
     const text = (forcedText ?? chatInput).trim();
     if (!text) return;
 
     setChatMessages((prev) => [...prev, { type: "user", html: text }]);
-
-    const reply = getReply(text, products);
-
-    setTimeout(() => {
-      setChatMessages((prev) => [...prev, { type: "bot", html: reply }]);
-    }, 500);
-
     setChatInput("");
+    setIsChatTyping(true);
+
+    const history = chatMessages.map((m) => ({
+      role: m.type === "user" ? "user" : "bot",
+      text: m.html,
+    }));
+
+    let botMessageStarted = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+    try {
+      await requestChatReplyStream({
+        message: text,
+        history,
+        signal: controller.signal,
+        onChunk: (fullTextSoFar) => {
+          if (!botMessageStarted) {
+            botMessageStarted = true;
+            setIsChatTyping(false);
+            setChatMessages((prev) => [
+              ...prev,
+              { type: "bot", html: fullTextSoFar },
+            ]);
+          } else {
+            setChatMessages((prev) => {
+              const next = [...prev];
+              next[next.length - 1] = {
+                type: "bot",
+                html: fullTextSoFar,
+              };
+              return next;
+            });
+          }
+        },
+      });
+    } catch (err) {
+      console.error("Real chat API failed, using fallback reply:", err);
+      const fallbackReply = getReply(text, products);
+      setChatMessages((prev) => [...prev, { type: "bot", html: fallbackReply }]);
+    } finally {
+      clearTimeout(timeoutId);
+      setIsChatTyping(false);
+    }
   }
 
   function toggleMoreQuestions() {
@@ -892,6 +931,7 @@ export default function Customer() {
             chatInput={chatInput}
             setChatInput={setChatInput}
             onChatImageChange={() => {}}
+            isTyping={isChatTyping}
           />
         )}
 
