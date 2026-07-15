@@ -22,8 +22,7 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
-import { subscribeToOrders, updateOrderStatus, advanceOrderStatus } from "../services/orders/ordersService";
-import {
+import { subscribeToOrders, updateOrderStatus, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";import {
   getAllDeliveries,
   addDelivery,
   updateDeliveryStatus,
@@ -39,6 +38,7 @@ import {
   loadTheme,
   saveTheme,
 } from "../functions/manager/managerStorage";
+import { sendShippingUpdateEmail, sendStockAlertEmail } from "../services/email/emailService";
 
 export default function Manager({ onPromote }) {
   const navigate = useNavigate();
@@ -85,6 +85,7 @@ export default function Manager({ onPromote }) {
 
             status: order.ready ? "ready" : "pending",
             stageIndex: Number(order.status) || 0,
+            confirmed: Boolean(order.confirmed),
             items: Array.isArray(order.items) ? order.items : [],
             total: Number(order.total) || 0,
             date: order.date || order.createdAt || null,
@@ -145,7 +146,7 @@ export default function Manager({ onPromote }) {
   const alerts = useMemo(() => createAlerts(products, orders), [products, orders]);
 
   const pendingOrdersCount = useMemo(
-    () => orders.filter((o) => o.status !== "ready").length,
+    () => orders.filter((o) => !o.confirmed).length,
     [orders],
   );
 
@@ -354,6 +355,25 @@ export default function Manager({ onPromote }) {
       return updatedDeliveries;
     });
   }
+  function handleConfirmOrder(orderDocId) {
+    confirmOrder(orderDocId);
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.docId === orderDocId ? { ...order, confirmed: true } : order
+      )
+    );
+
+    const order = orders.find((o) => o.docId === orderDocId);
+    if (order?.customerEmail) {
+      sendShippingUpdateEmail({
+        toEmail: order.customerEmail,
+        orderId: order.id,
+        stageIndex: 0,
+      });
+    }
+  }
+
   function handleAdvanceOrderStage(orderDocId, nextIndex) {
     advanceOrderStatus(orderDocId, nextIndex);
 
@@ -362,6 +382,15 @@ export default function Manager({ onPromote }) {
         order.docId === orderDocId ? { ...order, stageIndex: nextIndex } : order
       )
     );
+
+    const order = orders.find((o) => o.docId === orderDocId);
+    if (order?.customerEmail) {
+      sendShippingUpdateEmail({
+        toEmail: order.customerEmail,
+        orderId: order.id,
+        stageIndex: nextIndex,
+      });
+    }
   }
 
   const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
@@ -463,7 +492,7 @@ export default function Manager({ onPromote }) {
           {activeView === "orders" && (
             <ManagerOrders
               orders={orders}
-              onToggleOrderReady={handleToggleOrderReady}
+              onConfirmOrder={handleConfirmOrder}
             />
           )}
           {activeView === "deliveries" && (
@@ -505,14 +534,23 @@ export default function Manager({ onPromote }) {
           setIsDetailsOpen(false);
           setSelectedProduct(null);
         }}
-        onSave={(updated) => {
+        onSave={async (updated) => {
           const previousStock = Number(selectedProduct?.stock) || 0;
           const newStock = Number(updated.stock) || 0;
 
           updateProduct(updated);
 
           if (previousStock <= 0 && newStock > 0) {
-            resolveStockNotifications(updated.code);
+            const resolvedEntries = await resolveStockNotifications(updated.code);
+
+            resolvedEntries.forEach((entry) => {
+              if (entry.email) {
+                sendStockAlertEmail({
+                  toEmail: entry.email,
+                  productName: entry.productName || updated.name,
+                });
+              }
+            });
           }
 
           setProducts((prev) =>

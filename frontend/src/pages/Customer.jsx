@@ -666,7 +666,7 @@ export default function Customer() {
     if (!product) return;
 
     const confirmed = window.confirm(
-      `נעדכן אותך באזור האישי שלך ("ההתראות שלי") כש${product.name} יחזור למלאי. להמשיך?`
+      `נשלח לך מייל לכתובת ${currentUser?.email || ""} וגם התראה באזור האישי שלך ("ההתראות שלי") כש${product.name} יחזור למלאי. להמשיך?`
     );
     if (!confirmed) return;
 
@@ -676,7 +676,9 @@ export default function Customer() {
       email: currentUser?.email || "",
     });
 
-    alert("נרשמת בהצלחה! נעדכן אותך באזור האישי שלך כשהמוצר יחזור למלאי.");
+    alert(
+      `נרשמת בהצלחה! נעדכן אותך במייל (${currentUser?.email || ""}) וגם באזור האישי שלך כשהמוצר יחזור למלאי.`
+    );
   }
 
   function openVisualModal() {

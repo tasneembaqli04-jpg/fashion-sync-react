@@ -6,6 +6,7 @@ import {
   markStockNotificationDone,
   deleteStockNotification,
 } from "../../../services/notifications/notificationsService";
+import { sendStockAlertEmail } from "../../../services/email/emailService";
 
 function fmtDate(value) {
   if (!value) return "";
@@ -31,7 +32,14 @@ export default function StockNotificationsView() {
     });
   }, []);
 
-  async function handleMarkDone(id) {
+  async function handleMarkDone(id, item) {
+    if (item?.email) {
+      await sendStockAlertEmail({
+        toEmail: item.email,
+        productName: item.productName || item.productCode,
+      });
+    }
+
     await markStockNotificationDone(id);
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, notified: true } : item))
@@ -55,8 +63,8 @@ export default function StockNotificationsView() {
             {pendingCount} בקשות ממתינות מתוך {items.length} סה"כ
           </p>
           <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.3rem" }}>
-            💡 סימון ידני כאן הוא רק לניהול פנימי — הלקוחה תראה "חזר למלאי" רק
-            אם למוצר יש בפועל מלאי גדול מ-0.
+            💡 המייל וההתראה נשלחים אוטומטית ברגע שמעדכנים את כמות המלאי
+            ב"פרטים" ל-0 ומעלה        
           </p>
         </div>
       </div>
@@ -98,13 +106,12 @@ export default function StockNotificationsView() {
 
             <div style={{ display: "flex", gap: "0.5rem" }}>
               {!item.notified ? (
-                <button
-                  type="button"
-                  className={`${uiStyles.btn} ${uiStyles.btnGold}`}
-                  onClick={() => handleMarkDone(item.id)}
+                <span
+                  className={`${uiStyles.tag} ${uiStyles.tYellow}`}
+                  title="יטופל אוטומטית כשהמלאי יעודכן"
                 >
-                  ✓ סומן כהודע
-                </button>
+                  ⏳ ממתין לעדכון מלאי
+                </span>
               ) : (
                 <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>✓ הודע</span>
               )}

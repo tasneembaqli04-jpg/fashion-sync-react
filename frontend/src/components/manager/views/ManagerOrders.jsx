@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
+
+const MONTH_NAMES = [
+  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
+];
 
 function fmtDate(value) {
   if (!value) return "";
@@ -16,37 +21,48 @@ function fmtDate(value) {
   });
 }
 
-export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getMonthLabel(monthKey) {
+  if (monthKey === "unknown") return "ללא תאריך";
+  const [year, month] = monthKey.split("-");
+  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+}
+
+export default function ManagerOrders({ orders = [], onConfirmOrder }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("pending"); 
-  const [phoneSearch, setPhoneSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("pending");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
 
-  const pending = orders.filter(
-    (o) => o.status === "pending" || o.status === "waiting" || !o.status
-  ).length;
+  const availableMonths = useMemo(() => {
+    const keys = new Set(orders.map((o) => getMonthKey(o.date || o.createdAt)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [orders]);
 
-  const ready = orders.filter(
-    (o) =>
-      o.status === "ready" ||
-      o.status === "done" ||
-      o.status === "completed"
-  ).length;
+  const pending = orders.filter((o) => !o.confirmed).length;
+  const confirmed = orders.filter((o) => o.confirmed).length;
 
   const visibleOrders = orders.filter((order) => {
-    const isReady =
-      order.status === "ready" ||
-      order.status === "done" ||
-      order.status === "completed";
+    if (statusFilter === "ready" && !order.confirmed) return false;
+    if (statusFilter === "pending" && order.confirmed) return false;
 
-    if (statusFilter === "ready" && !isReady) return false;
-    if (statusFilter === "pending" && isReady) return false;
+    if (monthFilter !== "all") {
+      if (getMonthKey(order.date || order.createdAt) !== monthFilter) return false;
+    }
 
-    const phoneDigits = String(phoneSearch).replace(/\D/g, "");
-    if (phoneDigits) {
-      const customerPhone = String(
-        order.customerDetails?.phone || ""
-      ).replace(/\D/g, "");
-      if (!customerPhone.includes(phoneDigits)) return false;
+    const term = searchTerm.trim();
+    if (term) {
+      const phoneDigits = term.replace(/\D/g, "");
+      const customerPhone = String(order.customerDetails?.phone || "").replace(/\D/g, "");
+      const matchesPhone = phoneDigits && customerPhone.includes(phoneDigits);
+      const matchesOrderId = String(order.id || "").toLowerCase().includes(term.toLowerCase());
+
+      if (!matchesPhone && !matchesOrderId) return false;
     }
 
     return true;
@@ -63,7 +79,7 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
       <div className={uiStyles.pageHd}>
         <div className={uiStyles.phLeft}>
           <h2>הזמנות לקוחות</h2>
-          <p>הזמנות שנפתחו — יש להכין ולסמן כמוכן</p>
+          <p>הזמנות שנפתחו — יש לאשר ולעקוב</p>
         </div>
       </div>
 
@@ -77,7 +93,7 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
           onClick={() => setStatusFilter("pending")}
         >
           <div className={overviewStyles.statIcon}>⏳</div>
-          <div className={overviewStyles.statLabel}>ממתינות</div>
+          <div className={overviewStyles.statLabel}>ממתינות לאישור</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--orange)" }}
@@ -113,28 +129,28 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             className={overviewStyles.statLabel}
             style={{ color: "var(--green)" }}
           >
-            מוכנות
+            מאושרות
           </div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--green)" }}
           >
-            {ready}
+            {confirmed}
           </div>
-          <div className={overviewStyles.statSub}>להגשה</div>
+          <div className={overviewStyles.statSub}>טופלו</div>
         </div>
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <input
-          type="tel"
-          placeholder="🔍 חיפוש לפי טלפון לקוח..."
-          value={phoneSearch}
-          onChange={(e) => setPhoneSearch(e.target.value)}
+          type="text"
+          placeholder="🔍 חיפוש לפי טלפון או מספר הזמנה (RCP-...)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           dir="rtl"
           style={{
-            width: "100%",
-            maxWidth: "320px",
+            flex: "1 1 320px",
+            maxWidth: "400px",
             padding: "10px 14px",
             borderRadius: "10px",
             border: "1px solid var(--border)",
@@ -144,6 +160,26 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
             textAlign: "right",
           }}
         />
+
+        <select
+          value={monthFilter}
+          onChange={(e) => setMonthFilter(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: "10px",
+            border: "1px solid var(--border)",
+            background: "var(--surface2)",
+            color: "var(--text)",
+            fontSize: "0.95rem",
+          }}
+        >
+          <option value="all">📅 כל החודשים</option>
+          {availableMonths.map((key) => (
+            <option key={key} value={key}>
+              {getMonthLabel(key)}
+            </option>
+          ))}
+        </select>
       </div>
 
       {!visibleOrders.length ? (
@@ -165,13 +201,7 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
               0
             );
 
-          const isReady =
-            order.status === "ready" ||
-            order.status === "done" ||
-            order.status === "completed";
-
           const hasCustomSize = items.some((item) => item.isCustomSize);
-
           const dateText = fmtDate(order.date);
 
           return (
@@ -190,10 +220,10 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
                 <div>
                   <span
                     className={`${uiStyles.tag} ${
-                      isReady ? uiStyles.tGreen : uiStyles.tYellow
+                      order.confirmed ? uiStyles.tGreen : uiStyles.tYellow
                     }`}
                   >
-                    {isReady ? "✅ מוכן להגשה" : "⏳ ממתין להכנה"}
+                    {order.confirmed ? "✅ אושרה" : "⏳ ממתינה לאישור"}
                   </span>
 
                   {hasCustomSize && (
@@ -217,22 +247,23 @@ export default function ManagerOrders({ orders = [], onToggleOrderReady }) {
                   ₪{total.toLocaleString()}
                 </span>
 
+                {!order.confirmed && (
+                  <button
+                    type="button"
+                    className={ordersStyles.orderPrepareBtn}
+                    style={{ background: "var(--green)", color: "#fff" }}
+                    onClick={() => onConfirmOrder?.(order.docId)}
+                  >
+                    ✅ אשר הזמנה
+                  </button>
+                )}
+
                 <button
                   type="button"
                   className={ordersStyles.orderPrepareBtn}
                   onClick={() => setSelectedOrder(order)}
                 >
                   📋 פרטי הזמנה
-                </button>
-
-                <button
-                  type="button"
-                  className={`${ordersStyles.orderPrepareBtn} ${
-                    isReady ? ordersStyles.done : ""
-                  }`}
-                  onClick={() => onToggleOrderReady?.(order.id)}
-                >
-                  {isReady ? "✓ מוכן" : "הכן להגשה"}
                 </button>
               </div>
             </div>

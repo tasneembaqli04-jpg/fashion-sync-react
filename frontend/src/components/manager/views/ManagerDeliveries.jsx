@@ -13,6 +13,11 @@ const STAGE_TABS = [
   { value: 3, label: "נמסרה" },
 ];
 
+const MONTH_NAMES = [
+  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
+];
+
 function fmtDate(ts) {
   if (!ts) return "";
   const d = new Date(ts);
@@ -26,11 +31,34 @@ function fmtDate(ts) {
   });
 }
 
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getMonthLabel(monthKey) {
+  if (monthKey === "unknown") return "ללא תאריך";
+  const [year, month] = monthKey.split("-");
+  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+}
+
 export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
   const [stageFilter, setStageFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
+
+  const availableMonths = useMemo(() => {
+    const keys = new Set(orders.map((o) => getMonthKey(o.createdAt)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [orders]);
+
+  const monthFilteredOrders = useMemo(() => {
+    if (monthFilter === "all") return orders;
+    return orders.filter((order) => getMonthKey(order.createdAt) === monthFilter);
+  }, [orders, monthFilter]);
 
   const sortedOrders = useMemo(() => {
-    return [...orders].sort((a, b) => {
+    return [...monthFilteredOrders].sort((a, b) => {
       const aDone = (a.stageIndex ?? 0) >= 3;
       const bDone = (b.stageIndex ?? 0) >= 3;
 
@@ -38,7 +66,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
 
       return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
     });
-  }, [orders]);
+  }, [monthFilteredOrders]);
 
   const visibleOrders = useMemo(() => {
     if (stageFilter === "all") return sortedOrders;
@@ -46,8 +74,8 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
   }, [sortedOrders, stageFilter]);
 
   function countFor(stageValue) {
-    if (stageValue === "all") return orders.length;
-    return orders.filter((order) => (order.stageIndex ?? 0) === stageValue).length;
+    if (stageValue === "all") return monthFilteredOrders.length;
+    return monthFilteredOrders.filter((order) => (order.stageIndex ?? 0) === stageValue).length;
   }
 
   return (
@@ -57,6 +85,28 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
           <h2>מעקב משלוחים</h2>
           <p>עדכן סטטוס משלוח עבור כל הזמנה</p>
         </div>
+      </div>
+
+      <div style={{ marginBottom: "0.8rem" }}>
+        <select
+          value={monthFilter}
+          onChange={(e) => setMonthFilter(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: "10px",
+            border: "1px solid var(--border)",
+            background: "var(--surface2)",
+            color: "var(--text)",
+            fontSize: "0.95rem",
+          }}
+        >
+          <option value="all">📅 כל החודשים</option>
+          {availableMonths.map((key) => (
+            <option key={key} value={key}>
+              {getMonthLabel(key)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div

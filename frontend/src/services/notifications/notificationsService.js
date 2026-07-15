@@ -47,12 +47,17 @@ export async function resolveStockNotifications(productCode) {
     (d) => d.data().productCode === productCode && !d.data().notified
   );
 
+  const resolvedEntries = [];
+
   for (const document of matches) {
     await updateDoc(doc(db, "stockNotifications", document.id), {
       notified: true,
       resolvedAt: new Date().toISOString(),
     });
+    resolvedEntries.push({ id: document.id, ...document.data() });
   }
+
+  return resolvedEntries;
 }
 
 export async function getMyStockAlerts(email) {
