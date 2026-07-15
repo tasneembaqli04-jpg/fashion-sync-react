@@ -1,9 +1,7 @@
 const { GoogleGenAI } = require("@google/genai");
 
 const ai = new GoogleGenAI({
-  vertexai: true,
-  project: "fashionsync-dc79f",
-  location: "us-central1",
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
 module.exports = {

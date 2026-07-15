@@ -11,6 +11,7 @@ export default function CustomerChat({
   chatInput,
   setChatInput,
   onChatImageChange,
+  isTyping = false,
 }) {
   const msgsRef = useRef(null);
 
@@ -46,6 +47,16 @@ export default function CustomerChat({
               dangerouslySetInnerHTML={{ __html: msg.html }}
             />
           ))}
+
+          {isTyping && (
+            <div className={`${chatStyles.msg} ${chatStyles.botMsg}`}>
+              <span className={chatStyles.typingDots}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className={chatStyles.chatPills}>
