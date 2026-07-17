@@ -1,5 +1,4 @@
-const { ai } = require("../config/gemini");
-
+const {vertexAi} = require("../config/vertexGemini");
 const MODEL_NAME = "gemini-2.5-flash-image";
 
 function normalizeCategory(product) {
@@ -289,7 +288,7 @@ async function generateTryOn(product, imageUrl) {
 
   const prompt = buildTryOnPrompt(product);
 
-  const result = await ai.models.generateContent({
+  const result = await vertexAi.models.generateContent({
     model: MODEL_NAME,
     contents: [
       {

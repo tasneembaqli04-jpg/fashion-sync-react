@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser } from "../services/orders/ordersService";
-import { requestTryOn } from "../services/tryOn/tryOnService";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
 import { getWishlist, saveWishlist } from "../services/wishlist/wishlistService";
 import { addFeedback } from "../services/feedback/feedbackService";
@@ -10,7 +9,7 @@ import { getLoyaltyPoints } from "../services/customer/customerFirestore";
 import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../services/notifications/notificationsService";
 import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { getCoupon } from "../services/coupons/couponsService";
-
+import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
 import {
   applyTheme,
   getSavedTheme,
@@ -735,7 +734,7 @@ export default function Customer() {
     setTryOnResult(null);
 
     try {
-      const result = await requestTryOn({
+      const result = await requestSmartTryOn({
         product: productForTryOn,
         imageUrl: tryonSelfie,
         signal: controller.signal,
