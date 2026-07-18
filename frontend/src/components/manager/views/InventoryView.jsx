@@ -1,40 +1,45 @@
 import { useMemo, useState } from "react";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
-import { he } from "../../../translations/he";
 import { CATEGORIES } from "../../../data/categories";
 import { useDialog } from "../../common/DialogProvider";
-const t = he.manager.inventory;
-const common = he.common;
+import { useLanguage } from "../../../translations/LanguageProvider";
 
-const SEASON_META = {
-  summer: {
-    label: t.seasons.summer,
-    bg: "rgba(230,126,34,0.1)",
-    color: "#e67e22",
-    icon: "☀️",
-  },
-  winter: {
-    label: t.seasons.winter,
-    bg: "rgba(52,152,219,0.1)",
-    color: "#3498db",
-    icon: "❄️",
-  },
-  "spring-autumn": {
-    label: t.seasons.springFall,
-    bg: "rgba(46,204,113,0.1)",
-    color: "#2ecc71",
-    icon: "🌸",
-  },
-  all: {
-    label: t.seasons.allSeasons,
-    bg: "rgba(155,89,182,0.1)",
-    color: "#9b59b6",
-    icon: "🌀",
-  },
-};
+function getSeasonMeta(t) {
+  return {
+    summer: {
+      label: t.seasons.summer,
+      bg: "rgba(230,126,34,0.1)",
+      color: "#e67e22",
+      icon: "☀️",
+    },
+    winter: {
+      label: t.seasons.winter,
+      bg: "rgba(52,152,219,0.1)",
+      color: "#3498db",
+      icon: "❄️",
+    },
+    "spring-autumn": {
+      label: t.seasons.springFall,
+      bg: "rgba(46,204,113,0.1)",
+      color: "#2ecc71",
+      icon: "🌸",
+    },
+    all: {
+      label: t.seasons.allSeasons,
+      bg: "rgba(155,89,182,0.1)",
+      color: "#9b59b6",
+      icon: "🌀",
+    },
+  };
+}
 
 function SeasonBadge({ season }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.inventory;
+  const common = dict.common;
+  const SEASON_META = getSeasonMeta(t);
+
   const s = SEASON_META[season] || {
     label: season || common.none,
     bg: "rgba(255,255,255,0.06)",
@@ -62,6 +67,9 @@ function SeasonBadge({ season }) {
 }
 
 function StatusBadge({ stock, minStock }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.inventory;
+
   if (stock === 0) {
     return (
       <span className={`${uiStyles.tag} ${uiStyles.tRed}`}>
@@ -94,6 +102,9 @@ export default function InventoryView({
   promotedCode,
 }) {
   const { confirmDialog } = useDialog();
+  const { t: dict } = useLanguage();
+  const t = dict.manager.inventory;
+  const common = dict.common;
   const [showFilters, setShowFilters] = useState(false);
 
   const [categoryFilter, setCategoryFilter] = useState(t.options.allCategories);

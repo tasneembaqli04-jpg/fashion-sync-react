@@ -1,4 +1,5 @@
 import sidebarStyles from "../../styles/customer/CustomerSidebar.module.scss";
+import LanguageToggle from "../common/LanguageToggle";
 
 export default function CustomerSidebar({
   activePanel = "chat",
@@ -32,6 +33,10 @@ export default function CustomerSidebar({
       >
         <div className={sidebarStyles.brand}>FashionSync</div>
         <div className={sidebarStyles.roleBadge}>לקוח</div>
+
+        <div style={{ padding: "0.5rem 0.9rem" }}>
+          <LanguageToggle style={{ width: "100%", justifyContent: "center" }} />
+        </div>
 
         {!isGuest && currentUser ? (
           <div
@@ -186,8 +191,6 @@ export default function CustomerSidebar({
           <button className={sidebarStyles.navItem} onClick={toggleTheme}>
             <span className={sidebarStyles.navIcon}>🌓</span> מצב כהה/בהיר
           </button>
-
-          
 
           {!isGuest && (
             <button

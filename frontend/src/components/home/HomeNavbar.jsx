@@ -1,4 +1,5 @@
 import styles from "../../styles/Home.module.scss";
+import LanguageToggle from "../common/LanguageToggle";
 export default function HomeNavbar({ isLight, onToggleTheme }) {
   return (
     <nav className={styles.nav}>
@@ -10,6 +11,8 @@ export default function HomeNavbar({ isLight, onToggleTheme }) {
       </div>
 
       <div className={styles.navRight}>
+        <LanguageToggle />
+
         <button
           className={styles.themeToggle}
           type="button"
