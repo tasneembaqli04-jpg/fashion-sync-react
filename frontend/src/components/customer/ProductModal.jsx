@@ -191,17 +191,44 @@ export default function ProductModal({
                     );
                   })}
                 </select>
-                {selectedSize === "אחר" && (
-                  <input
-                    id="pd-size-other"
-                    type="text"
-                    placeholder="מידה… "
-                    value={customSize}
-                    onChange={(e) => setCustomSize(e.target.value.slice(0, 10))}
-                    maxLength={10}
-                    style={{ marginTop: "0.4rem" }}
-                  />
-                )}
+                {selectedSize === "אחר" && (() => {
+                  const isNumericCategory =
+                    canonicalSizeOrder.length > 0 &&
+                    canonicalSizeOrder.every((s) => !Number.isNaN(Number(s)));
+                  const isDuplicate = sortedSizes.some(
+                    (s) => s.trim().toLowerCase() === customSize.trim().toLowerCase()
+                  );
+
+                  return (
+                    <div style={{ marginTop: "0.4rem" }}>
+                      <input
+                        id="pd-size-other"
+                        type="text"
+                        placeholder={isNumericCategory ? "מידה (מספר)…" : "מידה (אותיות)…"}
+                        value={customSize}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const filtered = isNumericCategory
+                            ? raw.replace(/[^0-9]/g, "")
+                            : raw.replace(/[^a-zA-Zא-ת]/g, "").toUpperCase();
+                          setCustomSize(filtered.slice(0, 6));
+                        }}
+                        maxLength={6}
+                      />
+                      {isDuplicate && customSize.trim() && (
+                        <div
+                          style={{
+                            color: "var(--red, #e74c3c)",
+                            fontSize: "0.75rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          המידה הזו כבר קיימת ברשימה — בחר/י אותה ישירות במקום.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -222,7 +249,16 @@ export default function ProductModal({
                   <button
                     className={`${baseStyles.btn} ${baseStyles.btnGold}`}
                     onClick={() => addToCart(product.code, true)}
-                    disabled={!selectedSize || (selectedSize === "אחר" && !customSize.trim())}
+                    disabled={
+                      !selectedSize ||
+                      (selectedSize === "אחר" &&
+                        (!customSize.trim() ||
+                          sortedSizes.some(
+                            (s) =>
+                              s.trim().toLowerCase() ===
+                              customSize.trim().toLowerCase()
+                          )))
+                    }
                   >
                     🛒 הוסף לסל
                   </button>

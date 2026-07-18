@@ -185,11 +185,11 @@ export default function Manager({ onPromote }) {
 
   const filteredProducts = useMemo(() => {
     if (!globalSearch.trim()) return products;
-    const q = globalSearch.trim();
+    const q = globalSearch.trim().toLowerCase();
     return products.filter(
       (p) =>
-        p.name.includes(q) ||
-        p.code.includes(q) ||
+        p.name.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
         p.cat.includes(q) ||
         (p.season || "").includes(q),
     );

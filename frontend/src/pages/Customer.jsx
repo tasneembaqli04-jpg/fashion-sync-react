@@ -195,6 +195,18 @@ export default function Customer() {
 
       const featured = await getFeaturedProduct();
       setFeaturedCode(featured?.code || "");
+
+      const sharedItemCode = new URLSearchParams(window.location.search).get(
+        "item"
+      );
+      if (sharedItemCode) {
+        const sharedProduct = products.find(
+          (p) => p.code === sharedItemCode
+        );
+        if (sharedProduct) {
+          openProductModal(sharedItemCode);
+        }
+      }
     }
 
     init();
