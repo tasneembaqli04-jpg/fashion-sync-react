@@ -53,7 +53,12 @@ export default function ProductModal({
     (a, b) => canonicalSizeOrder.indexOf(a) - canonicalSizeOrder.indexOf(b)
   );
 
-  const allSizes = sortedSizes.includes("אחר")
+  const isUniformSizeOnly =
+    sortedSizes.length === 1 && sortedSizes[0] === "אחיד";
+
+  const allSizes = isUniformSizeOnly
+    ? sortedSizes
+    : sortedSizes.includes("אחר")
     ? sortedSizes
     : [...sortedSizes, "אחר"];
 
@@ -169,9 +174,22 @@ export default function ProductModal({
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
                   <option value="">בחר/י מידה...</option>
-                  {allSizes.map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
+                  {allSizes.map((size) => {
+                    const activeColor = selectedColor || colorsFromVariants[0] || "";
+                    const matchingVariant = product.variants?.find(
+                      (v) => v.colorName === activeColor
+                    );
+                    const available =
+                      size === "אחר" ||
+                      !matchingVariant ||
+                      (Number(matchingVariant.sizes?.[size]) || 0) > 0;
+
+                    return (
+                      <option key={size} value={size} disabled={!available}>
+                        {size}{!available ? " (אזל מהמלאי)" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
                 {selectedSize === "אחר" && (
                   <input
