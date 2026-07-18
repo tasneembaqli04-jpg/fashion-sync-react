@@ -1,5 +1,6 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerGiftCard({
   show,
@@ -20,6 +21,9 @@ export default function CustomerGiftCard({
   giftCheckError,
   checkGiftCardBalance,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.giftCard;
+
   if (!show) return null;
 
   const previewAmount =
@@ -27,8 +31,8 @@ export default function CustomerGiftCard({
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>🎁 כרטיס מתנה</div>
-      <div className={commonStyles.pageSub}>שלח מתנה לאהובים שלך</div>
+      <div className={commonStyles.pageTitle}>{t.title}</div>
+      <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       <div
         style={{
@@ -39,10 +43,10 @@ export default function CustomerGiftCard({
         }}
       >
         <div>
-          <div className={commonStyles.secTitle}>צור כרטיס מתנה</div>
+          <div className={commonStyles.secTitle}>{t.createTitle}</div>
 
           <div className={modalStyles.pdField} style={{ marginBottom: "0.75rem" }}>
-            <label>סכום</label>
+            <label>{t.amountLabel}</label>
             <select
               value={giftAmount}
               onChange={(e) => handleGcAmountChange(e.target.value)}
@@ -51,13 +55,13 @@ export default function CustomerGiftCard({
               <option value="200">₪200</option>
               <option value="300">₪300</option>
               <option value="500">₪500</option>
-              <option value="other">אחר...</option>
+              <option value="other">{t.otherAmount}</option>
             </select>
 
             {giftAmount === "other" && (
               <input
                 type="number"
-                placeholder="הזן סכום..."
+                placeholder={t.enterAmountPlaceholder}
                 min="10"
                 value={giftCustomAmount}
                 onChange={(e) => setGiftCustomAmount(e.target.value)}
@@ -67,20 +71,20 @@ export default function CustomerGiftCard({
           </div>
 
           <div className={modalStyles.pdField} style={{ marginBottom: "0.75rem" }}>
-            <label>שם המקבל</label>
+            <label>{t.recipientNameLabel}</label>
             <input
               type="text"
-              placeholder="שם..."
+              placeholder={t.namePlaceholder}
               value={giftName}
               onChange={(e) => setGiftName(e.target.value)}
             />
           </div>
 
           <div className={modalStyles.pdField} style={{ marginBottom: "1rem" }}>
-            <label>הודעה אישית</label>
+            <label>{t.personalMessageLabel}</label>
             <input
               type="text"
-              placeholder="ברכה..."
+              placeholder={t.messagePlaceholder}
               value={giftMessage}
               onChange={(e) => setGiftMessage(e.target.value)}
             />
@@ -90,7 +94,7 @@ export default function CustomerGiftCard({
             className={`${commonStyles.btn} ${commonStyles.btnGold}`}
             onClick={buyGiftCard}
           >
-            🎁 רכוש כרטיס מתנה
+            {t.buyButton}
           </button>
 
           {giftError && (
@@ -111,7 +115,7 @@ export default function CustomerGiftCard({
         </div>
 
         <div>
-          <div className={commonStyles.secTitle}>תצוגה מקדימה</div>
+          <div className={commonStyles.secTitle}>{t.previewTitle}</div>
 
           <div className={modalStyles.giftCardDisplay}>
             <div className={modalStyles.giftCardLogo}>FashionSync</div>
@@ -123,7 +127,7 @@ export default function CustomerGiftCard({
                 marginBottom: "0.5rem",
               }}
             >
-              כרטיס מתנה
+              {t.giftCardLabel}
             </div>
 
             <div className={modalStyles.giftCardAmount}>₪{previewAmount}</div>
@@ -135,7 +139,7 @@ export default function CustomerGiftCard({
                 marginTop: "0.6rem",
               }}
             >
-              עבור: {giftName || "—"}
+              {t.forLabel} {giftName || "—"}
             </div>
 
             <div
@@ -157,12 +161,12 @@ export default function CustomerGiftCard({
       </div>
 
       <div style={{ marginTop: "2rem" }}>
-        <div className={commonStyles.secTitle}>💳 בדיקת יתרה בכרטיס מתנה</div>
+        <div className={commonStyles.secTitle}>{t.checkBalanceTitle}</div>
 
         <div style={{ display: "flex", gap: "0.6rem", maxWidth: "420px", flexWrap: "wrap" }}>
           <input
             type="text"
-            placeholder="הזן/י קוד כרטיס מתנה (GC-...)"
+            placeholder={t.checkCodePlaceholder}
             value={giftCheckCode}
             onChange={(e) => setGiftCheckCode(e.target.value)}
             style={{ flex: 1, minWidth: "200px" }}
@@ -171,7 +175,7 @@ export default function CustomerGiftCard({
             className={`${commonStyles.btn} ${commonStyles.btnOutline}`}
             onClick={checkGiftCardBalance}
           >
-            בדוק יתרה
+            {t.checkBalanceButton}
           </button>
         </div>
 
@@ -192,9 +196,9 @@ export default function CustomerGiftCard({
               maxWidth: "420px",
             }}
           >
-            <div>יתרה נוכחית: <strong>₪{giftCheckResult.balance}</strong> מתוך ₪{giftCheckResult.amount}</div>
+            <div>{t.currentBalance} <strong>₪{giftCheckResult.balance}</strong> {t.outOf} ₪{giftCheckResult.amount}</div>
             <div style={{ opacity: 0.7, fontSize: "0.85rem", marginTop: "0.3rem" }}>
-              סטטוס: {giftCheckResult.status === "used" ? "נוצל במלואו" : "פעיל"}
+              {t.statusLabel} {giftCheckResult.status === "used" ? t.statusUsed : t.statusActive}
             </div>
           </div>
         )}

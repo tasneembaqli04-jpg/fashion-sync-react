@@ -1,4 +1,5 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CartDrawer({
   open = false,
@@ -21,6 +22,9 @@ export default function CartDrawer({
   appliedPointsRedeemed = 0,
   pointsDiscountAmount = 0,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.cart;
+
   return (
     <>
       <div
@@ -32,7 +36,7 @@ export default function CartDrawer({
         className={`${modalStyles.drawer} ${open ? modalStyles.drawerOpen : ""}`}
       >
         <div className={modalStyles.drawerHead}>
-          <div className={modalStyles.drawerTitle}>🛒 סל הקניות</div>
+          <div className={modalStyles.drawerTitle}>{t.title}</div>
           <button className={modalStyles.drawerClose} onClick={closeCart}>
             ✕
           </button>
@@ -120,32 +124,32 @@ export default function CartDrawer({
           ) : (
             <div className={modalStyles.emptyCart}>
               <div className={modalStyles.emptyCartIcon}>🛒</div>
-              אין פריטים בעגלה
+              {t.empty}
             </div>
           )}
         </div>
 
         <div className={modalStyles.drawerFoot}>
           <div className={modalStyles.pointsRow}>
-            ⭐ תצבור <span>{cartPoints}</span> נקודות על הזמנה זו
+            {t.earnPoints.replace("{points}", cartPoints)}
           </div>
 
           <div className={modalStyles.couponRow}>
             <input
               className={modalStyles.couponInput}
               type="text"
-              placeholder="קוד קופון..."
+              placeholder={t.couponPlaceholder}
               value={couponValue}
               onChange={(e) => setCouponValue(e.target.value)}
             />
             <button className={modalStyles.couponApply} onClick={applyCoupon}>
-              החל
+              {t.apply}
             </button>
           </div>
 
           {discountText && (
             <div className={modalStyles.discountRow}>
-              ✅ הנחה הוחלה: <span>{discountText}</span>
+              {t.discountApplied} <span>{discountText}</span>
             </div>
           )}
 
@@ -157,7 +161,10 @@ export default function CartDrawer({
                   type="number"
                   min="1"
                   max={availablePoints}
-                  placeholder={`כמה נקודות להשתמש? (יש לך ${availablePoints.toLocaleString()})`}
+                  placeholder={t.pointsPlaceholder.replace(
+                    "{points}",
+                    availablePoints.toLocaleString()
+                  )}
                   value={pointsInput}
                   onChange={(e) => setPointsInput(e.target.value)}
                 />
@@ -165,7 +172,7 @@ export default function CartDrawer({
                   className={modalStyles.couponApply}
                   onClick={applyPointsRedemption}
                 >
-                  השתמש
+                  {t.usePoints}
                 </button>
               </div>
 
@@ -176,9 +183,16 @@ export default function CartDrawer({
                   marginTop: "0.25rem",
                 }}
               >
-                כל 20 נק' = ₪1 — {pointsInput && Number(pointsInput) > 0
-                  ? `זה שווה ₪${(Number(pointsInput) * 0.05).toFixed(2)} הנחה`
-                  : `סה"כ יש לך ₪${(availablePoints * 0.05).toFixed(2)} זמינים`}
+                {t.pointsRate}
+                {pointsInput && Number(pointsInput) > 0
+                  ? t.pointsWorth.replace(
+                      "{amount}",
+                      (Number(pointsInput) * 0.05).toFixed(2)
+                    )
+                  : t.pointsAvailable.replace(
+                      "{amount}",
+                      (availablePoints * 0.05).toFixed(2)
+                    )}
               </div>
             </div>
           )}
@@ -189,8 +203,9 @@ export default function CartDrawer({
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
             >
               <span>
-                ✅ נוצלו {appliedPointsRedeemed.toLocaleString()} נק' = ₪
-                {pointsDiscountAmount.toFixed(2)} הנחה
+                {t.pointsRedeemed
+                  .replace("{points}", appliedPointsRedeemed.toLocaleString())
+                  .replace("{amount}", pointsDiscountAmount.toFixed(2))}
               </span>
               <button
                 onClick={removePointsRedemption}
@@ -202,12 +217,12 @@ export default function CartDrawer({
           )}
 
           <div className={modalStyles.totalRow}>
-            <span className={modalStyles.totalLabel}>סה"כ לתשלום:</span>
+            <span className={modalStyles.totalLabel}>{t.totalLabel}</span>
             <span className={modalStyles.totalVal}>₪{cartTotal}</span>
           </div>
 
           <button className={modalStyles.checkoutBtn} onClick={startCheckout}>
-            ✅ מעבר לתשלום
+            {t.checkout}
           </button>
         </div>
       </div>

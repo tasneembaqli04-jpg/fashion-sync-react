@@ -1,6 +1,8 @@
 import styles from "../../styles/checkout/CheckoutForms.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
 import { getShippingCost } from "../../functions/checkout/checkoutPricing";
+import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function CheckoutStep2Shipping({
   shippingOptions = [],
   selectedShipping,
@@ -14,15 +16,19 @@ export default function CheckoutStep2Shipping({
   onBack,
   onNext,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.checkout.step2;
+
   return (
     <div className={styles.stepPanel}>
       <div className={styles.card}>
-        <div className={styles.secTitle}>🚚 בחר שיטת משלוח</div>
+        <div className={styles.secTitle}>{t.chooseShippingTitle}</div>
 
         <div className={styles.shipOptWrap}>
           {shippingOptions.map((option) => {
             const isSelected = selectedShipping?.id === option.id;
             const displayPrice = getShippingCost(option, subtotal);
+            const optionT = dict.shippingOptionLabels[option.id] || option;
 
             return (
               <div
@@ -40,15 +46,15 @@ export default function CheckoutStep2Shipping({
                 <span className={styles.shipIcon}>{option.icon}</span>
 
                 <div className={styles.shipInfo}>
-                  <div className={styles.shipLabel}>{option.label}</div>
+                  <div className={styles.shipLabel}>{optionT.label}</div>
                   <div className={styles.shipSub}>
-                    {option.days}
-                    {option.note ? ` · ${option.note}` : ""}
+                    {optionT.days}
+                    {optionT.note ? ` · ${optionT.note}` : ""}
                   </div>
                 </div>
 
                 <div className={styles.shipPrice}>
-                  {displayPrice === 0 ? "חינם" : `₪${displayPrice}`}
+                  {displayPrice === 0 ? t.free : `₪${displayPrice}`}
                 </div>
 
                 <div className={styles.radioDot}></div>
@@ -59,7 +65,7 @@ export default function CheckoutStep2Shipping({
       </div>
 
       <div className={styles.card}>
-        <div className={styles.secTitle}>📅 תאריך אספקה משוער</div>
+        <div className={styles.secTitle}>{t.deliveryEstimateTitle}</div>
         <div className={styles.deliveryEstimate}>{deliveryText}</div>
       </div>
 
@@ -77,7 +83,7 @@ export default function CheckoutStep2Shipping({
           className={`${styles.btn} ${styles.btnOutline}`}
           onClick={onBack}
         >
-          ← חזרה
+          {t.backButton}
         </button>
 
         <button
@@ -85,7 +91,7 @@ export default function CheckoutStep2Shipping({
           className={`${styles.btn} ${styles.btnGold}`}
           onClick={onNext}
         >
-          המשך לתשלום ←
+          {t.continueButton}
         </button>
       </div>
     </div>
