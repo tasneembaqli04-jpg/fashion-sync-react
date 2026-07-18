@@ -17,7 +17,7 @@ export default function ManagerTopbar({
         <span style={{ color: "var(--muted)" }}>🔍</span>
         <input
           type="text"
-          placeholder="חיפוש..."
+          placeholder="חיפוש לפי שם או ברקוד..."
           value={globalSearch}
           onChange={(e) => onGlobalSearchChange(e.target.value)}
         />
