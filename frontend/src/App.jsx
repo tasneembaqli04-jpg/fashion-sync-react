@@ -4,9 +4,11 @@ import Customer from "./pages/Customer";
 import Manager from "./pages/Manager";
 import Checkout from "./pages/Checkout";
 import { DialogProvider } from "./components/common/DialogProvider";
+import { LanguageProvider } from "./translations/LanguageProvider";
 
 function App() {
   return (
+    <LanguageProvider>
     <DialogProvider>
       <BrowserRouter>
         <Routes>
@@ -17,6 +19,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </DialogProvider>
+    </LanguageProvider>
   );
 }
 

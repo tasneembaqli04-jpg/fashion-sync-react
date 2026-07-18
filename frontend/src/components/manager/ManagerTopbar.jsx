@@ -1,4 +1,5 @@
 import styles from "../../styles/manager/ManagerTopbar.module.scss";
+import LanguageToggle from "../common/LanguageToggle";
 export default function ManagerTopbar({
   globalSearch,
   onGlobalSearchChange,
@@ -29,6 +30,7 @@ export default function ManagerTopbar({
       </div>
 
       <div className={styles.tbRight}>
+        <LanguageToggle />
 
         {currentPromotedImg && (
           <button

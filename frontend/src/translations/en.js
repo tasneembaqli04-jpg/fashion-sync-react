@@ -1,5 +1,24 @@
 export const en = {
-  common: { all: "All", yes: "Yes", no: "No", none: "—" },
+  common: {
+    all: "All",
+    yes: "Yes",
+    no: "No",
+    none: "—",
+    save: "Save",
+    cancel: "Cancel",
+    close: "Close",
+    confirm: "Confirm",
+    delete: "Delete",
+    edit: "Edit",
+    add: "Add",
+    search: "Search",
+    back: "Back",
+    next: "Next",
+    loading: "Loading...",
+    required: "Required field",
+    success: "Success",
+    error: "An error occurred",
+  },
 
   manager: {
     inventory: {
