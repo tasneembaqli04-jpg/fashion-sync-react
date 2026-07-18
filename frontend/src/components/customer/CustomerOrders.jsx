@@ -1,21 +1,7 @@
 import { useMemo, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
-
-const STATUS_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
-
-const FILTERS = [
-  { key: "all", label: "הכל" },
-  { key: 0, label: "אושרה" },
-  { key: 1, label: "בהכנה" },
-  { key: 2, label: "נשלחה" },
-  { key: 3, label: "נמסרה" },
-];
-
-const MONTH_NAMES = [
-  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
-  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
-];
+import { useLanguage } from "../../translations/LanguageProvider";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -23,13 +9,26 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function getMonthLabel(monthKey) {
-  if (monthKey === "unknown") return "ללא תאריך";
-  const [year, month] = monthKey.split("-");
-  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-}
-
 export default function CustomerOrders({ show, orders = [] }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.orders;
+  const STATUS_LABELS = dict.orderStatusLabels;
+  const MONTH_NAMES = dict.monthNames;
+
+  const FILTERS = [
+    { key: "all", label: t.allFilter },
+    { key: 0, label: STATUS_LABELS[0] },
+    { key: 1, label: STATUS_LABELS[1] },
+    { key: 2, label: STATUS_LABELS[2] },
+    { key: 3, label: STATUS_LABELS[3] },
+  ];
+
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return t.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
+
   const [activeFilter, setActiveFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
 
@@ -85,8 +84,8 @@ export default function CustomerOrders({ show, orders = [] }) {
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>📦 ההזמנות שלי</div>
-      <div className={commonStyles.pageSub}>מעקב אחרי הזמנות ומשלוחים</div>
+      <div className={commonStyles.pageTitle}>{t.title}</div>
+      <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       <div style={{ marginBottom: "0.8rem" }}>
         <select
@@ -101,7 +100,7 @@ export default function CustomerOrders({ show, orders = [] }) {
             fontSize: "0.9rem",
           }}
         >
-          <option value="all">📅 כל החודשים</option>
+          <option value="all">{t.allMonths}</option>
           {availableMonths.map((key) => (
             <option key={key} value={key}>
               {getMonthLabel(key)}
@@ -213,7 +212,7 @@ export default function CustomerOrders({ show, orders = [] }) {
         })
       ) : (
         <div className={commonStyles.card} style={{ textAlign: "center" }}>
-          אין הזמנות במצב הזה
+          {t.noOrdersInStatus}
         </div>
       )}
     </div>

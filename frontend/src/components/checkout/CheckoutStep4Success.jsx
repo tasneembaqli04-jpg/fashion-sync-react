@@ -1,4 +1,6 @@
 import styles from "../../styles/checkout/CheckoutSuccess.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function CheckoutStep4Success({
   isCash = false,
   isGiftCardOnly = false,
@@ -11,6 +13,10 @@ export default function CheckoutStep4Success({
   onBackToStore,
   onPrint,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.checkout.step4;
+  const priceT = dict.customer.checkout.priceBox;
+
   return (
     <div className={styles.stepPanel}>
       <div className={styles.successWrap}>
@@ -20,30 +26,30 @@ export default function CheckoutStep4Success({
 
         <div className={styles.successTitle}>
           {isGiftCardOnly
-            ? "כרטיס המתנה נרכש בהצלחה!"
+            ? t.titleGiftCard
             : isCash
-              ? "ההזמנה נשמרה!"
-              : "ההזמנה בוצעה!"}
+              ? t.titleCash
+              : t.titleDefault}
         </div>
 
         <div className={styles.successSub}>
           {isGiftCardOnly
-            ? "פרטי הרכישה קשורים לחשבון:"
+            ? t.subGiftCard
             : isCash
-              ? "הזמנתך נשמרה בהצלחה."
-              : "אישור הזמנה נשלח לאימייל:"}
+              ? t.subCash
+              : t.subDefault}
         </div>
 
         <div className={styles.successSubGold}>
-          {isCash && !isGiftCardOnly ? "תשלום יבוצע בעת האיסוף מהחנות" : email}
+          {isCash && !isGiftCardOnly ? t.cashPaymentNote : email}
         </div>
 
         <div className={styles.receiptNum}>
-          🧾 מספר {isGiftCardOnly ? "רכישה" : "הזמנה"}: {receiptId}
+          {isGiftCardOnly ? t.receiptNumberPurchase : t.receiptNumberOrder} {receiptId}
         </div>
 
         <div className={`${styles.card} ${styles.successOrderBox}`}>
-          <div className={styles.secTitle}>📋 פרטי ההזמנה</div>
+          <div className={styles.secTitle}>{t.orderDetailsTitle}</div>
 
           <div>
             {items.map((item) => (
@@ -68,7 +74,7 @@ export default function CheckoutStep4Success({
                         display: "inline-block",
                       }}
                     >
-                      🎁 קוד כרטיס המתנה: {item.code}
+                      {t.giftCardCodeLabel} {item.code}
                     </div>
                   )}
                 </div>
@@ -83,20 +89,20 @@ export default function CheckoutStep4Success({
           <div className={styles.successDivider}></div>
 
           <div className={styles.pline}>
-            <span className={styles.pl}>משלוח</span>
-            <span>{shippingCost === 0 ? "חינם ✨" : `₪${shippingCost}`}</span>
+            <span className={styles.pl}>{priceT.shipping}</span>
+            <span>{shippingCost === 0 ? priceT.freeShipping : `₪${shippingCost}`}</span>
           </div>
 
           {discount > 0 && (
             <div className={`${styles.pline} ${styles.disc}`}>
-              <span className={styles.pl}>הנחה</span>
+              <span className={styles.pl}>{priceT.discount}</span>
               <span>−₪{discount.toLocaleString()}</span>
             </div>
           )}
 
           <div className={`${styles.pline} ${styles.total}`}>
             <span className={styles.pl}>
-              {isCash ? 'לתשלום בחנות' : 'סה"כ ששולם'}
+              {isCash ? t.payInStore : t.totalPaid}
             </span>
             <span>₪{total.toLocaleString()}</span>
           </div>
@@ -108,7 +114,7 @@ export default function CheckoutStep4Success({
             className={`${styles.btn} ${styles.btnOutline}`}
             onClick={onBackToStore}
           >
-            ← חזרה לחנות
+            {t.backToStore}
           </button>
 
           <button
@@ -116,7 +122,7 @@ export default function CheckoutStep4Success({
             className={`${styles.btn} ${styles.btnGold}`}
             onClick={onPrint}
           >
-            🖨️ הדפס קבלה
+            {t.printReceipt}
           </button>
         </div>
       </div>

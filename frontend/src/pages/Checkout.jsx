@@ -34,10 +34,12 @@ import CheckoutStep3Payment from "../components/checkout/CheckoutStep3Payment";
 import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
 import { getCartFromFirestore } from "../services/customer/cartFirestore";
+import { useLanguage } from "../translations/LanguageProvider";
 import { useDialog } from "../components/common/DialogProvider";
 export default function Checkout() {
   const navigate = useNavigate();
   const { alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
@@ -209,16 +211,20 @@ export default function Checkout() {
   function getDeliveryText() {
     if (!selectedShipping) return "";
 
+    const t = dict.customer.checkout;
+
     if (selectedShipping.id === "same_day") {
-      return "⚡ אספקה עד הערב!";
+      return t.sameDayDelivery;
     }
 
     if (selectedShipping.id === "pickup") {
-      return "ניתן לאסוף מחר בין 10:00–20:00, הרצל 42, תל אביב";
+      return t.pickupDelivery;
     }
 
-    return `זמן אספקה משוער: ${selectedShipping.days}${
-      selectedShipping.note ? ` · ${selectedShipping.note}` : ""
+    const optionT = dict.shippingOptionLabels[selectedShipping.id] || selectedShipping;
+
+    return `${t.estimatedDeliveryPrefix} ${optionT.days}${
+      optionT.note ? ` · ${optionT.note}` : ""
     }`;
   }
 

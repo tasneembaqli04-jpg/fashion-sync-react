@@ -3,6 +3,7 @@ import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import ProductCard from "./ProductCard";
 import { CATEGORIES } from "../../data/categories";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerBrowse({
   show = false,
@@ -39,6 +40,8 @@ export default function CustomerBrowse({
   openNotifyModal,
   guestPrompt,
 }) {
+  const { t: dict, lang } = useLanguage();
+  const t = dict.customer.browse;
   const productsStartRef = useRef(null);
   const [showCatalogBanners, setShowCatalogBanners] = useState(true);
   useEffect(() => {
@@ -83,13 +86,19 @@ export default function CustomerBrowse({
             <input
               type="text"
               className={browseStyles.searchInput}
-              placeholder="שם, קוד, חיפוש לפי תמונה..."
+              placeholder={t.searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
+              style={
+                lang === "en"
+                  ? { paddingLeft: "1rem", paddingRight: "4.6rem" }
+                  : { paddingLeft: "4.6rem", paddingRight: "1rem" }
+              }
             />
             <label
               className={browseStyles.searchCameraBtn}
-              title="חיפוש לפי תמונה"
+              title={t.searchByImage}
+              style={lang === "en" ? { right: "0.65rem" } : { left: "0.65rem" }}
             >
               📷
               <input
@@ -107,19 +116,19 @@ export default function CustomerBrowse({
             value={genderValue}
             onChange={(e) => setGenderValue(e.target.value)}
           >
-            <option value="">לכולם</option>
-            <option value="נשים">נשים</option>
-            <option value="גברים">גברים</option>
+            <option value="">{t.genderAll}</option>
+            <option value="נשים">{dict.genderLabels["נשים"]}</option>
+            <option value="גברים">{dict.genderLabels["גברים"]}</option>
           </select>
 
           <select
             value={categoryValue}
             onChange={(e) => setCategoryValue(e.target.value)}
           >
-            <option value="">כל הקטגוריות</option>
+            <option value="">{t.allCategories}</option>
             {CATEGORIES.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {dict.categoryLabels[category] || category}
               </option>
             ))}
           </select>
@@ -128,39 +137,37 @@ export default function CustomerBrowse({
             value={currentSeasonTab}
             onChange={(e) => setSeasonTab(e.target.value)}
           >
-            <option value="all">כל העונות</option>
-            <option value="summer">☀️ קיץ</option>
-            <option value="winter">❄️ חורף</option>
-            <option value="spring-autumn">🌸 אביב / סתיו</option>
+            <option value="all">{t.allSeasons}</option>
+            <option value="summer">{t.seasonSummer}</option>
+            <option value="winter">{t.seasonWinter}</option>
+            <option value="spring-autumn">{t.seasonSpringAutumn}</option>
           </select>
 
           <select
             value={priceValue}
             onChange={(e) => setPriceValue(e.target.value)}
           >
-            <option value="">כל המחירים</option>
-            <option value="0-150">עד ₪150</option>
-            <option value="150-300">₪150–₪300</option>
-            <option value="300-500">₪300–₪500</option>
-            <option value="500-9999">מעל ₪500</option>
+            <option value="">{t.allPrices}</option>
+            <option value="0-150">{t.priceUnder150}</option>
+            <option value="150-300">{t.price150to300}</option>
+            <option value="300-500">{t.price300to500}</option>
+            <option value="500-9999">{t.priceOver500}</option>
           </select>
-
-    
 
           <button
             className={commonStyles.btn}
             style={{ flex: "0 0 auto", minWidth: "130px" }}
             onClick={openCartOrAuth}
           >
-            🛒 סל ({cartCount})
+            🛒 {t.cart} ({cartCount})
           </button>
         </div>
       </div>
 
       <div className={browseStyles.tabsSticky}>
         <div className={browseStyles.pageHeader}>
-          <div className={commonStyles.pageTitle}>🏬 קטלוג מוצרים</div>
-        
+          <div className={commonStyles.pageTitle}>{t.pageTitle}</div>
+
           {showCatalogBanners && seasonBannerVisible && (
             <div className={`${browseStyles.seasonBanner} ${seasonBannerClass}`}>
               <span className={browseStyles.seasonEmoji}>{seasonEmoji}</span>
@@ -171,20 +178,17 @@ export default function CustomerBrowse({
           {isGuest && (
             <div className={browseStyles.guestCatalogBanner}>
               <div className={browseStyles.gbt}>
-                👀 אתה גולש כ<strong>אורח</strong>. <strong>התחבר</strong> כדי
-                להוסיף לסל ולהזמין.
+                👀 {t.guestBannerPart1}<strong>{t.guestBannerGuestWord}</strong>{t.guestBannerPart2}<strong>{t.guestBannerLoginWord}</strong>{t.guestBannerPart3}
               </div>
               <button
                 className={`${commonStyles.btn} ${commonStyles.btnGold}`}
                 style={{ padding: "0.5rem 1rem", fontSize: "0.86rem" }}
                 onClick={goLogin}
               >
-                🔑 התחבר
+                {t.loginButton}
               </button>
             </div>
           )}
-
-        
         </div>
         <div className={commonStyles.tabs}>
           <button
@@ -193,7 +197,7 @@ export default function CustomerBrowse({
             }`}
             onClick={() => setListMode("all")}
           >
-            הכל
+            {t.tabAll}
           </button>
           <button
             className={`${commonStyles.tabBtn} ${
@@ -201,7 +205,7 @@ export default function CustomerBrowse({
             }`}
             onClick={() => setListMode("trending")}
           >
-            🔥 טרנדים
+            {t.tabTrending}
           </button>
           <button
             className={`${commonStyles.tabBtn} ${
@@ -209,7 +213,7 @@ export default function CustomerBrowse({
             }`}
             onClick={() => setListMode("bestsellers")}
           >
-            ⭐ נמכרים ביותר
+            {t.tabBestsellers}
           </button>
           <button
             className={`${commonStyles.tabBtn} ${
@@ -217,7 +221,7 @@ export default function CustomerBrowse({
             }`}
             onClick={() => setListMode("sale")}
           >
-            🏷️ מבצעים
+            {t.tabSale}
           </button>
         </div>
       </div>
@@ -243,7 +247,7 @@ export default function CustomerBrowse({
         </div>
       ) : (
         <div className={commonStyles.card} style={{ textAlign: "center" }}>
-          לא נמצאו פריטים לעונה או לסינון שבחרת.
+          {t.noResults}
         </div>
       )}
     </div>
