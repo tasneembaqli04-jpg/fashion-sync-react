@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import ProductCard from "./ProductCard";
@@ -6,7 +7,6 @@ import { CATEGORIES } from "../../data/categories";
 export default function CustomerBrowse({
   show = false,
   isGuest,
-  saleBannerVisible,
   seasonBannerVisible,
   seasonEmoji,
   seasonText,
@@ -28,7 +28,6 @@ export default function CustomerBrowse({
   setSaleValue,
   onImageSearchUpload,
   goLogin,
-  filterSaleOnly,
   setSeasonTab,
   setListMode,
   openCartOrAuth,
@@ -40,6 +39,29 @@ export default function CustomerBrowse({
   openNotifyModal,
   guestPrompt,
 }) {
+  const productsStartRef = useRef(null);
+  const [showCatalogBanners, setShowCatalogBanners] = useState(true);
+  useEffect(() => {
+    if (!show || !productsStartRef.current) return;
+
+    const marker = productsStartRef.current;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const markerIsBelowTop = entry.boundingClientRect.top > 120;
+        setShowCatalogBanners(markerIsBelowTop);
+      },
+      {
+        threshold: 0,
+      }
+    );
+
+    observer.observe(marker);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [show]);
   if (!show) return null;
 
   const seasonBannerClass =
@@ -123,13 +145,7 @@ export default function CustomerBrowse({
             <option value="500-9999">מעל ₪500</option>
           </select>
 
-          <select
-            value={saleValue}
-            onChange={(e) => setSaleValue(e.target.value)}
-          >
-            <option value="">כל הפריטים</option>
-            <option value="sale">🏷️ במבצע בלבד</option>
-          </select>
+    
 
           <button
             className={commonStyles.btn}
@@ -144,9 +160,8 @@ export default function CustomerBrowse({
       <div className={browseStyles.tabsSticky}>
         <div className={browseStyles.pageHeader}>
           <div className={commonStyles.pageTitle}>🏬 קטלוג מוצרים</div>
-          <div className={commonStyles.pageSub}>חפש לפי מגדר, קטגוריה ועונה</div>
-
-          {seasonBannerVisible && (
+        
+          {showCatalogBanners && seasonBannerVisible && (
             <div className={`${browseStyles.seasonBanner} ${seasonBannerClass}`}>
               <span className={browseStyles.seasonEmoji}>{seasonEmoji}</span>
               <span className={browseStyles.seasonText}>{seasonText}</span>
@@ -169,27 +184,8 @@ export default function CustomerBrowse({
             </div>
           )}
 
-          {saleBannerVisible && (
-            <div className={browseStyles.saleCatalogBanner}>
-              <div className={browseStyles.sbt}>
-                🏷️ <strong>מבצע מיוחד!</strong> פריטים נבחרים עם הנחה – לזמן מוגבל
-              </div>
-              <button
-                className={commonStyles.btn}
-                style={{
-                  background: "linear-gradient(135deg, #8e44ad, #a855f7)",
-                  color: "#fff",
-                  padding: "0.5rem 1rem",
-                  fontSize: "0.86rem",
-                }}
-                onClick={filterSaleOnly}
-              >
-                🛍️ הצג מבצעים
-              </button>
-            </div>
-          )}
+        
         </div>
-
         <div className={commonStyles.tabs}>
           <button
             className={`${commonStyles.tabBtn} ${
@@ -225,6 +221,7 @@ export default function CustomerBrowse({
           </button>
         </div>
       </div>
+      <div ref={productsStartRef} style={{ height: "1px" }} />
 
       {products?.length ? (
         <div className={browseStyles.productsGrid}>

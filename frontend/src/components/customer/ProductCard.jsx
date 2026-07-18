@@ -236,12 +236,20 @@ export default function ProductCard({
             </button>
           )}
 
-          <button
-            className={cardStyles.actBtn}
-            onClick={(e) => { e.stopPropagation(); openTryOnFromProduct(product.code); }}
-          >
-            📷 נסה עליי
-          </button>
+          {!(
+            product?.name?.includes("ארנק") ||
+            product?.name?.includes("תיק גב")
+          ) && (
+            <button
+              className={cardStyles.actBtn}
+              onClick={(e) => {
+              e.stopPropagation();
+              openTryOnFromProduct(product.code);
+           }}
+  >
+    נסה עליי
+  </button>
+)}
         </div>
 
         {product.stock === 0 && (
