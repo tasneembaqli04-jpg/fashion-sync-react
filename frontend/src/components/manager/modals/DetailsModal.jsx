@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
@@ -61,6 +61,9 @@ export default function DetailsModal({
   theme,
 }) {
   const [price, setPrice] = useState(0);
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+  const fileInputRef = useRef(null);
   const [regularPrice, setRegularPrice] = useState(0);
   const [cost, setCost] = useState(0);
   const [isOnSale, setIsOnSale] = useState(false);
@@ -98,6 +101,8 @@ export default function DetailsModal({
     setVariantsDraft(deepCopyVariants(product.variants || []));
     setSimpleStock(product.stock || 0);
     setDesc(product.desc || "");
+    setName(product.name || "");
+    setImage(product.img || "");
   }, [product]);
 
   const totalStock = useMemo(
@@ -165,6 +170,18 @@ export default function DetailsModal({
     setPrice(Math.round(regularPrice * (1 - safeValue / 100)));
   };
 
+  const handleImageSelected = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImage(event.target?.result || "");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
   const handleSave = () => {
     const cleanedVariants = variantsDraft.filter(
       (variant) => (variant.colorName || "").trim() !== ""
@@ -181,11 +198,18 @@ export default function DetailsModal({
       return;
     }
 
+    if (!name.trim()) {
+      alert("יש להזין שם מוצר");
+      return;
+    }
+
     const cleanedUsesVariants = cleanedVariants.length > 0;
     const cleanedTotal = calcVariantsTotal(cleanedVariants);
 
     onSave({
       ...product,
+      name: name.trim(),
+      img: image,
       price: Number(price),
       cost: Number(cost) || 0,
       sale: isOnSale,
@@ -213,7 +237,7 @@ export default function DetailsModal({
         <div className={modalStyles.detailsTopSection}>
           <div className={modalStyles.detailsTopRight}>
             <div className={modalStyles.detailsTitle}>
-              פרטים — {product.name}
+                פרטים — {name || product.name}
             </div>
 
             <div className={modalStyles.detailsMeta}>
@@ -259,7 +283,15 @@ export default function DetailsModal({
               </span>
             </div>
 
-            <div className={modalStyles.detailsName}>{product.name}</div>
+            <div className={formStyles.fg} style={{ marginTop: "0.3rem" }}>
+              <label>שם המוצר</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ fontFamily: "Alef, sans-serif", fontWeight: 700 }}
+              />
+            </div>
             <div className={formStyles.fg} style={{ marginTop: "0.5rem" }}>
               <label>תיאור המוצר</label>
               <textarea
@@ -275,11 +307,38 @@ export default function DetailsModal({
             </div>
           </div>
 
-          <img
-            src={product.img}
-            alt={product.name}
-            className={modalStyles.detailsProductImage}
-          />
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <img
+              src={image}
+              alt={name}
+              className={modalStyles.detailsProductImage}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                position: "absolute",
+                bottom: "6px",
+                left: "6px",
+                background: "rgba(0,0,0,0.75)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "0.3rem 0.6rem",
+                fontSize: "0.75rem",
+                cursor: "pointer",
+              }}
+            >
+              🖼️ החלף תמונה
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageSelected}
+            />
+          </div>
         </div>
 
         <div className={modalStyles.detailsFieldsGrid}>
