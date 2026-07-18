@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
+import { useDialog } from "../../common/DialogProvider";
 
 export default function ManagerScanModal({
   isOpen,
@@ -7,6 +8,7 @@ export default function ManagerScanModal({
   onApplyCode,
   scanTarget,
 }) {
+  const { alertDialog } = useDialog();
   const [manualCode, setManualCode] = useState("");
   const [scanMode, setScanMode] = useState("camera");
   const [cameraReady, setCameraReady] = useState(false);
@@ -30,7 +32,7 @@ export default function ManagerScanModal({
         };
       }
     } catch (err) {
-      alert("שגיאה בגישה למצלמה");
+      alertDialog("שגיאה בגישה למצלמה");
       setScanMode("manual");
     }
   };

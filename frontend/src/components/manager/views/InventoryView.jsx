@@ -3,6 +3,7 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scss";
 import { he } from "../../../translations/he";
 import { CATEGORIES } from "../../../data/categories";
+import { useDialog } from "../../common/DialogProvider";
 const t = he.manager.inventory;
 const common = he.common;
 
@@ -92,6 +93,7 @@ export default function InventoryView({
   onCancelPromote,
   promotedCode,
 }) {
+  const { confirmDialog } = useDialog();
   const [showFilters, setShowFilters] = useState(false);
 
   const [categoryFilter, setCategoryFilter] = useState(t.options.allCategories);
@@ -382,8 +384,9 @@ export default function InventoryView({
 
                         <button
                           className={`${uiStyles.btn} ${inventoryStyles.deleteBtn}`}
-                          onClick={() => {
-                            if (window.confirm(t.messages.confirmDelete)) {
+                          onClick={async () => {
+                            const confirmed = await confirmDialog(t.messages.confirmDelete);
+                            if (confirmed) {
                               onDeleteProduct(p.code);
                             }
                           }}

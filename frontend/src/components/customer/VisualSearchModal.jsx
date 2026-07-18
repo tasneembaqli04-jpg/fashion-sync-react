@@ -1,5 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
+import { useDialog } from "../common/DialogProvider";
 
 export default function VisualSearchModal({
   open = false,
@@ -12,6 +13,7 @@ export default function VisualSearchModal({
   clearTryonSelfie,
   onTryOn,
 }) {
+  const { alertDialog } = useDialog();
   const resultImageUrl =
     tryOnResult?.resultImageUrl ||
     tryOnResult?.imageUrl ||
@@ -60,10 +62,10 @@ export default function VisualSearchModal({
       link.click();
       document.body.removeChild(link);
 
-      alert("הדפדפן לא תומך בשיתוף ישיר, לכן התמונה נשמרה למחשב.");
+      alertDialog("הדפדפן לא תומך בשיתוף ישיר, לכן התמונה נשמרה למחשב.");
     } catch (error) {
       console.error("Share failed:", error);
-      alert("השיתוף לא נתמך בדפדפן הזה.");
+      alertDialog("השיתוף לא נתמך בדפדפן הזה.");
     }
   };
 
