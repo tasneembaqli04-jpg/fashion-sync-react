@@ -2,28 +2,11 @@ import { requestTryOn } from "./tryOnService";
 import { requestTryOnV2 } from "./tryOnV2Service";
 
 const VIRTUAL_TRY_ON_CATEGORIES = [
-  "שמלה",
-  "שמלות",
-  "חולצה",
   "חולצות",
-  "מכנס",
   "מכנסיים",
-  "חצאית",
-  "חצאיות",
-  "מעיל",
-  "מעילים",
-  "זקט",
-  "זקטים",
-  "ז'קט",
-  "ז'קטים",
-  "גקט",
-  "גקטים",
-  "ג'קט",
-  "ג'קטים",
-  "נעל",
+  "שמלות",
+  "עליוניות",
   "נעליים",
-  "נעלי נשים",
-  "נעלי גברים",
 ];
 
 function normalizeText(value) {
@@ -36,21 +19,13 @@ function normalizeText(value) {
 function shouldUseVirtualTryOn(product) {
   const productCategory = normalizeText(
     product?.cat ||
-    product?.category ||
-    product?.type ||
     ""
   );
 
-  const productName = normalizeText(product?.name);
-
-  return VIRTUAL_TRY_ON_CATEGORIES.some((allowedCategory) => {
-    const normalizedAllowed = normalizeText(allowedCategory);
-
-    return (
-      productCategory.includes(normalizedAllowed) ||
-      productName.includes(normalizedAllowed)
-    );
-  });
+  return VIRTUAL_TRY_ON_CATEGORIES.some(
+    (allowedCategory) =>
+      productCategory === normalizeText(allowedCategory)
+  );
 }
 
 export function requestSmartTryOn({
@@ -63,7 +38,10 @@ export function requestSmartTryOn({
   console.log("Smart Try-On routing:", {
     code: product?.code,
     name: product?.name,
-    category: product?.cat || product?.category,
+    category:
+      product?.cat ||
+      product?.category ||
+      product?.type,
     selectedMechanism: useV2 ? "tryOnV2" : "tryOn",
   });
 
