@@ -7,6 +7,7 @@ import {
   deleteStockNotification,
 } from "../../../services/notifications/notificationsService";
 import { sendStockAlertEmail } from "../../../services/email/emailService";
+import { useDialog } from "../../common/DialogProvider";
 
 function fmtDate(value) {
   if (!value) return "";
@@ -22,6 +23,7 @@ function fmtDate(value) {
 }
 
 export default function StockNotificationsView() {
+  const { confirmDialog } = useDialog();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +49,8 @@ export default function StockNotificationsView() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("למחוק את הבקשה?")) return;
+    const confirmed = await confirmDialog("למחוק את הבקשה?");
+    if (!confirmed) return;
     await deleteStockNotification(id);
     setItems((prev) => prev.filter((item) => item.id !== id));
   }

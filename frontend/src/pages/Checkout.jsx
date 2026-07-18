@@ -34,8 +34,10 @@ import CheckoutStep3Payment from "../components/checkout/CheckoutStep3Payment";
 import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
 import { getCartFromFirestore } from "../services/customer/cartFirestore";
+import { useDialog } from "../components/common/DialogProvider";
 export default function Checkout() {
   const navigate = useNavigate();
+  const { alertDialog } = useDialog();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
@@ -439,7 +441,7 @@ export default function Checkout() {
         console.error("message:", error?.message);
         console.error("stack:", error?.stack);
         setProcessing(false);
-        alert(
+        alertDialog(
           `אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`,
         );
       }

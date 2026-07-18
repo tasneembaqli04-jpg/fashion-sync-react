@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDialog } from "../../common/DialogProvider";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import {
@@ -17,6 +18,7 @@ const SEASON_OPTIONS = [
 ];
 
 export default function CouponsView() {
+  const { confirmDialog, alertDialog } = useDialog();
   const [coupons, setCoupons] = useState([]);
   const [usage, setUsage] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,12 +49,12 @@ export default function CouponsView() {
     const code = newCode.trim().toUpperCase();
 
     if (!code) {
-      alert("יש להזין קוד קופון");
+      alertDialog("יש להזין קוד קופון");
       return;
     }
 
     if (coupons.some((c) => c.code === code)) {
-      alert("קוד הקופון הזה כבר קיים");
+      alertDialog("קוד הקופון הזה כבר קיים");
       return;
     }
 
@@ -77,7 +79,8 @@ export default function CouponsView() {
   }
 
   async function handleDelete(code) {
-    if (!window.confirm(`למחוק את הקופון ${code}?`)) return;
+    const confirmed = await confirmDialog(`למחוק את הקופון ${code}?`);
+    if (!confirmed) return;
     await deleteCoupon(code);
     refresh();
   }

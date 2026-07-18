@@ -8,6 +8,7 @@ import { addFeedback } from "../services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../services/customer/customerFirestore";
 import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../services/notifications/notificationsService";
 import { LS_KEYS } from "../functions/checkout/checkoutStorage";
+import { useDialog } from "../components/common/DialogProvider";
 import { getCoupon } from "../services/coupons/couponsService";
 import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
 import {
@@ -62,6 +63,7 @@ import VisualSearchModal from "../components/customer/VisualSearchModal";
 
 export default function Customer() {
   const navigate = useNavigate();
+  const { confirmDialog, alertDialog } = useDialog();
 
   const [theme, setTheme] = useState(getSavedTheme());
   const [activePanel, setActivePanel] = useState("browse");
@@ -480,7 +482,7 @@ export default function Customer() {
       const availableQty = Number(matchingVariant?.sizes?.[variant.size]) || 0;
 
       if (availableQty <= 0) {
-        alert("מצטערים, הצבע/מידה שבחרת אזלו מהמלאי");
+        alertDialog("מצטערים, הצבע/מידה שבחרת אזלו מהמלאי");
         return;
       }
     } else if (!hasVariants && product.stock <= 0) {
@@ -531,12 +533,12 @@ export default function Customer() {
     const coupon = await getCoupon(code);
 
     if (!coupon || !coupon.active) {
-      alert("קוד קופון לא תקין.");
+      alertDialog("קוד קופון לא תקין.");
       return;
     }
 
     if (coupon.seasonOnly && getCurrentSeason() !== coupon.seasonOnly) {
-      alert("קוד הקופון תקף רק בעונה המתאימה לו.");
+      alertDialog("קוד הקופון תקף רק בעונה המתאימה לו.");
       return;
     }
 
@@ -548,12 +550,12 @@ export default function Customer() {
     const requested = parseInt(pointsInput, 10) || 0;
 
     if (requested <= 0) {
-      alert("יש להזין מספר נקודות תקין");
+      alertDialog("יש להזין מספר נקודות תקין");
       return;
     }
 
     if (requested > loyaltyPoints) {
-      alert(`אין לך מספיק נקודות. יש לך ${loyaltyPoints.toLocaleString()} נקודות זמינות.`);
+      alertDialog(`אין לך מספיק נקודות. יש לך ${loyaltyPoints.toLocaleString()} נקודות זמינות.`);
       return;
     }
 
@@ -562,7 +564,7 @@ export default function Customer() {
     const maxPointsUsable = Math.floor(afterCoupon / 0.05);
 
     if (maxPointsUsable <= 0) {
-      alert("הסכום בעגלה כבר מכוסה, אין צורך בנקודות נוספות.");
+      alertDialog("הסכום בעגלה כבר מכוסה, אין צורך בנקודות נוספות.");
       return;
     }
 
@@ -580,7 +582,7 @@ export default function Customer() {
 
   function startCheckout() {
     if (!cart.length) {
-      alert("הסל ריק");
+      alertDialog("הסל ריק");
       return;
     }
 
@@ -655,7 +657,7 @@ export default function Customer() {
     }
   }
 
-  function openNotifyModal(code) {
+  async function openNotifyModal(code) {
     if (isGuest) {
       guestPrompt();
       return;
@@ -664,7 +666,7 @@ export default function Customer() {
     const product = products.find((item) => item.code === code);
     if (!product) return;
 
-    const confirmed = window.confirm(
+    const confirmed = await confirmDialog(
       `נשלח לך מייל לכתובת ${currentUser?.email || ""} וגם התראה באזור האישי שלך ("ההתראות שלי") כש${product.name} יחזור למלאי. להמשיך?`
     );
     if (!confirmed) return;
@@ -675,7 +677,7 @@ export default function Customer() {
       email: currentUser?.email || "",
     });
 
-    alert(
+    alertDialog(
       `נרשמת בהצלחה! נעדכן אותך במייל (${currentUser?.email || ""}) וגם באזור האישי שלך כשהמוצר יחזור למלאי.`
     );
   }

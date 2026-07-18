@@ -39,9 +39,11 @@ import {
   saveTheme,
 } from "../functions/manager/managerStorage";
 import { sendShippingUpdateEmail, sendStockAlertEmail } from "../services/email/emailService";
+import { useDialog } from "../components/common/DialogProvider";
 
 export default function Manager({ onPromote }) {
   const navigate = useNavigate();
+  const { confirmDialog, alertDialog } = useDialog();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -224,7 +226,7 @@ export default function Manager({ onPromote }) {
     const found = products.find((p) => p.code.toUpperCase() === trimmedCode);
 
     if (!found) {
-      alert(`⚠️ מוצר עם הקוד "${trimmedCode}" לא נמצא במלאי`);
+      alertDialog(`⚠️ מוצר עם הקוד "${trimmedCode}" לא נמצא במלאי`);
       return;
     }
 
@@ -410,14 +412,16 @@ export default function Manager({ onPromote }) {
           setActiveView(view);
           setMobileSidebarOpen(false);
         }}
-        onLogout={() => {
-          if (!window.confirm("להתנתק?")) return;
+        onLogout={async () => {
+          const confirmed = await confirmDialog("להתנתק?");
+          if (!confirmed) return;
           setIsLoggedIn(false);
           setActiveView("overview");
           navigate("/");
         }}
-        onGoHome={() => {
-          if (!window.confirm("לחזור לדף הבית?")) return;
+        onGoHome={async () => {
+          const confirmed = await confirmDialog("לחזור לדף הבית?");
+          if (!confirmed) return;
           navigate("/");
         }}
         onToggleTheme={handleToggleTheme}

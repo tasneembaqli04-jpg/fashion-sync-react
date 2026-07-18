@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDialog } from "../../common/DialogProvider";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
@@ -60,6 +61,7 @@ export default function DetailsModal({
   onSave,
   theme,
 }) {
+  const { alertDialog } = useDialog();
   const [price, setPrice] = useState(0);
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -194,12 +196,12 @@ export default function DetailsModal({
       new Set(colorNamesLower).size !== colorNamesLower.length;
 
     if (hasDuplicateColor) {
-      alert("יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי למוצר.");
+      alertDialog("יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי למוצר.");
       return;
     }
 
     if (!name.trim()) {
-      alert("יש להזין שם מוצר");
+      alertDialog("יש להזין שם מוצר");
       return;
     }
 
