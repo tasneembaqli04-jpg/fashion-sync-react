@@ -1,5 +1,6 @@
 import cardStyles from "../../styles/customer/ProductCard.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -31,30 +32,32 @@ function variantSummary(product) {
   return { colors, sizes };
 }
 
-function stockBadge(stock, minStock) {
+function stockBadge(stock, minStock, t) {
   if (stock === 0) {
     return (
       <span className={`${baseStyles.badge} ${baseStyles.badgeRed}`}>
-        מלאי אזל
+        {t.outOfStock}
       </span>
     );
   }
   if (stock <= minStock) {
     return (
       <span className={`${baseStyles.badge} ${baseStyles.badgeYellow}`}>
-        מלאי נמוך
+        {t.lowStock}
       </span>
     );
   }
   return (
-    <span className={`${baseStyles.badge} ${baseStyles.badgeGreen}`}>זמין</span>
+    <span className={`${baseStyles.badge} ${baseStyles.badgeGreen}`}>{t.available}</span>
   );
 }
 
-function seasonBadge(product) {
+function seasonBadge(product, dict) {
   const season = Array.isArray(product.season)
     ? product.season[0]
     : product.season;
+
+  const t = dict.customer.productModal;
 
   const classMap = {
     summer: "badgeSummer",
@@ -71,10 +74,10 @@ function seasonBadge(product) {
   };
 
   const labelMap = {
-    summer: "קיץ",
-    winter: "חורף",
-    "spring-autumn": "אביב / סתיו",
-    all: "כל השנה",
+    summer: t.seasonSummer,
+    winter: t.seasonWinter,
+    "spring-autumn": t.seasonSpringAutumn,
+    all: t.seasonAllYear,
   };
 
   const cls = classMap[season] || "badgeAll";
@@ -129,6 +132,8 @@ export default function ProductCard({
   openNotifyModal,
   guestPrompt,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.productCard;
   const cartItem = cart.find((item) => item.code === product.code);
   const isInCart = Boolean(cartItem);
   const cartQty = cartItem ? cartItem.qty : 0;
@@ -144,9 +149,9 @@ export default function ProductCard({
   const badgeHtml = product.sale ? (
     <div className={cardStyles.saleRibbon}>🏷️ -{saleDiscountPct}%</div>
   ) : product.trending ? (
-    <div className={cardStyles.trendingBadge}>🔥 טרנד</div>
+    <div className={cardStyles.trendingBadge}>{t.trending}</div>
   ) : product.bestseller ? (
-    <div className={cardStyles.bestsellerBadge}>⭐ נמכר ביותר</div>
+    <div className={cardStyles.bestsellerBadge}>{t.bestseller}</div>
   ) : null;
 
   return (
@@ -162,7 +167,7 @@ export default function ProductCard({
           <button
             className={cardStyles.wishIcon}
             onClick={(e) => { e.stopPropagation(); guestPrompt(); }}
-            title="התחבר"
+            title={t.login}
           >
             🔒
           </button>
@@ -182,14 +187,14 @@ export default function ProductCard({
           📤
         </button>
 
-        {seasonBadge(product)}
+        {seasonBadge(product, dict)}
       </div>
 
       <div className={cardStyles.productBody}>
         <div>
           <div className={cardStyles.productName}>{product.name}</div>
           <div className={cardStyles.productCode}>
-            {product.code} · {product.gender} · {product.cat}
+            {product.code} · {dict.genderLabels[product.gender] || product.gender} · {dict.categoryLabels[product.cat] || product.cat}
           </div>
           {(colors.length > 0 || sizes.length > 0) && (
             <div
@@ -199,15 +204,15 @@ export default function ProductCard({
                 marginTop: "0.25rem",
               }}
             >
-              {colors.length > 0 && <div>צבעים: {colors.join(", ")}</div>}
-              {sizes.length > 0 && <div>מידות: {sizes.join(", ")}</div>}
+              {colors.length > 0 && <div>{t.colorsLabel}: {colors.join(", ")}</div>}
+              {sizes.length > 0 && <div>{t.sizesLabel}: {sizes.join(", ")}</div>}
             </div>
           )}
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {priceHtml(product)}
-          {stockBadge(product.stock, product.minStock)}
+          {stockBadge(product.stock, product.minStock, t)}
         </div>
 
         <div className={cardStyles.cardActions} onClick={(e) => e.stopPropagation()}>
@@ -216,7 +221,7 @@ export default function ProductCard({
               className={`${cardStyles.actBtn} ${cardStyles.guestLocked}`}
               onClick={guestPrompt}
             >
-              🔒 הוסף לסל
+              {t.guestAddToCart}
             </button>
           ) : isInCart ? (
             <button
@@ -224,7 +229,7 @@ export default function ProductCard({
               onClick={(e) => { e.stopPropagation(); openProductModal(product.code); }}
               disabled={product.stock === 0}
             >
-              ✓ בסל ({cartQty}) – הוסף עוד
+              {t.inCartButton.replace("{qty}", cartQty)}
             </button>
           ) : (
             <button
@@ -232,7 +237,7 @@ export default function ProductCard({
               onClick={(e) => { e.stopPropagation(); openProductModal(product.code); }}
               disabled={product.stock === 0}
             >
-              🛒 הוסף לסל
+              {t.addToCart}
             </button>
           )}
 
@@ -247,7 +252,7 @@ export default function ProductCard({
               openTryOnFromProduct(product.code);
            }}
   >
-    נסה עליי
+    {t.tryOn}
   </button>
 )}
         </div>
@@ -258,7 +263,7 @@ export default function ProductCard({
             id={`nb-${product.code}`}
             onClick={(e) => { e.stopPropagation(); openNotifyModal(product.code); }}
           >
-            🔔 הודע לי שיחזור למלאי
+            {t.notifyWhenBack}
           </button>
         )}
       </div>

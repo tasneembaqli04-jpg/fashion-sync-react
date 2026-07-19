@@ -111,7 +111,7 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 0.9rem 1rem 0.9rem 3.7rem;
+  padding: 0.9rem 1rem;
   color: var(--white);
   font-family: "Alef", sans-serif;
   font-size: 0.95rem;
@@ -130,7 +130,6 @@
 
 .searchCameraBtn {
   position: absolute;
-  left: 0.65rem;
   top: 50%;
   transform: translateY(-50%);
   width: 42px;

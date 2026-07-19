@@ -1,51 +1,53 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerPolicy({ show }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.policy;
+
   if (!show) return null;
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>📋 מדיניות והחזרות</div>
-      <div className={commonStyles.pageSub}>כל המידע שאתה צריך לדעת</div>
+      <div className={commonStyles.pageTitle}>{t.title}</div>
+      <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       <div className={modalStyles.policySection}>
-        <div className={modalStyles.policyTitle}>🔄 מדיניות החזרות</div>
+        <div className={modalStyles.policyTitle}>{t.returnsTitle}</div>
         <div className={modalStyles.policyText}>
-          ניתן להחזיר פריטים תוך 30 יום מיום הרכישה, בתנאי שהם במצב מקורי עם תגיות.
-          החזרה מלאה לכרטיס האשראי או כזיכוי לחנות.
-          פריטי מכירה סופית אינם ניתנים להחזרה.
+          {t.returnsText}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
-        <div className={modalStyles.policyTitle}>🚚 מדיניות משלוחים</div>
+        <div className={modalStyles.policyTitle}>{t.shippingTitle}</div>
         <div className={modalStyles.policyText}>
-          משלוח רגיל: 5–7 ימי עסקים — ₪25 (חינם לרכישות מעל ₪200)
+          {t.shippingLine1}
           <br />
-          משלוח מהיר: 2–3 ימי עסקים — ₪29
+          {t.shippingLine2}
           <br />
-          משלוח באותו יום: עד 23:59 היום — ₪59 (מרכז בלבד)
+          {t.shippingLine3}
           <br />
-          איסוף עצמי: מחר 10:00–20:00, חינם — הרצל 42, ת״א
+          {t.shippingLine4}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
-        <div className={modalStyles.policyTitle}>🔒 פרטיות ואבטחה</div>
+        <div className={modalStyles.policyTitle}>{t.privacyTitle}</div>
         <div className={modalStyles.policyText}>
-          אנחנו לא שומרים פרטי כרטיס אשראי. כל העסקאות מוצפנות.
+          {t.privacyLine1}
           <br />
-          לא נמכור את פרטיך לצד שלישי.
+          {t.privacyLine2}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
-        <div className={modalStyles.policyTitle}>📞 יצירת קשר</div>
+        <div className={modalStyles.policyTitle}>{t.contactTitle}</div>
         <div className={modalStyles.policyText}>
-          טלפון: 03-000-0000 (א–ה 9:00–18:00)
+          {t.contactPhone}
           <br />
-          אימייל: support@fashionsync.co.il
+          {t.contactEmail}
         </div>
       </div>
     </div>
