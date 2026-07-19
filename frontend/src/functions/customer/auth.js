@@ -53,24 +53,24 @@ export function goLogin() {
   window.location.href = "/";
 }
 
-export async function goHome() {
-  const confirmed = await globalDialog.confirm("לחזור לדף הבית?");
+export async function goHome(t) {
+  const confirmed = await globalDialog.confirm(t ? t.confirmGoHome : "לחזור לדף הבית?");
   if (confirmed) {
     window.location.href = "/";
   }
 }
 
-export async function guestPrompt() {
+export async function guestPrompt(t) {
   const confirmed = await globalDialog.confirm(
-    "לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?"
+    t ? t.confirmGuestAction : "לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?"
   );
   if (confirmed) {
     goLogin();
   }
 }
 
-export async function doLogout(setCart) {
-  const confirmed = await globalDialog.confirm("להתנתק?");
+export async function doLogout(setCart, t) {
+  const confirmed = await globalDialog.confirm(t ? t.confirmLogout : "להתנתק?");
   if (!confirmed) return;
 
   await logOut();

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { signInAsManager } from "../../services/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
-import LanguageToggle from "../common/LanguageToggle";
 import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function LoginOverlay({ onLoginSuccess }) {
@@ -45,10 +44,6 @@ export default function LoginOverlay({ onLoginSuccess }) {
         >
           ✕
         </button>
-
-        <div style={{ position: "absolute", top: "1rem", right: "1rem" }}>
-          <LanguageToggle />
-        </div>
 
         <div className={loginStyles.loginBrand}>FashionSync</div>
         <div className={loginStyles.loginSub}>{t.title}</div>

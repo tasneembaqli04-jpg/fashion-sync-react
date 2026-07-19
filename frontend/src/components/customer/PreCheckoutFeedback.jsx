@@ -1,5 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function PreCheckoutFeedback({
   open = false,
@@ -12,13 +13,16 @@ export default function PreCheckoutFeedback({
   submitPreCheckoutFeedback,
   skipToCheckout,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.preCheckoutFeedback;
+
   const topics = [
-    "🎨 עיצוב",
-    "🔍 חיפוש",
-    "🛒 קנייה",
-    "📱 מובייל",
-    "💬 צ'אטבוט",
-    "💡 הצעה",
+    t.topicDesign,
+    t.topicSearch,
+    t.topicShopping,
+    t.topicMobile,
+    t.topicChatbot,
+    t.topicSuggestion,
   ];
 
   return (
@@ -28,10 +32,10 @@ export default function PreCheckoutFeedback({
       style={{ display: open ? "flex" : "none" }}
     >
       <div className={modalStyles.pcfBox}>
-        <div className={modalStyles.pcfTitle}>💡 לפני שאתה משלם...</div>
+        <div className={modalStyles.pcfTitle}>{t.title}</div>
 
         <div className={modalStyles.pcfSub}>
-          יש לך הצעות לשיפור האתר? נשמח לשמוע! (אפשר לדלג)
+          {t.subtitle}
         </div>
 
         <div className={modalStyles.pcfStars} id="pcf-stars-row">
@@ -68,7 +72,7 @@ export default function PreCheckoutFeedback({
         <textarea
           className={modalStyles.pcfTextarea}
           id="pcf-text"
-          placeholder="כתוב הערה כלשהי... (לא חובה)"
+          placeholder={t.textPlaceholder}
           value={pcfText}
           onChange={(e) => setPcfText(e.target.value)}
         />
@@ -79,7 +83,7 @@ export default function PreCheckoutFeedback({
             className={`${baseStyles.btn} ${baseStyles.btnGold}`}
             onClick={submitPreCheckoutFeedback}
           >
-            שלח וקדם לתשלום ←
+            {t.submitButton}
           </button>
 
           <button
@@ -87,7 +91,7 @@ export default function PreCheckoutFeedback({
             className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
             onClick={skipToCheckout}
           >
-            דלג ועבור לתשלום
+            {t.skipButton}
           </button>
         </div>
       </div>

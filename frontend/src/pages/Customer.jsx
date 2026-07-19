@@ -20,15 +20,15 @@ import {
 import {
   initAuth,
   doLogout as doLogoutFn,
-  goHome,
+  goHome as goHomeFn,
   goLogin,
-  guestPrompt,
+  guestPrompt as guestPromptFn,
 } from "../functions/customer/auth";
 import { openDB } from "../functions/customer/storage";
 import {
   loadProducts,
   filterProducts,
-  SEASON_META,
+  getSeasonMeta,
   getCurrentSeason,
 } from "../functions/customer/catalog";
 import {
@@ -315,7 +315,7 @@ export default function Customer() {
   const seasonMeta = useMemo(() => {
     if (currentSeasonTab === "all") return null;
 
-    const base = SEASON_META[currentSeasonTab];
+    const base = getSeasonMeta(dict.customer.browse)[currentSeasonTab];
     if (!base) return null;
 
     if (currentSeasonTab === realCurrentSeason) {
@@ -323,9 +323,9 @@ export default function Customer() {
     }
 
     const neutralTextByTab = {
-      summer: "מוצגים פריטי הקיץ",
-      winter: "מוצגים פריטי החורף",
-      "spring-autumn": "מוצגים פריטי אביב/סתיו",
+      summer: dict.customer.browse.neutralSummer,
+      winter: dict.customer.browse.neutralWinter,
+      "spring-autumn": dict.customer.browse.neutralSpringAutumn,
     };
 
     return {
@@ -618,7 +618,7 @@ export default function Customer() {
   function submitPreCheckoutFeedback() {
     addFeedback({
       type: "pre-checkout",
-      user: currentUser?.email || "אורח",
+      user: currentUser?.email || dict.customer.misc.guestFallbackName,
       rating: pcfRating,
       topics: pcfTopics,
       text: pcfText.trim(),
@@ -652,7 +652,9 @@ export default function Customer() {
     if (!product) return;
 
     const url = `${window.location.origin}/customer?item=${product.code}`;
-    const text = `בדקו את ${product.name} ב-FashionSync – ₪${product.price}`;
+    const text = dict.customer.misc.shareMessageTemplate
+      .replace("{name}", product.name)
+      .replace("{price}", product.price);
 
     if (type === "copy") {
       navigator.clipboard?.writeText(url);
@@ -665,7 +667,7 @@ export default function Customer() {
     } else if (type === "email") {
       window.location.href =
         "mailto:?subject=" +
-        encodeURIComponent("ראה את " + product.name) +
+        encodeURIComponent(dict.customer.misc.shareEmailSubjectPrefix + product.name) +
         "&body=" +
         encodeURIComponent(text + "\n" + url);
     }
@@ -681,7 +683,9 @@ export default function Customer() {
     if (!product) return;
 
     const confirmed = await confirmDialog(
-      `נשלח לך מייל לכתובת ${currentUser?.email || ""} וגם התראה באזור האישי שלך ("ההתראות שלי") כש${product.name} יחזור למלאי. להמשיך?`
+      dict.customer.dialogs.notifyConfirmMessage
+        .replace("{email}", currentUser?.email || "")
+        .replace("{name}", product.name)
     );
     if (!confirmed) return;
 
@@ -692,7 +696,7 @@ export default function Customer() {
     });
 
     alertDialog(
-      `נרשמת בהצלחה! נעדכן אותך במייל (${currentUser?.email || ""}) וגם באזור האישי שלך כשהמוצר יחזור למלאי.`
+      dict.customer.dialogs.notifySuccessMessage.replace("{email}", currentUser?.email || "")
     );
   }
 
@@ -725,7 +729,7 @@ export default function Customer() {
   }
   async function handleTryOnRequest() {
     if (!tryonSelfie) {
-      setTryOnError("יש להעלות תמונה לפני הפעלת נסה עליי");
+      setTryOnError(dict.customer.dialogs.tryOnErrorUploadImage);
       return;
     }
 
@@ -735,7 +739,7 @@ export default function Customer() {
     );
 
     if (!productForTryOn) {
-      setTryOnError("המוצר שנבחר לא נמצא");
+      setTryOnError(dict.customer.dialogs.tryOnErrorProductNotFound);
       return;
     }
 
@@ -770,7 +774,7 @@ export default function Customer() {
     console.error("Try On request failed:", error);
 
     setTryOnError(
-      error?.message || "אירעה שגיאה בהפעלת נסה עליי"
+      error?.message || dict.customer.dialogs.tryOnErrorGeneric
     );
     } finally {
     
@@ -800,14 +804,14 @@ export default function Customer() {
     setGiftCheckResult(null);
 
     if (!code) {
-      setGiftCheckError("נא להזין קוד כרטיס מתנה");
+      setGiftCheckError(dict.customer.misc.giftCheckErrorEmptyCode);
       return;
     }
 
     const card = await getGiftCard(code);
 
     if (!card) {
-      setGiftCheckError("קוד כרטיס מתנה לא נמצא");
+      setGiftCheckError(dict.customer.misc.giftCheckErrorNotFound);
       return;
     }
 
@@ -840,7 +844,15 @@ export default function Customer() {
   }
 
   function handleLogout() {
-    doLogoutFn(setCart);
+    doLogoutFn(setCart, dict.customer.dialogs);
+  }
+
+  function guestPrompt() {
+    return guestPromptFn(dict.customer.dialogs);
+  }
+
+  function goHome() {
+    return goHomeFn(dict.customer.dialogs);
   }
 
   function copyCoupon(code, buttonEl) {
@@ -849,7 +861,7 @@ export default function Customer() {
     if (!buttonEl) return;
 
     const original = buttonEl.textContent;
-    buttonEl.textContent = "✓ הועתק";
+    buttonEl.textContent = dict.customer.misc.copiedButtonText;
     buttonEl.style.background = "linear-gradient(135deg,var(--green),#2ecc71)";
 
     setTimeout(() => {
@@ -905,8 +917,17 @@ export default function Customer() {
                 }}
               >
                 <span>
-                  🎉 <strong>{alert.productName || alert.productCode}</strong> חזר
-                  למלאי!
+                  {(() => {
+                    const template = dict.customer.misc.stockBackBannerText;
+                    const [before, after] = template.split("{name}");
+                    return (
+                      <>
+                        {before}
+                        <strong>{alert.productName || alert.productCode}</strong>
+                        {after}
+                      </>
+                    );
+                  })()}
                 </span>
                 <button
                   type="button"
@@ -914,7 +935,7 @@ export default function Customer() {
                   onClick={() => dismissStockAlert(alert.id)}
                   style={{ flexShrink: 0 }}
                 >
-                  ✕ הבנתי
+                  {dict.customer.misc.gotItButton}
                 </button>
               </div>
             ))}
@@ -1058,7 +1079,7 @@ export default function Customer() {
         cartPoints={total}
         cartTotal={total}
         discountText={
-          appliedDiscount ? `${Math.round(appliedDiscount * 100)}% הנחה` : ""
+          appliedDiscount ? `${Math.round(appliedDiscount * 100)}${dict.customer.misc.discountSuffix}` : ""
         }
         couponValue={couponValue}
         setCouponValue={setCouponValue}

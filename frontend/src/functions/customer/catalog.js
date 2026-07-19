@@ -2,11 +2,13 @@ import { getProducts } from "../../services/products/productsService";
 
 const BESTSELLERS_PER_CATEGORY = 5;
 
-export const SEASON_META = {
-  summer: { emoji: "☀️", text: "עכשיו קיץ! מוצגים פריטי הקיץ", cls: "summer" },
-  winter: { emoji: "❄️", text: "עכשיו חורף! מוצגים פריטי החורף", cls: "winter" },
-  "spring-autumn": { emoji: "🌸", text: "עכשיו אביב/סתיו!", cls: "spring" },
-};
+export function getSeasonMeta(t) {
+  return {
+    summer: { emoji: "☀️", text: t.seasonBannerSummer, cls: "summer" },
+    winter: { emoji: "❄️", text: t.seasonBannerWinter, cls: "winter" },
+    "spring-autumn": { emoji: "🌸", text: t.seasonBannerSpringAutumn, cls: "spring" },
+  };
+}
 
 export async function loadProducts() {
   const products = await getProducts();
