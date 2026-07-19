@@ -342,6 +342,13 @@ export const he = {
       confirmLogout: "להתנתק?",
       confirmGoHome: "לחזור לדף הבית?",
     },
+    loginOverlay: {
+      title: "👑 כניסת מנהל ראשי",
+      username: "שם משתמש",
+      password: "סיסמה",
+      wrongCredentials: "❌ שם משתמש או סיסמה שגויים",
+      loginButton: "כניסה",
+    },
     inventory: {
       title: " ניהול מלאי",
       filterToggle: "סינון",

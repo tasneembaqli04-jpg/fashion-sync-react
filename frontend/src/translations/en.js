@@ -342,6 +342,13 @@ export const en = {
       confirmLogout: "Log out?",
       confirmGoHome: "Go back to home page?",
     },
+    loginOverlay: {
+      title: "👑 Main Admin Login",
+      username: "Username",
+      password: "Password",
+      wrongCredentials: "❌ Incorrect username or password",
+      loginButton: "Log in",
+    },
     inventory: {
       title: "Inventory Management",
       filterToggle: "Filters",
