@@ -7,6 +7,8 @@
   --charcoal: #141414;
   --gray: #4a4a4a;
   --light-gray: #888;
+  --card-bg: #161616;
+  --border: rgba(255, 255, 255, 0.08);
 }
 
 :global(body) {
@@ -21,6 +23,8 @@
 :global(body.light) {
   background: var(--cream);
   color: #0b0b0b;
+  --card-bg: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
 }
 
 .homePage {
@@ -465,7 +469,7 @@
   padding: 1.6rem 1.5rem 1.5rem;
   backdrop-filter: blur(24px);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
-  text-align: right;
+  text-align: start;
   animation: riseIn 0.25s ease forwards;
 }
 
@@ -545,7 +549,7 @@
   align-items: center;
   gap: 0.9rem;
   width: 100%;
-  text-align: right;
+  text-align: start;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 12px;
@@ -929,7 +933,7 @@
   border-radius: 20px;
   padding: 2.2rem 2rem;
   backdrop-filter: blur(20px);
-  text-align: right;
+  text-align: start;
 }
 
 :global(body.light) .intentCard {
@@ -962,7 +966,7 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.65);
   margin-bottom: 1.2rem;
-  text-align: right;
+  text-align: start;
 }
 
 :global(body.light) .homePage .intentTitle {

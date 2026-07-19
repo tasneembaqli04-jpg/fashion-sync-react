@@ -40,7 +40,7 @@
 }
 
 .main {
-  margin-right: var(--sidebar);
+  margin-inline-start: var(--sidebar);
   flex: 1;
   min-height: 100vh;
   padding: 2.5rem;
@@ -48,7 +48,7 @@
 
 @media (max-width: 860px) {
   .main {
-    margin-right: 0 !important;
+    margin-inline-start: 0 !important;
     padding: 5rem 1rem 1.5rem;
   }
 }

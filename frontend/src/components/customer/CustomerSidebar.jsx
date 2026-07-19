@@ -1,5 +1,6 @@
 import sidebarStyles from "../../styles/customer/CustomerSidebar.module.scss";
 import LanguageToggle from "../common/LanguageToggle";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerSidebar({
   activePanel = "chat",
@@ -15,6 +16,33 @@ export default function CustomerSidebar({
   stockAlertsCount = 0,
   activeOrdersCount = 0,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.sidebar;
+
+  function Badge({ count, color }) {
+    if (!count) return null;
+    return (
+      <span
+        style={{
+          background: color,
+          color: color === "var(--gold)" ? "#111" : "#fff",
+          fontSize: "0.68rem",
+          fontWeight: 800,
+          minWidth: "18px",
+          height: "18px",
+          borderRadius: "999px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 5px",
+          flexShrink: 0,
+        }}
+      >
+        {count}
+      </span>
+    );
+  }
+
   return (
     <>
       <div
@@ -32,7 +60,7 @@ export default function CustomerSidebar({
         id="sidebar"
       >
         <div className={sidebarStyles.brand}>FashionSync</div>
-        <div className={sidebarStyles.roleBadge}>לקוח</div>
+        <div className={sidebarStyles.roleBadge}>{t.roleBadge}</div>
 
         <div style={{ padding: "0.5rem 0.9rem" }}>
           <LanguageToggle style={{ width: "100%", justifyContent: "center" }} />
@@ -57,9 +85,9 @@ export default function CustomerSidebar({
             id="sidebar-guest-bar"
             style={{ display: "block" }}
           >
-            <div className="glabel">👀 מצב צפייה בלבד</div>
+            <div className="glabel">{t.guestModeLabel}</div>
             <button className={sidebarStyles.guestLoginBtn} onClick={goLogin}>
-              🔑 התחבר לגישה מלאה
+              {t.guestLoginButton}
             </button>
           </div>
         )}
@@ -74,7 +102,8 @@ export default function CustomerSidebar({
             closeSidebar();
           }}
         >
-          <span className={sidebarStyles.navIcon}>💬</span> צ'אטבוט
+          <span className={sidebarStyles.navIcon}>💬</span>
+          <span style={{ flex: 1 }}>{t.navChat}</span>
         </button>
 
         <button
@@ -86,30 +115,10 @@ export default function CustomerSidebar({
             showPanel("browse");
             closeSidebar();
           }}
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
           <span className={sidebarStyles.navIcon}>🏬</span>
-          <span style={{ flex: 1 }}>קטלוג</span>
-          {stockAlertsCount > 0 && (
-            <span
-              style={{
-                background: "var(--red)",
-                color: "#fff",
-                fontSize: "0.68rem",
-                fontWeight: 800,
-                minWidth: "18px",
-                height: "18px",
-                borderRadius: "999px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 5px",
-                flexShrink: 0,
-              }}
-            >
-              {stockAlertsCount}
-            </span>
-          )}
+          <span style={{ flex: 1 }}>{t.navCatalog}</span>
+          <Badge count={stockAlertsCount} color="var(--red)" />
         </button>
 
         <button
@@ -119,7 +128,8 @@ export default function CustomerSidebar({
           id="nav-wishlist"
           onClick={() => navProtected("wishlist")}
         >
-          <span className={sidebarStyles.navIcon}>❤️</span> רשימת בקשות
+          <span className={sidebarStyles.navIcon}>❤️</span>
+          <span style={{ flex: 1 }}>{t.navWishlist}</span>
         </button>
 
         <button
@@ -128,30 +138,10 @@ export default function CustomerSidebar({
           } ${isGuest ? sidebarStyles.locked : ""}`}
           id="nav-orders"
           onClick={() => navProtected("orders")}
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
           <span className={sidebarStyles.navIcon}>📦</span>
-          <span style={{ flex: 1 }}>ההזמנות שלי</span>
-          {activeOrdersCount > 0 && (
-            <span
-              style={{
-                background: "var(--gold)",
-                color: "#111",
-                fontSize: "0.68rem",
-                fontWeight: 800,
-                minWidth: "18px",
-                height: "18px",
-                borderRadius: "999px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 5px",
-                flexShrink: 0,
-              }}
-            >
-              {activeOrdersCount}
-            </span>
-          )}
+          <span style={{ flex: 1 }}>{t.navOrders}</span>
+          <Badge count={activeOrdersCount} color="var(--gold)" />
         </button>
 
         <button
@@ -161,7 +151,8 @@ export default function CustomerSidebar({
           id="nav-loyalty"
           onClick={() => navProtected("loyalty")}
         >
-          <span className={sidebarStyles.navIcon}>⭐</span> נקודות וקופונים
+          <span className={sidebarStyles.navIcon}>⭐</span>
+          <span style={{ flex: 1 }}>{t.navLoyalty}</span>
         </button>
 
         <button
@@ -171,7 +162,8 @@ export default function CustomerSidebar({
           id="nav-giftcard"
           onClick={() => navProtected("giftcard")}
         >
-          <span className={sidebarStyles.navIcon}>🎁</span> כרטיס מתנה
+          <span className={sidebarStyles.navIcon}>🎁</span>
+          <span style={{ flex: 1 }}>{t.navGiftCard}</span>
         </button>
 
         <button
@@ -184,27 +176,29 @@ export default function CustomerSidebar({
             closeSidebar();
           }}
         >
-          <span className={sidebarStyles.navIcon}>📋</span> מדיניות
+          <span className={sidebarStyles.navIcon}>📋</span>
+          <span style={{ flex: 1 }}>{t.navPolicy}</span>
         </button>
 
         <div className={sidebarStyles.sidebarFooter}>
           <button className={sidebarStyles.navItem} onClick={toggleTheme}>
-            <span className={sidebarStyles.navIcon}>🌓</span> מצב כהה/בהיר
+            <span className={sidebarStyles.navIcon}>🌓</span>
+            <span style={{ flex: 1 }}>{t.themeToggle}</span>
           </button>
 
           {!isGuest && (
             <button
               className={sidebarStyles.navItem}
               id="nav-logout"
-              style={{ color: "var(--red)", display: "flex" }}
+              style={{ color: "var(--red)" }}
               onClick={doLogout}
             >
-              <span className={sidebarStyles.navIcon}>🚪</span> התנתק
+              <span className={sidebarStyles.navIcon}>🚪</span>
+              <span style={{ flex: 1 }}>{t.logout}</span>
             </button>
           )}
         </div>
       </aside>
     </>
   );
-  
 }
