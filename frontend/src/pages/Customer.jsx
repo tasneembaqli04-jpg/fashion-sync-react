@@ -9,6 +9,7 @@ import { getLoyaltyPoints } from "../services/customer/customerFirestore";
 import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../services/notifications/notificationsService";
 import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { useDialog } from "../components/common/DialogProvider";
+import { useLanguage } from "../translations/LanguageProvider";
 import { getCoupon } from "../services/coupons/couponsService";
 import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
 import {
@@ -64,6 +65,7 @@ import VisualSearchModal from "../components/customer/VisualSearchModal";
 export default function Customer() {
   const navigate = useNavigate();
   const { confirmDialog, alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
 
   const [theme, setTheme] = useState(getSavedTheme());
   const [activePanel, setActivePanel] = useState("browse");
@@ -494,7 +496,7 @@ export default function Customer() {
       const availableQty = Number(matchingVariant?.sizes?.[variant.size]) || 0;
 
       if (availableQty <= 0) {
-        alertDialog("מצטערים, הצבע/מידה שבחרת אזלו מהמלאי");
+        alertDialog(dict.customer.dialogs.outOfStockSelection);
         return;
       }
     } else if (!hasVariants && product.stock <= 0) {
@@ -545,12 +547,12 @@ export default function Customer() {
     const coupon = await getCoupon(code);
 
     if (!coupon || !coupon.active) {
-      alertDialog("קוד קופון לא תקין.");
+      alertDialog(dict.customer.dialogs.invalidCoupon);
       return;
     }
 
     if (coupon.seasonOnly && getCurrentSeason() !== coupon.seasonOnly) {
-      alertDialog("קוד הקופון תקף רק בעונה המתאימה לו.");
+      alertDialog(dict.customer.dialogs.couponSeasonOnly);ד
       return;
     }
 
@@ -562,12 +564,12 @@ export default function Customer() {
     const requested = parseInt(pointsInput, 10) || 0;
 
     if (requested <= 0) {
-      alertDialog("יש להזין מספר נקודות תקין");
+      alertDialog(dict.customer.dialogs.invalidPointsInput);
       return;
     }
 
     if (requested > loyaltyPoints) {
-      alertDialog(`אין לך מספיק נקודות. יש לך ${loyaltyPoints.toLocaleString()} נקודות זמינות.`);
+      alertDialog(dict.customer.dialogs.insufficientPoints.replace("{points}", loyaltyPoints.toLocaleString()));
       return;
     }
 
@@ -576,7 +578,7 @@ export default function Customer() {
     const maxPointsUsable = Math.floor(afterCoupon / 0.05);
 
     if (maxPointsUsable <= 0) {
-      alertDialog("הסכום בעגלה כבר מכוסה, אין צורך בנקודות נוספות.");
+      alertDialog(dict.customer.dialogs.cartAlreadyCovered);
       return;
     }
 
@@ -594,7 +596,7 @@ export default function Customer() {
 
   function startCheckout() {
     if (!cart.length) {
-      alertDialog("הסל ריק");
+      alertDialog(dict.customer.dialogs.emptyCart);
       return;
     }
 

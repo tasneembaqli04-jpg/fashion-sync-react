@@ -1,12 +1,17 @@
 import styles from "../../styles/Home.module.scss";
 import LanguageToggle from "../common/LanguageToggle";
+import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function HomeNavbar({ isLight, onToggleTheme }) {
+  const { t: dict } = useLanguage();
+  const t = dict.home.navbar;
+
   return (
     <nav className={styles.nav}>
       <div className={styles.navLeft}>
         <div>
           <div className={styles.navBrand}>FashionSync</div>
-          <div className={styles.navTagline}>מערכת ניהול חנות בגדים</div>
+          <div className={styles.navTagline}>{t.tagline}</div>
         </div>
       </div>
 
@@ -16,11 +21,11 @@ export default function HomeNavbar({ isLight, onToggleTheme }) {
         <button
           className={styles.themeToggle}
           type="button"
-          aria-label="מצב כהה/בהיר"
+          aria-label={t.themeAriaLabel}
           onClick={onToggleTheme}
         >
           <span>{isLight ? "☀️" : "🌙"}</span>
-          <span>{isLight ? "מצב בהיר" : "מצב כהה"}</span>
+          <span>{isLight ? t.lightMode : t.darkMode}</span>
         </button>
 
         <div className={styles.verText}>v2.0 · 2026</div>

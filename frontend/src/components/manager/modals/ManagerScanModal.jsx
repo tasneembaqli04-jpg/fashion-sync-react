@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import { useDialog } from "../../common/DialogProvider";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function ManagerScanModal({
   isOpen,
@@ -9,6 +10,8 @@ export default function ManagerScanModal({
   scanTarget,
 }) {
   const { alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
+  const t = dict.manager.scanModal;
   const [manualCode, setManualCode] = useState("");
   const [scanMode, setScanMode] = useState("camera");
   const [cameraReady, setCameraReady] = useState(false);
@@ -32,7 +35,7 @@ export default function ManagerScanModal({
         };
       }
     } catch (err) {
-      alertDialog("שגיאה בגישה למצלמה");
+      alertDialog(t.cameraError);
       setScanMode("manual");
     }
   };
@@ -70,13 +73,13 @@ export default function ManagerScanModal({
           ✕
         </button>
 
-        <div className={modalStyles.modalTitle}>📷 סריקת ברקוד</div>
+        <div className={modalStyles.modalTitle}>{t.title}</div>
 
         {scanMode === "camera" && (
           <div className={modalStyles.cameraBox}>
             <video ref={videoRef} autoPlay muted />
 
-            {!cameraReady && <div className={modalStyles.cameraLoading}>טוען מצלמה...</div>}
+            {!cameraReady && <div className={modalStyles.cameraLoading}>{t.loadingCamera}</div>}
 
             <div className={modalStyles.scanFrame}></div>
           </div>
@@ -92,7 +95,7 @@ export default function ManagerScanModal({
             />
 
             <button className={modalStyles.scanBtn} onClick={handleApply}>
-              חפש
+              {t.searchButton}
             </button>
           </div>
         )}

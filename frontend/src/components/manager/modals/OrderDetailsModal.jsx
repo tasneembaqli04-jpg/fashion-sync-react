@@ -1,32 +1,38 @@
-function fmtDate(value) {
-  if (!value) return "לא ידוע";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "לא ידוע";
-  return d.toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-const PAY_METHOD_LABELS = {
-  card: "כרטיס אשראי",
-  cash: "מזומן",
-  bit: "Bit",
-  paypal: "PayPal",
-  giftcard: "כרטיס מתנה",
-};
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function OrderDetailsModal({ open, order, onClose }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.orderDetailsModal;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(value) {
+    if (!value) return t.unknown;
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return t.unknown;
+    return d.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const PAY_METHOD_LABELS = {
+    card: t.payCard,
+    cash: t.payCash,
+    bit: "Bit",
+    paypal: "PayPal",
+    giftcard: t.payGiftCard,
+  };
+
   if (!open || !order) return null;
 
   const customer = order.customerDetails || {};
   const fullName =
     `${customer.firstName || ""} ${customer.lastName || ""}`.trim() ||
     customer.name ||
-    "לא הוזן";
+    t.notEntered;
 
   const items = Array.isArray(order.items) ? order.items : [];
   const isReady = order.status === "ready";
@@ -56,35 +62,34 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           maxHeight: "85vh",
           overflowY: "auto",
           border: "1px solid var(--border-gold)",
-          direction: "rtl",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 style={{ marginBottom: "4px" }}>📋 פרטי הזמנה</h2>
+        <h2 style={{ marginBottom: "4px" }}>{t.title}</h2>
         <p style={{ opacity: 0.7, marginTop: 0 }}>{order.id}</p>
 
         <p>
-          🚦 סטטוס:{" "}
+          {t.statusLabel}{" "}
           <strong style={{ color: isReady ? "#4caf50" : "#d6b65c" }}>
-            {isReady ? "מוכן להגשה" : "ממתין להכנה"}
+            {isReady ? t.statusReady : t.statusPending}
           </strong>
         </p>
-        <p>🕒 תאריך: {fmtDate(order.date)}</p>
+        <p>{t.dateLabel} {fmtDate(order.date)}</p>
 
         <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
-        <h3 style={{ marginBottom: "8px" }}>👤 פרטי לקוח</h3>
-        <p>שם מלא: {fullName}</p>
-        <p>📞 טלפון: {customer.phone || "לא הוזן"}</p>
-        <p>✉️ מייל: {order.customerEmail || customer.email || "לא הוזן"}</p>
-        <p>🏙️ עיר: {customer.city || "לא הוזן"}</p>
-        <p>🏠 רחוב: {customer.street || "לא הוזן"}</p>
-        <p>📮 מיקוד: {customer.zip || "לא הוזן"}</p>
-        {customer.notes && <p>📝 הערות: {customer.notes}</p>}
+        <h3 style={{ marginBottom: "8px" }}>{t.customerDetailsTitle}</h3>
+        <p>{t.fullName} {fullName}</p>
+        <p>{t.phone} {customer.phone || t.notEntered}</p>
+        <p>{t.email} {order.customerEmail || customer.email || t.notEntered}</p>
+        <p>{t.city} {customer.city || t.notEntered}</p>
+        <p>{t.street} {customer.street || t.notEntered}</p>
+        <p>{t.zip} {customer.zip || t.notEntered}</p>
+        {customer.notes && <p>{t.notes} {customer.notes}</p>}
 
         <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
-        <h3 style={{ marginBottom: "8px" }}>🛍️ פריטים</h3>
+        <h3 style={{ marginBottom: "8px" }}>{t.itemsTitle}</h3>
         {items.map((item, index) => (
           <div
             key={index}
@@ -108,7 +113,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
             <div>
               <div>{item.name}</div>
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
-                מידה: {item.size} · כמות: {item.qty} · ₪{item.price}
+                {t.sizeLabel} {item.size} · {t.qtyLabel} {item.qty} · ₪{item.price}
               </div>
               {item.isCustomSize && (
                 <div
@@ -124,8 +129,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
                     display: "inline-block",
                   }}
                 >
-                  ⚠️ בקשת מידה מיוחדת ("{item.size}") — דורש אישור ידני לפני
-                  משלוח
+                  {t.customSizeWarning.replace("{size}", item.size)}
                 </div>
               )}
             </div>
@@ -134,27 +138,28 @@ export default function OrderDetailsModal({ open, order, onClose }) {
 
         <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
-        <h3 style={{ marginBottom: "8px" }}>🚚 משלוח ותשלום</h3>
-        <p>שיטת משלוח: {order.shipping?.label || "לא ידוע"}</p>
-        <p>אמצעי תשלום: {PAY_METHOD_LABELS[order.payMethod] || "לא ידוע"}</p>
+        <h3 style={{ marginBottom: "8px" }}>{t.shippingPaymentTitle}</h3>
+        <p>{t.shippingMethod} {order.shipping?.label || t.unknown}</p>
+        <p>{t.paymentMethod} {PAY_METHOD_LABELS[order.payMethod] || t.unknown}</p>
         {order.payMethod === "card" && Number(order.installments) > 1 && (
-          <p>מספר תשלומים: {order.installments}</p>
+          <p>{t.installmentsCount} {order.installments}</p>
         )}
         {Number(order.discountPct) > 0 && (
           <p>
-            הנחה: {order.discountPct}% (−₪
+            {t.discount} {order.discountPct}% (−₪
             {Number(order.discountAmount || 0).toLocaleString()})
           </p>
         )}
         {Number(order.pointsRedeemed) > 0 && (
           <p>
-            נוצלו {Number(order.pointsRedeemed).toLocaleString()} נקודות
-            נאמנות (−₪{Number(order.pointsDiscountAmount || 0).toFixed(2)})
+            {t.pointsRedeemed
+              .replace("{points}", Number(order.pointsRedeemed).toLocaleString())
+              .replace("{amount}", Number(order.pointsDiscountAmount || 0).toFixed(2))}
           </p>
         )}
 
         <p style={{ fontSize: "1.2rem", marginTop: "12px" }}>
-          💰 סה"כ לתשלום: <strong>₪{Number(order.total || 0).toLocaleString()}</strong>
+          {t.totalToPayLabel} <strong>₪{Number(order.total || 0).toLocaleString()}</strong>
         </p>
 
         <button
@@ -173,7 +178,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
             cursor: "pointer",
           }}
         >
-          סגור
+          {t.close}
         </button>
       </div>
     </div>

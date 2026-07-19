@@ -3,13 +3,7 @@ import { useDialog } from "../../common/DialogProvider";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
-
-const SEASONS = [
-  { value: "summer", label: "קיץ" },
-  { value: "winter", label: "חורף" },
-  { value: "spring-autumn", label: "אביב/סתיו" },
-  { value: "all", label: "כל השנה" },
-];
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -62,6 +56,16 @@ export default function DetailsModal({
   theme,
 }) {
   const { alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
+  const t = dict.manager.detailsModal;
+
+  const SEASONS = [
+    { value: "summer", label: t.seasonSummer },
+    { value: "winter", label: t.seasonWinter },
+    { value: "spring-autumn", label: t.seasonSpringAutumn },
+    { value: "all", label: t.seasonAllYear },
+  ];
+
   const [price, setPrice] = useState(0);
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -196,12 +200,12 @@ export default function DetailsModal({
       new Set(colorNamesLower).size !== colorNamesLower.length;
 
     if (hasDuplicateColor) {
-      alertDialog("יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי למוצר.");
+      alertDialog(t.duplicateColor);
       return;
     }
 
     if (!name.trim()) {
-      alertDialog("יש להזין שם מוצר");
+      alertDialog(t.nameRequired);
       return;
     }
 
@@ -239,7 +243,7 @@ export default function DetailsModal({
         <div className={modalStyles.detailsTopSection}>
           <div className={modalStyles.detailsTopRight}>
             <div className={modalStyles.detailsTitle}>
-                פרטים — {name || product.name}
+                {t.titlePrefix} {name || product.name}
             </div>
 
             <div className={modalStyles.detailsMeta}>
@@ -247,7 +251,7 @@ export default function DetailsModal({
                 {product.code}
               </span>
               <span className={`${uiStyles.tag} ${uiStyles.tBlue}`}>
-                {product.cat}
+                {dict.categoryLabels[product.cat] || product.cat}
               </span>
               <span
                 className={`${uiStyles.tag} ${
@@ -256,7 +260,7 @@ export default function DetailsModal({
                     : uiStyles.tOrange
                 }`}
               >
-                {product.gender}
+                {dict.genderLabels[product.gender] || product.gender}
               </span>
 
               {season && (
@@ -278,7 +282,7 @@ export default function DetailsModal({
               )}
 
               <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>
-                מלאי: {displayedStock}
+                {t.stockLabel} {displayedStock}
               </span>
               <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
                 ₪{price}
@@ -286,7 +290,7 @@ export default function DetailsModal({
             </div>
 
             <div className={formStyles.fg} style={{ marginTop: "0.3rem" }}>
-              <label>שם המוצר</label>
+              <label>{t.productNameLabel}</label>
               <input
                 type="text"
                 value={name}
@@ -295,7 +299,7 @@ export default function DetailsModal({
               />
             </div>
             <div className={formStyles.fg} style={{ marginTop: "0.5rem" }}>
-              <label>תיאור המוצר</label>
+              <label>{t.productDescLabel}</label>
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
@@ -331,7 +335,7 @@ export default function DetailsModal({
                 cursor: "pointer",
               }}
             >
-              🖼️ החלף תמונה
+              {t.changeImage}
             </button>
             <input
               ref={fileInputRef}
@@ -345,7 +349,7 @@ export default function DetailsModal({
 
         <div className={modalStyles.detailsFieldsGrid}>
           <div className={formStyles.fg}>
-            <div className={formStyles.fl}>מחיר (₪)</div>
+            <div className={formStyles.fl}>{t.priceLabel}</div>
             <input
               className={formStyles.fi}
               type="number"
@@ -357,12 +361,12 @@ export default function DetailsModal({
             />
             {isOnSale && (
               <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.2rem" }}>
-                נעול בזמן מבצע — נשלט לפי אחוז ההנחה למטה
+                {t.lockedDuringSale}
               </div>
             )}
           </div>
           <div className={formStyles.fg}>
-            <div className={formStyles.fl}>עלות מוצר (₪)</div>
+            <div className={formStyles.fl}>{t.costLabel}</div>
             <input
               className={formStyles.fi}
               type="number"
@@ -380,12 +384,12 @@ export default function DetailsModal({
                 checked={isOnSale}
                 onChange={(e) => handleToggleSale(e.target.checked)}
               />
-              🏷️ מוצר במבצע
+              {t.onSaleCheckbox}
             </label>
 
             {isOnSale && (
               <div style={{ marginTop: "0.5rem" }}>
-                <div className={formStyles.fl}>אחוז הנחה (%)</div>
+                <div className={formStyles.fl}>{t.discountPercentLabel}</div>
                 <input
                   className={formStyles.fi}
                   type="number"
@@ -401,11 +405,11 @@ export default function DetailsModal({
                     marginTop: "0.3rem",
                   }}
                 >
-                  המחיר הרגיל (האמיתי, לפני המבצע): ₪{regularPrice} ← מחיר
-                  המבצע: ₪{price}
+                  {t.priceInfo
+                    .replace("{regular}", regularPrice)
+                    .replace("{sale}", price)}
                   <br />
-                  ⓘ ברגע שתבטלי את המבצע, המחיר יחזור אוטומטית ל-₪
-                  {regularPrice}.
+                  {t.autoRevertNote.replace("{regular}", regularPrice)}
                 </div>
               </div>
             )}
@@ -423,12 +427,12 @@ export default function DetailsModal({
                 checked={isTrending}
                 onChange={(e) => setIsTrending(e.target.checked)}
               />
-              🔥 מוצר טרנדי
+              {t.trendingCheckbox}
             </label>
           </div>
 
           <div className={formStyles.fg}>
-            <div className={formStyles.fl}>מינימום להתראה</div>
+            <div className={formStyles.fl}>{t.minStockLabel}</div>
             <input
               className={formStyles.fi}
               type="number"
@@ -440,7 +444,7 @@ export default function DetailsModal({
           </div>
 
           <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
-            <div className={formStyles.fl}>עונה</div>
+            <div className={formStyles.fl}>{t.seasonLabel}</div>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               {SEASONS.map(({ value, label }) => {
                 const sc = SEASON_COLORS[value];
@@ -479,7 +483,7 @@ export default function DetailsModal({
 
         {!usesVariants && (
           <div className={formStyles.fg} style={{ marginBottom: "1rem" }}>
-            <label>מלאי כללי</label>
+            <label>{t.generalStockLabel}</label>
             <input
               type="number"
               min="0"
@@ -496,7 +500,7 @@ export default function DetailsModal({
 
         <div className={modalStyles.detailsSectionRow}>
           <span className={modalStyles.detailsSectionLabel}>
-            עריכת כמות לפי צבע/מידה (אופציונלי)
+            {t.editByColorSize}
           </span>
         </div>
 
@@ -520,13 +524,13 @@ export default function DetailsModal({
               >
                 <div className={modalStyles.colorCardHead}>
                   <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
-                    סה״כ: {variantTotal} יח׳
+                    {t.variantTotal.replace("{total}", variantTotal)}
                   </span>
 
                   <div className={modalStyles.colorCardTitleWrap}>
                     <input
                       type="text"
-                      placeholder="שם הצבע"
+                      placeholder={t.colorNamePlaceholder}
                       value={variant.colorName || ""}
                       onChange={(e) =>
                         handleColorNameChange(variantIndex, e.target.value)
@@ -572,7 +576,7 @@ export default function DetailsModal({
           onClick={addColorVariant}
           style={{ marginBottom: "1rem" }}
         >
-          ➕ הוסף פילוח לפי צבע
+          {t.addColorBreakdown}
         </button>
 
         <div className={modalStyles.detailsFooter}>
@@ -580,7 +584,7 @@ export default function DetailsModal({
             className={modalStyles.detailsSaveBtn}
             onClick={handleSave}
           >
-            שמירה 💾
+            {t.saveButton}
           </button>
         </div>
       </div>

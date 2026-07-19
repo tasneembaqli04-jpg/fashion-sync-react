@@ -2,8 +2,12 @@ import { useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function SettingsView() {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.settings;
+
   const [storeName, setStoreName] = useState("FashionSync");
   const [phone, setPhone] = useState("054-1234567");
   const [email, setEmail] = useState("store@fashionsync.co.il");
@@ -30,21 +34,21 @@ export default function SettingsView() {
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>⚙️ הגדרות מערכת</h2>
-          <p>ניהול חנות והגדרות כלליות</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
       <div className={layoutStyles.g2}>
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>🏪 פרטי החנות</div>
+            <div className={uiStyles.cardTitle}>{t.storeDetailsTitle}</div>
           </div>
 
           <div className={uiStyles.cardBody}>
             <div className={formStyles.fg2}>
               <div className={formStyles.fg}>
-                <div className={formStyles.fl}>שם החנות</div>
+                <div className={formStyles.fl}>{t.storeName}</div>
                 <input
                   className={formStyles.fi}
                   value={storeName}
@@ -53,7 +57,7 @@ export default function SettingsView() {
               </div>
 
               <div className={formStyles.fg}>
-                <div className={formStyles.fl}>טלפון</div>
+                <div className={formStyles.fl}>{t.phone}</div>
                 <input
                   className={formStyles.fi}
                   value={phone}
@@ -62,7 +66,7 @@ export default function SettingsView() {
               </div>
 
               <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
-                <div className={formStyles.fl}>אימייל</div>
+                <div className={formStyles.fl}>{t.email}</div>
                 <input
                   className={formStyles.fi}
                   value={email}
@@ -71,7 +75,7 @@ export default function SettingsView() {
               </div>
 
               <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
-                <div className={formStyles.fl}>כתובת</div>
+                <div className={formStyles.fl}>{t.address}</div>
                 <input
                   className={formStyles.fi}
                   value={address}
@@ -85,7 +89,7 @@ export default function SettingsView() {
               style={{ marginTop: ".75rem" }}
               onClick={handleSaveStore}
             >
-              💾 שמור פרטים
+              {t.saveDetails}
             </button>
 
             {saved && (
@@ -93,7 +97,7 @@ export default function SettingsView() {
                 className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
                 style={{ marginTop: ".75rem" }}
               >
-                ✅ פרטים נשמרו
+                {t.detailsSaved}
               </div>
             )}
           </div>
@@ -101,26 +105,26 @@ export default function SettingsView() {
 
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>🔔 הגדרות התראות</div>
+            <div className={uiStyles.cardTitle}>{t.notificationSettingsTitle}</div>
           </div>
 
           <div className={uiStyles.cardBody}>
             {[
               {
-                label: "התראות מלאי נמוך",
-                desc: "קבל התראה כשמוצר מתחת לרף המינימום",
+                label: t.lowStockLabel,
+                desc: t.lowStockDesc,
                 val: notifLow,
                 set: setNotifLow,
               },
               {
-                label: "התראות מלאי אפס",
-                desc: "קבל התראה כשמוצר אוזל לחלוטין",
+                label: t.outOfStockLabel,
+                desc: t.outOfStockDesc,
                 val: notifOos,
                 set: setNotifOos,
               },
               {
-                label: "התראות ביקושים גבוהים",
-                desc: "כאשר notifyCount עולה על 15",
+                label: t.highDemandLabel,
+                desc: t.highDemandDesc,
                 val: notifDemand,
                 set: setNotifDemand,
               },
@@ -209,7 +213,7 @@ export default function SettingsView() {
             >
               <div>
                 <div style={{ fontSize: "0.86rem", fontWeight: 700 }}>
-                  סף ביקושים לאזהרה
+                  {t.demandThresholdLabel}
                 </div>
                 <div
                   style={{
@@ -218,7 +222,7 @@ export default function SettingsView() {
                     marginTop: "0.12rem",
                   }}
                 >
-                  כמות בקשות מינימלית להתראה
+                  {t.demandThresholdDesc}
                 </div>
               </div>
 
@@ -236,7 +240,7 @@ export default function SettingsView() {
               style={{ marginTop: ".75rem" }}
               onClick={handleSaveNotif}
             >
-              💾 שמור הגדרות
+              {t.saveSettings}
             </button>
 
             {notifSaved && (
@@ -244,7 +248,7 @@ export default function SettingsView() {
                 className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
                 style={{ marginTop: ".75rem" }}
               >
-                ✅ הגדרות נשמרו
+                {t.settingsSaved}
               </div>
             )}
           </div>

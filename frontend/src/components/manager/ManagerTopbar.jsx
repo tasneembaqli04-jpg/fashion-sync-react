@@ -1,5 +1,6 @@
 import styles from "../../styles/manager/ManagerTopbar.module.scss";
 import LanguageToggle from "../common/LanguageToggle";
+import { useLanguage } from "../../translations/LanguageProvider";
 export default function ManagerTopbar({
   globalSearch,
   onGlobalSearchChange,
@@ -10,6 +11,9 @@ export default function ManagerTopbar({
   onCancelPromote,
   currentPromotedImg,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.topbar;
+
   return (
     <div className={styles.topbar}>
       <button className={styles.mobMenuBtn} onClick={onOpenMobileSidebar}>☰</button>
@@ -18,14 +22,14 @@ export default function ManagerTopbar({
         <span style={{ color: "var(--muted)" }}>🔍</span>
         <input
           type="text"
-          placeholder="חיפוש לפי שם או ברקוד..."
+          placeholder={t.searchPlaceholder}
           value={globalSearch}
           onChange={(e) => onGlobalSearchChange(e.target.value)}
         />
         <button
           onClick={onOpenScan}
           style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1rem", padding: "0 0.2rem", lineHeight: 1, flexShrink: 0 }}
-          title="סריקה"
+          title={t.scanTitle}
         >📷</button>
       </div>
 
@@ -35,7 +39,7 @@ export default function ManagerTopbar({
         {currentPromotedImg && (
           <button
             onClick={onCancelPromote}
-            title="בטל פרסום פעיל"
+            title={t.cancelPromoTitle}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -74,20 +78,20 @@ export default function ManagerTopbar({
                 flexShrink: 0,
               }}
             />
-            📢 פרסום פעיל — בטל
+            {t.promoActiveButton}
           </button>
         )}
 
         <button
           className={`${styles.btn} ${styles.btnGhost}`}
           onClick={onRefresh}
-          title="רענן"
+          title={t.refreshTitle}
         >🔄</button>
 
         <button
           className={`${styles.btn} ${styles.btnGold}`}
           onClick={onAddProductClick}
-        >+ מוצר חדש</button>
+        >{t.newProductButton}</button>
 
       </div>
     </div>

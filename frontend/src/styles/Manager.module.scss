@@ -28,8 +28,6 @@
   background: var(--bg);
   color: var(--text);
   display: flex;
-  flex-direction: row-reverse;
-  direction: ltr;
   font-family: "Alef", sans-serif;
   transition:
     background 0.25s,
@@ -37,8 +35,18 @@
   overflow-y: auto;
 }
 
-.appShell > * {
+.appShellRtl {
+  flex-direction: row-reverse;
+  direction: ltr;
+}
+
+.appShellRtl > * {
   direction: rtl;
+}
+
+.appShellLtr {
+  flex-direction: row;
+  direction: ltr;
 }
 
 .light {

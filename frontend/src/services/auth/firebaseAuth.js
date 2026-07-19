@@ -8,42 +8,42 @@ import {
   updateProfile,
 } from "firebase/auth";
 
-function friendlyError(code) {
+function friendlyError(code, t) {
   switch (code) {
     case "auth/wrong-password":
     case "auth/invalid-credential":
-      return "אימייל או סיסמה שגויים";
+      return t.wrongPassword;
     case "auth/email-already-in-use":
-      return "כבר קיים חשבון עם האימייל הזה";
+      return t.emailInUse;
     case "auth/weak-password":
-      return "הסיסמה חייבת להכיל לפחות 6 תווים";
+      return t.weakPassword;
     case "auth/invalid-email":
-      return "כתובת אימייל לא תקינה";
+      return t.invalidEmail;
     case "auth/too-many-requests":
-      return "יותר מדי ניסיונות. נסי שוב מאוחר יותר";
+      return t.tooManyRequests;
     default:
-      return "אירעה שגיאה, נסי שוב";
+      return t.genericError;
   }
 }
 
-export async function signUp(email, password) {
+export async function signUp(email, password, t) {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const name = email.split("@")[0];
     await updateProfile(cred.user, { displayName: name });
-    return { user: { email: cred.user.email, name }, error: null };
+    return { user: { email: cred.user.email, name }, error: null, errorCode: null };
   } catch (err) {
-    return { user: null, error: friendlyError(err.code) };
+    return { user: null, error: friendlyError(err.code, t), errorCode: err.code };
   }
 }
 
-export async function signIn(email, password) {
+export async function signIn(email, password, t) {
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const name = cred.user.displayName || email.split("@")[0];
-    return { user: { email: cred.user.email, name }, error: null };
+    return { user: { email: cred.user.email, name }, error: null, errorCode: null };
   } catch (err) {
-    return { user: null, error: friendlyError(err.code) };
+    return { user: null, error: friendlyError(err.code, t), errorCode: err.code };
   }
 }
 

@@ -2,34 +2,7 @@ import { useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
-
-const STEP_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
-
-const STAGE_TABS = [
-  { value: "all", label: "🔔 הכל" },
-  { value: 0, label: "אושרה" },
-  { value: 1, label: "בהכנה" },
-  { value: 2, label: "נשלחה" },
-  { value: 3, label: "נמסרה" },
-];
-
-const MONTH_NAMES = [
-  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
-  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
-];
-
-function fmtDate(ts) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -37,13 +10,40 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function getMonthLabel(monthKey) {
-  if (monthKey === "unknown") return "ללא תאריך";
-  const [year, month] = monthKey.split("-");
-  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-}
-
 export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.deliveries;
+  const STEP_LABELS = dict.orderStatusLabels;
+  const MONTH_NAMES = dict.monthNames;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  const STAGE_TABS = [
+    { value: "all", label: t.allTab },
+    { value: 0, label: STEP_LABELS[0] },
+    { value: 1, label: STEP_LABELS[1] },
+    { value: 2, label: STEP_LABELS[2] },
+    { value: 3, label: STEP_LABELS[3] },
+  ];
+
+  function fmtDate(ts) {
+    if (!ts) return "";
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return dict.customer.orders.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
+
   const [stageFilter, setStageFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
 
@@ -82,8 +82,8 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>מעקב משלוחים</h2>
-          <p>עדכן סטטוס משלוח עבור כל הזמנה</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
             fontSize: "0.95rem",
           }}
         >
-          <option value="all">📅 כל החודשים</option>
+          <option value="all">{t.allMonths}</option>
           {availableMonths.map((key) => (
             <option key={key} value={key}>
               {getMonthLabel(key)}
@@ -141,7 +141,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
       {!visibleOrders.length ? (
         <div className={deliveriesStyles.emptyState}>
           <div className={deliveriesStyles.emptyIcon}>🚚</div>
-          <div className={deliveriesStyles.emptyText}>אין הזמנות בשלב הזה</div>
+          <div className={deliveriesStyles.emptyText}>{t.noOrdersInStage}</div>
         </div>
       ) : (
         <div className={deliveriesStyles.deliveriesList}>
@@ -159,7 +159,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                         {order.customerDetails?.name ||
                           order.customerDetails?.email ||
                           order.customerEmail ||
-                          "לקוח"}
+                          t.defaultCustomer}
                       </span>
                       <span className={deliveriesStyles.deliveryUserIcon}>👤</span>
                     </div>
@@ -224,7 +224,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                           {item.name}
                         </div>
                         <div className={deliveriesStyles.deliveryItemMeta}>
-                          מידה: {item.size} · כמות: {item.qty} · ₪{item.price}
+                          {t.sizeLabel} {item.size} · {t.qtyLabel} {item.qty} · ₪{item.price}
                         </div>
                       </div>
                     </div>
@@ -238,7 +238,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                       className={deliveriesStyles.deliveryActionBtn}
                       onClick={() => onAdvanceStatus?.(order.docId, nextIndex)}
                     >
-                      ✓ עדכן ל: {STEP_LABELS[nextIndex]}
+                      {t.updateToPrefix} {STEP_LABELS[nextIndex]}
                     </button>
                   </div>
                 )}

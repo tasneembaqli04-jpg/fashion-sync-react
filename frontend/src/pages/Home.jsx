@@ -16,11 +16,10 @@ import {
   saveGuestMode,
   saveAuthUser,
 } from "../functions/home/storage.js";
-
-
-
+import { useLanguage } from "../translations/LanguageProvider";
 
 export default function Home() {
+  const { t: dict } = useLanguage();
   const [isLight, setIsLight] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
@@ -63,7 +62,7 @@ export default function Home() {
     setError("");
     setLoading(true);
 
-    const result = await loginOrCreateUser(email, password);
+    const result = await loginOrCreateUser(email, password, dict.home.authErrors);
 
     setLoading(false);
 

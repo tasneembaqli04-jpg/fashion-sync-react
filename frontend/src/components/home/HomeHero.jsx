@@ -1,22 +1,27 @@
 import styles from "../../styles/Home.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function HomeHero({ onOpenLogin, onBrowse }) {
+  const { t: dict } = useLanguage();
+  const t = dict.home.hero;
+
   return (
     <main className={styles.hero}>
-      <div className={styles.heroEyebrow}>ברוך הבא ל</div>
+      <div className={styles.heroEyebrow}>{t.welcomeTo}</div>
 
       <h1 className={styles.heroTitle}>
         Fashion<span>Sync</span>
       </h1>
 
       <p className={styles.heroSub}>
-        ניהול חכם וחוויית קנייה מושלמת – הכל במקום אחד  
+        {t.subtitle}
       </p>
 
       <div className={styles.roleCards}>
         <div className={styles.intentCard}>
 
           <p className={styles.intentTitle}>
-            "אזור הלקוחות ✨ הסטייל שלכם מתחיל כאן – התחברו והמשיכו לשופינג"
+            {t.customerAreaQuote}
             </p>
 
           <div className={styles.fsChoices}>
@@ -27,9 +32,9 @@ export default function HomeHero({ onOpenLogin, onBrowse }) {
             >
               <span className={styles.fci}>🔑</span>
               <div>
-                <div className={styles.fcLabel}>כניסה עם מייל וסיסמה</div>
+                <div className={styles.fcLabel}>{t.loginButtonLabel}</div>
                 <div className={styles.fcSub}>
-                  גישה מלאה להזמנות, מועדפים וסל הקניות שלכם
+                  {t.loginButtonSub}
                 </div>
               </div>
             </button>
@@ -42,10 +47,10 @@ export default function HomeHero({ onOpenLogin, onBrowse }) {
               <span className={styles.fci}>👀</span>
               <div>
                 <div className={styles.fcLabel}>
-               רק רוצים לראות?
+               {t.browseButtonLabel}
                 </div>
                 <div className={styles.fcSub}>
-                  צפו בקולקציה ללא התחברות
+                  {t.browseButtonSub}
                 </div>
               </div>
             </button>

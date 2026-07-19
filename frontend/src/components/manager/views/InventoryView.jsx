@@ -211,9 +211,11 @@ export default function InventoryView({
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option>{t.options.allCategories}</option>
+                <option value={t.options.allCategories}>{t.options.allCategories}</option>
                 {CATEGORIES.map((category) => (
-                  <option key={category}>{category}</option>
+                  <option key={category} value={category}>
+                    {dict.categoryLabels[category] || category}
+                  </option>
                 ))}
               </select>
             </div>
@@ -227,11 +229,11 @@ export default function InventoryView({
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
               >
-                <option>{common.all}</option>
-                <option>{t.options.genders.men}</option>
-                <option>{t.options.genders.women}</option>
-                <option>{t.options.genders.kids}</option>
-                <option>{t.options.genders.unisex}</option>
+                <option value={common.all}>{common.all}</option>
+                <option value="גברים">{t.options.genders.men}</option>
+                <option value="נשים">{t.options.genders.women}</option>
+                <option value="ילדים">{t.options.genders.kids}</option>
+                <option value="יוניסקס">{t.options.genders.unisex}</option>
               </select>
             </div>
 
@@ -341,7 +343,7 @@ export default function InventoryView({
                     <td className={inventoryStyles.td}>
                       <div className={inventoryStyles.pname}>{p.name}</div>
                       <div className={inventoryStyles.psku}>
-                        {p.gender} · {p.cat}
+                        {dict.genderLabels[p.gender] || p.gender} · {dict.categoryLabels[p.cat] || p.cat}
                       </div>
                     </td>
 
