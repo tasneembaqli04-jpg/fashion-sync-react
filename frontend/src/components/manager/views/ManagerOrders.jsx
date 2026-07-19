@@ -4,22 +4,7 @@ import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
-
-const MONTH_NAMES = [
-  "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
-  "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
-];
-
-function fmtDate(value) {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-  });
-}
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -27,13 +12,29 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function getMonthLabel(monthKey) {
-  if (monthKey === "unknown") return "ללא תאריך";
-  const [year, month] = monthKey.split("-");
-  return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-}
-
 export default function ManagerOrders({ orders = [], onConfirmOrder }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.orders;
+  const MONTH_NAMES = dict.monthNames;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(value) {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  }
+
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return dict.customer.orders.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
+
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,8 +79,8 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
         <div className={uiStyles.phLeft}>
-          <h2>הזמנות לקוחות</h2>
-          <p>הזמנות שנפתחו — יש לאשר ולעקוב</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
@@ -93,14 +94,14 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
           onClick={() => setStatusFilter("pending")}
         >
           <div className={overviewStyles.statIcon}>⏳</div>
-          <div className={overviewStyles.statLabel}>ממתינות לאישור</div>
+          <div className={overviewStyles.statLabel}>{t.pendingConfirmation}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--orange)" }}
           >
             {pending}
           </div>
-          <div className={overviewStyles.statSub}>לטיפול</div>
+          <div className={overviewStyles.statSub}>{t.toHandle}</div>
         </div>
 
         <div
@@ -109,14 +110,14 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
           onClick={() => setStatusFilter("all")}
         >
           <div className={overviewStyles.statIcon}>📋</div>
-          <div className={overviewStyles.statLabel}>סה"כ</div>
+          <div className={overviewStyles.statLabel}>{t.total}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--blue)" }}
           >
             {orders.length}
           </div>
-          <div className={overviewStyles.statSub}>הזמנות</div>
+          <div className={overviewStyles.statSub}>{t.ordersSuffix}</div>
         </div>
 
         <div
@@ -129,7 +130,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             className={overviewStyles.statLabel}
             style={{ color: "var(--green)" }}
           >
-            מאושרות
+            {t.confirmed}
           </div>
           <div
             className={overviewStyles.statVal}
@@ -137,17 +138,16 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
           >
             {confirmed}
           </div>
-          <div className={overviewStyles.statSub}>טופלו</div>
+          <div className={overviewStyles.statSub}>{t.handled}</div>
         </div>
       </div>
 
       <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <input
           type="text"
-          placeholder="🔍 חיפוש לפי טלפון או מספר הזמנה (RCP-...)"
+          placeholder={t.searchPlaceholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          dir="rtl"
           style={{
             flex: "1 1 320px",
             maxWidth: "400px",
@@ -157,7 +157,6 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             background: "var(--surface2)",
             color: "var(--text)",
             fontSize: "0.95rem",
-            textAlign: "right",
           }}
         />
 
@@ -173,7 +172,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             fontSize: "0.95rem",
           }}
         >
-          <option value="all">📅 כל החודשים</option>
+          <option value="all">{t.allMonths}</option>
           {availableMonths.map((key) => (
             <option key={key} value={key}>
               {getMonthLabel(key)}
@@ -186,7 +185,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
         <div className={ordersStyles.emptyState}>
           <div className={ordersStyles.emptyIcon}>🎉</div>
           <div className={ordersStyles.emptyText}>
-            {orders.length ? "אין הזמנות תואמות לסינון" : "אין הזמנות פתוחות"}
+            {orders.length ? t.noOrdersFiltered : t.noOrdersOpen}
           </div>
         </div>
       ) : (
@@ -208,7 +207,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             <div className={ordersStyles.orderCard} key={order.id}>
               <div className={ordersStyles.orderHeader}>
                 <div>
-                  <div className={ordersStyles.orderCustomer}>📦 הזמנה</div>
+                  <div className={ordersStyles.orderCustomer}>{t.orderLabel}</div>
                   <div className={ordersStyles.orderId}>{order.id}</div>
                   {!!dateText && (
                     <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
@@ -223,7 +222,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                       order.confirmed ? uiStyles.tGreen : uiStyles.tYellow
                     }`}
                   >
-                    {order.confirmed ? "✅ אושרה" : "⏳ ממתינה לאישור"}
+                    {order.confirmed ? t.statusConfirmed : t.statusPending}
                   </span>
 
                   {hasCustomSize && (
@@ -236,7 +235,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                         color: "#e67e22",
                       }}
                     >
-                      ⚠️ מידה מיוחדת
+                      {t.customSizeTag}
                     </span>
                   )}
                 </div>
@@ -254,7 +253,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                     style={{ background: "var(--green)", color: "#fff" }}
                     onClick={() => onConfirmOrder?.(order.docId)}
                   >
-                    ✅ אשר הזמנה
+                    {t.confirmOrderButton}
                   </button>
                 )}
 
@@ -263,7 +262,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                   className={ordersStyles.orderPrepareBtn}
                   onClick={() => setSelectedOrder(order)}
                 >
-                  📋 פרטי הזמנה
+                  {t.orderDetailsButton}
                 </button>
               </div>
             </div>

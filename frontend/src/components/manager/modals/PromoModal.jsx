@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function PromoModal({
   open,
@@ -10,6 +11,9 @@ export default function PromoModal({
   onCancelPromote,
   isCurrentlyPromoted,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.promoModal;
+
   if (!open || !product) return null;
 
   return createPortal(
@@ -19,7 +23,6 @@ export default function PromoModal({
     >
       <div
         className={modalStyles.promoModalBox}
-        style={{ direction: "rtl" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -37,7 +40,7 @@ export default function PromoModal({
             marginBottom: "0.95rem",
           }}
         >
-          📢 הפעלת פרסומת למוצר
+          {t.title}
         </div>
 
         <div
@@ -65,7 +68,7 @@ export default function PromoModal({
             }}
           />
 
-          <div style={{ textAlign: "right" }}>
+          <div>
             <div style={{ fontWeight: 800, fontSize: "0.98rem" }}>
               {product.name}
             </div>
@@ -77,7 +80,7 @@ export default function PromoModal({
                 marginTop: "0.18rem",
               }}
             >
-              {product.cat} · ₪{product.price}
+              {dict.categoryLabels[product.cat] || product.cat} · ₪{product.price}
             </div>
 
             <div
@@ -87,7 +90,7 @@ export default function PromoModal({
                 marginTop: "0.18rem",
               }}
             >
-              🛒 {product.salesLastMonth || 0} מכירות בחודש
+              🛒 {product.salesLastMonth || 0} {t.salesThisMonth}
             </div>
           </div>
         </div>
@@ -107,7 +110,7 @@ export default function PromoModal({
               marginBottom: "0.75rem",
             }}
           >
-            ✅ פרסומת פעילה כרגע
+            {t.currentlyActive}
           </div>
         )}
 
@@ -126,7 +129,7 @@ export default function PromoModal({
               marginBottom: "0.65rem",
             }}
           >
-            ❌ בטל פרסומת
+            {t.cancelPromo}
           </button>
         )}
 
@@ -142,14 +145,14 @@ export default function PromoModal({
               color: isCurrentlyPromoted ? "#ffffff" : undefined,
             }}
           >
-            🚀 הפעל פרסומת
+            {t.activateButton}
           </button>
 
           <button
             onClick={onClose}
             className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
           >
-            ביטול
+            {t.cancelButton}
           </button>
         </div>
       </div>

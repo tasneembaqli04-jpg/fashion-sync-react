@@ -1,16 +1,18 @@
 import { useMemo, useState } from "react";
 import styles from "../../../styles/manager/ManagerUI.module.scss";
-function fmtDate(date) {
-  return new Date(date).toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useLanguage } from "../../../translations/LanguageProvider";
 
-function ReceiptBlock({ receipt }) {
+function ReceiptBlock({ receipt, locale }) {
+  function fmtDate(date) {
+    return new Date(date).toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   return (
     <div className={styles.receiptBlock}>
       <div className={styles.receiptHd}>
@@ -73,6 +75,9 @@ function ReceiptBlock({ receipt }) {
 }
 
 export default function ReceiptsView({ receipts }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.receipts;
+  const locale = lang === "en" ? "en-US" : "he-IL";
   const [query, setQuery] = useState("");
 
   const matches = useMemo(() => {
@@ -86,14 +91,14 @@ export default function ReceiptsView({ receipts }) {
     <div className={`${styles.view} ${styles.active}`}>
       <div className={styles.pageHd}>
         <div className={styles.phLeft}>
-          <h2>קבלות מכירה</h2>
-          <p>חפש לפי קוד קבלה</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
       <div className={styles.card} style={{ maxWidth: 720, marginBottom: "1.3rem" }}>
         <div className={styles.cardHd}>
-          <div className={styles.cardTitle}>🔍 חיפוש לפי קוד קבלה</div>
+          <div className={styles.cardTitle}>{t.searchTitle}</div>
         </div>
 
         <div className={styles.cardBody}>
@@ -101,13 +106,13 @@ export default function ReceiptsView({ receipts }) {
             <input
               className={styles.si}
               type="text"
-              placeholder="קוד קבלה"
+              placeholder={t.searchPlaceholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
 
             <button className={`${styles.btn} ${styles.btnGold}`}>
-              חפש
+              {t.searchButton}
             </button>
           </div>
 
@@ -115,22 +120,22 @@ export default function ReceiptsView({ receipts }) {
             {!query.trim() ? (
               <div style={{ textAlign: "center", padding: "2rem", color: "var(--muted)" }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: ".6rem" }}>🧾</div>
-                הכנס קוד קבלה לחיפוש
+                {t.enterCodeToSearch}
               </div>
             ) : matches.length === 0 ? (
               <div className={`${styles.alert} ${styles.aDanger}`}>
-                ❌ לא נמצאה קבלה: <strong>{query}</strong>
+                {t.notFound} <strong>{query}</strong>
               </div>
             ) : (
               <>
                 <div className={`${styles.alert} ${styles.aInfo}`}>
-                  ✅ נמצאו {matches.length} קבלות
+                  {t.foundReceipts.replace("{count}", matches.length)}
                 </div>
 
                 {matches
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((receipt) => (
-                    <ReceiptBlock key={receipt.id} receipt={receipt} />
+                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} />
                   ))}
               </>
             )}
@@ -140,7 +145,7 @@ export default function ReceiptsView({ receipts }) {
 
       <div className={styles.card}>
         <div className={styles.cardHd}>
-          <div className={styles.cardTitle}>📋 כל הקבלות האחרונות</div>
+          <div className={styles.cardTitle}>{t.allRecentReceipts}</div>
         </div>
 
         <div className={styles.cardBody}>
@@ -148,7 +153,7 @@ export default function ReceiptsView({ receipts }) {
             .slice()
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map((receipt) => (
-              <ReceiptBlock key={receipt.id} receipt={receipt} />
+              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} />
             ))}
         </div>
       </div>

@@ -2,8 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function ScanModal({ open, onClose, onCodeScanned }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.scanModal;
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -13,7 +17,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
   const codeReaderRef = useRef(null);
 
   const [mode, setMode] = useState("cam");
-  const [camStatus, setCamStatus] = useState("🔍 מחפש ברקוד...");
+  const [camStatus, setCamStatus] = useState(t.searchingBarcode);
   const [manualInput, setManualInput] = useState("");
   const [torchOn, setTorchOn] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -62,7 +66,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
   async function startCamera() {
     stopAll();
     pausedRef.current = false;
-    setCamStatus("🔍 מאתחל מצלמה...");
+    setCamStatus(t.initializingCamera);
 
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -75,7 +79,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
 
       const reader = getReader();
 
-      setCamStatus("🔍 מחפש ברקוד...");
+      setCamStatus(t.searchingBarcode);
 
       reader.decodeFromVideoDevice(
         deviceId || null,
@@ -89,7 +93,6 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             return;
           }
 
-          // NotFoundException נזרקת כל פריים שלא נמצא בו כלום - זה תקין, לא באג
           if (err && err.name !== "NotFoundException") {
             console.error("ZXing decode error:", err);
           }
@@ -100,7 +103,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     } catch (err) {
       console.error("Camera start error:", err);
       if (err.name === "NotAllowedError") {
-        setCamStatus("⚠️ יש לאשר גישה למצלמה");
+        setCamStatus(t.cameraPermissionNeeded);
       } else {
         setCamStatus("⚠️ " + (err.message || err.name));
       }
@@ -111,7 +114,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     if (!videoRef.current || pausedRef.current) return;
 
     setScanning(true);
-    setCamStatus("🔍 סורק...");
+    setCamStatus(t.scanning);
 
     try {
       const reader = getReader();
@@ -128,7 +131,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       console.error("Manual scan error:", e);
     }
 
-    setCamStatus("❌ לא זוהה — נסה שוב");
+    setCamStatus(t.notDetected);
     setScanning(false);
   }
 
@@ -185,7 +188,6 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
         style={{
           width: "100%",
           maxWidth: "480px",
-          direction: "rtl",
           animation: "fadeUp 0.28s ease",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -202,9 +204,9 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
 
         <div
           className={modalStyles.modalTitle}
-          style={{ marginBottom: "0.3rem", textAlign: "right" }}
+          style={{ marginBottom: "0.3rem" }}
         >
-          סריקת ברקוד 📷
+          {t.title}
         </div>
 
         <p
@@ -212,10 +214,9 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
             color: "var(--muted, #5c6170)",
             fontSize: "0.8rem",
             marginBottom: "0.85rem",
-            textAlign: "right",
           }}
         >
-          סרוק ברקוד לעדכון מלאי
+          {t.subtitle}
         </p>
 
         <div
@@ -249,7 +250,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
               fontWeight: mode === "cam" ? 700 : 400,
             }}
           >
-            📹 מצלמה
+            {t.cameraTab}
           </button>
 
           <button
@@ -276,7 +277,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
               fontWeight: mode === "manual" ? 700 : 400,
             }}
           >
-            ⌨️ ידנית
+            {t.manualTab}
           </button>
         </div>
 
@@ -389,7 +390,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                 whiteSpace: "nowrap",
               }}
             >
-              {scanning ? "⏳ סורק..." : "לחץ לסריקה"}
+              {scanning ? t.scanningButton : t.clickToScan}
             </button>
           </div>
         )}
@@ -401,16 +402,15 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                 fontSize: "0.78rem",
                 color: "var(--muted)",
                 marginBottom: "0.5rem",
-                textAlign: "right",
               }}
             >
-              הכנס קוד מוצר ידנית:
+              {t.manualInputLabel}
             </div>
 
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <input
                 type="text"
-                placeholder="לדוגמה: FS-001"
+                placeholder={t.manualPlaceholder}
                 value={manualInput}
                 onChange={(e) => setManualInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -443,7 +443,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
                   cursor: "pointer",
                 }}
               >
-                חפש
+                {t.searchButton}
               </button>
             </div>
           </div>

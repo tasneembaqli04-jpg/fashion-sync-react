@@ -1,4 +1,6 @@
 import styles from "../../styles/Home.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function LoginModal({
   isOpen,
   email,
@@ -10,6 +12,9 @@ export default function LoginModal({
   onClose,
   onSubmit,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.home.loginModal;
+
   if (!isOpen) return null;
 
   return (
@@ -21,19 +26,18 @@ export default function LoginModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.fsModalHeader}>
-          <h3>כניסה לחנות 🔑</h3>
-          <button className={styles.fsClose} onClick={onClose} aria-label="סגור">
+          <h3>{t.title}</h3>
+          <button className={styles.fsClose} onClick={onClose} aria-label={t.close}>
             ✕
           </button>
         </div>
 
         <div className={styles.fsHint}>
-          <strong>כניסה מותרת רק עם Gmail</strong> — בפעם הראשונה זה "רישום", ובפעמים
-          הבאות חייבים אותה סיסמה 😊
+          <strong>{t.hintBold}</strong>{t.hintRest}
         </div>
 
         <div className={styles.fsField}>
-          <label>כתובת אימייל</label>
+          <label>{t.emailLabel}</label>
           <input
             type="email"
             value={email}
@@ -43,12 +47,12 @@ export default function LoginModal({
         </div>
 
         <div className={styles.fsField}>
-          <label>סיסמה</label>
+          <label>{t.passwordLabel}</label>
           <input
             type="password"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
-            placeholder="סיסמה (לפחות 8 תווים)"
+            placeholder={t.passwordPlaceholder}
             onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           />
         </div>
@@ -61,10 +65,10 @@ export default function LoginModal({
             onClick={onSubmit}
             disabled={loading}
           >
-            {loading ? "מתחברת..." : "כניסה"}
+            {loading ? t.loggingIn : t.loginButton}
           </button>
           <button className={`${styles.fsBtn} ${styles.fsBtnGhost}`} onClick={onClose}>
-            ביטול
+            {dict.common.cancel}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 const DialogContext = createContext(null);
 
@@ -11,6 +12,7 @@ export const globalDialog = {
 };
 
 export function DialogProvider({ children }) {
+  const { t: dict } = useLanguage();
   const [dialogState, setDialogState] = useState(null);
 
   const alertDialog = useCallback((message, options = {}) => {
@@ -18,23 +20,23 @@ export function DialogProvider({ children }) {
       setDialogState({
         type: "alert",
         message,
-        confirmText: options.confirmText || "אישור",
+        confirmText: options.confirmText || dict.common.confirm,
         resolve,
       });
     });
-  }, []);
+  }, [dict]);
 
   const confirmDialog = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
       setDialogState({
         type: "confirm",
         message,
-        confirmText: options.confirmText || "אישור",
-        cancelText: options.cancelText || "ביטול",
+        confirmText: options.confirmText || dict.common.confirm,
+        cancelText: options.cancelText || dict.common.cancel,
         resolve,
       });
     });
-  }, []);
+  }, [dict]);
 
   useEffect(() => {
     globalDialog.confirm = confirmDialog;

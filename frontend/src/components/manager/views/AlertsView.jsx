@@ -3,6 +3,7 @@ import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 function alertClass(type) {
   if (type === "danger") {
@@ -17,25 +18,29 @@ function alertClass(type) {
   return `${alertStyles.alert} ${alertStyles.aSuccess}`;
 }
 
-function fmtDate(date) {
-  return new Date(date).toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-const TABS = [
-  { key: "", label: "🔔 הכל" },
-  { key: "oos", label: "🚫 אזל מהמלאי" },
-  { key: "low", label: "⚠️ מלאי נמוך" },
-  { key: "demand", label: "🔥 ביקוש גבוה" },
-  { key: "customsize", label: "🔍 מידה מיוחדת" },
-];
-
 export default function AlertsView({ alerts = [], products = [] }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.alerts;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(date) {
+    return new Date(date).toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const TABS = [
+    { key: "", label: t.tabAll },
+    { key: "oos", label: t.tabOutOfStock },
+    { key: "low", label: t.tabLowStock },
+    { key: "demand", label: t.tabHighDemand },
+    { key: "customsize", label: t.tabCustomSize },
+  ];
+
   const [typeFilter, setTypeFilter] = useState("");
   const [demandMin, setDemandMin] = useState(15);
 
@@ -74,8 +79,8 @@ export default function AlertsView({ alerts = [], products = [] }) {
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>התראות מערכת</h2>
-          <p>נשמרות לשבוע אחד ומתעדכנות לפי מצב המוצרים</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
@@ -117,9 +122,9 @@ export default function AlertsView({ alerts = [], products = [] }) {
             value={demandMin}
             onChange={(e) => setDemandMin(Number(e.target.value))}
           >
-            <option value={15}>גדול מ־15</option>
-            <option value={30}>גדול מ־30</option>
-            <option value={60}>גדול מ־60</option>
+            <option value={15}>{t.greaterThan15}</option>
+            <option value={30}>{t.greaterThan30}</option>
+            <option value={60}>{t.greaterThan60}</option>
           </select>
         )}
       </div>
@@ -140,7 +145,7 @@ export default function AlertsView({ alerts = [], products = [] }) {
           }}
         >
           <span>
-            סה״כ: <strong style={{ color: "var(--text)" }}>{counts.all}</strong>
+            {t.total} <strong style={{ color: "var(--text)" }}>{counts.all}</strong>
           </span>
           <span style={{ color: "var(--red)" }}>🚫 {counts.oos}</span>
           <span style={{ color: "#f39c12" }}>⚠️ {counts.low}</span>
@@ -213,7 +218,7 @@ export default function AlertsView({ alerts = [], products = [] }) {
                       alignSelf: "center",
                     }}
                   >
-                    {alert.demandCount} בקשות
+                    {alert.demandCount} {t.requestsSuffix}
                   </span>
                 )}
               </div>
@@ -221,7 +226,7 @@ export default function AlertsView({ alerts = [], products = [] }) {
           })
         ) : (
           <div className={`${alertStyles.alert} ${alertStyles.aSuccess}`}>
-            ✅ אין התראות בסינון הנוכחי
+            {t.noAlertsInFilter}
           </div>
         )}
       </div>

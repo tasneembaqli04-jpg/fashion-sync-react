@@ -23,8 +23,8 @@
 }
 
 .topbarSearch {
-  flex: 0 1 250px;
-  max-width: 250px;
+  flex: 0 1 280px;
+  max-width: 280px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -48,6 +48,7 @@
 
 .topbarSearch input::placeholder {
   color: var(--muted);
+  font-size: 0.74rem;
 }
 
 .tbRight {

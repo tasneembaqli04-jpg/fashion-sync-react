@@ -1,6 +1,7 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useDialog } from "../common/DialogProvider";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function VisualSearchModal({
   open = false,
@@ -14,6 +15,7 @@ export default function VisualSearchModal({
   onTryOn,
 }) {
   const { alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
   const resultImageUrl =
     tryOnResult?.resultImageUrl ||
     tryOnResult?.imageUrl ||
@@ -62,10 +64,10 @@ export default function VisualSearchModal({
       link.click();
       document.body.removeChild(link);
 
-      alertDialog("הדפדפן לא תומך בשיתוף ישיר, לכן התמונה נשמרה למחשב.");
+      alertDialog(dict.customer.dialogs.shareNotSupported);
     } catch (error) {
       console.error("Share failed:", error);
-      alertDialog("השיתוף לא נתמך בדפדפן הזה.");
+      alertDialog(dict.customer.dialogs.shareNotSupportedBrowser);
     }
   };
 
