@@ -7,21 +7,28 @@ import {
   deleteStockNotification,
 } from "../../../services/notifications/notificationsService";
 import { sendStockAlertEmail } from "../../../services/email/emailService";
-
-function fmtDate(value) {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useDialog } from "../../common/DialogProvider";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function StockNotificationsView() {
+  const { confirmDialog } = useDialog();
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.stockNotifications;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(value) {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +54,8 @@ export default function StockNotificationsView() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("למחוק את הבקשה?")) return;
+    const confirmed = await confirmDialog(t.confirmDeleteRequest);
+    if (!confirmed) return;
     await deleteStockNotification(id);
     setItems((prev) => prev.filter((item) => item.id !== id));
   }
@@ -58,22 +66,23 @@ export default function StockNotificationsView() {
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
         <div className={uiStyles.phLeft}>
-          <h2>בקשות "הודע לי כשחוזר למלאי"</h2>
+          <h2>{t.title}</h2>
           <p>
-            {pendingCount} בקשות ממתינות מתוך {items.length} סה"כ
+            {t.subtitle
+              .replace("{pending}", pendingCount)
+              .replace("{total}", items.length)}
           </p>
           <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.3rem" }}>
-            💡 המייל וההתראה נשלחים אוטומטית ברגע שמעדכנים את כמות המלאי
-            ב"פרטים" ל-0 ומעלה        
+            💡 {t.infoNote}
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div>טוען...</div>
+        <div>{dict.common.loading}</div>
       ) : !items.length ? (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
-          עדיין אין בקשות
+          {t.noRequestsYet}
         </div>
       ) : (
         items.map((item) => (
@@ -108,12 +117,12 @@ export default function StockNotificationsView() {
               {!item.notified ? (
                 <span
                   className={`${uiStyles.tag} ${uiStyles.tYellow}`}
-                  title="יטופל אוטומטית כשהמלאי יעודכן"
+                  title={t.autoHandleTooltip}
                 >
-                  ⏳ ממתין לעדכון מלאי
+                  {t.pendingStock}
                 </span>
               ) : (
-                <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>✓ הודע</span>
+                <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>{t.notified}</span>
               )}
 
               <button

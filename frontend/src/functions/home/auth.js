@@ -7,22 +7,25 @@ export function isGmail(email) {
   );
 }
 
-export async function loginOrCreateUser(email, password) {
+export async function loginOrCreateUser(email, password, t) {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPass = password.trim();
 
   if (!isGmail(normalizedEmail)) {
-    return { error: "אימייל לא תקין — חייב להיות ‎@gmail.com" };
+    return { error: t.invalidGmail };
   }
 
   if (normalizedPass.length < 8) {
-    return { error: "הסיסמה חייבת להכיל לפחות 8 תווים" };
+    return { error: t.passwordTooShort };
   }
 
-  let result = await signIn(normalizedEmail, normalizedPass);
+  let result = await signIn(normalizedEmail, normalizedPass, t);
 
-  if (result.error === "אימייל או סיסמה שגויים") {
-    result = await signUp(normalizedEmail, normalizedPass);
+  if (
+    result.errorCode === "auth/wrong-password" ||
+    result.errorCode === "auth/invalid-credential"
+  ) {
+    result = await signUp(normalizedEmail, normalizedPass, t);
   }
 
   if (result.error) {

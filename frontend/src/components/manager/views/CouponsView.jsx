@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useDialog } from "../../common/DialogProvider";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import {
@@ -8,15 +9,20 @@ import {
   deleteCoupon,
   getAllCouponUsage,
 } from "../../../services/coupons/couponsService";
-
-const SEASON_OPTIONS = [
-  { value: "", label: "כל השנה (ללא הגבלה)" },
-  { value: "summer", label: "קיץ בלבד" },
-  { value: "winter", label: "חורף בלבד" },
-  { value: "spring-autumn", label: "אביב/סתיו בלבד" },
-];
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function CouponsView() {
+  const { confirmDialog, alertDialog } = useDialog();
+  const { t: dict } = useLanguage();
+  const t = dict.manager.coupons;
+
+  const SEASON_OPTIONS = [
+    { value: "", label: t.seasonAllYear },
+    { value: "summer", label: t.seasonSummer },
+    { value: "winter", label: t.seasonWinter },
+    { value: "spring-autumn", label: t.seasonSpringAutumn },
+  ];
+
   const [coupons, setCoupons] = useState([]);
   const [usage, setUsage] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,12 +53,12 @@ export default function CouponsView() {
     const code = newCode.trim().toUpperCase();
 
     if (!code) {
-      alert("יש להזין קוד קופון");
+      alertDialog(t.codeRequired);
       return;
     }
 
     if (coupons.some((c) => c.code === code)) {
-      alert("קוד הקופון הזה כבר קיים");
+      alertDialog(t.codeExists);
       return;
     }
 
@@ -77,7 +83,8 @@ export default function CouponsView() {
   }
 
   async function handleDelete(code) {
-    if (!window.confirm(`למחוק את הקופון ${code}?`)) return;
+    const confirmed = await confirmDialog(t.confirmDeleteCoupon.replace("{code}", code));
+    if (!confirmed) return;
     await deleteCoupon(code);
     refresh();
   }
@@ -86,8 +93,8 @@ export default function CouponsView() {
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>🎟️ ניהול קופונים</h2>
-          <p>הוספה, הפעלה/כיבוי ומעקב שימוש בקופונים בזמן אמת</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
@@ -96,7 +103,7 @@ export default function CouponsView() {
         style={{ marginBottom: "1.2rem", padding: "1.2rem" }}
       >
         <div className={uiStyles.cardTitle} style={{ marginBottom: "0.8rem" }}>
-          ➕ קופון חדש
+          {t.newCouponTitle}
         </div>
 
         <div
@@ -109,21 +116,21 @@ export default function CouponsView() {
         >
           <div>
             <label style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-              קוד קופון
+              {t.codeLabel}
             </label>
             <br />
             <input
               type="text"
               value={newCode}
               onChange={(e) => setNewCode(e.target.value)}
-              placeholder="לדוגמה: WINTER10"
+              placeholder={t.codePlaceholder}
               style={{ padding: "0.5rem", borderRadius: "8px" }}
             />
           </div>
 
           <div>
             <label style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-              אחוז הנחה
+              {t.discountPercentLabel}
             </label>
             <br />
             <input
@@ -138,7 +145,7 @@ export default function CouponsView() {
 
           <div>
             <label style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-              הגבלת עונה
+              {t.seasonRestrictionLabel}
             </label>
             <br />
             <select
@@ -159,16 +166,16 @@ export default function CouponsView() {
             className={`${uiStyles.btn} ${uiStyles.btnGold}`}
             onClick={handleAddCoupon}
           >
-            הוסף קופון
+            {t.addCouponButton}
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div>טוען...</div>
+        <div>{dict.common.loading}</div>
       ) : !coupons.length ? (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
-          עדיין אין קופונים
+          {t.noCouponsYet}
         </div>
       ) : (
         coupons.map((coupon) => (
@@ -190,15 +197,15 @@ export default function CouponsView() {
             <div>
               <strong style={{ fontSize: "1.05rem" }}>{coupon.code}</strong>
               <div style={{ color: "var(--muted)", fontSize: "0.85rem", marginTop: "0.3rem" }}>
-                {Math.round(coupon.discount * 100)}% הנחה
+                {Math.round(coupon.discount * 100)}{t.discountSuffix}
                 {coupon.seasonOnly && (
-                  <span> · תקף רק ב-{
+                  <span>{t.validOnlyIn}{
                     SEASON_OPTIONS.find((o) => o.value === coupon.seasonOnly)?.label
                   }</span>
                 )}
               </div>
               <div style={{ color: "var(--gold)", fontSize: "0.8rem", marginTop: "0.2rem" }}>
-                📊 נעשה בו שימוש {usageCountFor(coupon.code)} פעמים
+                {t.usedTimes.replace("{count}", usageCountFor(coupon.code))}
               </div>
             </div>
 
@@ -208,7 +215,7 @@ export default function CouponsView() {
                   coupon.active ? uiStyles.tGreen : uiStyles.tRed
                 }`}
               >
-                {coupon.active ? "✓ פעיל" : "✕ כבוי"}
+                {coupon.active ? t.active : t.inactive}
               </span>
 
               <button
@@ -216,7 +223,7 @@ export default function CouponsView() {
                 className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
                 onClick={() => handleToggleActive(coupon)}
               >
-                {coupon.active ? "כבה" : "הפעל"}
+                {coupon.active ? t.disableButton : t.enableButton}
               </button>
 
               <button

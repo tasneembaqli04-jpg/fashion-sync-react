@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -28,6 +29,9 @@ export default function AddProductModal({
   theme,
   products = [],
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.addProductModal;
+
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -166,7 +170,7 @@ export default function AddProductModal({
         }
       }, 50);
     } catch (err) {
-      setError("לא ניתן לגשת למצלמה — " + (err.message || err.name));
+      setError(t.cameraAccessError + (err.message || err.name));
     }
   };
 
@@ -190,7 +194,7 @@ export default function AddProductModal({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("⚠️ יש לבחור קובץ תמונה");
+      setError(t.selectImageFile);
       return;
     }
 
@@ -216,7 +220,7 @@ export default function AddProductModal({
       !form.desc.trim() ||
       !form.image
     ) {
-      setError("❌ יש למלא את כל השדות ולהוסיף תמונה");
+      setError(t.fillAllFields);
       return;
     }
 
@@ -226,9 +230,7 @@ export default function AddProductModal({
     );
 
     if (codeAlreadyExists) {
-      setError(
-        `❌ הקוד ${normalizedCode} כבר קיים במלאי — כל מוצר חייב קוד ייחודי`
-      );
+      setError(t.codeAlreadyExists.replace("{code}", normalizedCode));
       return;
     }
 
@@ -243,7 +245,7 @@ export default function AddProductModal({
       new Set(colorNamesLower).size !== colorNamesLower.length;
 
     if (hasDuplicateColor) {
-      setError("❌ יש כאן שני צבעים עם אותו שם — כל צבע צריך שם ייחודי");
+      setError(t.duplicateColor);
       return;
     }
 
@@ -295,7 +297,6 @@ export default function AddProductModal({
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-start",
-            direction: "rtl",
             gap: "0.6rem",
             marginBottom: "1.8rem",
           }}
@@ -319,13 +320,13 @@ export default function AddProductModal({
               margin: 0,
             }}
           >
-            מוצר חדש
+            {t.title}
           </h2>
         </div>
 
         <div className={styles.addProductGrid}>
           <div className={styles.addField}>
-            <label className={styles.addLabel}>קוד</label>
+            <label className={styles.addLabel}>{t.codeLabel}</label>
             <div style={{ display: "flex", gap: "0.45rem" }}>
               <input
                 className={styles.addInput}
@@ -337,7 +338,7 @@ export default function AddProductModal({
               <button
                 type="button"
                 onClick={() => setIsScanOpen(true)}
-                title="סרוק ברקוד"
+                title={t.scanTooltip}
                 style={{
                   background: "rgba(52,152,219,0.1)",
                   border: "1px solid rgba(52,152,219,0.25)",
@@ -356,17 +357,17 @@ export default function AddProductModal({
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>שם</label>
+            <label className={styles.addLabel}>{t.nameLabel}</label>
             <input
               className={styles.addInput}
-              placeholder="שם המוצר"
+              placeholder={t.namePlaceholder}
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
             />
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>קטגוריה</label>
+            <label className={styles.addLabel}>{t.categoryLabel}</label>
             <select
               className={styles.addInput}
               value={form.cat}
@@ -388,26 +389,26 @@ export default function AddProductModal({
             >
               {CATEGORIES.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {dict.categoryLabels[category] || category}
                 </option>
               ))}
             </select>
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>מגדר</label>
+            <label className={styles.addLabel}>{t.genderLabel}</label>
             <select
               className={styles.addInput}
               value={form.gender}
               onChange={(e) => handleChange("gender", e.target.value)}
             >
-              <option value="נשים">נשים</option>
-              <option value="גברים">גברים</option>
+              <option value="נשים">{dict.genderLabels["נשים"]}</option>
+              <option value="גברים">{dict.genderLabels["גברים"]}</option>
             </select>
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>עונה</label>
+            <label className={styles.addLabel}>{t.seasonLabel}</label>
             <select
               className={styles.addInput}
               value={form.season}
@@ -415,17 +416,17 @@ export default function AddProductModal({
               style={{ color: form.season ? "var(--text)" : "var(--muted)" }}
             >
               <option value="" disabled>
-                בחר עונה...
+                {t.chooseSeasonPlaceholder}
               </option>
-              <option value="all">כל השנה</option>
-              <option value="summer">קיץ</option>
-              <option value="winter">חורף</option>
-              <option value="spring-autumn">אביב-סתיו</option>
+              <option value="all">{t.seasonAllYear}</option>
+              <option value="summer">{t.seasonSummer}</option>
+              <option value="winter">{t.seasonWinter}</option>
+              <option value="spring-autumn">{t.seasonSpringAutumn}</option>
             </select>
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>כמות</label>
+            <label className={styles.addLabel}>{t.quantityLabel}</label>
             <input
               className={styles.addInput}
               type="number"
@@ -438,7 +439,7 @@ export default function AddProductModal({
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>מחיר (₪)</label>
+            <label className={styles.addLabel}>{t.priceLabel}</label>
             <input
               className={styles.addInput}
               type="number"
@@ -450,7 +451,7 @@ export default function AddProductModal({
             />
           </div>
           <div className={styles.addField}>
-            <label className={styles.addLabel}>עלות מוצר (₪)</label>
+            <label className={styles.addLabel}>{t.costLabel}</label>
             <input
               className={styles.addInput}
               type="number"
@@ -459,12 +460,12 @@ export default function AddProductModal({
               onChange={(e) =>
                 handleChange("cost", clampNumberString(e.target.value, MAX_PRICE))
               }
-              placeholder="כמה עולה לכן לייצר/לקנות את הפריט"
+              placeholder={t.costPlaceholder}
             />
           </div>
 
           <div className={styles.addField}>
-            <label className={styles.addLabel}>מינימום להתראה</label>
+            <label className={styles.addLabel}>{t.minStockLabel}</label>
             <input
               className={styles.addInput}
               type="number"
@@ -493,12 +494,12 @@ export default function AddProductModal({
             return (
               <div key={variantIndex} className={styles.colorCard} style={{ marginBottom: "0.7rem" }}>
                 <div className={styles.colorCardHead}>
-                  <span>סה״כ: {variantTotal} יח׳</span>
+                  <span>{t.variantTotal.replace("{total}", variantTotal)}</span>
 
                   <div className={styles.colorCardTitleWrap}>
                     <input
                       type="text"
-                      placeholder="שם הצבע"
+                      placeholder={t.colorNamePlaceholder}
                       value={variant.colorName || ""}
                       onChange={(e) =>
                         handleColorNameChange(variantIndex, e.target.value)
@@ -542,22 +543,22 @@ export default function AddProductModal({
             className={styles.uploadBtn}
             onClick={addColorVariant}
           >
-            ➕ הוסף פילוח לפי צבע
+            {t.addColorBreakdown}
           </button>
         </div>
 
         <div className={styles.addFieldFull}>
-          <label className={styles.addLabel}>תיאור</label>
+          <label className={styles.addLabel}>{t.descriptionLabel}</label>
           <input
             className={styles.addInput}
-            placeholder="תיאור קצר..."
+            placeholder={t.descriptionPlaceholder}
             value={form.desc}
             onChange={(e) => handleChange("desc", e.target.value)}
           />
         </div>
 
         <div className={styles.addFieldFull}>
-          <label className={styles.addLabel}>תמונת מוצר</label>
+          <label className={styles.addLabel}>{t.productImageLabel}</label>
 
           <div
             style={{
@@ -588,7 +589,7 @@ export default function AddProductModal({
                 fontSize: "0.82rem",
               }}
             >
-              📁 קובץ
+              {t.fileTab}
             </button>
 
             <button
@@ -614,7 +615,7 @@ export default function AddProductModal({
                 fontSize: "0.82rem",
               }}
             >
-              📸 מצלמה
+              {t.cameraTab}
             </button>
           </div>
 
@@ -628,7 +629,7 @@ export default function AddProductModal({
                 <>
                   <img
                     src={form.image}
-                    alt="תצוגה מקדימה"
+                    alt={t.previewAlt}
                     className={styles.imagePreview}
                   />
                   <button
@@ -638,7 +639,7 @@ export default function AddProductModal({
                       handleChange("image", "");
                     }}
                   >
-                    🗑️ הסר תמונה
+                    {t.removeImage}
                   </button>
                 </>
               ) : (
@@ -650,7 +651,7 @@ export default function AddProductModal({
                     marginBottom: "0.3rem",
                   }}
                 >
-                  לחץ להעלאה
+                  {t.clickToUpload}
                 </div>
               )}
 
@@ -715,7 +716,7 @@ export default function AddProductModal({
                       fontSize: "0.9rem",
                     }}
                   >
-                    📷 פתח מצלמה
+                    {t.openCamera}
                   </button>
                 </div>
               )}
@@ -775,7 +776,7 @@ export default function AddProductModal({
               cursor: "pointer",
             }}
           >
-            ביטול
+            {dict.common.cancel}
           </button>
 
           <button
@@ -783,7 +784,7 @@ export default function AddProductModal({
             style={{ flex: 2 }}
             onClick={handleSubmit}
           >
-            הוסף מוצר
+            {t.addProductButton}
           </button>
         </div>
 

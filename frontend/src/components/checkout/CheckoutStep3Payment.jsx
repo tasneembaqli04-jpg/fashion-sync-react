@@ -1,5 +1,6 @@
 import styles from "../../styles/checkout/CheckoutPayment.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CheckoutStep3Payment({
   payMethod = "card",
@@ -23,12 +24,14 @@ export default function CheckoutStep3Payment({
   onBack,
   onPay,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.checkout.step3;
   const showInstallments = payMethod === "card" && total >= 100;
 
   return (
     <div className={styles.stepPanel}>
       <div className={styles.card}>
-        <div className={styles.secTitle}>💳 שיטת תשלום</div>
+        <div className={styles.secTitle}>{t.paymentMethodTitle}</div>
 
         <div className={styles.payMethods}>
           <div
@@ -38,7 +41,7 @@ export default function CheckoutStep3Payment({
             tabIndex={0}
           >
             <span className={styles.payIcon}>💳</span>
-            כרטיס אשראי
+            {t.creditCard}
           </div>
 
           <div
@@ -69,7 +72,7 @@ export default function CheckoutStep3Payment({
               tabIndex={0}
             >
               <span className={styles.payIcon}>💵</span>
-              מזומן באיסוף
+              {t.cashOnPickup}
             </div>
           )}
 
@@ -81,7 +84,7 @@ export default function CheckoutStep3Payment({
               tabIndex={0}
             >
               <span className={styles.payIcon}>🎁</span>
-              כרטיס מתנה
+              {t.giftCard}
             </div>
           )}
         </div>
@@ -89,7 +92,7 @@ export default function CheckoutStep3Payment({
         {payMethod === "card" && (
           <div>
             <div className={styles.fg}>
-              <label htmlFor="f-cardnum">מספר כרטיס</label>
+              <label htmlFor="f-cardnum">{t.cardNumber}</label>
               <div className={styles.cardNumWrap}>
                 <input
                   id="f-cardnum"
@@ -105,12 +108,12 @@ export default function CheckoutStep3Payment({
                 <span className={styles.cardBrandIcon}>💳</span>
               </div>
               {errors.cardNumber && (
-                <div className={styles.fieldErr}>מספר כרטיס לא תקין</div>
+                <div className={styles.fieldErr}>{t.invalidCardNumber}</div>
               )}
             </div>
 
             <div className={styles.fg}>
-              <label htmlFor="f-cardholder">שם בעל הכרטיס</label>
+              <label htmlFor="f-cardholder">{t.cardHolder}</label>
               <input
                 id="f-cardholder"
                 name="cardHolder"
@@ -120,12 +123,12 @@ export default function CheckoutStep3Payment({
                 className={errors.cardHolder ? styles.invalid : ""}
               />
               {errors.cardHolder && (
-                <div className={styles.fieldErr}>שדה חובה</div>
+                <div className={styles.fieldErr}>{t.requiredField}</div>
               )}
             </div>
 
             <div className={styles.fg}>
-              <label htmlFor="f-cardid">תעודת זהות של בעל הכרטיס</label>
+              <label htmlFor="f-cardid">{t.cardHolderId}</label>
               <input
                 id="f-cardid"
                 name="cardId"
@@ -138,14 +141,14 @@ export default function CheckoutStep3Payment({
               />
               {errors.cardId && (
                 <div className={styles.fieldErr}>
-                  מספר ת.ז. לא תקין (9 ספרות)
+                  {t.invalidCardId}
                 </div>
               )}
             </div>
 
             <div className={styles.threeFg}>
               <div className={styles.fg}>
-                <label htmlFor="f-expiry">תוקף</label>
+                <label htmlFor="f-expiry">{t.expiry}</label>
                 <input
                   id="f-expiry"
                   name="expiry"
@@ -158,7 +161,7 @@ export default function CheckoutStep3Payment({
                   className={errors.expiry ? styles.invalid : ""}
                 />
                 {errors.expiry && (
-                  <div className={styles.fieldErr}>תוקף לא תקין</div>
+                  <div className={styles.fieldErr}>{t.invalidExpiry}</div>
                 )}
               </div>
 
@@ -176,7 +179,7 @@ export default function CheckoutStep3Payment({
                   className={errors.cvv ? styles.invalid : ""}
                 />
                 {errors.cvv && (
-                  <div className={styles.fieldErr}>CVV לא תקין</div>
+                  <div className={styles.fieldErr}>{t.invalidCvv}</div>
                 )}
               </div>
 
@@ -186,7 +189,7 @@ export default function CheckoutStep3Payment({
             {showInstallments && (
               <div className={styles.installWrap}>
                 <div className={styles.fg}>
-                  <label>מספר תשלומים</label>
+                  <label>{t.installmentsCount}</label>
                 </div>
 
                 <div className={styles.installRow}>
@@ -204,7 +207,7 @@ export default function CheckoutStep3Payment({
                         tabIndex={0}
                       >
                         {count === 1
-                          ? "תשלום אחד"
+                          ? t.onePayment
                           : `${count} × ₪${monthly.toLocaleString()}`}
                       </div>
                     );
@@ -218,11 +221,11 @@ export default function CheckoutStep3Payment({
         {payMethod === "bit" && (
           <div>
             <div className={`${styles.alert} ${styles.alertInfo}`}>
-              📱 לאחר לחיצה על "שלם" תועבר לאפליקציית Bit לאישור.
+              {t.bitInfo}
             </div>
 
             <div className={styles.fg}>
-              <label htmlFor="f-bit-phone">מספר טלפון (חשבון Bit)</label>
+              <label htmlFor="f-bit-phone">{t.bitPhone}</label>
               <input
                 id="f-bit-phone"
                 name="bitPhone"
@@ -232,7 +235,7 @@ export default function CheckoutStep3Payment({
                 className={errors.bitPhone ? styles.invalid : ""}
               />
               {errors.bitPhone && (
-                <div className={styles.fieldErr}>מספר טלפון לא תקין</div>
+                <div className={styles.fieldErr}>{t.invalidPhone}</div>
               )}
             </div>
           </div>
@@ -241,12 +244,12 @@ export default function CheckoutStep3Payment({
         {payMethod === "paypal" && (
           <div>
             <div className={`${styles.alert} ${styles.alertInfo}`}>
-              🅿️ לאחר לחיצה על "שלם" תועבר ל-PayPal לביצוע התשלום.
+              {t.paypalInfo}
             </div>
 
             {errors.email && (
               <div className={styles.fieldErr} style={{ display: "block", marginTop: "0.5rem" }}>
-                כדי להמשיך עם PayPal צריך אימייל תקין בשלב הפרטים
+                {t.paypalEmailRequired}
               </div>
            )}
          </div>
@@ -254,15 +257,15 @@ export default function CheckoutStep3Payment({
 
         {payMethod === "cash" && (
           <div className={`${styles.alert} ${styles.alertWarn}`}>
-            💵 תשלום במזומן יבוצע בעת איסוף הסחורה מהחנות.
+            {t.cashInfoLine1}
             <br />
-            ההזמנה תישמר <strong>48 שעות</strong> בלבד.
+            {t.cashInfoLine2Prefix} <strong>{t.cashInfoLine2Bold}</strong> {t.cashInfoLine2Rest}
           </div>
         )}
 
         {payMethod === "giftcard" && (
           <div className={styles.fg}>
-            <label htmlFor="f-giftcard">קוד כרטיס מתנה</label>
+            <label htmlFor="f-giftcard">{t.giftCardCode}</label>
             <input
               id="f-giftcard"
               type="text"
@@ -273,7 +276,7 @@ export default function CheckoutStep3Payment({
             />
             {errors.giftCardCode && (
               <div className={styles.fieldErr}>
-                קוד לא תקין, כרטיס מנוצל, או שהיתרה נמוכה מסכום ההזמנה
+                {t.invalidGiftCard}
               </div>
             )}
           </div>
@@ -297,11 +300,11 @@ export default function CheckoutStep3Payment({
             checked={termsAccepted}
             onChange={onToggleTerms}
           />
-          קראתי ואני מסכים/ה לתנאי השימוש ולמדיניות הפרטיות.
+          {t.termsAgreement}
         </label>
 
         {errors.terms && (
-          <div className={styles.errTerms}>יש לאשר את התנאים להמשך</div>
+          <div className={styles.errTerms}>{t.mustAcceptTerms}</div>
         )}
       </div>
 
@@ -311,7 +314,7 @@ export default function CheckoutStep3Payment({
           className={`${styles.btn} ${styles.btnOutline}`}
           onClick={onBack}
         >
-          ← חזרה
+          {t.backButton}
         </button>
 
         <button
@@ -319,15 +322,15 @@ export default function CheckoutStep3Payment({
           className={`${styles.btn} ${styles.btnGold}`}
           onClick={onPay}
         >
-          🔒 שלם עכשיו
+          {t.payNow}
         </button>
       </div>
 
       <div className={styles.trustRow}>
-        <div className={styles.trustItem}>🔒 SSL מוצפן</div>
-        <div className={styles.trustItem}>🛡️ PCI DSS</div>
-        <div className={styles.trustItem}>↩️ החזרות חינם 30 יום</div>
-        <div className={styles.trustItem}>📞 תמיכה 24/7</div>
+        <div className={styles.trustItem}>{t.trustSsl}</div>
+        <div className={styles.trustItem}>{t.trustPci}</div>
+        <div className={styles.trustItem}>{t.trustReturns}</div>
+        <div className={styles.trustItem}>{t.trustSupport}</div>
       </div>
     </div>
   );

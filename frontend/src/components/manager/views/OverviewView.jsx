@@ -2,6 +2,7 @@ import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 function getAlertClass(type) {
   if (type === "danger") {
@@ -16,16 +17,6 @@ function getAlertClass(type) {
   return `${alertStyles.alert} ${alertStyles.aSuccess}`;
 }
 
-function fmtDate(date) {
-  return new Date(date).toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export default function OverviewView({
   stats,
   alerts,
@@ -35,7 +26,21 @@ export default function OverviewView({
   onPromote,
   promotedCode,
 }) {
-  const today = new Date().toLocaleDateString("he-IL", {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.overview;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(date) {
+    return new Date(date).toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const today = new Date().toLocaleDateString(locale, {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -50,7 +55,7 @@ export default function OverviewView({
   });
 
   const weekLabels = weekDays.map((d) =>
-    d.toLocaleDateString("he-IL", { weekday: "short" })
+    d.toLocaleDateString(locale, { weekday: "short" })
   );
 
   const weekSales = weekDays.map((day) => {
@@ -73,12 +78,12 @@ export default function OverviewView({
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>שלום 👋</h2>
+          <h2>{t.greeting}</h2>
           <p>{today}</p>
         </div>
 
         <div style={{ display: "flex", gap: ".5rem" }}>
-          <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>● מחובר</span>
+          <span className={`${uiStyles.tag} ${uiStyles.tGreen}`}>{t.connected}</span>
           <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>FashionSync</span>
         </div>
       </div>
@@ -86,7 +91,7 @@ export default function OverviewView({
       <div className={overviewStyles.statsGrid}>
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
           <div className={overviewStyles.statIcon}>📦</div>
-          <div className={overviewStyles.statLabel}>פריטים במלאי</div>
+          <div className={overviewStyles.statLabel}>{t.stockItems}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--gold)" }}
@@ -94,13 +99,13 @@ export default function OverviewView({
             {stats.totalStock}
           </div>
           <div className={`${overviewStyles.statSub} ${overviewStyles.up}`}>
-            {stats.productCount} מוצרים
+            {stats.productCount} {t.productsSuffix}
           </div>
         </div>
 
         <div className={`${overviewStyles.stat} ${overviewStyles.green}`}>
           <div className={overviewStyles.statIcon}>💰</div>
-          <div className={overviewStyles.statLabel}>מכירות</div>
+          <div className={overviewStyles.statLabel}>{t.sales}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--green)" }}
@@ -108,13 +113,13 @@ export default function OverviewView({
             ₪{stats.sales.toLocaleString()}
           </div>
           <div className={`${overviewStyles.statSub} ${overviewStyles.up}`}>
-            {stats.receiptCount} עסקאות
+            {stats.receiptCount} {t.transactionsSuffix}
           </div>
         </div>
 
         <div className={`${overviewStyles.stat} ${overviewStyles.red}`}>
           <div className={overviewStyles.statIcon}>⚠️</div>
-          <div className={overviewStyles.statLabel}>בעיות מלאי</div>
+          <div className={overviewStyles.statLabel}>{t.stockIssues}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--red)" }}
@@ -122,13 +127,13 @@ export default function OverviewView({
             {stats.lowCount}
           </div>
           <div className={`${overviewStyles.statSub} ${overviewStyles.dn}`}>
-            דורש טיפול
+            {t.needsAttention}
           </div>
         </div>
 
         <div className={`${overviewStyles.stat} ${overviewStyles.blue}`}>
           <div className={overviewStyles.statIcon}>🔥</div>
-          <div className={overviewStyles.statLabel}>ביקושים גבוהים</div>
+          <div className={overviewStyles.statLabel}>{t.highDemand}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--blue)" }}
@@ -142,13 +147,13 @@ export default function OverviewView({
       <div className={layoutStyles.g2}>
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>🔔 התראות פעילות</div>
+            <div className={uiStyles.cardTitle}>{t.activeAlerts}</div>
             <button
               className={`${uiStyles.btn} ${uiStyles.btnGhost}`}
               style={{ fontSize: ".72rem", padding: ".3rem .7rem" }}
               onClick={onOpenAlerts}
             >
-              הכל ←
+              {t.seeAll}
             </button>
           </div>
 
@@ -191,7 +196,7 @@ export default function OverviewView({
               })
             ) : (
               <div className={`${alertStyles.alert} ${alertStyles.aSuccess}`}>
-                ✅ אין התראות פעילות
+                {t.noActiveAlerts}
               </div>
             )}
           </div>
@@ -199,8 +204,8 @@ export default function OverviewView({
 
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>📊 מכירות שבועיות</div>
-            <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>₪ לפי יום</span>
+            <div className={uiStyles.cardTitle}>{t.weeklySales}</div>
+            <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>{t.perDay}</span>
           </div>
 
           <div className={uiStyles.cardBody}>
@@ -224,9 +229,9 @@ export default function OverviewView({
                 marginTop: ".3rem",
               }}
             >
-              {weekLabels.map((label) => (
+              {weekLabels.map((label, index) => (
                 <span
-                  key={label}
+                  key={index}
                   style={{ fontSize: ".62rem", color: "var(--muted)" }}
                 >
                   {label}
@@ -240,13 +245,13 @@ export default function OverviewView({
       <div className={uiStyles.card}>
         <div className={uiStyles.cardHd}>
           <div className={uiStyles.cardTitle}>
-            📦 מוצרים שלא נמכרים — מועמדים לפרסום
+            {t.slowMovingTitle}
           </div>
           <span
             className={`${uiStyles.tag} ${uiStyles.tOrange}`}
             style={{ fontSize: ".65rem" }}
           >
-            0–2 מכירות בחודש
+            {t.slowMovingTag}
           </span>
         </div>
 
@@ -260,7 +265,7 @@ export default function OverviewView({
                 padding: "1rem",
               }}
             >
-              ✅ כל המוצרים נמכרים כראוי!
+              {t.allSellingWell}
             </div>
           ) : (
             slowProducts.map((p) => {
@@ -304,13 +309,13 @@ export default function OverviewView({
                       }}
                     >
                       <span className={uiStyles.slowBadge}>
-                        🛒 {p.salesLastMonth} מכירות בחודש
+                        🛒 {p.salesLastMonth} {t.salesThisMonth}
                       </span>
                       <span
                         className={`${uiStyles.tag} ${uiStyles.tBlue}`}
                         style={{ fontSize: ".62rem" }}
                       >
-                        {p.cat}
+                        {dict.categoryLabels[p.cat] || p.cat}
                       </span>
                       <span style={{ color: "var(--gold)", fontSize: ".8rem" }}>
                         ₪{p.price}
@@ -335,7 +340,7 @@ export default function OverviewView({
                     }}
                     onClick={() => onPromote(p)}
                   >
-                    {isPromoted ? "✅ בפרסום" : "📢 פרסם"}
+                    {isPromoted ? t.promoted : t.promoteButton}
                   </button>
                 </div>
               );

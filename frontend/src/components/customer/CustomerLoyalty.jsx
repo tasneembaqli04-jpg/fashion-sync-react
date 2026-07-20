@@ -2,14 +2,18 @@ import { useEffect, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import { getAllCoupons } from "../../services/coupons/couponsService";
-
-const SEASON_LABELS = {
-  summer: "בקיץ בלבד",
-  winter: "בחורף בלבד",
-  "spring-autumn": "באביב/סתיו בלבד",
-};
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.loyalty;
+
+  const SEASON_LABELS = {
+    summer: t.seasonSummerOnly,
+    winter: t.seasonWinterOnly,
+    "spring-autumn": t.seasonSpringAutumnOnly,
+  };
+
   const [coupons, setCoupons] = useState([]);
 
   useEffect(() => {
@@ -26,8 +30,8 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>⭐ נקודות וקופונים</div>
-      <div className={commonStyles.pageSub}>הטבות בלעדיות עבורך</div>
+      <div className={commonStyles.pageTitle}>{t.title}</div>
+      <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       <div className={browseStyles.pointsCard}>
         <div
@@ -37,11 +41,11 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
             marginBottom: "0.3rem",
           }}
         >
-          הנקודות שלי
+          {t.myPoints}
         </div>
 
         <div className={browseStyles.pointsAmount}>
-          {points.toLocaleString()} נק'
+          {points.toLocaleString()} {t.pointsAbbrev}
         </div>
 
         <div
@@ -51,16 +55,16 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
             marginTop: "0.4rem",
           }}
         >
-          = ₪{redemptionValue} לשימוש בקנייה הבאה
+          = ₪{redemptionValue} {t.redemptionSuffix}
         </div>
       </div>
 
-      <div className={commonStyles.secTitle}>הקופונים שלי</div>
+      <div className={commonStyles.secTitle}>{t.myCoupons}</div>
 
       <div className={browseStyles.couponList}>
         {!coupons.length ? (
           <div style={{ color: "var(--light-gray)", padding: "0.8rem" }}>
-            אין כרגע קופונים פעילים
+            {t.noActiveCoupons}
           </div>
         ) : (
           coupons.map((coupon) => (
@@ -70,10 +74,10 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
                   {coupon.code}
                 </div>
                 <div className={browseStyles.couponDesc}>
-                  {Math.round(coupon.discount * 100)}% הנחה
+                  {Math.round(coupon.discount * 100)}{t.discountSuffix}
                   {coupon.seasonOnly
                     ? ` — ${SEASON_LABELS[coupon.seasonOnly] || ""}`
-                    : " על כל הקנייה"}
+                    : ` ${t.onEntirePurchase}`}
                 </div>
               </div>
 
@@ -81,7 +85,7 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
                 className={`${commonStyles.btn} ${commonStyles.btnGold}`}
                 onClick={(e) => copyCoupon(coupon.code, e.currentTarget)}
               >
-                העתק
+                {t.copy}
               </button>
             </div>
           ))

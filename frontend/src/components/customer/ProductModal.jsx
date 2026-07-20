@@ -1,5 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -31,6 +32,8 @@ export default function ProductModal({
   openTryOnFromProduct,
   openNotifyModal,
 }) {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.customer.productModal;
   if (!product) return null;
 
   const isOnSale =
@@ -53,7 +56,12 @@ export default function ProductModal({
     (a, b) => canonicalSizeOrder.indexOf(a) - canonicalSizeOrder.indexOf(b)
   );
 
-  const allSizes = sortedSizes.includes("אחר")
+  const isUniformSizeOnly =
+    sortedSizes.length === 1 && sortedSizes[0] === "אחיד";
+
+  const allSizes = isUniformSizeOnly
+    ? sortedSizes
+    : sortedSizes.includes("אחר")
     ? sortedSizes
     : [...sortedSizes, "אחר"];
 
@@ -63,10 +71,10 @@ export default function ProductModal({
     product.season === "spring-autumn" ? "🌸" : "🗓️";
 
   const seasonLabel =
-    product.season === "summer" ? "קיץ" :
-    product.season === "winter" ? "חורף" :
-    product.season === "spring-autumn" ? "אביב / סתיו" :
-    product.season === "all" ? "כל השנה" :
+    product.season === "summer" ? t.seasonSummer :
+    product.season === "winter" ? t.seasonWinter :
+    product.season === "spring-autumn" ? t.seasonSpringAutumn :
+    product.season === "all" ? t.seasonAllYear :
     product.season || "";
 
   return (
@@ -75,7 +83,11 @@ export default function ProductModal({
       id="product-modal"
     >
       <div className={modalStyles.modalBox}>
-        <button className={modalStyles.modalClose} onClick={closeProductModal}>
+        <button
+          className={modalStyles.modalClose}
+          onClick={closeProductModal}
+          style={lang === "en" ? { left: "auto", right: "1.1rem" } : {}}
+        >
           ✕
         </button>
 
@@ -125,7 +137,7 @@ export default function ProductModal({
             </div>
 
             <div className={modalStyles.pdMeta}>
-              {product.code} · {product.gender} · {product.cat}
+              {product.code} · {dict.genderLabels[product.gender] || product.gender} · {dict.categoryLabels[product.cat] || product.cat}
             </div>
 
             <div style={{ marginBottom: ".6rem" }}>
@@ -149,7 +161,7 @@ export default function ProductModal({
 
             <div className={modalStyles.pdRow}>
               <div className={modalStyles.pdField}>
-                <label>צבע</label>
+                <label>{t.colorLabel}</label>
                 <select
                   id="pd-color"
                   value={selectedColor || colorsFromVariants[0] || ""}
@@ -162,58 +174,109 @@ export default function ProductModal({
               </div>
 
               <div className={modalStyles.pdField}>
-                <label>מידה *</label>
+                <label>{t.sizeLabel}</label>
                 <select
                   id="pd-size"
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
-                  <option value="">בחר/י מידה...</option>
-                  {allSizes.map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
+                  <option value="">{t.selectSizePlaceholder}</option>
+                  {allSizes.map((size) => {
+                    const activeColor = selectedColor || colorsFromVariants[0] || "";
+                    const matchingVariant = product.variants?.find(
+                      (v) => v.colorName === activeColor
+                    );
+                    const available =
+                      size === "אחר" ||
+                      !matchingVariant ||
+                      (Number(matchingVariant.sizes?.[size]) || 0) > 0;
+
+                    const displayLabel = size === "אחר" ? t.otherSizeValue : size;
+
+                    return (
+                      <option key={size} value={size} disabled={!available}>
+                        {displayLabel}{!available ? t.outOfStockSuffix : ""}
+                      </option>
+                    );
+                  })}
                 </select>
-                {selectedSize === "אחר" && (
-                  <input
-                    id="pd-size-other"
-                    type="text"
-                    placeholder="מידה… "
-                    value={customSize}
-                    onChange={(e) => setCustomSize(e.target.value.slice(0, 10))}
-                    maxLength={10}
-                    style={{ marginTop: "0.4rem" }}
-                  />
-                )}
+                {selectedSize === "אחר" && (() => {
+                  const isNumericCategory =
+                    canonicalSizeOrder.length > 0 &&
+                    canonicalSizeOrder.every((s) => !Number.isNaN(Number(s)));
+                  const isDuplicate = sortedSizes.some(
+                    (s) => s.trim().toLowerCase() === customSize.trim().toLowerCase()
+                  );
+
+                  return (
+                    <div style={{ marginTop: "0.4rem" }}>
+                      <input
+                        id="pd-size-other"
+                        type="text"
+                        placeholder={isNumericCategory ? t.customSizeNumberPlaceholder : t.customSizeLetterPlaceholder}
+                        value={customSize}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const filtered = isNumericCategory
+                            ? raw.replace(/[^0-9]/g, "")
+                            : raw.replace(/[^a-zA-Zא-ת]/g, "").toUpperCase();
+                          setCustomSize(filtered.slice(0, 6));
+                        }}
+                        maxLength={6}
+                      />
+                      {isDuplicate && customSize.trim() && (
+                        <div
+                          style={{
+                            color: "var(--red, #e74c3c)",
+                            fontSize: "0.75rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          {t.duplicateSizeWarning}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
             {!selectedSize && (
               <div style={{ color: "#e07a5f", fontSize: "0.85rem", textAlign: "center", marginTop: "0.5rem" }}>
-                יש לבחור מידה לפני ההוספה לסל
+                {t.selectSizeBeforeAdd}
               </div>
             )}
 
             <div className={modalStyles.pdActions}>
               {isGuest ? (
                 <>
-                  <button className={baseStyles.btn} style={{ border: "1px dashed rgba(201,168,76,.3)", color: "rgba(201,168,76,.6)" }} onClick={guestPrompt}>🔒 התחבר לסל</button>
-                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>📷 נסה עליי</button>
+                  <button className={baseStyles.btn} style={{ border: "1px dashed rgba(201,168,76,.3)", color: "rgba(201,168,76,.6)" }} onClick={guestPrompt}>{t.guestAddToCart}</button>
+                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>{t.tryOn}</button>
                 </>
               ) : product.stock > 0 ? (
                 <>
                   <button
                     className={`${baseStyles.btn} ${baseStyles.btnGold}`}
                     onClick={() => addToCart(product.code, true)}
-                    disabled={!selectedSize || (selectedSize === "אחר" && !customSize.trim())}
+                    disabled={
+                      !selectedSize ||
+                      (selectedSize === "אחר" &&
+                        (!customSize.trim() ||
+                          sortedSizes.some(
+                            (s) =>
+                              s.trim().toLowerCase() ===
+                              customSize.trim().toLowerCase()
+                          )))
+                    }
                   >
-                    🛒 הוסף לסל
+                    {t.addToCart}
                   </button>
-                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>📷 נסה עליי</button>
+                  <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={() => openTryOnFromProduct(product.code)}>{t.tryOn}</button>
                 </>
               ) : (
-                <button className={`${baseStyles.btn} ${baseStyles.btnDanger}`} onClick={() => openNotifyModal(product.code)}>🔔 הודע לי</button>
+                <button className={`${baseStyles.btn} ${baseStyles.btnDanger}`} onClick={() => openNotifyModal(product.code)}>{t.notifyMe}</button>
               )}
-              <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={closeProductModal}>סגור</button>
+              <button className={`${baseStyles.btn} ${baseStyles.btnOutline}`} onClick={closeProductModal}>{t.close}</button>
             </div>
           </div>
         </div>

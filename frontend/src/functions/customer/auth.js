@@ -1,6 +1,7 @@
 import { LS_KEYS } from "../../data/constants";
 import { normEmail } from "./helpers";
 import { logOut } from "../../services/auth/firebaseAuth";
+import { globalDialog } from "../../components/common/DialogProvider";
 
 export function initAuth() {
   const qs = new URLSearchParams(window.location.search);
@@ -52,20 +53,25 @@ export function goLogin() {
   window.location.href = "/";
 }
 
-export function goHome() {
-  if (window.confirm("לחזור לדף הבית?")) {
+export async function goHome(t) {
+  const confirmed = await globalDialog.confirm(t ? t.confirmGoHome : "לחזור לדף הבית?");
+  if (confirmed) {
     window.location.href = "/";
   }
 }
 
-export function guestPrompt() {
-  if (window.confirm("לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?")) {
+export async function guestPrompt(t) {
+  const confirmed = await globalDialog.confirm(
+    t ? t.confirmGuestAction : "לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?"
+  );
+  if (confirmed) {
     goLogin();
   }
 }
 
-export async function doLogout(setCart) {
-  if (!window.confirm("להתנתק?")) return;
+export async function doLogout(setCart, t) {
+  const confirmed = await globalDialog.confirm(t ? t.confirmLogout : "להתנתק?");
+  if (!confirmed) return;
 
   await logOut();
 

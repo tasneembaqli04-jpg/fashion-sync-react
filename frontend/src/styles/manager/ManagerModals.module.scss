@@ -91,15 +91,20 @@
   padding: 2rem;
   position: relative;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  direction: ltr;
+}
+
+.addProductModal > * {
+  direction: rtl;
 }
 
 .addProductModal::-webkit-scrollbar {
-  width: 8px;
+  width: 5px;
 }
 
 .addProductModal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  background: rgba(201, 168, 76, 0.4);
+  border-radius: 999px;
 }
 
 .modalCloseBtn {
@@ -289,6 +294,11 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  direction: ltr;
+}
+
+.detailsModalBox > * {
+  direction: rtl;
 }
 
 .detailsTitle {

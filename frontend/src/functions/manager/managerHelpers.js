@@ -1,4 +1,4 @@
-export function createAlerts(products, orders = []) {
+export function createAlerts(products, orders = [], t) {
   const alerts = [];
   products.forEach((p) => {
     if (p.stock === 0)
@@ -6,7 +6,7 @@ export function createAlerts(products, orders = []) {
         key: `oos_${p.code}`,
         type: "danger",
         code: p.code,
-        title: "🚫 המוצר אזל מהמלאי",
+        title: t.outOfStockTitle,
         msg: p.name,
         createdAt: Date.now(),
       });
@@ -15,8 +15,8 @@ export function createAlerts(products, orders = []) {
         key: `low_${p.code}`,
         type: "warn",
         code: p.code,
-        title: "⚠️ מלאי נמוך",
-        msg: `${p.name} — נותרו ${p.stock} יח׳`,
+        title: t.lowStockTitle,
+        msg: t.lowStockMsg.replace("{name}", p.name).replace("{stock}", p.stock),
         createdAt: Date.now(),
       });
     if (p.notifyCount > 15)
@@ -24,8 +24,8 @@ export function createAlerts(products, orders = []) {
         key: `demand_${p.code}`,
         type: "info",
         code: p.code,
-        title: "🔥 ביקושים גבוהים",
-        msg: `${p.name} — נרשמו ${p.notifyCount} בקשות`,
+        title: t.highDemandTitle,
+        msg: t.highDemandMsg.replace("{name}", p.name).replace("{count}", p.notifyCount),
         demandCount: p.notifyCount,
         isDemand: true,
         createdAt: Date.now(),
@@ -50,8 +50,11 @@ export function createAlerts(products, orders = []) {
         key: `customsize_${order.id}_${item.code}`,
         type: "warn",
         code: order.id,
-        title: '🔍 בקשת מידה מיוחדת',
-        msg: `הזמנה ${order.id} — ${item.name} · מידה: "${item.size}" — דורש אישור ידני`,
+        title: t.customSizeTitle,
+        msg: t.customSizeMsg
+          .replace("{orderId}", order.id)
+          .replace("{name}", item.name)
+          .replace("{size}", item.size),
         createdAt: Date.now(),
       });
     });

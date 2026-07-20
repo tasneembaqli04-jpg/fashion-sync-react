@@ -1,6 +1,7 @@
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import ProductCard from "./ProductCard";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerWishlist({
   show,
@@ -14,12 +15,15 @@ export default function CustomerWishlist({
   openNotifyModal,
   guestPrompt,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.wishlist;
+
   if (!show) return null;
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>❤️ רשימת הבקשות שלי</div>
-      <div className={commonStyles.pageSub}>פריטים ששמרת לאחר כך</div>
+      <div className={commonStyles.pageTitle}>{t.title}</div>
+      <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       {wishlistProducts.length ? (
         <div className={browseStyles.wishGrid}>
@@ -40,7 +44,7 @@ export default function CustomerWishlist({
         </div>
       ) : (
         <div className={commonStyles.card} style={{ textAlign: "center" }}>
-          רשימת הבקשות ריקה.
+          {t.empty}
         </div>
       )}
     </div>

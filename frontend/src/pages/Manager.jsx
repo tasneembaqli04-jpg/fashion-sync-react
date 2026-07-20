@@ -39,9 +39,13 @@ import {
   saveTheme,
 } from "../functions/manager/managerStorage";
 import { sendShippingUpdateEmail, sendStockAlertEmail } from "../services/email/emailService";
+import { useDialog } from "../components/common/DialogProvider";
+import { useLanguage } from "../translations/LanguageProvider";
 
 export default function Manager({ onPromote }) {
   const navigate = useNavigate();
+  const { confirmDialog, alertDialog } = useDialog();
+  const { lang, t: dict } = useLanguage();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -143,7 +147,7 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn]);
 
-  const alerts = useMemo(() => createAlerts(products, orders), [products, orders]);
+  const alerts = useMemo(() => createAlerts(products, orders, dict.manager.alerts), [products, orders, dict]);
 
   const pendingOrdersCount = useMemo(
     () => orders.filter((o) => !o.confirmed).length,
@@ -224,7 +228,7 @@ export default function Manager({ onPromote }) {
     const found = products.find((p) => p.code.toUpperCase() === trimmedCode);
 
     if (!found) {
-      alert(`⚠️ מוצר עם הקוד "${trimmedCode}" לא נמצא במלאי`);
+      alertDialog(dict.manager.dialogs.barcodeNotFound.replace("{code}", trimmedCode));
       return;
     }
 
@@ -393,7 +397,9 @@ export default function Manager({ onPromote }) {
     }
   }
 
-  const shellClassName = `${styles.appShell} ${theme === "light" ? styles.light : styles.dark}`;
+  const shellClassName = `${styles.appShell} ${
+    lang === "he" ? styles.appShellRtl : styles.appShellLtr
+  } ${theme === "light" ? styles.light : styles.dark}`;
 
   if (!isLoggedIn)
     return <LoginOverlay onLoginSuccess={() => setIsLoggedIn(true)} />;
@@ -410,14 +416,16 @@ export default function Manager({ onPromote }) {
           setActiveView(view);
           setMobileSidebarOpen(false);
         }}
-        onLogout={() => {
-          if (!window.confirm("להתנתק?")) return;
+        onLogout={async () => {
+          const confirmed = await confirmDialog(dict.manager.dialogs.confirmLogout);
+          if (!confirmed) return;
           setIsLoggedIn(false);
           setActiveView("overview");
           navigate("/");
         }}
-        onGoHome={() => {
-          if (!window.confirm("לחזור לדף הבית?")) return;
+        onGoHome={async () => {
+          const confirmed = await confirmDialog(dict.manager.dialogs.confirmGoHome);
+          if (!confirmed) return;
           navigate("/");
         }}
         onToggleTheme={handleToggleTheme}

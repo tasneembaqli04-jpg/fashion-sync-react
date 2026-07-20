@@ -2,21 +2,26 @@ import { useEffect, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { getAllFeedback } from "../../../services/feedback/feedbackService";
-
-function fmtDate(value) {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("he-IL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 export default function FeedbackView() {
+  const { lang, t: dict } = useLanguage();
+  const t = dict.manager.feedback;
+  const locale = lang === "en" ? "en-US" : "he-IL";
+
+  function fmtDate(value) {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,16 +36,16 @@ export default function FeedbackView() {
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
         <div className={uiStyles.phLeft}>
-          <h2>משוב לקוחות</h2>
-          <p>מה לקוחות כתבו לפני התשלום</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
       {loading ? (
-        <div>טוען...</div>
+        <div>{dict.common.loading}</div>
       ) : !feedback.length ? (
         <div style={{ textAlign: "center", opacity: 0.7, padding: "2rem" }}>
-          עדיין אין משובים
+          {t.noFeedbackYet}
         </div>
       ) : (
         feedback.map((item) => (
@@ -64,7 +69,7 @@ export default function FeedbackView() {
 
             <div style={{ margin: "6px 0", color: "var(--gold)" }}>
               {"⭐".repeat(item.rating || 0)}
-              {!item.rating && <span style={{ color: "var(--muted)" }}>ללא דירוג</span>}
+              {!item.rating && <span style={{ color: "var(--muted)" }}>{t.noRating}</span>}
             </div>
 
             {!!item.topics?.length && (

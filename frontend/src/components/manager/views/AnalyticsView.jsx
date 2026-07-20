@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
+import { useLanguage } from "../../../translations/LanguageProvider";
 
 function isSameMonth(dateStr) {
   const d = new Date(dateStr);
@@ -13,6 +14,9 @@ function isSameMonth(dateStr) {
 }
 
 export default function AnalyticsView({ orders = [], products = [] }) {
+  const { t: dict } = useLanguage();
+  const t = dict.manager.analytics;
+
   const stats = useMemo(() => {
     const realOrders = orders.filter(
       (o) =>
@@ -107,15 +111,15 @@ export default function AnalyticsView({ orders = [], products = [] }) {
     <div className={layoutStyles.view}>
       <div className={layoutStyles.pageHd}>
         <div className={layoutStyles.phLeft}>
-          <h2>אנליטיקה</h2>
-          <p>סטטיסטיקות מכירות אמיתיות, מחושבות מההזמנות בפועל</p>
+          <h2>{t.title}</h2>
+          <p>{t.subtitle}</p>
         </div>
       </div>
 
       <div className={overviewStyles.statsGrid}>
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
           <div className={overviewStyles.statIcon}>📈</div>
-          <div className={overviewStyles.statLabel}>הכנסות החודש</div>
+          <div className={overviewStyles.statLabel}>{t.monthRevenue}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--gold)" }}
@@ -126,7 +130,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
         <div className={`${overviewStyles.stat} ${overviewStyles.green}`}>
           <div className={overviewStyles.statIcon}>🛍️</div>
-          <div className={overviewStyles.statLabel}>מכירות החודש</div>
+          <div className={overviewStyles.statLabel}>{t.monthSales}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--green)" }}
@@ -137,7 +141,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
         <div className={`${overviewStyles.stat} ${overviewStyles.blue}`}>
           <div className={overviewStyles.statIcon}>🔄</div>
-          <div className={overviewStyles.statLabel}>ממוצע עסקה</div>
+          <div className={overviewStyles.statLabel}>{t.avgOrder}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--blue)" }}
@@ -148,7 +152,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
         <div className={`${overviewStyles.stat} ${overviewStyles.purple}`}>
           <div className={overviewStyles.statIcon}>👥</div>
-          <div className={overviewStyles.statLabel}>לקוחות חוזרים</div>
+          <div className={overviewStyles.statLabel}>{t.repeatCustomers}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--purple)" }}
@@ -159,7 +163,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
         <div className={`${overviewStyles.stat} ${overviewStyles.orange}`}>
           <div className={overviewStyles.statIcon}>📉</div>
-          <div className={overviewStyles.statLabel}>הוצאות החודש</div>
+          <div className={overviewStyles.statLabel}>{t.monthExpenses}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: "var(--orange)" }}
@@ -170,7 +174,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
           <div className={overviewStyles.statIcon}>💵</div>
-          <div className={overviewStyles.statLabel}>רווח החודש</div>
+          <div className={overviewStyles.statLabel}>{t.monthProfit}</div>
           <div
             className={overviewStyles.statVal}
             style={{ color: stats.monthProfit >= 0 ? "var(--green)" : "var(--red)" }}
@@ -182,7 +186,7 @@ export default function AnalyticsView({ orders = [], products = [] }) {
 
       <div className={uiStyles.card}>
         <div className={uiStyles.cardHd}>
-          <div className={uiStyles.cardTitle}>מכירות לפי קטגוריה — החודש</div>
+          <div className={uiStyles.cardTitle}>{t.salesByCategory}</div>
         </div>
 
         <div className={uiStyles.cardBody}>
@@ -194,13 +198,15 @@ export default function AnalyticsView({ orders = [], products = [] }) {
                 padding: "1.5rem",
               }}
             >
-              עדיין אין מכירות החודש
+              {t.noSalesThisMonth}
             </div>
           ) : (
             <div className={overviewStyles.barChart}>
               {stats.categorySales.map(([category, value], index) => (
                 <div className={overviewStyles.barRow} key={category}>
-                  <div className={overviewStyles.barLbl}>{category}</div>
+                  <div className={overviewStyles.barLbl}>
+                    {dict.categoryLabels[category] || category}
+                  </div>
                   <div className={overviewStyles.barTrk}>
                     <div
                       className={overviewStyles.barFill}
@@ -225,16 +231,13 @@ export default function AnalyticsView({ orders = [], products = [] }) {
       {stats.missingCostCount > 0 && (
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>💡 הערה</div>
+            <div className={uiStyles.cardTitle}>{t.noteTitle}</div>
           </div>
           <div
             className={uiStyles.cardBody}
             style={{ color: "var(--muted)", fontSize: "0.9rem" }}
           >
-            {stats.missingCostCount} פריטים שנמכרו החודש נמכרו ממוצר בלי "עלות
-            מוצר" רשומה — עבורם ההוצאה נספרה כ-₪0, כך שההוצאות/הרווח בפועל
-            עשויים להיות שונים. אפשר להוסיף עלות לכל מוצר דרך "פרטים" בניהול
-            מלאי.
+            {t.missingCostNote.replace("{count}", stats.missingCostCount)}
           </div>
         </div>
       )}

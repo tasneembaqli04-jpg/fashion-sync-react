@@ -3,9 +3,12 @@ import { useState } from "react";
 import { signInAsManager } from "../../services/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
+  const { t: dict } = useLanguage();
+  const t = dict.manager.loginOverlay;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
@@ -43,10 +46,10 @@ export default function LoginOverlay({ onLoginSuccess }) {
         </button>
 
         <div className={loginStyles.loginBrand}>FashionSync</div>
-        <div className={loginStyles.loginSub}>👑 כניסת מנהל ראשי</div>
+        <div className={loginStyles.loginSub}>{t.title}</div>
 
         <div className={formStyles.fg}>
-          <div className={formStyles.fl}>שם משתמש</div>
+          <div className={formStyles.fl}>{t.username}</div>
           <input
             className={formStyles.fi}
             type="text"
@@ -57,7 +60,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
         </div>
 
         <div className={formStyles.fg}>
-          <div className={formStyles.fl}>סיסמה</div>
+          <div className={formStyles.fl}>{t.password}</div>
           <input
             className={formStyles.fi}
             type="password"
@@ -68,11 +71,11 @@ export default function LoginOverlay({ onLoginSuccess }) {
         </div>
 
         {errorVisible && (
-          <div className={loginStyles.errMsg}>❌ שם משתמש או סיסמה שגויים</div>
+          <div className={loginStyles.errMsg}>{t.wrongCredentials}</div>
         )}
 
         <button className={loginStyles.btnLogin} onClick={handleLogin}>
-          כניסה
+          {t.loginButton}
         </button>
       </div>
     </div>

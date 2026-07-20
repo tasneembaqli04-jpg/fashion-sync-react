@@ -1,12 +1,12 @@
 import styles from "../../styles/checkout/CheckoutSteps.module.scss";
-const STEP_LABELS = [
-  "פרטים",
-  "משלוח",
-  "תשלום",
-  "אישור",
-];
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CheckoutStepsBar({ currentStep = 1 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.checkout;
+
+  const STEP_LABELS = [t.stepDetails, t.stepShipping, t.stepPayment, t.stepConfirm];
+
   return (
     <div className={styles.stepsBar}>
       {STEP_LABELS.map((label, index) => {
