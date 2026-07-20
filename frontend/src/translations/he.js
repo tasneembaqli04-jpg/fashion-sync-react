@@ -135,6 +135,10 @@ export const he = {
       autoHandleTooltip: "יטופל אוטומטית כשהמלאי יעודכן",
       pendingStock: "⏳ ממתין לעדכון מלאי",
       notified: "✓ הודע",
+      filterAll: "🔔 הכל",
+      filterPending: "⏳ ממתין",
+      filterNotified: "✓ טופל",
+      allMonths: "📅 כל החודשים",
     },
     feedback: {
       title: "משוב לקוחות",

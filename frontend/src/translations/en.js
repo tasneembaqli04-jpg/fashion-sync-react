@@ -135,6 +135,10 @@ export const en = {
       autoHandleTooltip: "Will be handled automatically when stock is updated",
       pendingStock: "⏳ Waiting for stock update",
       notified: "✓ Notified",
+      filterAll: "🔔 All",
+      filterPending: "⏳ Pending",
+      filterNotified: "✓ Handled",
+      allMonths: "📅 All months",
     },
     feedback: {
       title: "Customer Feedback",
