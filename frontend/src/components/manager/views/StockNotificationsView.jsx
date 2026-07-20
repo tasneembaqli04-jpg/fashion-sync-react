@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import {
@@ -10,10 +10,17 @@ import { sendStockAlertEmail } from "../../../services/email/emailService";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export default function StockNotificationsView() {
   const { confirmDialog } = useDialog();
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.stockNotifications;
+  const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   function fmtDate(value) {
@@ -29,8 +36,16 @@ export default function StockNotificationsView() {
     });
   }
 
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return dict.customer.orders.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState("all");
 
   useEffect(() => {
     getAllStockNotifications().then((data) => {
@@ -62,6 +77,22 @@ export default function StockNotificationsView() {
 
   const pendingCount = items.filter((item) => !item.notified).length;
 
+  const availableMonths = useMemo(() => {
+    const keys = new Set(items.map((item) => getMonthKey(item.createdAt)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [items]);
+
+  const visibleItems = useMemo(() => {
+    return items.filter((item) => {
+      if (statusFilter === "pending" && item.notified) return false;
+      if (statusFilter === "notified" && !item.notified) return false;
+      if (monthFilter !== "all" && getMonthKey(item.createdAt) !== monthFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [items, statusFilter, monthFilter]);
+
   return (
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
@@ -78,14 +109,68 @@ export default function StockNotificationsView() {
         </div>
       </div>
 
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          alignItems: "center",
+          marginBottom: "1.2rem",
+        }}
+      >
+        {[
+          { key: "all", label: t.filterAll },
+          { key: "pending", label: t.filterPending },
+          { key: "notified", label: t.filterNotified },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            className={uiStyles.filterTab}
+            onClick={() => setStatusFilter(tab.key)}
+            style={
+              statusFilter === tab.key
+                ? {
+                    background: "var(--gold-dim)",
+                    color: "var(--gold)",
+                    borderColor: "var(--border-gold)",
+                  }
+                : {}
+            }
+          >
+            {tab.label}
+          </button>
+        ))}
+
+        <select
+          value={monthFilter}
+          onChange={(e) => setMonthFilter(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: "10px",
+            border: "1px solid var(--border)",
+            background: "var(--surface2)",
+            color: "var(--text)",
+            fontSize: "0.9rem",
+          }}
+        >
+          <option value="all">{t.allMonths}</option>
+          {availableMonths.map((key) => (
+            <option key={key} value={key}>
+              {getMonthLabel(key)}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {loading ? (
         <div>{dict.common.loading}</div>
-      ) : !items.length ? (
+      ) : !visibleItems.length ? (
         <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
           {t.noRequestsYet}
         </div>
       ) : (
-        items.map((item) => (
+        visibleItems.map((item) => (
           <div
             key={item.id}
             style={{
