@@ -171,6 +171,7 @@ export const he = {
       notFound: "❌ לא נמצאה קבלה:",
       foundReceipts: "✅ נמצאו {count} קבלות",
       allRecentReceipts: "📋 כל הקבלות האחרונות",
+      allMonths: "📅 כל החודשים",
     },
     settings: {
       title: "⚙️ הגדרות מערכת",
