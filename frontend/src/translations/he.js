@@ -472,8 +472,8 @@ export const he = {
 
   customer: {
     browse: {
-      searchPlaceholder: "שם, קוד, חיפוש לפי תמונה...",
-      searchByImage: "חיפוש לפי תמונה",
+      searchPlaceholder: "חיפוש לפי שם או ברקוד...",
+      scanTooltip: "סריקת ברקוד",
       genderAll: "לכולם",
       allCategories: "כל הקטגוריות",
       allSeasons: "כל העונות",
@@ -756,6 +756,7 @@ export const he = {
       tryOnErrorUploadImage: "יש להעלות תמונה לפני הפעלת נסה עליי",
       tryOnErrorProductNotFound: "המוצר שנבחר לא נמצא",
       tryOnErrorGeneric: "אירעה שגיאה בהפעלת נסה עליי",
+      barcodeNotFound: '⚠️ מוצר עם הקוד "{code}" לא נמצא',
       confirmGoHome: "לחזור לדף הבית?",
       confirmGuestAction: "לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?",
       confirmLogout: "להתנתק?",

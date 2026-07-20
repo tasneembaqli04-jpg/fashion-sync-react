@@ -428,8 +428,8 @@ export const en = {
 
   customer: {
     browse: {
-      searchPlaceholder: "Name, code, search by image...",
-      searchByImage: "Search by image",
+      searchPlaceholder: "Search by name or barcode...",
+      scanTooltip: "Scan barcode",
       genderAll: "Everyone",
       allCategories: "All Categories",
       allSeasons: "All Seasons",
@@ -712,6 +712,7 @@ export const en = {
       tryOnErrorUploadImage: "Please upload an image before using Try It On",
       tryOnErrorProductNotFound: "The selected product was not found",
       tryOnErrorGeneric: "An error occurred while running Try It On",
+      barcodeNotFound: '⚠️ Product with code "{code}" not found',
       confirmGoHome: "Go back to home page?",
       confirmGuestAction: "You need to log in for this action.\nGo to the login page?",
       confirmLogout: "Log out?",
