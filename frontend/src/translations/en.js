@@ -171,6 +171,7 @@ export const en = {
       notFound: "❌ Receipt not found:",
       foundReceipts: "✅ Found {count} receipts",
       allRecentReceipts: "📋 All Recent Receipts",
+      allMonths: "📅 All months",
     },
     settings: {
       title: "⚙️ System Settings",

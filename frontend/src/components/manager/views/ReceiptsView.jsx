@@ -74,11 +74,35 @@ function ReceiptBlock({ receipt, locale }) {
   );
 }
 
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export default function ReceiptsView({ receipts }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.receipts;
   const locale = lang === "en" ? "en-US" : "he-IL";
+  const MONTH_NAMES = dict.monthNames;
   const [query, setQuery] = useState("");
+  const [monthFilter, setMonthFilter] = useState("all");
+
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return dict.customer.orders.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
+
+  const availableMonths = useMemo(() => {
+    const keys = new Set(receipts.map((r) => getMonthKey(r.date)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [receipts]);
+
+  const filteredReceipts = useMemo(() => {
+    if (monthFilter === "all") return receipts;
+    return receipts.filter((r) => getMonthKey(r.date) === monthFilter);
+  }, [receipts, monthFilter]);
 
   const matches = useMemo(() => {
     if (!query.trim()) return [];
@@ -146,10 +170,30 @@ export default function ReceiptsView({ receipts }) {
       <div className={styles.card}>
         <div className={styles.cardHd}>
           <div className={styles.cardTitle}>{t.allRecentReceipts}</div>
+
+          <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "9px",
+              border: "1px solid var(--border)",
+              background: "var(--surface2)",
+              color: "var(--text)",
+              fontSize: "0.85rem",
+            }}
+          >
+            <option value="all">{t.allMonths}</option>
+            {availableMonths.map((key) => (
+              <option key={key} value={key}>
+                {getMonthLabel(key)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className={styles.cardBody}>
-          {receipts
+          {filteredReceipts
             .slice()
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map((receipt) => (
