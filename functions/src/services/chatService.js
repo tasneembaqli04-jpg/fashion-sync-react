@@ -1,5 +1,4 @@
-const { ai } = require("../config/gemini");
-
+const {getGeminiClient} = require("../config/gemini");
 const MODEL_NAME = "gemini-flash-latest";
 
 const SYSTEM_INSTRUCTION = `
@@ -24,6 +23,7 @@ async function generateChatReply({ message, history = [] }) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
+  const ai = getGeminiClient();
 
   const contents = [];
 
@@ -66,6 +66,7 @@ async function streamChatReply({ message, history = [], onChunk }) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
+  const ai = getGeminiClient();
 
   const contents = [];
 
