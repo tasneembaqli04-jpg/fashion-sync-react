@@ -12,7 +12,7 @@ export const globalDialog = {
 };
 
 export function DialogProvider({ children }) {
-  const { t: dict } = useLanguage();
+  const { lang, t: dict } = useLanguage();
   const [dialogState, setDialogState] = useState(null);
 
   const alertDialog = useCallback((message, options = {}) => {
@@ -70,7 +70,7 @@ export function DialogProvider({ children }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            dir="rtl"
+            dir={lang === "he" ? "rtl" : "ltr"}
             style={{
               background: "var(--surface, #0f1018)",
               border: "1px solid var(--border-gold, rgba(201,168,76,0.2))",

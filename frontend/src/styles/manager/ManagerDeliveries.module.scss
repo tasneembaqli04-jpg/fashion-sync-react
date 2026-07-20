@@ -89,6 +89,9 @@
   align-items: flex-start;
   margin: 0.2rem 0 0.6rem;
   padding: 0 5%;
+}
+
+:global(html:dir(rtl)) .deliveryTimeline {
   direction: rtl;
 }
 
@@ -107,6 +110,9 @@
   z-index: 1;
   width: 120px;
   text-align: center;
+}
+
+:global(html:dir(rtl)) .deliveryStep {
   direction: rtl;
 }
 
@@ -169,6 +175,9 @@
   justify-content: flex-start;
   gap: 0.6rem;
   width: 100%;
+}
+
+:global(html:dir(rtl)) .deliveryItemRow {
   direction: rtl;
 }
 
