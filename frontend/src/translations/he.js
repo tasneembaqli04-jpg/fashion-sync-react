@@ -578,7 +578,7 @@ export const he = {
         chooseShippingTitle: "🚚 בחר שיטת משלוח",
         free: "חינם",
         deliveryEstimateTitle: "📅 תאריך אספקה משוער",
-        backButton: "← חזרה",
+        backButton: "→ חזרה",
         continueButton: "המשך לתשלום ←",
       },
 
@@ -643,7 +643,7 @@ export const he = {
         giftCardCodeLabel: "🎁 קוד כרטיס המתנה:",
         payInStore: "לתשלום בחנות",
         totalPaid: 'סה"כ ששולם',
-        backToStore: "← חזרה לחנות",
+        backToStore: "→ חזרה לחנות",
         printReceipt: "🖨️ הדפס קבלה",
       },
     },
@@ -746,6 +746,33 @@ export const he = {
       confirmGoHome: "לחזור לדף הבית?",
       confirmGuestAction: "לפעולה זו עליך להתחבר.\nלעבור לדף הכניסה?",
       confirmLogout: "להתנתק?",
+    },
+
+    shareModal: {
+      title: "📤 שתף פריט",
+      whatsapp: "WhatsApp",
+      email: "אימייל",
+      copyLink: "העתק קישור",
+      copiedMessage: "✅ הקישור הועתק!",
+    },
+
+    tryOn: {
+      title: "📸 נסה עליי",
+      uploadSectionTitle: "🤳 העלאת תמונה",
+      uploadText: "העלה תמונה שלך",
+      uploadedAlt: "תמונה שהועלתה",
+      changeImage: "🔁 החלף תמונה",
+      deleteImage: "🗑️ מחק תמונה",
+      processingButton: "⏳ מעבד תמונה...",
+      activateButton: "✨ הפעל נסה עליי",
+      resultTitle: "🪞 התוצאה",
+      generatingResult: "⏳ יוצר את תמונת ה־Try-On...",
+      resultAlt: "תוצאת נסה עליי",
+      saveImage: "💾 שמור תמונה",
+      shareImage: "🔗 שתף",
+      emptyResultPlaceholder: "העלה תמונה ולחץ על „הפעל נסה עליי”",
+      shareTitleNative: "FashionSync - נסה עליי",
+      shareTextNative: "שיתוף תמונת נסה עליי",
     },
 
     misc: {

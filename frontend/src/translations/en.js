@@ -59,7 +59,7 @@ export const en = {
       needsAttention: "Needs attention",
       highDemand: "High Demand",
       activeAlerts: "🔔 Active Alerts",
-      seeAll: "All ←",
+      seeAll: "All →",
       noActiveAlerts: "✅ No active alerts",
       weeklySales: "📊 Weekly Sales",
       perDay: "₪ per day",
@@ -303,7 +303,7 @@ export const en = {
       costLabel: "Product Cost (₪)",
       onSaleCheckbox: "🏷️ Product on Sale",
       discountPercentLabel: "Discount Percentage (%)",
-      priceInfo: "Regular price (actual, before sale): ₪{regular} ← Sale price: ₪{sale}",
+      priceInfo: "Regular price (actual, before sale): ₪{regular} → Sale price: ₪{sale}",
       autoRevertNote: "ⓘ As soon as you cancel the sale, the price will automatically revert to ₪{regular}.",
       trendingCheckbox: "🔥 Trending Product",
       minStockLabel: "Minimum Alert Threshold",
@@ -527,7 +527,7 @@ export const en = {
         city: "City",
         zip: "ZIP code",
         notes: "Delivery notes (optional)",
-        continueButton: "Continue to shipping ←",
+        continueButton: "Continue to shipping →",
       },
 
       step2: {
@@ -535,7 +535,7 @@ export const en = {
         free: "Free",
         deliveryEstimateTitle: "📅 Estimated Delivery Date",
         backButton: "← Back",
-        continueButton: "Continue to payment ←",
+       continueButton: "Continue to payment →",
       },
 
       priceBox: {
@@ -704,6 +704,33 @@ export const en = {
       confirmLogout: "Log out?",
     },
 
+    shareModal: {
+      title: "📤 Share Item",
+      whatsapp: "WhatsApp",
+      email: "Email",
+      copyLink: "Copy Link",
+      copiedMessage: "✅ Link copied!",
+    },
+
+    tryOn: {
+      title: "📸 Try It On",
+      uploadSectionTitle: "🤳 Upload Photo",
+      uploadText: "Upload your photo",
+      uploadedAlt: "Uploaded photo",
+      changeImage: "🔁 Change Photo",
+      deleteImage: "🗑️ Delete Photo",
+      processingButton: "⏳ Processing photo...",
+      activateButton: "✨ Run Try It On",
+      resultTitle: "🪞 Result",
+      generatingResult: "⏳ Generating the Try-On image...",
+      resultAlt: "Try-on result",
+      saveImage: "💾 Save Image",
+      shareImage: "🔗 Share",
+      emptyResultPlaceholder: "Upload a photo and click “Run Try It On”",
+      shareTitleNative: "FashionSync - Try It On",
+      shareTextNative: "Sharing a Try It On photo",
+    },
+
     misc: {
       shareMessageTemplate: "Check out {name} on FashionSync – ₪{price}",
       shareEmailSubjectPrefix: "Check out ",
@@ -726,7 +753,7 @@ export const en = {
       topicChatbot: "💬 Chatbot",
       topicSuggestion: "💡 Suggestion",
       textPlaceholder: "Write any comment... (optional)",
-      submitButton: "Send and proceed to payment ←",
+      submitButton: "Send and proceed to payment →",
       skipButton: "Skip and proceed to payment",
     },
 

@@ -70,7 +70,7 @@
   font-family: "Alef", sans-serif;
   font-size: 0.8rem;
   cursor: pointer;
-  text-align: right;
+  text-align: start;
   transition: all 0.18s;
   position: relative;
   margin-bottom: 0.05rem;
@@ -149,7 +149,7 @@
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    right: 0;
+    inset-inline-end: 0;
     top: 0;
     bottom: 0;
     transform: translateX(0);
