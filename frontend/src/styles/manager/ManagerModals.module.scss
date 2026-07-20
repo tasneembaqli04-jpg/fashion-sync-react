@@ -91,10 +91,13 @@
   padding: 2rem;
   position: relative;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+:global(html:dir(rtl)) .addProductModal {
   direction: ltr;
 }
 
-.addProductModal > * {
+:global(html:dir(rtl)) .addProductModal > * {
   direction: rtl;
 }
 
@@ -294,10 +297,13 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+}
+
+:global(html:dir(rtl)) .detailsModalBox {
   direction: ltr;
 }
 
-.detailsModalBox > * {
+:global(html:dir(rtl)) .detailsModalBox > * {
   direction: rtl;
 }
 

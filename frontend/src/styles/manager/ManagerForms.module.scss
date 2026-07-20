@@ -51,11 +51,11 @@
   margin-bottom: 1rem;
 }
 
-.mtfInput option {
+:global(html:dir(rtl)) .mtfInput option {
   direction: rtl;
 }
 
-select.mtfInput {
+:global(html:dir(rtl)) select.mtfInput {
   direction: rtl;
 }
 
