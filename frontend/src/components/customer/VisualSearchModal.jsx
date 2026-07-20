@@ -16,6 +16,8 @@ export default function VisualSearchModal({
 }) {
   const { alertDialog } = useDialog();
   const { t: dict } = useLanguage();
+  const t = dict.customer.tryOn;
+
   const resultImageUrl =
     tryOnResult?.resultImageUrl ||
     tryOnResult?.imageUrl ||
@@ -49,8 +51,8 @@ export default function VisualSearchModal({
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
-          title: "FashionSync - נסה עליי",
-          text: "שיתוף תמונת נסה עליי",
+          title: t.shareTitleNative,
+          text: t.shareTextNative,
           files: [file],
         });
 
@@ -104,13 +106,13 @@ export default function VisualSearchModal({
               color: "var(--gold)",
             }}
           >
-            📸 נסה עליי
+            {t.title}
           </div>
         </div>
 
         <div className={modalStyles.vsLayout}>
           <div className={modalStyles.card}>
-            <div className={baseStyles.secTitle}>🤳 העלאת תמונה</div>
+            <div className={baseStyles.secTitle}>{t.uploadSectionTitle}</div>
 
             {!tryonSelfie ? (
               <div className={modalStyles.uploadDrop}>
@@ -121,13 +123,13 @@ export default function VisualSearchModal({
                 />
 
                 <div className={modalStyles.uploadIcon}>📸</div>
-                <div className={modalStyles.uploadText}>העלה תמונה שלך</div>
+                <div className={modalStyles.uploadText}>{t.uploadText}</div>
               </div>
             ) : (
               <div style={{ marginTop: "1rem" }}>
                 <img
                   src={tryonSelfie}
-                  alt="תמונה שהועלתה"
+                  alt={t.uploadedAlt}
                   style={{
                     width: "100%",
                     height: "420px",
@@ -152,7 +154,7 @@ export default function VisualSearchModal({
                     className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
                     style={{ cursor: "pointer" }}
                   >
-                    🔁 החלף תמונה
+                    {t.changeImage}
 
                     <input
                       type="file"
@@ -168,7 +170,7 @@ export default function VisualSearchModal({
                     onClick={clearTryonSelfie}
                     disabled={tryOnLoading}
                   >
-                    🗑️ מחק תמונה
+                    {t.deleteImage}
                   </button>
 
                   <button
@@ -177,7 +179,7 @@ export default function VisualSearchModal({
                     onClick={onTryOn}
                     disabled={tryOnLoading}
                   >
-                    {tryOnLoading ? "⏳ מעבד תמונה..." : "✨ הפעל נסה עליי"}
+                    {tryOnLoading ? t.processingButton : t.activateButton}
                   </button>
                 </div>
 
@@ -197,7 +199,7 @@ export default function VisualSearchModal({
           </div>
 
           <div className={modalStyles.card}>
-            <div className={baseStyles.secTitle}>🪞 התוצאה</div>
+            <div className={baseStyles.secTitle}>{t.resultTitle}</div>
 
             <div
               style={{
@@ -208,13 +210,13 @@ export default function VisualSearchModal({
             >
               {tryOnLoading ? (
                 <div style={{ padding: "4rem 1rem" }}>
-                  ⏳ יוצר את תמונת ה־Try-On...
+                  {t.generatingResult}
                 </div>
               ) : resultImageUrl ? (
                 <>
                   <img
                     src={resultImageUrl}
-                    alt="תוצאת נסה עליי"
+                    alt={t.resultAlt}
                     style={{
                       width: "100%",
                       height: "420px",
@@ -240,7 +242,7 @@ export default function VisualSearchModal({
                       className={`${baseStyles.btn} ${baseStyles.btnGold}`}
                       onClick={handleSaveImage}
                     >
-                      💾 שמור תמונה
+                      {t.saveImage}
                     </button>
 
                     <button
@@ -248,12 +250,12 @@ export default function VisualSearchModal({
                       className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
                       onClick={handleShareImage}
                     >
-                      🔗 שתף
+                      {t.shareImage}
                     </button>
                   </div>
                 </>
               ) : (
-                "העלה תמונה ולחץ על „הפעל נסה עליי”"
+                t.emptyResultPlaceholder
               )}
             </div>
           </div>

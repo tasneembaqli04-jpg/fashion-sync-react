@@ -1,4 +1,5 @@
 import styles from "../../styles/manager/ManagerSidebar.module.scss";
+import LanguageToggle from "../common/LanguageToggle";
 import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function ManagerSidebar({
@@ -16,6 +17,11 @@ export default function ManagerSidebar({
   const { t: dict } = useLanguage();
   const t = dict.manager.nav;
 
+  function NavBadge({ count }) {
+    if (!count) return null;
+    return <span className={styles.navBadge}>{count}</span>;
+  }
+
   return (
     <aside
       className={`${styles.sidebar} ${mobileOpen ? "" : styles.mobHidden}`}
@@ -23,6 +29,10 @@ export default function ManagerSidebar({
       <div className={styles.sbBrand}>
         <div className={styles.sbLogo}>FashionSync</div>
         <div className={styles.sbRole}>{t.roleMain}</div>
+      </div>
+
+      <div style={{ padding: "0 0.6rem 0.6rem" }}>
+        <LanguageToggle style={{ width: "100%", justifyContent: "center" }} />
       </div>
 
       <nav className={styles.sbNav}>
@@ -35,7 +45,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("overview")}
         >
           <span className={styles.icon}>📊</span>
-          {t.overview}
+          <span style={{ flex: 1 }}>{t.overview}</span>
         </button>
 
         <button
@@ -45,7 +55,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("inventory")}
         >
           <span className={styles.icon}>👗</span>
-          {t.inventory}
+          <span style={{ flex: 1 }}>{t.inventory}</span>
         </button>
 
         <button
@@ -68,9 +78,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>📦</span>
           <span style={{ flex: 1 }}>{t.customerOrders}</span>
-          {pendingOrdersCount > 0 && (
-            <span className={styles.navBadge}>{pendingOrdersCount}</span>
-          )}
+          <NavBadge count={pendingOrdersCount} />
         </button>
 
         <button
@@ -81,9 +89,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>🚚</span>
           <span style={{ flex: 1 }}>{t.deliveryTracking}</span>
-          {pendingDeliveriesCount > 0 && (
-            <span className={styles.navBadge}>{pendingDeliveriesCount}</span>
-          )}
+          <NavBadge count={pendingDeliveriesCount} />
         </button>
 
         <button
@@ -93,7 +99,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("receipts")}
         >
           <span className={styles.icon}>🧾</span>
-          {t.salesReceipts}
+          <span style={{ flex: 1 }}>{t.salesReceipts}</span>
         </button>
 
         <button
@@ -103,7 +109,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("analytics")}
         >
           <span className={styles.icon}>📉</span>
-          {t.analytics}
+          <span style={{ flex: 1 }}>{t.analytics}</span>
         </button>
 
         <button
@@ -113,7 +119,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("feedback")}
         >
           <span className={styles.icon}>💬</span>
-          {t.customerFeedback}
+          <span style={{ flex: 1 }}>{t.customerFeedback}</span>
         </button>
 
         <button
@@ -124,10 +130,9 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>🔔</span>
           <span style={{ flex: 1 }}>{t.stockRequests}</span>
-          {pendingStockRequestsCount > 0 && (
-            <span className={styles.navBadge}>{pendingStockRequestsCount}</span>
-          )}
+          <NavBadge count={pendingStockRequestsCount} />
         </button>
+
         <button
           className={`${styles.navBtn} ${
             activeView === "coupons" ? styles.active : ""
@@ -135,7 +140,7 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("coupons")}
         >
           <span className={styles.icon}>🎟️</span>
-          {t.coupons}
+          <span style={{ flex: 1 }}>{t.coupons}</span>
         </button>
 
         <div className={styles.sbSec}>{t.sectionSettings}</div>
@@ -147,14 +152,14 @@ export default function ManagerSidebar({
           onClick={() => onChangeView("settings")}
         >
           <span className={styles.icon}>⚙️</span>
-          {t.settings}
+          <span style={{ flex: 1 }}>{t.settings}</span>
         </button>
       </nav>
 
       <div className={styles.sbFooter}>
         <button className={styles.navBtn} onClick={onToggleTheme}>
           <span className={styles.icon}>{theme === "light" ? "☀️" : "🌙"}</span>
-          <span>{t.themeToggle}</span>
+          <span style={{ flex: 1 }}>{t.themeToggle}</span>
         </button>
 
         <button
@@ -163,7 +168,7 @@ export default function ManagerSidebar({
           style={{ color: "var(--red)" }}
         >
           <span className={styles.icon}>🚪</span>
-          {t.logout}
+          <span style={{ flex: 1 }}>{t.logout}</span>
         </button>
       </div>
     </aside>

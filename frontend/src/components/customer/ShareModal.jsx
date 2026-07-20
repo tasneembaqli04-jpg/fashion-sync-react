@@ -1,4 +1,5 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 function WhatsAppIcon() {
   return (
@@ -34,6 +35,9 @@ export default function ShareModal({
   closeShareModal,
   doShare,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.shareModal;
+
   return (
     <div
       className={`${modalStyles.modalWrap} ${open ? modalStyles.open : ""}`}
@@ -52,7 +56,7 @@ export default function ShareModal({
             marginBottom: "0.5rem",
           }}
         >
-          📤 שתף פריט
+          {t.title}
         </div>
 
         <div
@@ -65,17 +69,17 @@ export default function ShareModal({
         <div className={modalStyles.shareOptions}>
           <button className={modalStyles.shareOpt} onClick={() => doShare("whatsapp")}>
             <span className="icon"><WhatsAppIcon /></span>
-            WhatsApp
+            {t.whatsapp}
           </button>
 
           <button className={modalStyles.shareOpt} onClick={() => doShare("email")}>
             <span className="icon"><EmailIcon /></span>
-            אימייל
+            {t.email}
           </button>
 
           <button className={modalStyles.shareOpt} onClick={() => doShare("copy")}>
             <span className="icon"><LinkIcon /></span>
-            העתק קישור
+            {t.copyLink}
           </button>
         </div>
 
@@ -89,7 +93,7 @@ export default function ShareModal({
               fontSize: "0.9rem",
             }}
           >
-            ✅ הקישור הועתק!
+            {t.copiedMessage}
           </div>
         )}
       </div>

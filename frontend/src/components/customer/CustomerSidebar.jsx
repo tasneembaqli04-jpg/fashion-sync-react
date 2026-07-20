@@ -62,10 +62,6 @@ export default function CustomerSidebar({
         <div className={sidebarStyles.brand}>FashionSync</div>
         <div className={sidebarStyles.roleBadge}>{t.roleBadge}</div>
 
-        <div style={{ padding: "0.5rem 0.9rem" }}>
-          <LanguageToggle style={{ width: "100%", justifyContent: "center" }} />
-        </div>
-
         {!isGuest && currentUser ? (
           <div
             className={sidebarStyles.userInfoBar}
@@ -91,6 +87,10 @@ export default function CustomerSidebar({
             </button>
           </div>
         )}
+
+        <div style={{ padding: "0 0 0.6rem" }}>
+          <LanguageToggle style={{ width: "100%", justifyContent: "center" }} />
+        </div>
 
         <button
           className={`${sidebarStyles.navItem} ${

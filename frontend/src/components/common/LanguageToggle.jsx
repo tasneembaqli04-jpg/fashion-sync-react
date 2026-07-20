@@ -28,11 +28,11 @@ export default function LanguageToggle({ style }) {
   }, []);
 
   const baseBtn = {
-    padding: "0.35rem 0.7rem",
-    borderRadius: "7px",
+    padding: "0.3rem 0.6rem",
+    borderRadius: "6px",
     border: "none",
     fontFamily: "Alef, sans-serif",
-    fontSize: "0.78rem",
+    fontSize: "0.72rem",
     fontWeight: 700,
     cursor: "pointer",
     transition: "all 0.15s",
@@ -47,9 +47,9 @@ export default function LanguageToggle({ style }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "0.2rem",
-        padding: "0.2rem",
-        borderRadius: "9px",
+        gap: "0.15rem",
+        padding: "0.15rem",
+        borderRadius: "8px",
         border: `1px solid ${borderColor}`,
         background: containerBg,
         ...style,
