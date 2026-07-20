@@ -27,8 +27,8 @@ export default function CustomerBrowse({
   setCategoryValue,
   setPriceValue,
   setSaleValue,
-  onImageSearchUpload,
   goLogin,
+  onOpenScan,
   setSeasonTab,
   setListMode,
   openCartOrAuth,
@@ -40,7 +40,7 @@ export default function CustomerBrowse({
   openNotifyModal,
   guestPrompt,
 }) {
-  const { t: dict, lang } = useLanguage();
+  const { t: dict } = useLanguage();
   const t = dict.customer.browse;
   const productsStartRef = useRef(null);
   const [showCatalogBanners, setShowCatalogBanners] = useState(true);
@@ -83,31 +83,31 @@ export default function CustomerBrowse({
       <div className={browseStyles.filterBar}>
         <div className={browseStyles.filterLeft}>
           <div className={browseStyles.searchWrap}>
+            <span className={browseStyles.searchIcon}>🔍</span>
             <input
               type="text"
               className={browseStyles.searchInput}
               placeholder={t.searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              style={
-                lang === "en"
-                  ? { paddingLeft: "1rem", paddingRight: "4.6rem" }
-                  : { paddingLeft: "4.6rem", paddingRight: "1rem" }
-              }
             />
-            <label
-              className={browseStyles.searchCameraBtn}
-              title={t.searchByImage}
-              style={lang === "en" ? { right: "0.65rem" } : { left: "0.65rem" }}
+            <button
+              type="button"
+              onClick={onOpenScan}
+              title={t.scanTooltip}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--light-gray)",
+                fontSize: "1rem",
+                padding: "0 0.2rem",
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
             >
               📷
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onImageSearchUpload}
-                style={{ display: "none" }}
-              />
-            </label>
+            </button>
           </div>
         </div>
 

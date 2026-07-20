@@ -51,6 +51,7 @@ import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";
 import CustomerBrowse from "../components/customer/CustomerBrowse";
+import ScanModal from "../components/manager/modals/ScanModal";
 import CustomerWishlist from "../components/customer/CustomerWishlist";
 import CustomerOrders from "../components/customer/CustomerOrders";
 import CustomerLoyalty from "../components/customer/CustomerLoyalty";
@@ -85,6 +86,7 @@ export default function Customer() {
   const [saleValue, setSaleValue] = useState("");
   const [currentSeasonTab, setCurrentSeasonTab] = useState(getCurrentSeason());
   const [currentListMode, setCurrentListMode] = useState("all");
+  const [isScanOpen, setIsScanOpen] = useState(false);
 
   const [chatInput, setChatInput] = useState("");
   const [moreQuestionsOpen, setMoreQuestionsOpen] = useState(false);
@@ -704,6 +706,23 @@ export default function Customer() {
     setVisualOpen(true);
   }
 
+  function handleScanCode(code) {
+    const trimmedCode = code.trim().toUpperCase();
+    const found = products.find((p) => p.code.toUpperCase() === trimmedCode);
+
+    if (!found) {
+      alertDialog(dict.customer.dialogs.barcodeNotFound.replace("{code}", trimmedCode));
+      return;
+    }
+
+    setSearchValue(found.code);
+    setCurrentListMode("all");
+  }
+
+  function openScanModal() {
+    setIsScanOpen(true);
+  }
+
   function closeVisualModal() {
     tryOnAbortRef.current?.abort();
     tryOnAbortRef.current = null;
@@ -981,6 +1000,7 @@ export default function Customer() {
             setPriceValue={setPriceValue}
             setSaleValue={setSaleValue}
             openVisualModal={openVisualModal}
+            onOpenScan={openScanModal}
             goLogin={goLogin}
             filterSaleOnly={() => setCurrentListMode("sale")}
             setSeasonTab={setCurrentSeasonTab}
@@ -1119,6 +1139,12 @@ export default function Customer() {
         tryOnSelfieUpload={tryOnSelfieUpload}
         clearTryonSelfie={clearTryonSelfie}
         onTryOn={handleTryOnRequest}
+      />
+
+      <ScanModal
+        open={isScanOpen}
+        onClose={() => setIsScanOpen(false)}
+        onCodeScanned={handleScanCode}
       />
     </>
   );
