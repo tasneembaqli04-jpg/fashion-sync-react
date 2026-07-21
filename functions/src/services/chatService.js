@@ -1,5 +1,6 @@
 const {getGeminiClient} = require("../config/gemini");
-const MODEL_NAME = "gemini-flash-latest";
+
+const MODEL_NAME = "gemini-3-flash-preview";
 
 const SYSTEM_INSTRUCTION = `
 את/ה "SYNC" - עוזר/ת שירות הלקוחות של FashionSync, חנות בגדים אונליין ישראלית.
@@ -19,35 +20,41 @@ const SYSTEM_INSTRUCTION = `
 לעולם אל תמציא מספרי הזמנה, מחירים ספציפיים למוצר, או פרטים אישיים על לקוחות.
 `.trim();
 
-async function generateChatReply({ message, history = [] }) {
+const GEMINI_CONFIG = {
+  systemInstruction: SYSTEM_INSTRUCTION,
+  temperature: 1,
+  maxOutputTokens: 1024,
+  thinkingConfig: {
+    thinkingLevel: "minimal",
+  },
+};
+
+async function generateChatReply({message, history = []}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
-  const ai = getGeminiClient();
 
+  const ai = getGeminiClient();
   const contents = [];
 
   history.slice(-8).forEach((turn) => {
     if (!turn?.text) return;
+
     contents.push({
       role: turn.role === "bot" ? "model" : "user",
-      parts: [{ text: String(turn.text) }],
+      parts: [{text: String(turn.text)}],
     });
   });
 
   contents.push({
     role: "user",
-    parts: [{ text: message.trim() }],
+    parts: [{text: message.trim()}],
   });
 
   const result = await ai.models.generateContent({
     model: MODEL_NAME,
     contents,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.6,
-      maxOutputTokens: 300,
-    },
+    config: GEMINI_CONFIG,
   });
 
   const reply =
@@ -59,28 +66,35 @@ async function generateChatReply({ message, history = [] }) {
     throw new Error("Empty reply from model");
   }
 
-  return { reply: reply.trim() };
+  return {
+    reply: reply.trim(),
+  };
 }
 
-async function streamChatReply({ message, history = [], onChunk }) {
+async function streamChatReply({message, history = [], onChunk}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
-  const ai = getGeminiClient();
 
+  if (typeof onChunk !== "function") {
+    throw new Error("onChunk callback is required");
+  }
+
+  const ai = getGeminiClient();
   const contents = [];
 
   history.slice(-6).forEach((turn) => {
     if (!turn?.text) return;
+
     contents.push({
       role: turn.role === "bot" ? "model" : "user",
-      parts: [{ text: String(turn.text) }],
+      parts: [{text: String(turn.text)}],
     });
   });
 
   contents.push({
     role: "user",
-    parts: [{ text: message.trim() }],
+    parts: [{text: message.trim()}],
   });
 
   const MAX_ATTEMPTS = 2;
@@ -93,11 +107,7 @@ async function streamChatReply({ message, history = [], onChunk }) {
         ai.models.generateContentStream({
           model: MODEL_NAME,
           contents,
-          config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.6,
-            maxOutputTokens: 220,
-          },
+          config: GEMINI_CONFIG,
         }),
         new Promise((_, reject) =>
           setTimeout(
@@ -125,15 +135,24 @@ async function streamChatReply({ message, history = [], onChunk }) {
         throw new Error("Empty streamed reply from model");
       }
 
+      console.log("FULL GEMINI RESPONSE:");
+      console.log(fullText);
+
       return fullText.trim();
     } catch (err) {
       lastError = err;
+
       const isRetryable =
         err?.status === 503 ||
         err?.status === 429 ||
-        /UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/.test(String(err?.message || ""));
+        /UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/.test(
+          String(err?.message || "")
+        );
 
-      console.error(`streamChatReply attempt ${attempt} failed:`, err?.message || err);
+      console.error(
+        `streamChatReply attempt ${attempt} failed:`,
+        err?.message || err
+      );
 
       if (!isRetryable || attempt === MAX_ATTEMPTS) {
         throw lastError;
