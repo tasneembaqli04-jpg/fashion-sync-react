@@ -1,6 +1,6 @@
-const {ai} = require("../config/gemini");
+const {getGeminiClient} = require("../config/gemini");
 
-const MODEL_NAME = "gemini-flash-latest";
+const MODEL_NAME = "gemini-3-flash-preview";
 
 const INTENTS = Object.freeze({
   PRODUCT_SEARCH: "PRODUCT_SEARCH",
@@ -19,6 +19,25 @@ const INTENTS = Object.freeze({
 
 const INTENT_VALUES = Object.values(INTENTS);
 
+const CATEGORY_VALUES = Object.freeze([
+  "שמלות",
+  "חולצות",
+  "מכנסיים",
+  "נעליים",
+  "עליוניות",
+  "אביזרים",
+]);
+
+const GENDER_VALUES = Object.freeze([
+  "נשים",
+  "גברים",
+]);
+
+const OUTFIT_TYPE_VALUES = Object.freeze([
+  "SINGLE_PRODUCT",
+  "COMPLETE_OUTFIT",
+]);
+
 const INTENT_SCHEMA = {
   type: "object",
   properties: {
@@ -26,60 +45,84 @@ const INTENT_SCHEMA = {
       type: "string",
       enum: INTENT_VALUES,
     },
+
     category: {
       type: ["string", "null"],
-    },
-    productCode: {
-      type: ["string", "null"],
-    },
-    productName: {
-      type: ["string", "null"],
-    },
-    gender: {
-      type: ["string", "null"],
-    },
-    size: {
-      type: ["string", "null"],
-    },
-    color: {
-      type: ["string", "null"],
-    },
-    minPrice: {
-      type: ["number", "null"],
-    },
-    maxPrice: {
-      type: ["number", "null"],
-    },
-    occasion: {
-      type: ["string", "null"],
-    },
-    eventTime: {
-      type: ["string", "null"],
-    },
-    season: {
-      type: ["string", "null"],
-    },
-    style: {
-      type: ["string", "null"],
-    },
-    outfitType: {
-      type: ["string", "null"],
       enum: [
-        "SINGLE_PRODUCT",
-        "COMPLETE_OUTFIT",
+        ...CATEGORY_VALUES,
         null,
       ],
     },
+
+    productCode: {
+      type: ["string", "null"],
+    },
+
+    productName: {
+      type: ["string", "null"],
+    },
+
+    gender: {
+      type: ["string", "null"],
+      enum: [
+        ...GENDER_VALUES,
+        null,
+      ],
+    },
+
+    size: {
+      type: ["string", "null"],
+    },
+
+    color: {
+      type: ["string", "null"],
+    },
+
+    minPrice: {
+      type: ["number", "null"],
+    },
+
+    maxPrice: {
+      type: ["number", "null"],
+    },
+
+    occasion: {
+      type: ["string", "null"],
+    },
+
+    eventTime: {
+      type: ["string", "null"],
+    },
+
+    season: {
+      type: ["string", "null"],
+    },
+
+    style: {
+      type: ["string", "null"],
+    },
+
+    outfitType: {
+      type: ["string", "null"],
+      enum: [
+        ...OUTFIT_TYPE_VALUES,
+        null,
+      ],
+    },
+
     saleOnly: {
       type: "boolean",
     },
+
     inStockOnly: {
       type: "boolean",
     },
+
     confidence: {
       type: "number",
     },
   },
+
   required: [
     "intent",
     "category",
@@ -106,26 +149,229 @@ const INTENT_INSTRUCTION = `
 
 החזר אך ורק מידע מובנה לפי הסכמה שסופקה.
 
-כללים:
-- אל תענה ללקוח ואל תמליץ עדיין על מוצרים.
-- חלץ רק מידע שמופיע בבקשה או נובע ממנה באופן ברור.
+כללי פלט:
+- אל תוסיף משפט פתיחה.
+- אל תענה ישירות ללקוח.
+- אל תמליץ עדיין על מוצרים.
+- אל תשתמש ב-Markdown.
+- אל תעטוף את התוצאה ב-\`\`\`json.
+- התגובה חייבת להתחיל ב-{ ולהסתיים ב-}.
+- אל תוסיף שדות שאינם מופיעים בסכמה.
+
+כללים כלליים:
+- חלץ רק מידע שמופיע בבקשת הלקוח או נובע ממנה באופן ברור.
 - אם מידע אינו ידוע, החזר null.
 - confidence חייב להיות מספר בין 0 ל-1.
 - מחיר הוא בשקלים.
+- אל תמציא פרטי מוצר, מחיר, מלאי, קופון או הזמנה.
 - תקן קוד מוצר לצורה FS-000 כאשר אפשר.
 - gender יהיה "נשים", "גברים" או null.
-- eventTime יכול להיות למשל "בוקר", "צהריים", "ערב" או null.
-- outfitType יהיה COMPLETE_OUTFIT כאשר הלקוח מבקש לוק,
-  הופעה או כמה פריטים מתאימים יחד.
-- outfitType יהיה SINGLE_PRODUCT כאשר הוא מחפש פריט מסוים.
-- שאלות על חתונה, מסיבה, עבודה, ראיון, דייט, חופשה,
-  לימודים או אירוע אחר חייבות לכלול occasion.
-- אם הלקוח מבקש המלצה לפי אירוע או סגנון,
-  השתמש ב-OUTFIT_RECOMMENDATION.
-- אם הוא רק מחפש קטגוריה, צבע, מידה או מחיר,
-  השתמש ב-PRODUCT_SEARCH.
-- אל תמציא פרטי מוצר, מחיר, מלאי או הזמנה.
+
+כללי קטגוריות:
+- category יהיה רק אחד מהערכים הבאים:
+  "שמלות", "חולצות", "מכנסיים",
+  "נעליים", "עליוניות", "אביזרים" או null.
+- תמיד המר את הביטוי של הלקוח לערך הקטגוריה התקני של הקטלוג.
+- אל תחזיר category בלשון יחיד.
+- אל תחזיר קטגוריה שאינה נמצאת ברשימה.
+- אם לא ניתן לקבוע קטגוריה, החזר null.
+
+דוגמאות להמרת קטגוריה:
+- "שמלה", "שמלת ערב", "שמלת קיץ" -> "שמלות".
+- "חולצה", "חולצת טי", "חולצת פולו" -> "חולצות".
+- "מכנס", "מכנסי ג'ינס", "ג'ינס" -> "מכנסיים".
+- "נעל", "סניקרס", "מגף", "סנדל" -> "נעליים".
+- "מעיל", "ז'קט", "ג'קט", "קפוצ'ון",
+  "סווטשירט", "עליונית" -> "עליוניות".
+- "תיק", "ארנק", "שרשרת", "חגורה", "כובע",
+  "משקפיים", "שעון", "צעיף" -> "אביזרים".
+
+כללי כוונה:
+- אם הלקוח שואל האם מוצר, קטגוריה, מידה או צבע
+  קיימים או זמינים במלאי:
+  intent יהיה STOCK_CHECK
+  ו-inStockOnly יהיה true.
+
+- אם הלקוח מבקש לראות או למצוא מוצרים לפי קטגוריה,
+  צבע, מידה או טווח מחיר, בלי לשאול אם הם קיימים:
+  intent יהיה PRODUCT_SEARCH.
+
+- אם הלקוח שואל על מחיר של מוצר מסוים:
+  intent יהיה PRICE_CHECK.
+
+- אם הלקוח שואל על מידע או פרטים של מוצר מסוים:
+  intent יהיה PRODUCT_DETAILS.
+
+- אם הלקוח מחפש מבצעים או מוצרים בהנחה:
+  intent יהיה SALE_SEARCH
+  ו-saleOnly יהיה true.
+
+- אם הלקוח מבקש המלצה לפי אירוע, סגנון או לוק:
+  intent יהיה OUTFIT_RECOMMENDATION.
+
+- שאלות על חתונה, מסיבה, עבודה, ראיון, דייט,
+  חופשה, לימודים או אירוע אחר חייבות לכלול occasion.
+
+- eventTime יכול להיות למשל:
+  "בוקר", "צהריים", "ערב" או null.
+
+כללי outfitType:
+- outfitType יהיה COMPLETE_OUTFIT כאשר הלקוח מבקש:
+  לוק, הופעה מלאה או כמה פריטים שמתאימים יחד.
+
+- outfitType יהיה SINGLE_PRODUCT כאשר הלקוח מחפש:
+  מוצר אחד, קטגוריה אחת או פריט מסוים.
+
+- כאשר outfitType אינו רלוונטי, החזר null.
+
+דוגמאות:
+- "יש שמלה במידה M?"
+  intent: STOCK_CHECK
+  category: "שמלות"
+  size: "M"
+  inStockOnly: true
+  outfitType: SINGLE_PRODUCT
+
+- "תראי לי שמלות במידה M"
+  intent: PRODUCT_SEARCH
+  category: "שמלות"
+  size: "M"
+  inStockOnly: false
+  outfitType: SINGLE_PRODUCT
+
+- "יש ג'ינס לגברים?"
+  intent: STOCK_CHECK
+  category: "מכנסיים"
+  gender: "גברים"
+  inStockOnly: true
+  outfitType: SINGLE_PRODUCT
+
+- "אני צריכה לוק לחתונה בערב"
+  intent: OUTFIT_RECOMMENDATION
+  occasion: "חתונה"
+  eventTime: "ערב"
+  outfitType: COMPLETE_OUTFIT
 `.trim();
+
+/**
+ * Converts a nullable value into a safe string.
+ *
+ * @param {*} value Value to normalize.
+ * @return {string|null} Normalized string or null.
+ */
+function normalizeNullableString(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const normalizedValue = String(value).trim();
+
+  return normalizedValue || null;
+}
+
+/**
+ * Converts a nullable value into a valid number.
+ *
+ * @param {*} value Value to normalize.
+ * @return {number|null} Normalized number or null.
+ */
+function normalizeNullableNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+/**
+ * Extracts the JSON object from a model response.
+ *
+ * @param {string} rawText Raw Gemini response.
+ * @return {string} Extracted JSON text.
+ */
+function extractJsonText(rawText) {
+  const cleanedText = String(rawText || "")
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  const firstBraceIndex = cleanedText.indexOf("{");
+  const lastBraceIndex = cleanedText.lastIndexOf("}");
+
+  if (
+    firstBraceIndex === -1 ||
+    lastBraceIndex === -1 ||
+    lastBraceIndex < firstBraceIndex
+  ) {
+    throw new Error("No JSON object found in Gemini response");
+  }
+
+  return cleanedText.slice(
+    firstBraceIndex,
+    lastBraceIndex + 1
+  );
+}
+
+/**
+ * Validates a value against a fixed list.
+ *
+ * @param {*} value Value returned by Gemini.
+ * @param {string[]} allowedValues Allowed values.
+ * @return {string|null} Valid value or null.
+ */
+function normalizeEnumValue(value, allowedValues) {
+  const normalizedValue = normalizeNullableString(value);
+
+  if (
+    normalizedValue &&
+    allowedValues.includes(normalizedValue)
+  ) {
+    return normalizedValue;
+  }
+
+  return null;
+}
+
+/**
+ * Normalizes a clothing size.
+ *
+ * @param {*} value Size returned by Gemini.
+ * @return {string|null} Normalized size.
+ */
+function normalizeSize(value) {
+  const normalizedValue = normalizeNullableString(value);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  return normalizedValue.toUpperCase();
+}
+
+/**
+ * Normalizes a product code.
+ *
+ * @param {*} value Product code returned by Gemini.
+ * @return {string|null} Normalized product code.
+ */
+function normalizeProductCode(value) {
+  const normalizedValue = normalizeNullableString(value);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const upperValue = normalizedValue.toUpperCase();
+  const digits = upperValue.match(/\d+/)?.[0];
+
+  if (!digits) {
+    return upperValue;
+  }
+
+  return `FS-${digits.padStart(3, "0")}`;
+}
 
 /**
  * Validates and normalizes the parsed intent.
@@ -134,33 +380,73 @@ const INTENT_INSTRUCTION = `
  * @return {object} Safe normalized intent.
  */
 function normalizeIntent(parsed) {
-  const intent = INTENT_VALUES.includes(parsed?.intent) ?
-    parsed.intent :
-    INTENTS.GENERAL_CHAT;
+  const normalizedIntent =
+    INTENT_VALUES.includes(parsed?.intent) ?
+      parsed.intent :
+      INTENTS.GENERAL_CHAT;
 
   const confidence = Number(parsed?.confidence);
 
   return {
-    intent,
-    category: parsed?.category || null,
-    productCode: parsed?.productCode || null,
-    productName: parsed?.productName || null,
-    gender: parsed?.gender || null,
-    size: parsed?.size || null,
-    color: parsed?.color || null,
-    minPrice: Number.isFinite(Number(parsed?.minPrice)) ?
-      Number(parsed.minPrice) :
-      null,
-    maxPrice: Number.isFinite(Number(parsed?.maxPrice)) ?
-      Number(parsed.maxPrice) :
-      null,
-    occasion: parsed?.occasion || null,
-    eventTime: parsed?.eventTime || null,
-    season: parsed?.season || null,
-    style: parsed?.style || null,
-    outfitType: parsed?.outfitType || null,
+    intent: normalizedIntent,
+
+    category: normalizeEnumValue(
+      parsed?.category,
+      CATEGORY_VALUES
+    ),
+
+    productCode: normalizeProductCode(
+      parsed?.productCode
+    ),
+
+    productName: normalizeNullableString(
+      parsed?.productName
+    ),
+
+    gender: normalizeEnumValue(
+      parsed?.gender,
+      GENDER_VALUES
+    ),
+
+    size: normalizeSize(parsed?.size),
+
+    color: normalizeNullableString(
+      parsed?.color
+    ),
+
+    minPrice: normalizeNullableNumber(
+      parsed?.minPrice
+    ),
+
+    maxPrice: normalizeNullableNumber(
+      parsed?.maxPrice
+    ),
+
+    occasion: normalizeNullableString(
+      parsed?.occasion
+    ),
+
+    eventTime: normalizeNullableString(
+      parsed?.eventTime
+    ),
+
+    season: normalizeNullableString(
+      parsed?.season
+    ),
+
+    style: normalizeNullableString(
+      parsed?.style
+    ),
+
+    outfitType: normalizeEnumValue(
+      parsed?.outfitType,
+      OUTFIT_TYPE_VALUES
+    ),
+
     saleOnly: Boolean(parsed?.saleOnly),
+
     inStockOnly: Boolean(parsed?.inStockOnly),
+
     confidence: Number.isFinite(confidence) ?
       Math.min(Math.max(confidence, 0), 1) :
       0,
@@ -168,35 +454,86 @@ function normalizeIntent(parsed) {
 }
 
 /**
+ * Converts conversation history into Gemini contents.
+ *
+ * @param {Array} history Previous conversation turns.
+ * @param {string} message Current customer message.
+ * @return {Array} Gemini contents.
+ */
+function buildContents(history, message) {
+  const safeHistory = Array.isArray(history) ?
+    history
+      .filter((turn) =>
+        turn &&
+        typeof turn.text === "string" &&
+        turn.text.trim()
+      )
+      .slice(-8) :
+    [];
+
+  return [
+    ...safeHistory.map((turn) => ({
+      role:
+        turn.role === "bot" ||
+        turn.role === "model" ?
+          "model" :
+          "user",
+
+      parts: [
+        {
+          text: turn.text.trim(),
+        },
+      ],
+    })),
+
+    {
+      role: "user",
+      parts: [
+        {
+          text: message.trim(),
+        },
+      ],
+    },
+  ];
+}
+
+/**
  * Uses Gemini to classify the customer request.
  *
  * @param {object} options Classification options.
  * @param {string} options.message Customer message.
+ * @param {Array} options.history Previous conversation turns.
  * @return {Promise<object>} Structured customer intent.
  */
-async function detectChatIntent({message}) {
-  if (!message || typeof message !== "string" || !message.trim()) {
+async function detectChatIntent({
+  message,
+  history = [],
+}) {
+  if (
+    !message ||
+    typeof message !== "string" ||
+    !message.trim()
+  ) {
     throw new Error("Message is required");
   }
 
+  const ai = getGeminiClient();
+  const contents = buildContents(history, message);
+
   const result = await ai.models.generateContent({
     model: MODEL_NAME,
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: message.trim(),
-          },
-        ],
-      },
-    ],
+    contents,
+
     config: {
       systemInstruction: INTENT_INSTRUCTION,
       responseMimeType: "application/json",
       responseJsonSchema: INTENT_SCHEMA,
-      temperature: 0.1,
-      maxOutputTokens: 350,
+      temperature: 0,
+      maxOutputTokens: 1024,
+
+      thinkingConfig: {
+        thinkingLevel: "minimal",
+      },
     },
   });
 
@@ -212,13 +549,28 @@ async function detectChatIntent({message}) {
   let parsed;
 
   try {
-    parsed = JSON.parse(rawText);
+    const jsonText = extractJsonText(rawText);
+    parsed = JSON.parse(jsonText);
   } catch (error) {
     console.error("Invalid intent JSON:", rawText);
-    throw new Error("Invalid intent response from Gemini");
+    console.error(
+      "Intent parsing error:",
+      error?.message || error
+    );
+
+    throw new Error(
+      "Invalid intent response from Gemini"
+    );
   }
 
-  return normalizeIntent(parsed);
+  const normalizedIntent = normalizeIntent(parsed);
+
+  console.log(
+    "DETECTED CHAT INTENT:",
+    normalizedIntent
+  );
+
+  return normalizedIntent;
 }
 
 module.exports = {
