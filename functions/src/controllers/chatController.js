@@ -1,8 +1,10 @@
-const { streamChatReply } = require("../services/chatService");
+const {
+  handleChatMessage,
+} = require("../services/chatOrchestratorService");
 
 async function chatController(request, response) {
   try {
-    const { message, history } = request.body || {};
+    const {message, history} = request.body || {};
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return response.status(400).json({
@@ -13,7 +15,7 @@ async function chatController(request, response) {
 
     response.setHeader("Content-Type", "text/plain; charset=utf-8");
 
-    await streamChatReply({
+    await handleChatMessage({
       message,
       history: Array.isArray(history) ? history : [],
       onChunk: (text) => {

@@ -135,9 +135,7 @@ async function streamChatReply({message, history = [], onChunk}) {
         throw new Error("Empty streamed reply from model");
       }
 
-      console.log("FULL GEMINI RESPONSE:");
-      console.log(fullText);
-
+   
       return fullText.trim();
     } catch (err) {
       lastError = err;
