@@ -37,6 +37,11 @@ const OUTFIT_TYPE_VALUES = Object.freeze([
   "SINGLE_PRODUCT",
   "COMPLETE_OUTFIT",
 ]);
+const CONVERSATION_ACTION_VALUES = Object.freeze([
+  "CONTINUE",
+  "RESET",
+  "RELATED_SEARCH",
+]);
 
 const INTENT_SCHEMA = {
   type: "object",
@@ -44,6 +49,19 @@ const INTENT_SCHEMA = {
     intent: {
       type: "string",
       enum: INTENT_VALUES,
+    },
+
+    conversationAction: {
+      type: "string",
+      enum: CONVERSATION_ACTION_VALUES,
+    },
+
+    needsClarification: {
+      type: "boolean",
+    },
+
+    clarificationQuestion: {
+      type: ["string", "null"],
     },
 
     category: {
@@ -125,6 +143,9 @@ const INTENT_SCHEMA = {
 
   required: [
     "intent",
+    "conversationAction",
+    "needsClarification",
+    "clarificationQuestion",
     "category",
     "productCode",
     "productName",
@@ -166,6 +187,89 @@ const INTENT_INSTRUCTION = `
 - אל תמציא פרטי מוצר, מחיר, מלאי, קופון או הזמנה.
 - תקן קוד מוצר לצורה FS-000 כאשר אפשר.
 - gender יהיה "נשים", "גברים" או null.
+
+כללי הקשר שיחה:
+
+החזר conversationAction לפי משמעות ההודעה הנוכחית ביחס להיסטוריה.
+
+- CONTINUE:
+  כאשר הלקוחה מוסיפה תנאי, הבהרה או פרט לאותו חיפוש.
+  לדוגמה:
+  "באדום?"
+  "עד 300 שקל?"
+  "במידה M?"
+  "ולגברים?"
+
+- RESET:
+  כאשר הלקוחה מתחילה חיפוש חדש שאינו תלוי במוצר או בחיפוש הקודם.
+  לדוגמה:
+  "עכשיו אני מחפשת נעליים שחורות"
+  "עזבי את השמלות, תראי לי תיקים"
+  "בואי נחפש משהו אחר"
+
+- RELATED_SEARCH:
+  כאשר הלקוחה מחפשת מוצר נוסף שצריך להתאים למוצר או ללוק הקודם.
+  לדוגמה:
+  "איזה נעליים יתאימו לשמלה הזאת?"
+  "תמצאי לי תיק שילך עם הלוק"
+  "איזו עליונית מתאימה לזה?"
+
+כאשר conversationAction הוא CONTINUE:
+- השתמש בהיסטוריה כדי להשלים שדות חסרים.
+- שמור תנאים קודמים שרלוונטיים לחיפוש הנוכחי.
+
+כאשר conversationAction הוא RESET:
+- אל תעתיק תנאים מהחיפוש הקודם.
+- חלץ רק מידע מההודעה החדשה.
+- שדות שלא מופיעים בהודעה החדשה יהיו null או false לפי הסכמה.
+
+כאשר conversationAction הוא RELATED_SEARCH:
+- שמור את ההקשר של המוצר או הלוק הקודם לצורך התאמה.
+- category צריך לייצג את הקטגוריה החדשה שהלקוחה מחפשת.
+- אין להעתיק אוטומטית מידה, צבע או מחיר של המוצר הקודם לקטגוריה החדשה, אלא אם הלקוחה ביקשה זאת במפורש.
+
+כללי שאלת הבהרה:
+
+כאשר הלקוחה מבקשת התאמה, המלצת לוק או מוצר משלים,
+אבל לא ברור איזה סוג מוצר היא רוצה למצוא:
+
+- needsClarification יהיה true.
+- clarificationQuestion יכיל שאלה אחת קצרה וטבעית בעברית.
+- אל תנחש קטגוריית מוצר.
+- category יהיה null.
+- אל תחזיר את כל הקטלוג.
+
+דוגמה:
+
+הלקוחה:
+"יש משהו שמתאים לנעליים השחורות?"
+
+החזר:
+intent="OUTFIT_RECOMMENDATION"
+conversationAction="RELATED_SEARCH"
+needsClarification=true
+clarificationQuestion="בשמחה! איזה סוג פריט תרצי להתאים לנעליים השחורות — שמלה, תיק, מכנסיים או לוק מלא?"
+category=null
+
+כאשר הלקוחה כבר מציינת את סוג המוצר:
+
+"אני רוצה תיק שיתאים לנעליים השחורות"
+
+החזר:
+needsClarification=false
+clarificationQuestion=null
+category="תיקים"
+
+כאשר הלקוחה עונה על שאלת הבהרה בהודעה קצרה, למשל:
+"שמלה"
+
+השתמש בהיסטוריית השיחה כדי להבין שזו תשובה לשאלה הקודמת:
+needsClarification=false
+conversationAction="RELATED_SEARCH"
+category="שמלות"
+
+אם אין היסטוריה קודמת:
+- conversationAction יהיה RESET.
 
 כללי קטגוריות:
 - category יהיה רק אחד מהערכים הבאים:
@@ -389,6 +493,21 @@ function normalizeIntent(parsed) {
 
   return {
     intent: normalizedIntent,
+    conversationAction:
+      normalizeEnumValue(
+      parsed?.conversationAction,
+      CONVERSATION_ACTION_VALUES
+    ) || "RESET",
+
+    needsClarification:
+      parsed?.needsClarification === true,
+
+    clarificationQuestion:
+      parsed?.needsClarification === true
+        ? normalizeNullableString(
+        parsed?.clarificationQuestion
+      )
+      : null,
 
     category: normalizeEnumValue(
       parsed?.category,
@@ -565,10 +684,7 @@ async function detectChatIntent({
 
   const normalizedIntent = normalizeIntent(parsed);
 
-  console.log(
-    "DETECTED CHAT INTENT:",
-    normalizedIntent
-  );
+
 
   return normalizedIntent;
 }
