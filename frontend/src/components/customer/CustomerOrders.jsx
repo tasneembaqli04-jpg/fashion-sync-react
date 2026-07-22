@@ -9,9 +9,10 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function CustomerOrders({ show, orders = [] }) {
+export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.orders;
+  const rt = dict.customer.returns;
   const STATUS_LABELS = dict.orderStatusLabels;
   const MONTH_NAMES = dict.monthNames;
 
@@ -81,6 +82,12 @@ export default function CustomerOrders({ show, orders = [] }) {
   }, [monthFilteredOrders]);
 
   if (!show) return null;
+
+  function getReturnRequest(orderId, itemCode) {
+    return returnRequests.find(
+      (r) => r.orderId === orderId && r.itemCode === itemCode
+    );
+  }
 
   return (
     <div>
@@ -171,12 +178,71 @@ export default function CustomerOrders({ show, orders = [] }) {
               </div>
 
               <div className={modalStyles.orderItems}>
-                {order.items.map((item, index) => (
-                  <span key={index}>
-                    {item.name} ×{item.qty}
-                    {index < order.items.length - 1 ? ", " : ""}
-                  </span>
-                ))}
+                {status === 3
+                  ? order.items.map((item, index) => {
+                      const request = getReturnRequest(order.id, item.code);
+
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "0.6rem",
+                            padding: "0.4rem 0",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <span>
+                            {item.name} ×{item.qty}
+                          </span>
+
+                          {request ? (
+                            <span
+                              style={{
+                                fontSize: "0.78rem",
+                                color:
+                                  request.status === "approved"
+                                    ? "var(--green)"
+                                    : request.status === "rejected"
+                                    ? "var(--red)"
+                                    : "var(--gold)",
+                              }}
+                            >
+                              {request.status === "approved"
+                                ? rt.statusApproved
+                                : request.status === "rejected"
+                                ? rt.statusRejected
+                                : rt.alreadyRequested}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onRequestReturn?.(order, item)}
+                              style={{
+                                background: "none",
+                                border: "1px solid var(--border)",
+                                borderRadius: "8px",
+                                padding: "0.25rem 0.6rem",
+                                fontSize: "0.78rem",
+                                color: "var(--muted)",
+                                cursor: "pointer",
+                                fontFamily: "Alef, sans-serif",
+                              }}
+                            >
+                              {rt.requestButton}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  : order.items.map((item, index) => (
+                      <span key={index}>
+                        {item.name} ×{item.qty}
+                        {index < order.items.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
               </div>
 
               <div className={modalStyles.orderTimeline}>
