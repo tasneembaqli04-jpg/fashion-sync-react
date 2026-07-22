@@ -53,6 +53,11 @@ import CustomerChat from "../components/customer/CustomerChat";
 import CustomerBrowse from "../components/customer/CustomerBrowse";
 import CustomerWishlist from "../components/customer/CustomerWishlist";
 import CustomerOrders from "../components/customer/CustomerOrders";
+import ReturnRequestModal from "../components/customer/ReturnRequestModal";
+import {
+  requestReturn,
+  getReturnRequestsByUser,
+} from "../services/returns/returnsService";
 import CustomerLoyalty from "../components/customer/CustomerLoyalty";
 import CustomerGiftCard from "../components/customer/CustomerGiftCard";
 import CustomerPolicy from "../components/customer/CustomerPolicy";
@@ -140,12 +145,16 @@ export default function Customer() {
   const [giftCheckCode, setGiftCheckCode] = useState("");
   const [giftCheckResult, setGiftCheckResult] = useState(null);
   const [giftCheckError, setGiftCheckError] = useState("");
+  const [returnRequests, setReturnRequests] = useState([]);
+  const [returnModalItem, setReturnModalItem] = useState(null);
+  const [returnModalOrder, setReturnModalOrder] = useState(null);
 
   useEffect(() => {
     if (!currentUser?.email) {
       setOrders([]);
       setLoyaltyPoints(0);
       setRawStockAlerts([]);
+      setReturnRequests([]);
       return;
     }
 
@@ -154,6 +163,12 @@ export default function Customer() {
     getOrdersByUser(currentUser.email).then((userOrders) => {
       if (!cancelled) {
         setOrders(userOrders.slice().reverse());
+      }
+    });
+
+    getReturnRequestsByUser(currentUser.email).then((requests) => {
+      if (!cancelled) {
+        setReturnRequests(requests);
       }
     });
 
@@ -922,6 +937,38 @@ export default function Customer() {
     doLogoutFn(setCart, dict.customer.dialogs);
   }
 
+  function openReturnRequestModal(order, item) {
+    setReturnModalOrder(order);
+    setReturnModalItem(item);
+  }
+
+  function closeReturnRequestModal() {
+    setReturnModalOrder(null);
+    setReturnModalItem(null);
+  }
+
+  async function submitReturnRequest({ reason, note }) {
+    if (!returnModalOrder || !returnModalItem) return;
+
+    await requestReturn({
+      orderDocId: returnModalOrder.docId,
+      orderId: returnModalOrder.id,
+      itemCode: returnModalItem.code,
+      itemName: returnModalItem.name,
+      itemImg: returnModalItem.img,
+      qty: returnModalItem.qty,
+      customerEmail: currentUser?.email || "",
+      customerName: currentUser?.name || "",
+      reason,
+      note,
+    });
+
+    const updated = await getReturnRequestsByUser(currentUser.email);
+    setReturnRequests(updated);
+    closeReturnRequestModal();
+    alertDialog(dict.customer.returns.submitSuccess);
+  }
+
   function guestPrompt() {
     return guestPromptFn(dict.customer.dialogs);
   }
@@ -1084,7 +1131,12 @@ export default function Customer() {
           guestPrompt={guestPrompt}
         />
 
-        <CustomerOrders show={activePanel === "orders"} orders={orders} />
+        <CustomerOrders
+          show={activePanel === "orders"}
+          orders={orders}
+          returnRequests={returnRequests}
+          onRequestReturn={openReturnRequestModal}
+        />
 
         <CustomerLoyalty
           show={activePanel === "loyalty"}
@@ -1196,6 +1248,12 @@ export default function Customer() {
         onTryOn={handleTryOnRequest}
       />
 
-      </>
+      <ReturnRequestModal
+        open={!!returnModalItem}
+        item={returnModalItem}
+        onClose={closeReturnRequestModal}
+        onSubmit={submitReturnRequest}
+      />
+    </>
   );
 }

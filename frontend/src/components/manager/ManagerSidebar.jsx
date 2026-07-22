@@ -135,6 +135,16 @@ export default function ManagerSidebar({
 
         <button
           className={`${styles.navBtn} ${
+            activeView === "returns" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("returns")}
+        >
+          <span className={styles.icon}>↩️</span>
+          <span style={{ flex: 1 }}>{t.returnRequests}</span>
+        </button>
+
+        <button
+          className={`${styles.navBtn} ${
             activeView === "coupons" ? styles.active : ""
           }`}
           onClick={() => onChangeView("coupons")}
