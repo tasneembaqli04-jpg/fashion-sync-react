@@ -378,48 +378,123 @@ export default function Customer() {
     const text = (forcedText ?? chatInput).trim();
     if (!text) return;
 
-    setChatMessages((prev) => [...prev, { type: "user", html: text }]);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        type: "user",
+        html: text,
+      },
+    ]);
+
     setChatInput("");
     setIsChatTyping(true);
 
-    const history = chatMessages.map((m) => ({
-      role: m.type === "user" ? "user" : "bot",
-      text: m.html,
+    const history = chatMessages.map((message) => ({
+      role: message.type === "user" ? "user" : "bot",
+      text: message.html || "",
     }));
 
     let botMessageStarted = false;
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 30000);
 
     try {
-      await requestChatReplyStream({
+      const result = await requestChatReplyStream({
         message: text,
         history,
         signal: controller.signal,
+
         onChunk: (fullTextSoFar) => {
           if (!botMessageStarted) {
             botMessageStarted = true;
             setIsChatTyping(false);
+
             setChatMessages((prev) => [
               ...prev,
-              { type: "bot", html: fullTextSoFar },
+              {
+                type: "bot",
+                html: fullTextSoFar,
+              },
             ]);
           } else {
             setChatMessages((prev) => {
               const next = [...prev];
+
               next[next.length - 1] = {
                 type: "bot",
                 html: fullTextSoFar,
               };
+
               return next;
             });
           }
         },
       });
+
+      if (
+        result?.responseMode === "IMAGE" &&
+        result?.imageGenerated === true &&
+        result?.image?.dataUrl
+      ) {
+        setIsChatTyping(false);
+
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            type: "bot",
+            html: "הנה המחשת הלוק שביקשת:",
+            imageUrl: result.image.dataUrl,
+            imageMimeType: result.image.mimeType || "image/png",
+            products: result.products || [],
+          },
+        ]);
+
+        return;
+      }
+
+      if (
+        result?.responseMode === "TEXT" &&
+        result?.text &&
+        !botMessageStarted
+      ) {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            type: "bot",
+            html: result.text,
+          },
+        ]);
+      }
     } catch (err) {
-      console.error("Real chat API failed, using fallback reply:", err);
+      console.error(
+        "Real chat API failed, using fallback reply:",
+        err
+      );
+
+      if (err?.name === "AbortError") {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            type: "bot",
+            html: "הבקשה לקחה יותר מדי זמן. נסי שוב.",
+          },
+        ]);
+
+        return;
+      }
+
       const fallbackReply = getReply(text, products);
-      setChatMessages((prev) => [...prev, { type: "bot", html: fallbackReply }]);
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          html: fallbackReply,
+        },
+      ]);
     } finally {
       clearTimeout(timeoutId);
       setIsChatTyping(false);

@@ -1,7 +1,10 @@
 const {getGeminiClient} = require("../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
-
+const RESPONSE_MODE_VALUES = Object.freeze([
+  "TEXT",
+  "IMAGE",
+]);
 const INTENTS = Object.freeze({
   PRODUCT_SEARCH: "PRODUCT_SEARCH",
   PRODUCT_DETAILS: "PRODUCT_DETAILS",
@@ -62,6 +65,11 @@ const INTENT_SCHEMA = {
 
     clarificationQuestion: {
       type: ["string", "null"],
+    },
+
+    responseMode: {
+      type: "string",
+      enum: RESPONSE_MODE_VALUES,
     },
 
     category: {
@@ -138,6 +146,8 @@ const INTENT_SCHEMA = {
 
     confidence: {
       type: "number",
+      minimum: 0,
+      maximum: 1,
     },
   },
 
@@ -146,6 +156,7 @@ const INTENT_SCHEMA = {
     "conversationAction",
     "needsClarification",
     "clarificationQuestion",
+    "responseMode",
     "category",
     "productCode",
     "productName",
@@ -258,7 +269,8 @@ category=null
 החזר:
 needsClarification=false
 clarificationQuestion=null
-category="תיקים"
+category="אביזרים"
+productName="תיק"
 
 כאשר הלקוחה עונה על שאלת הבהרה בהודעה קצרה, למשל:
 "שמלה"
@@ -267,6 +279,12 @@ category="תיקים"
 needsClarification=false
 conversationAction="RELATED_SEARCH"
 category="שמלות"
+
+- אם הבקשה המקורית הייתה לקבל תמונה או המחשה חזותית,
+  שמור responseMode="IMAGE" גם לאחר תשובת ההבהרה.
+
+- אם הבקשה המקורית הייתה ללוק מלא,
+  שמור outfitType="COMPLETE_OUTFIT" גם לאחר תשובת ההבהרה.
 
 אם אין היסטוריה קודמת:
 - conversationAction יהיה RESET.
@@ -279,6 +297,34 @@ category="שמלות"
 - אל תחזיר category בלשון יחיד.
 - אל תחזיר קטגוריה שאינה נמצאת ברשימה.
 - אם לא ניתן לקבוע קטגוריה, החזר null.
+
+כללי סוג תגובה:
+
+- responseMode יהיה "IMAGE" כאשר הלקוחה מבקשת במפורש
+  תמונה, הדמיה או המחשה חזותית של לוק או של כמה פריטים יחד.
+
+- התמונה המבוקשת היא המחשה של הלוק על דמות גנרית שנוצרת על ידי AI.
+- אין צורך בתמונה של הלקוחה.
+- אין לפרש בקשת IMAGE כבקשת Virtual Try-On.
+- כאשר הלקוחה מבקשת לראות לוק מלא על דמות,
+  outfitType יהיה COMPLETE_OUTFIT.
+
+דוגמאות:
+"תראי לי תמונה של כל הלוק"
+"אפשר לראות איך הפריטים נראים יחד?"
+"תייצרי לי המחשה של ההופעה"
+"אני רוצה תמונה של הלוק המלא"
+
+במקרים כאלה:
+- intent יהיה OUTFIT_RECOMMENDATION.
+- responseMode יהיה "IMAGE".
+- conversationAction יהיה RELATED_SEARCH כאשר הבקשה קשורה ללוק קודם.
+- אל תטען שאין אפשרות להחזיר תמונה.
+- אם חסר מידע מהותי לבניית הלוק,
+  needsClarification יהיה true ושאל שאלה קצרה אחת.
+
+- בכל בקשה שאינה מבקשת תמונה או המחשה חזותית,
+  responseMode יהיה "TEXT".
 
 דוגמאות להמרת קטגוריה:
 - "שמלה", "שמלת ערב", "שמלת קיץ" -> "שמלות".
@@ -355,6 +401,13 @@ category="שמלות"
   occasion: "חתונה"
   eventTime: "ערב"
   outfitType: COMPLETE_OUTFIT
+
+- "תראי לי איך כל הלוק נראה"
+  intent: OUTFIT_RECOMMENDATION
+  conversationAction: RESET
+  responseMode: IMAGE
+  outfitType: COMPLETE_OUTFIT
+  needsClarification: false
 `.trim();
 
 /**
@@ -508,6 +561,12 @@ function normalizeIntent(parsed) {
         parsed?.clarificationQuestion
       )
       : null,
+
+    responseMode:
+      normalizeEnumValue(
+      parsed?.responseMode,
+      RESPONSE_MODE_VALUES
+    ) || "TEXT",
 
     category: normalizeEnumValue(
       parsed?.category,
@@ -683,9 +742,6 @@ async function detectChatIntent({
   }
 
   const normalizedIntent = normalizeIntent(parsed);
-
-
-
   return normalizedIntent;
 }
 
