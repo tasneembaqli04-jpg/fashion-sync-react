@@ -39,21 +39,38 @@ function buildProductSearchOptions(intent) {
 }
 
 function buildProductForAi(product) {
+  const variants = Array.isArray(product.variants)
+    ? product.variants
+    : [];
+
   return {
-    code: product.code,
-    name: product.name,
-    category: product.category,
-    gender: product.gender,
-    price: product.price,
-    description: product.desc,
-    colors: product.variants
-      .map((variant) => variant?.colorName)
-      .filter(Boolean),
-    sizes: product.variants.map((variant) => ({
-      color: variant?.colorName || "",
+    code: product.code || product.id || "",
+    name: product.name || "",
+    category: product.category || product.cat || "",
+    gender: product.gender || "",
+    price: product.price ?? null,
+    description: product.desc || product.description || "",
+    colors: [
+      ...new Set(
+        variants
+          .map(
+            (variant) =>
+              variant?.colorName ||
+              variant?.color ||
+              variant?.name
+          )
+          .filter(Boolean)
+      ),
+    ],
+    sizes: variants.map((variant) => ({
+      color:
+        variant?.colorName ||
+        variant?.color ||
+        variant?.name ||
+        "",
       sizes: variant?.sizes || {},
     })),
-    sale: product.sale,
+    sale: product.sale ?? false,
   };
 }
 
@@ -100,6 +117,10 @@ ${JSON.stringify(productsForAi, null, 2)}
 ענה ללקוחה על סמך המוצרים האלה בלבד.
 אל תמציא מוצרים, מחירים, צבעים, מידות או מלאי.
 אם מדובר בהמלצה לאירוע, הסבר בקצרה למה המוצרים מתאימים.
+
+כאשר הלקוחה מבקשת צבע או מידה, בדוק את ההתאמה בתוך אותו וריאנט.
+אל תאמר שמידה זמינה בצבע מסוים אם הכמות שלה בווריאנט הזה היא אפס או אם המידה אינה קיימת.
+אל תאחד מידות של צבעים שונים כאילו כולן זמינות בצבע המבוקש.
 `.trim();
 }
 
@@ -112,6 +133,20 @@ async function handleChatMessage({
     message,
     history,
   });
+  console.log("DETECTED CHAT INTENT:", intent);
+
+  if (
+    intent.needsClarification &&
+    intent.clarificationQuestion
+  ) {
+    onChunk(intent.clarificationQuestion);
+
+    return {
+      intent,
+      products: [],
+      needsClarification: true,
+    };
+  }
 
   if (!intent || !intent.intent) {
     return streamChatReply({
