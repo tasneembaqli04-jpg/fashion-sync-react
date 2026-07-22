@@ -24,9 +24,52 @@ export async function requestChatReplyStream({
     signal,
   });
 
-  if (!response.ok || !response.body) {
-    const data = await response.json().catch(() => null);
-    throw new Error(data?.message || "בקשת הצ'אט נכשלה");
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  if (!response.ok) {
+    if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => null);
+
+      throw new Error(
+        data?.message ||
+          data?.error ||
+          "בקשת הצ'אט נכשלה"
+      );
+    }
+
+    const errorText = await response.text().catch(() => "");
+
+    throw new Error(
+      errorText || "בקשת הצ'אט נכשלה"
+    );
+  }
+
+  if (contentType.includes("application/json")) {
+    const data = await response.json();
+
+    if (
+      data?.responseMode === "IMAGE" &&
+      data?.imageGenerated === true &&
+      data?.image?.dataUrl
+    ) {
+      return {
+        responseMode: "IMAGE",
+        imageGenerated: true,
+        image: data.image,
+        products: data.products || [],
+        intent: data.intent || null,
+      };
+    }
+
+    return {
+      responseMode: data?.responseMode || "TEXT",
+      ...data,
+    };
+  }
+
+  if (!response.body) {
+    throw new Error("לא התקבלה תשובה");
   }
 
   const reader = response.body.getReader();
@@ -35,18 +78,32 @@ export async function requestChatReplyStream({
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
 
-    const chunkText = decoder.decode(value, { stream: true });
+    if (done) {
+      break;
+    }
+
+    const chunkText = decoder.decode(value, {
+      stream: true,
+    });
+
     if (chunkText) {
       fullText += chunkText;
-      if (onChunk) onChunk(fullText);
+
+      if (onChunk) {
+        onChunk(fullText);
+      }
     }
   }
+
+  fullText += decoder.decode();
 
   if (!fullText.trim()) {
     throw new Error("לא התקבלה תשובה");
   }
 
-  return fullText.trim();
+  return {
+    responseMode: "TEXT",
+    text: fullText.trim(),
+  };
 }

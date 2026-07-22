@@ -317,3 +317,18 @@
   align-items: center;
   justify-content: center;
 }
+.generatedImageWrapper {
+  margin-top: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.generatedImage {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  border-radius: 14px;
+  object-fit: contain;
+}

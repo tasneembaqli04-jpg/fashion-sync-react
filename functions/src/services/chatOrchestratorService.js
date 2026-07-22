@@ -12,6 +12,10 @@ const {
   streamChatReply,
 } = require("./chatService");
 
+const {
+  generateOutfitVisualization,
+} = require("./outfitVisualizationService");
+
 const PRODUCT_INTENTS = new Set([
   INTENTS.PRODUCT_SEARCH,
   INTENTS.PRODUCT_DETAILS,
@@ -47,6 +51,7 @@ function buildProductForAi(product) {
     code: product.code || product.id || "",
     name: product.name || "",
     category: product.category || product.cat || "",
+    imageUrl: product.img || product.imageUrl || "",
     gender: product.gender || "",
     price: product.price ?? null,
     description: product.desc || product.description || "",
@@ -124,6 +129,82 @@ ${JSON.stringify(productsForAi, null, 2)}
 `.trim();
 }
 
+function buildConversationInstruction(intent) {
+  if (
+    intent.conversationAction === "RELATED_SEARCH"
+  ) {
+    return `
+הנחיית הקשר שיחה:
+ההודעה הנוכחית עשויה להיות תשובה לשאלת הבהרה קודמת.
+
+השתמש בהיסטוריית השיחה כדי להבין:
+- מהו המוצר הקודם שאליו הלקוחה רוצה לבצע התאמה.
+- מהו סוג המוצר החדש שהיא בחרה עכשיו.
+- הקטגוריה שב-intent היא קטגוריית המוצרים שיש להמליץ עליהם כעת.
+
+אל תענה רק במילה כללית כמו "בחירה".
+הצע ללקוחה מוצרים קונקרטיים מתוך תוצאות החיפוש והסבר בקצרה כיצד הם יכולים להתאים למוצר הקודם.
+
+אל תעתיק אוטומטית צבע, מידה או תקציב מהמוצר הקודם למוצר החדש,
+אלא אם הלקוחה ביקשה זאת במפורש.
+`.trim();
+  }
+
+  return "";
+}
+
+function isImageResponseRequested(intent) {
+  return (
+    intent?.responseMode === "IMAGE" &&
+    intent?.intent === INTENTS.OUTFIT_RECOMMENDATION
+  );
+}
+
+function selectVisualizationProducts(products) {
+  if (!Array.isArray(products)) {
+    return [];
+  }
+
+  const preferredCategories = [
+    "שמלות",
+    "נעליים",
+    "אביזרים",
+    "עליוניות",
+    "חולצות",
+    "מכנסיים",
+  ];
+
+  const selectedProducts = [];
+  const usedCategories = new Set();
+
+  for (const preferredCategory of preferredCategories) {
+    const matchingProduct = products.find((product) => {
+      const productCategory =
+        product.category || product.cat || "";
+
+      return (
+        productCategory === preferredCategory &&
+        !usedCategories.has(productCategory)
+      );
+    });
+
+    if (matchingProduct) {
+      selectedProducts.push(matchingProduct);
+      usedCategories.add(preferredCategory);
+    }
+
+    if (selectedProducts.length === 4) {
+      break;
+    }
+  }
+
+  if (!selectedProducts.length) {
+    return products.slice(0, 4);
+  }
+
+  return selectedProducts;
+}
+
 async function handleChatMessage({
   message,
   history = [],
@@ -179,19 +260,79 @@ async function handleChatMessage({
       buildProductSearchOptions(intent)
     );
   }
+  
+  if (isImageResponseRequested(intent)) {
+    if (!products.length) {
+      const messageText =
+        "לא מצאתי כרגע מוצרים מתאימים שמהם ניתן ליצור את המחשת הלוק.";
+
+      onChunk(messageText);
+
+      return {
+        intent,
+        products: [],
+        responseMode: "IMAGE",
+        imageGenerated: false,
+      };
+    }
+
+    const selectedProducts =
+      selectVisualizationProducts(products);
+
+    const productsForVisualization =
+      selectedProducts.map(buildProductForAi);
+
+    try {
+      const visualization =
+        await generateOutfitVisualization({
+          intent,
+          products: productsForVisualization,
+        });
+
+      return {
+        intent,
+        products: productsForVisualization,
+        responseMode: "IMAGE",
+        imageGenerated: true,
+        image: visualization,
+      };
+    } catch (error) {
+      console.error(
+        "OUTFIT VISUALIZATION ERROR:",
+        error?.message || error
+      );
+
+      const messageText =
+        "לא הצלחתי ליצור כרגע את תמונת הלוק. אפשר לנסות שוב בעוד רגע.";
+
+      onChunk(messageText);
+
+      return {
+        intent,
+        products: productsForVisualization,
+        responseMode: "IMAGE",
+        imageGenerated: false,
+        error: "IMAGE_GENERATION_FAILED",
+      };
+    }
+  }
 
   const productContext = buildProductContext(
     intent,
     products
   );
+  const conversationInstruction =
+    buildConversationInstruction(intent);
 
   return streamChatReply({
     message: `
-הודעת הלקוחה:
-${message}
+  הודעת הלקוחה הנוכחית:   
+  ${message}
 
-${productContext}
-`.trim(),
+  ${conversationInstruction}
+
+  ${productContext}
+  `.trim(),
     history,
     onChunk,
   });

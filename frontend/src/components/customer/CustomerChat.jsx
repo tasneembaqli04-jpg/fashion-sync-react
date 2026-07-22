@@ -42,10 +42,29 @@ export default function CustomerChat({
             <div
               key={index}
               className={`${chatStyles.msg} ${
-                msg.type === "user" ? chatStyles.userMsg : chatStyles.botMsg
+                msg.type === "user"
+                  ? chatStyles.userMsg
+                  : chatStyles.botMsg
               }`}
-              dangerouslySetInnerHTML={{ __html: msg.html }}
-            />
+            >
+              {msg.html && (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: msg.html,
+                  }}
+                />
+              )}
+
+              {msg.imageUrl && (
+                <div className={chatStyles.generatedImageWrapper}>
+                  <img
+                    src={msg.imageUrl}
+                    alt="המחשת לוק שנוצרה על ידי SYNC"
+                    className={chatStyles.generatedImage}
+                  />
+                </div>
+              )}
+            </div>
           ))}
 
           {isTyping && (
