@@ -28,7 +28,6 @@ export default function CustomerBrowse({
   setPriceValue,
   setSaleValue,
   goLogin,
-  onOpenScan,
   setSeasonTab,
   setListMode,
   openCartOrAuth,
@@ -91,23 +90,6 @@ export default function CustomerBrowse({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
-            <button
-              type="button"
-              onClick={onOpenScan}
-              title={t.scanTooltip}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--light-gray)",
-                fontSize: "1rem",
-                padding: "0 0.2rem",
-                lineHeight: 1,
-                flexShrink: 0,
-              }}
-            >
-              📷
-            </button>
           </div>
         </div>
 
