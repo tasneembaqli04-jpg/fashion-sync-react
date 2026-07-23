@@ -2,7 +2,7 @@ const {db} = require("../config/firebaseAdmin");
 
 const PRODUCTS_COLLECTION = "products";
 const DEFAULT_LIMIT = 5;
-const MAX_LIMIT = 10;
+const MAX_LIMIT = 100;
 
 /**
  * Normalizes text for safe comparisons.
