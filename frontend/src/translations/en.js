@@ -101,6 +101,8 @@ export const en = {
       sizeLabel: "Size:",
       qtyLabel: "Qty:",
       updateToPrefix: "✓ Update to:",
+      itemsCountSuffix: "items in order",
+      orderDetailsButton: "📋 Order details",
     },
     coupons: {
       title: "🎟️ Coupon Management",
@@ -163,6 +165,7 @@ export const en = {
       reasonNotAsDescribed: "Product doesn't match description",
       reasonChangedMind: "Changed my mind",
       reasonOther: "Other",
+      noRestockNote: "Not restocked — defective product",
     },
     feedback: {
       title: "Customer Feedback",
@@ -753,6 +756,8 @@ export const en = {
       statusApproved: "✅ Return approved",
       statusRejected: "❌ Return rejected",
       modalTitle: "Return / Refund Request",
+      selectItemLabel: "Select item to return",
+      noItemsAvailable: "All items in this order already have a return request.",
       reasonLabel: "Reason for return",
       reasonDefective: "Defective product",
       reasonWrongSize: "Wrong size",
@@ -763,7 +768,8 @@ export const en = {
       notePlaceholder: "Additional details...",
       submitButton: "Submit Request",
       submitSuccess: "✅ Request sent successfully! We'll update you once it's handled.",
-      noRestockNote: "Not restocked — defective product",
+      updateBannerApproved: "🎉 Your return request for {name} was approved!",
+      updateBannerRejected: "Your return request for {name} was not approved",
     },
 
     shareModal: {
