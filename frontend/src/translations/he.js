@@ -163,6 +163,7 @@ export const he = {
       reasonNotAsDescribed: "המוצר לא תואם לתיאור",
       reasonChangedMind: "שיניתי את דעתי",
       reasonOther: "אחר",
+      noRestockNote: "לא יוחזר למלאי — מוצר פגום",
     },
     feedback: {
       title: "משוב לקוחות",
@@ -192,6 +193,8 @@ export const he = {
       noteTitle: "💡 הערה",
       missingCostNote:
         '{count} פריטים שנמכרו החודש נמכרו ממוצר בלי "עלות מוצר" רשומה — עבורם ההוצאה נספרה כ-₪0, כך שההוצאות/הרווח בפועל עשויים להיות שונים. אפשר להוסיף עלות לכל מוצר דרך "פרטים" בניהול מלאי.',
+      returnsNoteTitle: "🔄 החזרות שהופחתו החודש",
+      returnsNote: "{count} החזרות מאושרות החודש הופחתו מההכנסה, בסך כולל של ₪{amount}.",
     },
     receipts: {
       title: "קבלות מכירה",
@@ -697,6 +700,7 @@ export const he = {
       allMonths: "📅 כל החודשים",
       allFilter: "הכל",
       noOrdersInStatus: "אין הזמנות במצב הזה",
+      withReturnsFilter: "עם בקשת החזרה",
     },
 
     wishlist: {
@@ -916,21 +920,6 @@ export const he = {
       genericError: "אירעה שגיאה, נסי שוב",
       invalidGmail: "אימייל לא תקין — חייב להיות ‎@gmail.com",
       passwordTooShort: "הסיסמה חייבת להכיל לפחות 8 תווים",
-    },
-
-    verification: {
-      title: "🔐 אימות כתובת המייל",
-      subtitle: "שלחנו קוד בן 6 ספרות לכתובת {email}. הזיני אותו כדי להשלים את ההרשמה.",
-      codeLabel: "קוד אימות",
-      codePlaceholder: "000000",
-      verifyButton: "אמת קוד",
-      verifying: "מאמתת...",
-      resendButton: "שלח קוד שוב",
-      resendCooldown: "אפשר לשלוח שוב בעוד {seconds} שניות",
-      resendSuccess: "✅ קוד חדש נשלח",
-      errorNotFound: "לא נמצאה בקשת אימות. נסי לבקש קוד חדש.",
-      errorExpired: "הקוד פג תוקף. בקשי קוד חדש.",
-      errorMismatch: "קוד שגוי, נסי שוב.",
     },
   },
 

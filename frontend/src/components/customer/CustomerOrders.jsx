@@ -32,6 +32,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
+  const [showOnlyWithReturns, setShowOnlyWithReturns] = useState(false);
 
   const sortedOrders = useMemo(() => {
     const withStatus = orders.map((order) => ({
@@ -69,9 +70,24 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
   }, [sortedOrders, monthFilter]);
 
   const filteredOrders = useMemo(() => {
-    if (activeFilter === "all") return monthFilteredOrders;
-    return monthFilteredOrders.filter((order) => order._statusNum === activeFilter);
-  }, [monthFilteredOrders, activeFilter]);
+    let list = monthFilteredOrders;
+
+    if (activeFilter !== "all") {
+      list = list.filter((order) => order._statusNum === activeFilter);
+    }
+
+    if (showOnlyWithReturns) {
+      list = list.filter((order) =>
+        order.items.some((item) =>
+          returnRequests.some(
+            (r) => r.orderId === order.id && r.itemCode === item.code
+          )
+        )
+      );
+    }
+
+    return list;
+  }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, returnRequests]);
 
   const countsByStatus = useMemo(() => {
     const counts = { all: monthFilteredOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -80,6 +96,16 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
     });
     return counts;
   }, [monthFilteredOrders]);
+
+  const ordersWithReturnsCount = useMemo(() => {
+    return monthFilteredOrders.filter((order) =>
+      order.items.some((item) =>
+        returnRequests.some(
+          (r) => r.orderId === order.id && r.itemCode === item.code
+        )
+      )
+    ).length;
+  }, [monthFilteredOrders, returnRequests]);
 
   if (!show) return null;
 
@@ -149,6 +175,34 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
           );
         })}
       </div>
+
+      {ordersWithReturnsCount > 0 && (
+        <div style={{ marginBottom: "1.2rem" }}>
+          <button
+            onClick={() => setShowOnlyWithReturns((prev) => !prev)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.45rem 0.9rem",
+              borderRadius: "10px",
+              border: showOnlyWithReturns
+                ? "1.5px solid var(--gold)"
+                : "1px solid var(--border)",
+              background: showOnlyWithReturns
+                ? "rgba(201,168,76,0.12)"
+                : "transparent",
+              color: showOnlyWithReturns ? "var(--gold)" : "var(--muted)",
+              fontFamily: "Alef, sans-serif",
+              fontSize: "0.82rem",
+              fontWeight: showOnlyWithReturns ? 700 : 400,
+              cursor: "pointer",
+            }}
+          >
+            🔄 {t.withReturnsFilter} ({ordersWithReturnsCount})
+          </button>
+        </div>
+      )}
 
       {filteredOrders.length ? (
         filteredOrders.map((order) => {

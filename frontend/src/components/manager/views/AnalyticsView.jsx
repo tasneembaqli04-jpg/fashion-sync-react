@@ -13,7 +13,7 @@ function isSameMonth(dateStr) {
   );
 }
 
-export default function AnalyticsView({ orders = [], products = [] }) {
+export default function AnalyticsView({ orders = [], products = [], returnRequests = [] }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.analytics;
 
@@ -53,7 +53,26 @@ export default function AnalyticsView({ orders = [], products = [] }) {
       return sum + orderExpense;
     }, 0);
 
-    const monthProfit = monthRevenue - monthExpenses;
+    const approvedReturnsThisMonth = returnRequests.filter(
+      (r) => r.status === "approved" && isSameMonth(r.createdAt)
+    );
+
+    const returnsRevenueDeduction = approvedReturnsThisMonth.reduce(
+      (sum, r) => sum + (Number(r.price) || 0) * (Number(r.qty) || 1),
+      0
+    );
+
+    const returnsExpenseRecovered = approvedReturnsThisMonth
+      .filter((r) => r.reasonKey !== "defective")
+      .reduce((sum, r) => {
+        const product = products.find((p) => p.code === r.itemCode);
+        const cost = Number(product?.cost) || 0;
+        return sum + cost * (Number(r.qty) || 1);
+      }, 0);
+
+    const adjustedRevenue = monthRevenue - returnsRevenueDeduction;
+    const adjustedExpenses = monthExpenses - returnsExpenseRecovered;
+    const monthProfit = adjustedRevenue - adjustedExpenses;
 
     const categoryMap = {};
     monthOrders.forEach((order) => {
@@ -87,8 +106,8 @@ export default function AnalyticsView({ orders = [], products = [] }) {
       : 0;
 
     return {
-      monthRevenue,
-      monthExpenses,
+      monthRevenue: adjustedRevenue,
+      monthExpenses: adjustedExpenses,
       monthProfit,
       missingCostCount,
       salesCount,
@@ -96,8 +115,10 @@ export default function AnalyticsView({ orders = [], products = [] }) {
       categorySales,
       maxCategorySale,
       repeatPct,
+      returnsRevenueDeduction,
+      returnsCount: approvedReturnsThisMonth.length,
     };
-  }, [orders, products]);
+  }, [orders, products, returnRequests]);
 
   const categoryColors = [
     "var(--gold)",
@@ -238,6 +259,22 @@ export default function AnalyticsView({ orders = [], products = [] }) {
             style={{ color: "var(--muted)", fontSize: "0.9rem" }}
           >
             {t.missingCostNote.replace("{count}", stats.missingCostCount)}
+          </div>
+        </div>
+      )}
+
+      {stats.returnsCount > 0 && (
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>{t.returnsNoteTitle}</div>
+          </div>
+          <div
+            className={uiStyles.cardBody}
+            style={{ color: "var(--muted)", fontSize: "0.9rem" }}
+          >
+            {t.returnsNote
+              .replace("{count}", stats.returnsCount)
+              .replace("{amount}", stats.returnsRevenueDeduction.toLocaleString())}
           </div>
         </div>
       )}

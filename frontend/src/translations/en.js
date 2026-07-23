@@ -192,6 +192,8 @@ export const en = {
       noteTitle: "💡 Note",
       missingCostNote:
         '{count} items sold this month were sold from a product with no recorded "product cost" — for these, the expense was counted as ₪0, so actual expenses/profit may differ. You can add a cost to each product via "Details" in inventory management.',
+      returnsNoteTitle: "🔄 Returns deducted this month",
+      returnsNote: "{count} approved returns this month were deducted from revenue, totaling ₪{amount}.",
     },
     receipts: {
       title: "Sales Receipts",
@@ -653,6 +655,7 @@ export const en = {
       allMonths: "📅 All months",
       allFilter: "All",
       noOrdersInStatus: "No orders in this status",
+      withReturnsFilter: "With Return Request",
     },
 
     wishlist: {
@@ -760,6 +763,7 @@ export const en = {
       notePlaceholder: "Additional details...",
       submitButton: "Submit Request",
       submitSuccess: "✅ Request sent successfully! We'll update you once it's handled.",
+      noRestockNote: "Not restocked — defective product",
     },
 
     shareModal: {
@@ -873,23 +877,8 @@ export const en = {
       invalidGmail: "Invalid email — must be @gmail.com",
       passwordTooShort: "Password must be at least 8 characters",
     },
-
-    verification: {
-      title: "🔐 Verify Your Email",
-      subtitle: "We sent a 6-digit code to {email}. Enter it to complete your registration.",
-      codeLabel: "Verification Code",
-      codePlaceholder: "000000",
-      verifyButton: "Verify Code",
-      verifying: "Verifying...",
-      resendButton: "Resend Code",
-      resendCooldown: "You can resend in {seconds} seconds",
-      resendSuccess: "✅ New code sent",
-      errorNotFound: "No verification request found. Please request a new code.",
-      errorExpired: "The code has expired. Please request a new one.",
-      errorMismatch: "Incorrect code, please try again.",
-    },
   },
-  
+
   shippingOptionLabels: {
     standard: {
       label: "Standard Shipping",

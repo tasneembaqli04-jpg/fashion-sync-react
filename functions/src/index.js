@@ -11,6 +11,9 @@ const {
 const {
   shippingUpdateEmailController,
 } = require("./controllers/shippingUpdateEmailController");
+const {
+  returnStatusEmailController,
+} = require("./controllers/returnStatusEmailController");
 
 
 const backendHealthCheck = onRequest((request, response) => {
@@ -63,6 +66,13 @@ const sendShippingUpdateEmail = onRequest(
   shippingUpdateEmailController,
 );
 
+const sendReturnStatusEmail = onRequest(
+  {
+    cors: true,
+  },
+  returnStatusEmailController,
+);
+
 module.exports = {
   backendHealthCheck,
   tryOn,
@@ -71,4 +81,5 @@ module.exports = {
   sendOrderEmail,
   sendStockAlertEmail,
   sendShippingUpdateEmail,
+  sendReturnStatusEmail,
 };

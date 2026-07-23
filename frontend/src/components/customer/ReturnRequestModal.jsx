@@ -8,21 +8,21 @@ export default function ReturnRequestModal({ open, item, onClose, onSubmit }) {
   const t = dict.customer.returns;
 
   const REASONS = [
-    t.reasonDefective,
-    t.reasonWrongSize,
-    t.reasonNotAsDescribed,
-    t.reasonChangedMind,
-    t.reasonOther,
+    { key: "defective", label: t.reasonDefective },
+    { key: "wrongSize", label: t.reasonWrongSize },
+    { key: "notAsDescribed", label: t.reasonNotAsDescribed },
+    { key: "changedMind", label: t.reasonChangedMind },
+    { key: "other", label: t.reasonOther },
   ];
 
-  const [reason, setReason] = useState(REASONS[0]);
+  const [reasonKey, setReasonKey] = useState(REASONS[0].key);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (open) {
-      setReason(REASONS[0]);
+      setReasonKey(REASONS[0].key);
       setNote("");
       setSubmitting(false);
       setSubmitError("");
@@ -37,7 +37,12 @@ export default function ReturnRequestModal({ open, item, onClose, onSubmit }) {
     setSubmitError("");
 
     try {
-      await onSubmit({ reason, note });
+      const selectedReason = REASONS.find((r) => r.key === reasonKey);
+      await onSubmit({
+        reasonKey,
+        reason: selectedReason?.label || reasonKey,
+        note,
+      });
       setNote("");
     } catch (err) {
       console.error("Return request submit failed:", err);
@@ -92,10 +97,10 @@ export default function ReturnRequestModal({ open, item, onClose, onSubmit }) {
 
         <div className={modalStyles.pdField} style={{ marginBottom: "0.85rem" }}>
           <label>{t.reasonLabel}</label>
-          <select value={reason} onChange={(e) => setReason(e.target.value)}>
+          <select value={reasonKey} onChange={(e) => setReasonKey(e.target.value)}>
             {REASONS.map((r) => (
-              <option key={r} value={r}>
-                {r}
+              <option key={r.key} value={r.key}>
+                {r.label}
               </option>
             ))}
           </select>
