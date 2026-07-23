@@ -167,6 +167,11 @@ export default function Manager({ onPromote }) {
     () => deliveries.filter((d) => (Number(d.status) || 0) < 3).length,
     [deliveries],
   );
+
+  const pendingReturnsCount = useMemo(
+    () => returnRequests.filter((r) => r.status === "pending").length,
+    [returnRequests],
+  );
   const receipts = useMemo(() => {
     return orders.map((order) => ({
       id: order.id,
@@ -421,6 +426,7 @@ export default function Manager({ onPromote }) {
         pendingOrdersCount={pendingOrdersCount}
         pendingDeliveriesCount={pendingDeliveriesCount}
         pendingStockRequestsCount={pendingStockRequestsCount}
+        pendingReturnsCount={pendingReturnsCount}
         onChangeView={(view) => {
           setActiveView(view);
           setMobileSidebarOpen(false);

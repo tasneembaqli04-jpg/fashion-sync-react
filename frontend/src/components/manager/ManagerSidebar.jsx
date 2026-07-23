@@ -12,6 +12,7 @@ export default function ManagerSidebar({
   pendingOrdersCount = 0,
   pendingDeliveriesCount = 0,
   pendingStockRequestsCount = 0,
+  pendingReturnsCount = 0,
   mobileOpen,
 }) {
   const { t: dict } = useLanguage();
@@ -141,6 +142,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>↩️</span>
           <span style={{ flex: 1 }}>{t.returnRequests}</span>
+          <NavBadge count={pendingReturnsCount} />
         </button>
 
         <button

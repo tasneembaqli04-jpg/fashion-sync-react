@@ -263,6 +263,7 @@ export const he = {
       pointsRedeemed: "נוצלו {points} נקודות נאמנות (−₪{amount})",
       totalToPayLabel: '💰 סה"כ לתשלום:',
       close: "סגור",
+      checkCodePlaceholder: "הזן/י קוד כרטיס מתנה (GC-... או RTN-...)",
     },
     scanModal: {
       title: "📷 סריקת ברקוד",
@@ -587,6 +588,7 @@ export const he = {
       pointsRedeemed: "✅ נוצלו {points} נק' = ₪{amount} הנחה",
       totalLabel: 'סה"כ לתשלום:',
       checkout: "✅ מעבר לתשלום",
+      giftCardRedeemPlaceholder: "קוד כרטיס מתנה (GC-... או RTN-...)",
     },
 
     checkout: {
@@ -632,6 +634,7 @@ export const he = {
         freeShipping: "חינם ✨",
         installments: "תשלומים",
         total: 'סה"כ לתשלום',
+        giftCardDiscount: "זיכוי כרטיס מתנה",
       },
 
       step3: {

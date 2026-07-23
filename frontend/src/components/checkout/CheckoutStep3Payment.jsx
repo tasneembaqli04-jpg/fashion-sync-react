@@ -17,6 +17,7 @@ export default function CheckoutStep3Payment({
   subtotal = 0,
   discount = 0,
   pointsDiscount = 0,
+  giftCardDiscount = 0,
   shippingCost = 0,
   total = 0,
   termsAccepted = false,
@@ -73,18 +74,6 @@ export default function CheckoutStep3Payment({
             >
               <span className={styles.payIcon}>💵</span>
               {t.cashOnPickup}
-            </div>
-          )}
-
-          {!isGiftCardOnly && (
-            <div
-              className={`${styles.payOpt} ${payMethod === "giftcard" ? styles.selected : ""}`}
-              onClick={() => setPayMethod("giftcard")}
-              role="button"
-              tabIndex={0}
-            >
-              <span className={styles.payIcon}>🎁</span>
-              {t.giftCard}
             </div>
           )}
         </div>
@@ -262,31 +251,13 @@ export default function CheckoutStep3Payment({
             {t.cashInfoLine2Prefix} <strong>{t.cashInfoLine2Bold}</strong> {t.cashInfoLine2Rest}
           </div>
         )}
-
-        {payMethod === "giftcard" && (
-          <div className={styles.fg}>
-            <label htmlFor="f-giftcard">{t.giftCardCode}</label>
-            <input
-              id="f-giftcard"
-              type="text"
-              value={giftCardCode}
-              onChange={(e) => setGiftCardCode(e.target.value)}
-              placeholder="GC-XXXXXXXX"
-              className={errors.giftCardCode ? styles.invalid : ""}
-            />
-            {errors.giftCardCode && (
-              <div className={styles.fieldErr}>
-                {t.invalidGiftCard}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <CheckoutPriceBox
         subtotal={subtotal}
         discount={discount}
         pointsDiscount={pointsDiscount}
+        giftCardDiscount={giftCardDiscount}
         shipping={shippingCost}
         total={total}
         payMethod={payMethod}

@@ -11,6 +11,7 @@ export default function CheckoutStep2Shipping({
   subtotal = 0,
   discount = 0,
   pointsDiscount = 0,
+  giftCardDiscount = 0,
   shippingCost = 0,
   total = 0,
   onBack,
@@ -73,6 +74,7 @@ export default function CheckoutStep2Shipping({
         subtotal={subtotal}
         discount={discount}
         pointsDiscount={pointsDiscount}
+        giftCardDiscount={giftCardDiscount}
         shipping={shippingCost}
         total={total}
       />

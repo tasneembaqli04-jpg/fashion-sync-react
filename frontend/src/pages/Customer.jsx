@@ -1033,7 +1033,7 @@ export default function Customer() {
         navProtected={navProtected}
         closeSidebar={closeSidebar}
         stockAlertsCount={stockAlerts.length}
-        activeOrdersCount={activeOrdersCount}
+        activeOrdersCount={activeOrdersCount + unseenReturnUpdates.length}
       />
 
       <main className={styles.main}>
@@ -1081,6 +1081,60 @@ export default function Customer() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {unseenReturnUpdates.length > 0 && (
+          <div
+            style={{
+              background:
+                unseenReturnUpdates.some((r) => r.status === "approved")
+                  ? "rgba(39,174,96,0.1)"
+                  : "rgba(192,57,43,0.1)",
+              border: `1px solid ${
+                unseenReturnUpdates.some((r) => r.status === "approved")
+                  ? "var(--green)"
+                  : "var(--red)"
+              }`,
+              borderRadius: "12px",
+              padding: "0.9rem 1.1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            {unseenReturnUpdates.map((request) => {
+              const template =
+                request.status === "approved"
+                  ? dict.customer.returns.updateBannerApproved
+                  : dict.customer.returns.updateBannerRejected;
+              const [before, after] = template.split("{name}");
+
+              return (
+                <div
+                  key={request.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    padding: "0.3rem 0",
+                  }}
+                >
+                  <span>
+                    {before}
+                    <strong>{request.itemName}</strong>
+                    {after}
+                  </span>
+                  <button
+                    type="button"
+                    className={`${styles.btn} ${styles.btnGhost}`}
+                    onClick={() => dismissReturnUpdate(request.id)}
+                    style={{ flexShrink: 0 }}
+                  >
+                    {dict.customer.misc.gotItButton}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 

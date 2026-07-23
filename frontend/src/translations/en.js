@@ -543,6 +543,7 @@ export const en = {
       pointsRedeemed: "✅ Used {points} pts = ₪{amount} off",
       totalLabel: "Total:",
       checkout: "✅ Proceed to checkout",
+      giftCardRedeemPlaceholder: "Gift card code (GC-... or RTN-...)",
     },
 
     checkout: {
@@ -588,6 +589,7 @@ export const en = {
         freeShipping: "Free ✨",
         installments: "Installments",
         total: "Total",
+        giftCardDiscount: "Gift card credit",
       },
 
       step3: {
@@ -725,6 +727,7 @@ export const en = {
       statusLabel: "Status:",
       statusUsed: "Fully used",
       statusActive: "Active",
+      checkCodePlaceholder: "Enter gift card code (GC-... or RTN-...)",
     },
 
     dialogs: {
