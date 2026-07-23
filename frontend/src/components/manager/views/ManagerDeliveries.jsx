@@ -214,29 +214,24 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
 
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "0.6rem",
                     padding: "0.5rem 0",
                     color: "var(--muted)",
                     fontSize: "0.85rem",
                   }}
                 >
-                  <span>
-                    {order.items?.length || 0} {t.itemsCountSuffix}
-                  </span>
+                  {order.items?.length || 0} {t.itemsCountSuffix}
+                </div>
+
+                <div className={deliveriesStyles.deliveryBottom}>
                   <button
                     type="button"
-                    className={deliveriesStyles.deliveryActionBtn}
+                    className={deliveriesStyles.deliveryDetailsBtn}
                     onClick={() => setSelectedOrder(order)}
                   >
                     {t.orderDetailsButton}
                   </button>
-                </div>
 
-                {nextIndex !== null && (
-                  <div className={deliveriesStyles.deliveryBottom}>
+                  {nextIndex !== null && (
                     <button
                       type="button"
                       className={deliveriesStyles.deliveryActionBtn}
@@ -244,8 +239,8 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                     >
                       {t.updateToPrefix} {STEP_LABELS[nextIndex]}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             );
           })}

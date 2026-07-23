@@ -84,9 +84,26 @@
   color: var(--gold);
 }
 
+.orderDetailsBtn {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 8px;
+  padding: 0.42rem 1rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.orderDetailsBtn:hover {
+  background: rgba(201, 168, 76, 0.1);
+}
+
 .orderPrepareBtn {
-  background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  color: #000;
+  background: linear-gradient(135deg, #2f80ed, #56ccf2);
+  color: #fff;
   border: none;
   border-radius: 8px;
   padding: 0.42rem 1rem;
@@ -99,7 +116,7 @@
 
 .orderPrepareBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
 }
 
 .done {

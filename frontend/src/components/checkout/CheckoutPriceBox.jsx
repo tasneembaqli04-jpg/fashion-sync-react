@@ -5,6 +5,7 @@ export default function CheckoutPriceBox({
   subtotal = 0,
   discount = 0,
   pointsDiscount = 0,
+  giftCardDiscount = 0,
   shipping = 0,
   total = 0,
   payMethod = "card",
@@ -33,6 +34,13 @@ export default function CheckoutPriceBox({
         <div className={`${styles.pline} ${styles.disc}`}>
           <span className={styles.pl}>{t.pointsDiscount}</span>
           <span>−₪{pointsDiscount.toFixed(2)}</span>
+        </div>
+      )}
+
+      {giftCardDiscount > 0 && (
+        <div className={`${styles.pline} ${styles.disc}`}>
+          <span className={styles.pl}>{t.giftCardDiscount}</span>
+          <span>−₪{giftCardDiscount.toFixed(2)}</span>
         </div>
       )}
 

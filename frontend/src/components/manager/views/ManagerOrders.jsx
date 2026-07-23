@@ -238,32 +238,32 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                       {t.customSizeTag}
                     </span>
                   )}
+
+                  <div className={ordersStyles.orderTotal} style={{ marginTop: "0.4rem" }}>
+                    ₪{total.toLocaleString()}
+                  </div>
                 </div>
               </div>
 
               <div className={ordersStyles.orderStatusBar}>
-                <span className={ordersStyles.orderTotal}>
-                  ₪{total.toLocaleString()}
-                </span>
+
+                <button
+                  type="button"
+                  className={ordersStyles.orderDetailsBtn}
+                  onClick={() => setSelectedOrder(order)}
+                >
+                  {t.orderDetailsButton}
+                </button>
 
                 {!order.confirmed && (
                   <button
                     type="button"
                     className={ordersStyles.orderPrepareBtn}
-                    style={{ background: "var(--green)", color: "#fff" }}
                     onClick={() => onConfirmOrder?.(order.docId)}
                   >
                     {t.confirmOrderButton}
                   </button>
                 )}
-
-                <button
-                  type="button"
-                  className={ordersStyles.orderPrepareBtn}
-                  onClick={() => setSelectedOrder(order)}
-                >
-                  {t.orderDetailsButton}
-                </button>
               </div>
             </div>
           );
