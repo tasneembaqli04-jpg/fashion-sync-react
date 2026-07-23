@@ -109,12 +109,6 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
   if (!show) return null;
 
-  function getReturnRequest(orderId, itemCode) {
-    return returnRequests.find(
-      (r) => r.orderId === orderId && r.itemCode === itemCode
-    );
-  }
-
   return (
     <div>
       <div className={commonStyles.pageTitle}>{t.title}</div>
@@ -232,72 +226,84 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               </div>
 
               <div className={modalStyles.orderItems}>
-                {status === 3
-                  ? order.items.map((item, index) => {
-                      const request = getReturnRequest(order.id, item.code);
-
-                      return (
-                        <div
-                          key={index}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: "0.6rem",
-                            padding: "0.4rem 0",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <span>
-                            {item.name} ×{item.qty}
-                          </span>
-
-                          {request ? (
-                            <span
-                              style={{
-                                fontSize: "0.78rem",
-                                color:
-                                  request.status === "approved"
-                                    ? "var(--green)"
-                                    : request.status === "rejected"
-                                    ? "var(--red)"
-                                    : "var(--gold)",
-                              }}
-                            >
-                              {request.status === "approved"
-                                ? rt.statusApproved
-                                : request.status === "rejected"
-                                ? rt.statusRejected
-                                : rt.alreadyRequested}
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => onRequestReturn?.(order, item)}
-                              style={{
-                                background: "none",
-                                border: "1px solid var(--border)",
-                                borderRadius: "8px",
-                                padding: "0.25rem 0.6rem",
-                                fontSize: "0.78rem",
-                                color: "var(--muted)",
-                                cursor: "pointer",
-                                fontFamily: "Alef, sans-serif",
-                              }}
-                            >
-                              {rt.requestButton}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })
-                  : order.items.map((item, index) => (
-                      <span key={index}>
-                        {item.name} ×{item.qty}
-                        {index < order.items.length - 1 ? ", " : ""}
-                      </span>
-                    ))}
+                {order.items.map((item, index) => (
+                  <span key={index}>
+                    {item.name} ×{item.qty}
+                    {index < order.items.length - 1 ? ", " : ""}
+                  </span>
+                ))}
               </div>
+
+              {status === 3 && (() => {
+                const hasAvailableItem = order.items.some(
+                  (item) =>
+                    !returnRequests.some(
+                      (r) => r.orderId === order.id && r.itemCode === item.code
+                    )
+                );
+
+                const orderRequests = returnRequests.filter(
+                  (r) => r.orderId === order.id
+                );
+
+                return (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: "0.5rem",
+                      padding: "0.4rem 0",
+                    }}
+                  >
+                    {orderRequests.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                        {orderRequests.map((r) => (
+                          <span
+                            key={r.id}
+                            style={{
+                              fontSize: "0.76rem",
+                              color:
+                                r.status === "approved"
+                                  ? "var(--green)"
+                                  : r.status === "rejected"
+                                  ? "var(--red)"
+                                  : "var(--gold)",
+                            }}
+                          >
+                            {r.itemName}:{" "}
+                            {r.status === "approved"
+                              ? rt.statusApproved
+                              : r.status === "rejected"
+                              ? rt.statusRejected
+                              : rt.alreadyRequested}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {hasAvailableItem && (
+                      <button
+                        type="button"
+                        onClick={() => onRequestReturn?.(order)}
+                        style={{
+                          background: "none",
+                          border: "1px solid var(--border)",
+                          borderRadius: "8px",
+                          padding: "0.25rem 0.6rem",
+                          fontSize: "0.78rem",
+                          color: "var(--muted)",
+                          cursor: "pointer",
+                          fontFamily: "Alef, sans-serif",
+                        }}
+                      >
+                        {rt.requestButton}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className={modalStyles.orderTimeline}>
                 <div className={modalStyles.orderTimelineLine} />

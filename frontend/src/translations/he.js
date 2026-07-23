@@ -101,6 +101,8 @@ export const he = {
       sizeLabel: "מידה:",
       qtyLabel: "כמות:",
       updateToPrefix: "✓ עדכן ל:",
+      itemsCountSuffix: "פריטים בהזמנה",
+      orderDetailsButton: "📋 פרטי הזמנה",
     },
     coupons: {
       title: "🎟️ ניהול קופונים",
@@ -798,6 +800,8 @@ export const he = {
       statusApproved: "✅ ההחזרה אושרה",
       statusRejected: "❌ ההחזרה נדחתה",
       modalTitle: "בקשת החזרה / זיכוי",
+      selectItemLabel: "בחר/י פריט להחזרה",
+      noItemsAvailable: "כל הפריטים בהזמנה זו כבר קיבלו בקשת החזרה.",
       reasonLabel: "סיבת ההחזרה",
       reasonDefective: "מוצר פגום",
       reasonWrongSize: "מידה לא מתאימה",
@@ -808,6 +812,8 @@ export const he = {
       notePlaceholder: "פרטים נוספים...",
       submitButton: "שלח בקשה",
       submitSuccess: "✅ הבקשה נשלחה בהצלחה! נעדכן אותך כשתטופל.",
+      updateBannerApproved: "🎉 בקשת ההחזרה עבור {name} אושרה!",
+      updateBannerRejected: "בקשת ההחזרה עבור {name} לא אושרה",
     },
 
     shareModal: {

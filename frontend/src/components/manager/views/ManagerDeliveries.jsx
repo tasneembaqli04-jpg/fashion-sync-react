@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
+import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
 function getMonthKey(value) {
@@ -46,6 +47,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
 
   const [stageFilter, setStageFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const availableMonths = useMemo(() => {
     const keys = new Set(orders.map((o) => getMonthKey(o.createdAt)));
@@ -210,25 +212,27 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                   })}
                 </div>
 
-                <div className={deliveriesStyles.deliveryItemsStrip}>
-                  {order.items?.map((item, index) => (
-                    <div className={deliveriesStyles.deliveryItemRow} key={index}>
-                      <img
-                        className={deliveriesStyles.deliveryItemImg}
-                        src={item.img}
-                        alt={item.name}
-                      />
-
-                      <div className={deliveriesStyles.deliveryItemText}>
-                        <div className={deliveriesStyles.deliveryItemName}>
-                          {item.name}
-                        </div>
-                        <div className={deliveriesStyles.deliveryItemMeta}>
-                          {t.sizeLabel} {item.size} · {t.qtyLabel} {item.qty} · ₪{item.price}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "0.6rem",
+                    padding: "0.5rem 0",
+                    color: "var(--muted)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  <span>
+                    {order.items?.length || 0} {t.itemsCountSuffix}
+                  </span>
+                  <button
+                    type="button"
+                    className={deliveriesStyles.deliveryActionBtn}
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    {t.orderDetailsButton}
+                  </button>
                 </div>
 
                 {nextIndex !== null && (
@@ -247,6 +251,12 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
           })}
         </div>
       )}
+
+      <OrderDetailsModal
+        open={!!selectedOrder}
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+      />
     </div>
   );
 }

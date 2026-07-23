@@ -7,6 +7,7 @@ import {
   query,
   doc,
   updateDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 const returnsCollection = collection(db, "returnRequests");
@@ -43,6 +44,7 @@ export async function requestReturn({
     reasonKey: reasonKey || "",
     note: note || "",
     status: "pending",
+    seenByCustomer: true,
     createdAt: new Date().toISOString(),
   });
 }
@@ -64,5 +66,35 @@ export async function getReturnRequestsByUser(email) {
 }
 
 export async function updateReturnStatus(id, status) {
-  await updateDoc(doc(db, "returnRequests", id), { status });
+  await updateDoc(doc(db, "returnRequests", id), {
+    status,
+    seenByCustomer: false,
+  });
+}
+
+export async function markReturnSeenByCustomer(id) {
+  await updateDoc(doc(db, "returnRequests", id), { seenByCustomer: true });
+}
+
+export function subscribeToReturnRequestsByUser(email, callback) {
+  const normalized = String(email || "").trim().toLowerCase();
+  if (!normalized) {
+    callback([]);
+    return () => {};
+  }
+
+  const q = query(returnsCollection, orderBy("createdAt", "desc"));
+
+  return onSnapshot(q, (snapshot) => {
+    const all = snapshot.docs.map((document) => ({
+      id: document.id,
+      ...document.data(),
+    }));
+
+    const filtered = all.filter(
+      (r) => (r.customerEmail || "").toLowerCase() === normalized
+    );
+
+    callback(filtered);
+  });
 }

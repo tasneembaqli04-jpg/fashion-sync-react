@@ -56,7 +56,8 @@ import CustomerOrders from "../components/customer/CustomerOrders";
 import ReturnRequestModal from "../components/customer/ReturnRequestModal";
 import {
   requestReturn,
-  getReturnRequestsByUser,
+  markReturnSeenByCustomer,
+  subscribeToReturnRequestsByUser,
 } from "../services/returns/returnsService";
 import CustomerLoyalty from "../components/customer/CustomerLoyalty";
 import CustomerGiftCard from "../components/customer/CustomerGiftCard";
@@ -146,7 +147,6 @@ export default function Customer() {
   const [giftCheckResult, setGiftCheckResult] = useState(null);
   const [giftCheckError, setGiftCheckError] = useState("");
   const [returnRequests, setReturnRequests] = useState([]);
-  const [returnModalItem, setReturnModalItem] = useState(null);
   const [returnModalOrder, setReturnModalOrder] = useState(null);
 
   useEffect(() => {
@@ -166,11 +166,6 @@ export default function Customer() {
       }
     });
 
-    getReturnRequestsByUser(currentUser.email).then((requests) => {
-      if (!cancelled) {
-        setReturnRequests(requests);
-      }
-    });
 
     getLoyaltyPoints(currentUser.email).then((points) => {
       if (!cancelled) {
@@ -192,6 +187,20 @@ export default function Customer() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setReturnRequests([]);
+      return;
+    }
+
+    const unsubscribe = subscribeToReturnRequestsByUser(
+      currentUser.email,
+      setReturnRequests
+    );
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     async function init() {
@@ -316,6 +325,11 @@ export default function Customer() {
       return product && Number(product.stock) > 0;
     });
   }, [rawStockAlerts, products]);
+  const unseenReturnUpdates = useMemo(() => {
+    return returnRequests.filter(
+      (r) => r.status !== "pending" && !r.seenByCustomer
+    );
+  }, [returnRequests]);
   const activeOrdersCount = useMemo(
     () => orders.filter((o) => (Number(o.status) || 0) < 3).length,
     [orders],
@@ -932,34 +946,38 @@ export default function Customer() {
     await markStockAlertSeen(id);
     setRawStockAlerts((prev) => prev.filter((item) => item.id !== id));
   }
+  async function dismissReturnUpdate(id) {
+    await markReturnSeenByCustomer(id);
+    setReturnRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, seenByCustomer: true } : r))
+    );
+  }
 
   function handleLogout() {
     doLogoutFn(setCart, dict.customer.dialogs);
   }
 
-  function openReturnRequestModal(order, item) {
+  function openReturnRequestModal(order) {
     setReturnModalOrder(order);
-    setReturnModalItem(item);
   }
 
   function closeReturnRequestModal() {
     setReturnModalOrder(null);
-    setReturnModalItem(null);
   }
 
-  async function submitReturnRequest({ reason, reasonKey, note }) {
-    if (!returnModalOrder || !returnModalItem) return;
+  async function submitReturnRequest({ item, reason, reasonKey, note }) {
+    if (!returnModalOrder || !item) return;
 
     await requestReturn({
       orderDocId: returnModalOrder.docId,
       orderId: returnModalOrder.id,
-      itemCode: returnModalItem.code,
-      itemName: returnModalItem.name,
-      itemImg: returnModalItem.img,
-      qty: returnModalItem.qty,
-      color: returnModalItem.color,
-      size: returnModalItem.size,
-      price: returnModalItem.price,
+      itemCode: item.code,
+      itemName: item.name,
+      itemImg: item.img,
+      qty: item.qty,
+      color: item.color,
+      size: item.size,
+      price: item.price,
       customerEmail: currentUser?.email || "",
       customerName: currentUser?.name || "",
       reason,
@@ -967,8 +985,6 @@ export default function Customer() {
       note,
     });
 
-    const updated = await getReturnRequestsByUser(currentUser.email);
-    setReturnRequests(updated);
     closeReturnRequestModal();
     alertDialog(dict.customer.returns.submitSuccess);
   }
@@ -1253,8 +1269,9 @@ export default function Customer() {
       />
 
       <ReturnRequestModal
-        open={!!returnModalItem}
-        item={returnModalItem}
+        open={!!returnModalOrder}
+        order={returnModalOrder}
+        returnRequests={returnRequests}
         onClose={closeReturnRequestModal}
         onSubmit={submitReturnRequest}
       />
