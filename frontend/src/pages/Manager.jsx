@@ -23,6 +23,7 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
+import { getAllReturnRequests } from "../services/returns/returnsService";
 import { subscribeToOrders, updateOrderStatus, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";import {
   getAllDeliveries,
   addDelivery,
@@ -113,6 +114,13 @@ export default function Manager({ onPromote }) {
 
   const [deliveries, setDeliveries] = useState([]);
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
+  const [returnRequests, setReturnRequests] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getAllReturnRequests().then(setReturnRequests);
+  }, [isLoggedIn, activeView, refreshKey]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -514,7 +522,7 @@ export default function Manager({ onPromote }) {
 
           {activeView === "receipts" && <ReceiptsView receipts={receipts} />}
           {activeView === "analytics" && (
-            <AnalyticsView orders={orders} products={products} />
+            <AnalyticsView orders={orders} products={products} returnRequests={returnRequests} />
           )}
           {activeView === "feedback" && <FeedbackView />}
           {activeView === "stockNotifications" && <StockNotificationsView />}

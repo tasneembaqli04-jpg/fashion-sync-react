@@ -5,6 +5,9 @@ import {
   getAllReturnRequests,
   updateReturnStatus,
 } from "../../../services/returns/returnsService";
+import { sendReturnStatusEmail } from "../../../services/email/emailService";
+import { restockReturnedItem } from "../../../services/products/productsService";
+import { issueGiftCard } from "../../../services/giftcard/giftCardService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
 function getMonthKey(value) {
@@ -51,10 +54,60 @@ export default function ManagerReturns() {
   }, []);
 
   async function handleUpdateStatus(id, status) {
+    const request = requests.find((r) => r.id === id);
+
     await updateReturnStatus(id, status);
     setRequests((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status } : r))
     );
+
+    if (!request) return;
+
+    let giftCardCode = "";
+    let giftCardAmount = 0;
+
+    if (status === "approved") {
+      try {
+        if (request.reasonKey !== "defective") {
+          await restockReturnedItem({
+            code: request.itemCode,
+            qty: request.qty,
+            color: request.color,
+            size: request.size,
+          });
+        }
+      } catch (err) {
+        console.error("Restock failed (continuing anyway):", err);
+      }
+
+      giftCardAmount = (Number(request.price) || 0) * (Number(request.qty) || 1);
+
+      if (giftCardAmount > 0) {
+        try {
+          giftCardCode = `RTN-${id.slice(0, 8).toUpperCase()}`;
+          await issueGiftCard({
+            code: giftCardCode,
+            amount: giftCardAmount,
+            buyerEmail: request.customerEmail,
+            recipientName: request.customerName,
+            message: `זיכוי אוטומטי עבור החזרת ${request.itemName || "פריט"}`,
+          });
+        } catch (err) {
+          console.error("Gift card issuance failed (continuing anyway):", err);
+          giftCardCode = "";
+        }
+      }
+    }
+
+    if (request.customerEmail) {
+      sendReturnStatusEmail({
+        toEmail: request.customerEmail,
+        itemName: request.itemName,
+        status,
+        giftCardCode,
+        giftCardAmount,
+      });
+    }
   }
 
   const availableMonths = useMemo(() => {
@@ -182,6 +235,11 @@ export default function ManagerReturns() {
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.15rem" }}>
                   {t.reasonLabel} {request.reason}
+                  {request.reasonKey === "defective" && (
+                    <span style={{ color: "var(--red)", marginInlineStart: "0.4rem" }}>
+                      ({t.noRestockNote})
+                    </span>
+                  )}
                 </div>
                 {request.note && (
                   <div style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.15rem" }}>

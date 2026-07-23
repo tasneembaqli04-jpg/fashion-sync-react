@@ -947,7 +947,7 @@ export default function Customer() {
     setReturnModalItem(null);
   }
 
-  async function submitReturnRequest({ reason, note }) {
+  async function submitReturnRequest({ reason, reasonKey, note }) {
     if (!returnModalOrder || !returnModalItem) return;
 
     await requestReturn({
@@ -957,9 +957,13 @@ export default function Customer() {
       itemName: returnModalItem.name,
       itemImg: returnModalItem.img,
       qty: returnModalItem.qty,
+      color: returnModalItem.color,
+      size: returnModalItem.size,
+      price: returnModalItem.price,
       customerEmail: currentUser?.email || "",
       customerName: currentUser?.name || "",
       reason,
+      reasonKey,
       note,
     });
 

@@ -128,3 +128,62 @@ export async function decrementProductsStock(cartItems = []) {
     }
   }
 }
+export async function restockReturnedItem({ code, qty, color, size }) {
+  if (!code) return;
+
+  const productRef = doc(db, "products", code);
+  const snapshot = await getDoc(productRef);
+
+  if (!snapshot.exists()) return;
+
+  const data = snapshot.data();
+  const addQty = Number(qty) || 0;
+  const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
+
+  if (hasVariants) {
+    const variants = data.variants.map((variant) => ({
+      colorName: variant.colorName,
+      sizes: { ...(variant.sizes || {}) },
+    }));
+
+    const variantIndex = variants.findIndex(
+      (variant) => variant.colorName === color
+    );
+
+    if (variantIndex !== -1) {
+      const sizesInColor = variants[variantIndex].sizes || {};
+
+      if (size && sizesInColor[size] !== undefined) {
+        const currentSizeQty = Number(sizesInColor[size]) || 0;
+        variants[variantIndex].sizes[size] = currentSizeQty + addQty;
+      } else {
+        const firstSizeKey = Object.keys(sizesInColor)[0];
+        if (firstSizeKey) {
+          const currentSizeQty = Number(sizesInColor[firstSizeKey]) || 0;
+          variants[variantIndex].sizes[firstSizeKey] = currentSizeQty + addQty;
+        }
+      }
+    }
+
+    const newStock = variants.reduce(
+      (sum, variant) =>
+        sum +
+        Object.values(variant.sizes || {}).reduce(
+          (innerSum, sizeQty) => innerSum + (Number(sizeQty) || 0),
+          0
+        ),
+      0
+    );
+
+    await updateDoc(productRef, {
+      stock: newStock,
+      variants,
+    });
+  } else {
+    const currentStock = Number(data.stock) || 0;
+
+    await updateDoc(productRef, {
+      stock: currentStock + addQty,
+    });
+  }
+}
