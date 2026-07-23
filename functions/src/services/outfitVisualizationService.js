@@ -1,6 +1,8 @@
 const {getGeminiClient} = require("../config/gemini");
 
 const IMAGE_MODEL_NAME = "gemini-3.1-flash-image";
+const MAX_REFERENCE_IMAGES = 6;
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 /**
  * Builds a readable catalog description for one product.
@@ -47,7 +49,7 @@ function buildVisualizationPrompt({
 הדמות אינה הלקוחה ואינה מבוססת על אדם אמיתי.
 
 המטרה:
-להמחיש את פריטי FashionSync הבאים כלוק אחד שלם והרמוני.
+להציג את פריטי FashionSync שבתמונות הייחוס כלוק אחד שלם והרמוני.
 
 פרטי הבקשה:
 קהל יעד: ${intent.gender || "לא צוין"}
@@ -59,16 +61,176 @@ function buildVisualizationPrompt({
 פריטי הלוק:
 ${productDescriptions}
 
-הוראות:
+הוראות מחייבות:
+- תמונות המוצרים המצורפות הן תמונות ייחוס מחייבות.
+- כל תמונת ייחוס מתאימה לפריט המתואר מיד לפניה.
 - הצג דמות אחת בלבד.
 - הצג צילום מלא מכף רגל ועד ראש.
+- הלבש את הדמות בפריטים שסופקו בלבד ככל האפשר.
+- שמור במדויק ככל האפשר על הגזרה והמבנה של כל מוצר.
+- שמור על קו הכתפיים, הצווארון, השרוולים והאורך.
+- שמור על מלמלות, תחרה, קישוטים, אבזמים ופרטים מיוחדים.
+- שמור על הצבעים, הבד, המרקם והצללית של המוצרים.
+- אל תחליף מוצר בעיצוב כללי או במוצר דומה.
+- אל תשנה שמלה עם מלמלות לשמלה חלקה.
+- אל תמציא פריט לבוש מרכזי שלא נשלח כתמונת ייחוס.
+- אם סופקה שמלה, היא תהיה פריט הלבוש המרכזי בתמונה.
+- התאם את הנעליים, התיק והאביזרים לפי תמונות הייחוס שלהם.
 - השתמש במראה טבעי, מכובד ומסחרי.
-- שלב את הפריטים כלוק אחד קוהרנטי.
-- שמור ככל האפשר על סוגי הפריטים, הצבעים והסגנון המתוארים.
-- אל תוסיף טקסט, מחירים, קודי מוצרים או לוגואים לתמונה.
+- אל תוסיף טקסט, מחיר, קוד מוצר או לוגו לתמונה.
 - אל תיצור קולאז׳ או כמה תמונות.
 - השתמש ברקע סטודיו נקי ועדין.
 `.trim();
+}
+
+/**
+ * Normalizes an image MIME type.
+ *
+ * @param {string} mimeType Response content type.
+ * @param {string} imageUrl Original image URL.
+ * @return {string} Supported MIME type.
+ */
+function normalizeImageMimeType(mimeType, imageUrl) {
+  const normalizedMimeType = String(
+    mimeType || ""
+  )
+    .split(";")[0]
+    .trim()
+    .toLowerCase();
+
+  if (
+    normalizedMimeType === "image/jpeg" ||
+    normalizedMimeType === "image/png" ||
+    normalizedMimeType === "image/webp"
+  ) {
+    return normalizedMimeType;
+  }
+
+  const normalizedUrl = String(
+    imageUrl || ""
+  ).toLowerCase();
+
+  if (
+    normalizedUrl.includes(".jpg") ||
+    normalizedUrl.includes(".jpeg")
+  ) {
+    return "image/jpeg";
+  }
+
+  if (normalizedUrl.includes(".webp")) {
+    return "image/webp";
+  }
+
+  return "image/png";
+}
+
+/**
+ * Downloads a catalog image and converts it to inline data.
+ *
+ * @param {string} imageUrl Public catalog image URL.
+ * @return {Promise<object>} Gemini inline image data.
+ */
+async function downloadImageAsInlineData(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== "string") {
+    throw new Error("Product image URL is missing");
+  }
+
+  const response = await fetch(imageUrl, {
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to download product image: ${response.status}`
+    );
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+
+  if (!arrayBuffer.byteLength) {
+    throw new Error("Downloaded product image is empty");
+  }
+
+  if (arrayBuffer.byteLength > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error(
+      "Product image is larger than the allowed limit"
+    );
+  }
+
+  const mimeType = normalizeImageMimeType(
+    response.headers.get("content-type"),
+    imageUrl
+  );
+
+  return {
+    inlineData: {
+      mimeType,
+      data: Buffer
+        .from(arrayBuffer)
+        .toString("base64"),
+    },
+  };
+}
+
+/**
+ * Creates Gemini parts containing the product label and image.
+ *
+ * @param {object[]} products Selected products.
+ * @return {Promise<object[]>} Multimodal Gemini parts.
+ */
+async function buildReferenceImageParts(products) {
+  const productsWithImages = products
+    .filter((product) =>
+      Boolean(product?.imageUrl)
+    )
+    .slice(0, MAX_REFERENCE_IMAGES);
+
+  const settledResults = await Promise.allSettled(
+    productsWithImages.map(async (product, index) => {
+      const imagePart =
+        await downloadImageAsInlineData(
+          product.imageUrl
+        );
+
+      return [
+        {
+          text: `
+תמונת ייחוס לפריט ${index + 1}:
+${product.name || "מוצר ללא שם"}
+קוד מוצר: ${product.code || "לא ידוע"}
+קטגוריה: ${product.category || "לא ידועה"}
+
+יש לשמור על העיצוב החזותי של מוצר זה.
+`.trim(),
+        },
+        imagePart,
+      ];
+    })
+  );
+
+  const parts = [];
+
+  settledResults.forEach((result, index) => {
+    if (result.status === "fulfilled") {
+      parts.push(...result.value);
+      return;
+    }
+
+    console.warn(
+      "PRODUCT REFERENCE IMAGE DOWNLOAD FAILED:",
+      {
+        product:
+          productsWithImages[index]?.code ||
+          productsWithImages[index]?.name ||
+          null,
+        error:
+          result.reason?.message ||
+          String(result.reason),
+      }
+    );
+  });
+
+  return parts;
 }
 
 /**
@@ -99,9 +261,36 @@ async function generateOutfitVisualization({
     products,
   });
 
+  const referenceImageParts =
+    await buildReferenceImageParts(products);
+
+  if (!referenceImageParts.length) {
+    console.warn(
+      "No product reference images were downloaded; generating from text only"
+    );
+  }
+
+  console.log(
+    "OUTFIT REFERENCE IMAGES:",
+    referenceImageParts.filter(
+      (part) => part?.inlineData
+    ).length
+  );
+
   const response = await ai.models.generateContent({
     model: IMAGE_MODEL_NAME,
-    contents: prompt,
+
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: prompt,
+          },
+          ...referenceImageParts,
+        ],
+      },
+    ],
 
     config: {
       responseModalities: ["IMAGE"],

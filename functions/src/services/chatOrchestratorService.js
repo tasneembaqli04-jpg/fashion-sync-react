@@ -16,6 +16,10 @@ const {
   generateOutfitVisualization,
 } = require("./outfitVisualizationService");
 
+const {
+  planOutfit,
+} = require("./outfitPlannerService");
+
 const PRODUCT_INTENTS = new Set([
   INTENTS.PRODUCT_SEARCH,
   INTENTS.PRODUCT_DETAILS,
@@ -23,6 +27,7 @@ const PRODUCT_INTENTS = new Set([
   INTENTS.PRICE_CHECK,
   INTENTS.SALE_SEARCH,
   INTENTS.OUTFIT_RECOMMENDATION,
+  INTENTS.OUTFIT_MODIFICATION,
 ]);
 
 function buildProductSearchOptions(intent) {
@@ -38,7 +43,10 @@ function buildProductSearchOptions(intent) {
     saleOnly:
       intent.saleOnly ||
       intent.intent === INTENTS.SALE_SEARCH,
-    limit: 5,
+    limit:
+      intent.intent === INTENTS.OUTFIT_RECOMMENDATION
+        ? 50
+        : 5,
   };
 }
 
@@ -156,58 +164,18 @@ function buildConversationInstruction(intent) {
 function isImageResponseRequested(intent) {
   return (
     intent?.responseMode === "IMAGE" &&
-    intent?.intent === INTENTS.OUTFIT_RECOMMENDATION
+    (
+      intent?.intent === INTENTS.OUTFIT_RECOMMENDATION ||
+      intent?.intent === INTENTS.OUTFIT_MODIFICATION
+    )
   );
 }
 
-function selectVisualizationProducts(products) {
-  if (!Array.isArray(products)) {
-    return [];
-  }
-
-  const preferredCategories = [
-    "שמלות",
-    "נעליים",
-    "אביזרים",
-    "עליוניות",
-    "חולצות",
-    "מכנסיים",
-  ];
-
-  const selectedProducts = [];
-  const usedCategories = new Set();
-
-  for (const preferredCategory of preferredCategories) {
-    const matchingProduct = products.find((product) => {
-      const productCategory =
-        product.category || product.cat || "";
-
-      return (
-        productCategory === preferredCategory &&
-        !usedCategories.has(productCategory)
-      );
-    });
-
-    if (matchingProduct) {
-      selectedProducts.push(matchingProduct);
-      usedCategories.add(preferredCategory);
-    }
-
-    if (selectedProducts.length === 4) {
-      break;
-    }
-  }
-
-  if (!selectedProducts.length) {
-    return products.slice(0, 4);
-  }
-
-  return selectedProducts;
-}
 
 async function handleChatMessage({
   message,
   history = [],
+  currentOutfit = [],
   onChunk,
 }) {
   const intent = await detectChatIntent({
@@ -215,6 +183,12 @@ async function handleChatMessage({
     history,
   });
   console.log("DETECTED CHAT INTENT:", intent);
+  console.log(
+    "CURRENT OUTFIT:",
+    Array.isArray(currentOutfit)
+      ? currentOutfit.map((product) => product?.code)
+      : []
+  );
 
   if (
     intent.needsClarification &&
@@ -276,11 +250,57 @@ async function handleChatMessage({
       };
     }
 
-    const selectedProducts =
-      selectVisualizationProducts(products);
+    let outfitPlan;
+
+    try {
+      outfitPlan = await planOutfit({
+        products,
+        intent,
+        message,
+      });
+    } catch (error) {
+      console.error(
+        "OUTFIT PLANNER ERROR:",
+        error?.message || error
+      );
+
+      const messageText =
+        "לא הצלחתי לבחור כרגע לוק מתאים מתוך הקטלוג. אפשר לנסות שוב בעוד רגע.";
+
+      onChunk(messageText);
+
+      return {
+        intent,
+        products: [],
+        responseMode: "IMAGE",
+        imageGenerated: false,
+        error: "OUTFIT_PLANNING_FAILED",
+      };
+    }
+
+    if (
+      !outfitPlan?.success ||
+      !outfitPlan.selectedProducts?.length
+    ) {
+      const messageText =
+        outfitPlan?.explanation ||
+        "לא נמצאו כרגע מספיק מוצרים מתאימים לבניית הלוק.";
+
+      onChunk(messageText);
+
+      return {
+        intent,
+        products: [],
+        responseMode: "IMAGE",
+        imageGenerated: false,
+        error: "NO_OUTFIT_PRODUCTS",
+      };
+    }
 
     const productsForVisualization =
-      selectedProducts.map(buildProductForAi);
+      outfitPlan.selectedProducts.map(
+        buildProductForAi
+      );
 
     try {
       const visualization =
@@ -295,6 +315,8 @@ async function handleChatMessage({
         responseMode: "IMAGE",
         imageGenerated: true,
         image: visualization,
+        outfitExplanation:
+          outfitPlan.explanation || "",
       };
     } catch (error) {
       console.error(
@@ -303,7 +325,7 @@ async function handleChatMessage({
       );
 
       const messageText =
-        "לא הצלחתי ליצור כרגע את תמונת הלוק. אפשר לנסות שוב בעוד רגע.";
+        "בחרתי לוק מתוך הקטלוג, אבל לא הצלחתי ליצור כרגע את התמונה. אפשר לנסות שוב בעוד רגע.";
 
       onChunk(messageText);
 

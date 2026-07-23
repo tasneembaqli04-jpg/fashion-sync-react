@@ -12,6 +12,7 @@ const INTENTS = Object.freeze({
   PRICE_CHECK: "PRICE_CHECK",
   SALE_SEARCH: "SALE_SEARCH",
   OUTFIT_RECOMMENDATION: "OUTFIT_RECOMMENDATION",
+  OUTFIT_MODIFICATION: "OUTFIT_MODIFICATION",
   STORE_INFO: "STORE_INFO",
   ORDER_STATUS: "ORDER_STATUS",
   LOYALTY_POINTS: "LOYALTY_POINTS",
@@ -44,6 +45,7 @@ const CONVERSATION_ACTION_VALUES = Object.freeze([
   "CONTINUE",
   "RESET",
   "RELATED_SEARCH",
+  "ASK_CHANGE_TARGET",
 ]);
 
 const INTENT_SCHEMA = {
@@ -280,6 +282,77 @@ needsClarification=false
 conversationAction="RELATED_SEARCH"
 category="שמלות"
 
+כללי שינוי לוק קיים:
+
+כאשר הלקוחה מבקשת לשנות לוק שכבר הוצג,
+למשל:
+
+- "עוד אפשרות"
+- "אפשר לוק אחר?"
+- "תראי לי משהו אחר"
+- "תחליפי משהו"
+- "אני רוצה אפשרות אחרת"
+
+אם לא ברור איזה פריט היא רוצה להחליף:
+
+- intent יהיה OUTFIT_MODIFICATION.
+- conversationAction יהיה ASK_CHANGE_TARGET.
+- needsClarification יהיה true.
+- clarificationQuestion יהיה:
+  "בשמחה 😊 מה תרצי להחליף בלוק — את השמלה, הנעליים, התיק, האביזרים או את כל הלוק?"
+- שמור מההיסטוריה את gender, occasion, eventTime, season,
+  style, outfitType ו-responseMode.
+- אין לבחור מוצרים חדשים ואין ליצור תמונה לפני קבלת תשובת הלקוחה.
+
+כאשר הלקוחה מציינת במפורש מה להחליף,
+למשל:
+
+- "תחליפי את השמלה"
+- "אני רוצה נעליים אחרות"
+- "תיק אחר"
+- "תשני את האביזרים"
+- "תחליפי את כל הלוק"
+
+אז:
+
+- intent יהיה OUTFIT_MODIFICATION.
+- conversationAction יהיה CONTINUE.
+- needsClarification יהיה false.
+- clarificationQuestion יהיה null.
+- השתמש בהיסטוריה כדי לשמור את פרטי הלוק הקודם.
+- category יהיה בהתאם לפריט המבוקש:
+  "שמלה" -> "שמלות"
+  "נעליים" -> "נעליים"
+  "תיק" או "אביזרים" -> "אביזרים"
+- כאשר הלקוחה מבקשת להחליף את כל הלוק,
+  category יהיה null,
+  outfitType יהיה COMPLETE_OUTFIT.
+- אם הלוק הקודם היה תמונה,
+  responseMode יישאר IMAGE.
+
+כאשר intent הוא OUTFIT_RECOMMENDATION
+ו-outfitType הוא COMPLETE_OUTFIT:
+
+- אם gender אינו ידוע, אסור לבחור מגדר לבד.
+- needsClarification חייב להיות true.
+- clarificationQuestion חייב להיות:
+  "הלוק מיועד לאישה או לגבר?"
+- gender יהיה null.
+- אין ליצור עדיין תמונה או לבחור מוצרים לפני קבלת תשובת הלקוחה.
+
+כאשר הלקוחה עונה לאחר מכן תשובה קצרה כמו:
+"לאישה"
+"נשים"
+"לגבר"
+"גברים"
+
+- השתמש בהיסטוריית השיחה כדי להשלים את הבקשה הקודמת.
+- conversationAction יהיה CONTINUE.
+- needsClarification יהיה false.
+- clarificationQuestion יהיה null.
+- שמור את occasion, responseMode, outfitType וכל שאר התנאים מהבקשה הקודמת.
+- gender יהיה "נשים" או "גברים" בהתאם לתשובה.
+
 - אם הבקשה המקורית הייתה לקבל תמונה או המחשה חזותית,
   שמור responseMode="IMAGE" גם לאחר תשובת ההבהרה.
 
@@ -288,6 +361,8 @@ category="שמלות"
 
 אם אין היסטוריה קודמת:
 - conversationAction יהיה RESET.
+
+
 
 כללי קטגוריות:
 - category יהיה רק אחד מהערכים הבאים:

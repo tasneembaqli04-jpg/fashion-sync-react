@@ -4,7 +4,11 @@ const {
 
 async function chatController(request, response) {
   try {
-    const {message, history} = request.body || {};
+    const {
+      message,
+      history,
+      currentOutfit,
+    } = request.body || {};
 
     if (
       !message ||
