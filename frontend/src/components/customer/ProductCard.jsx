@@ -196,18 +196,6 @@ export default function ProductCard({
           <div className={cardStyles.productCode}>
             {product.code} · {dict.genderLabels[product.gender] || product.gender} · {dict.categoryLabels[product.cat] || product.cat}
           </div>
-          {(colors.length > 0 || sizes.length > 0) && (
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--light-gray)",
-                marginTop: "0.25rem",
-              }}
-            >
-              {colors.length > 0 && <div>{t.colorsLabel}: {colors.join(", ")}</div>}
-              {sizes.length > 0 && <div>{t.sizesLabel}: {sizes.join(", ")}</div>}
-            </div>
-          )}
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

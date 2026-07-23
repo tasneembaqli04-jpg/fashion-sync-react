@@ -627,6 +627,10 @@ export const en = {
         trustPci: "🛡️ PCI DSS",
         trustReturns: "↩️ Free 30-day returns",
         trustSupport: "📞 24/7 Support",
+        applyGiftCardButton: "Apply",
+        removeButton: "Remove",
+        giftCardPartialNote: "If the balance doesn't cover the full amount, you can still choose another payment method below to complete the payment.",
+        fullyCoveredNote: "✅ The amount is fully covered by the applied credits — no additional payment method is needed.",
       },
 
       step4: {
@@ -690,7 +694,7 @@ export const en = {
       subtitle: "Everything you need to know",
       returnsTitle: "🔄 Return Policy",
       returnsText:
-        "Items can be returned within 30 days of purchase, provided they are in original condition with tags attached. Full refund to credit card or store credit. Final sale items cannot be returned.",
+        'You can request a return for delivered items, per item, from the "My Orders" page. Our team reviews each request, and you\'ll get an update in the app and by email on whether it was approved or rejected. If approved, you\'ll receive store credit as a gift card for the value of the returned item, usable on your next purchase.',
       shippingTitle: "🚚 Shipping Policy",
       shippingLine1: "Standard shipping: 5–7 business days — ₪25 (free for orders over ₪200)",
       shippingLine2: "Express shipping: 2–3 business days — ₪29",

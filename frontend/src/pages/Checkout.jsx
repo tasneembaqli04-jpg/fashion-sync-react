@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
-import { redeemGiftCardAmount } from "../services/giftcard/giftCardService";
+import { getGiftCard, redeemGiftCardAmount } from "../services/giftcard/giftCardService";
 import { logCouponUsage } from "../services/coupons/couponsService";
 import { redeemLoyaltyPoints } from "../services/customer/customerFirestore";
 import { sendOrderConfirmationEmail } from "../services/email/emailService";
@@ -52,6 +52,9 @@ export default function Checkout() {
   const [preAppliedGiftCardDiscount, setPreAppliedGiftCardDiscount] = useState(0);
   const [payMethod, setPayMethod] = useState("card");
   const [giftCardCode, setGiftCardCode] = useState("");
+  const [giftCardApplyError, setGiftCardApplyError] = useState("");
+  const [checkoutGiftCardCode, setCheckoutGiftCardCode] = useState("");
+  const [checkoutGiftCardDiscount, setCheckoutGiftCardDiscount] = useState(0);
   const [selectedInstallments, setSelectedInstallments] = useState(1);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -141,7 +144,10 @@ export default function Checkout() {
       ? Math.max(0, subtotal - discountAmount - pointsDiscountAmount)
       : getTotal(cart, discountPct, selectedShipping, pointsDiscountAmount);
 
-    return Math.max(0, baseTotal - preAppliedGiftCardDiscount);
+    return Math.max(
+      0,
+      baseTotal - preAppliedGiftCardDiscount - checkoutGiftCardDiscount
+    );
   }, [
       cart,
       discountPct,
@@ -151,6 +157,7 @@ export default function Checkout() {
       discountAmount,
       pointsDiscountAmount,
       preAppliedGiftCardDiscount,
+      checkoutGiftCardDiscount,
     ],
   );
 
@@ -211,6 +218,52 @@ export default function Checkout() {
     }));
   }
 
+  const remainingBeforeCheckoutGiftCard = useMemo(() => {
+    const baseTotal = isGiftCardOnly
+      ? Math.max(0, subtotal - discountAmount - pointsDiscountAmount)
+      : getTotal(cart, discountPct, selectedShipping, pointsDiscountAmount);
+
+    return Math.max(0, baseTotal - preAppliedGiftCardDiscount);
+  }, [
+    cart,
+    discountPct,
+    selectedShipping,
+    isGiftCardOnly,
+    subtotal,
+    discountAmount,
+    pointsDiscountAmount,
+    preAppliedGiftCardDiscount,
+  ]);
+
+  async function applyGiftCardAtCheckout() {
+    const code = giftCardCode.trim();
+    setGiftCardApplyError("");
+
+    if (!code) {
+      setGiftCardApplyError(dict.customer.dialogs.invalidGiftCard);
+      return;
+    }
+
+    const card = await getGiftCard(code);
+
+    if (!card || card.status !== "active" || Number(card.balance) <= 0) {
+      setGiftCardApplyError(dict.customer.dialogs.invalidGiftCard);
+      return;
+    }
+
+    const usable = Math.min(Number(card.balance), remainingBeforeCheckoutGiftCard);
+
+    setCheckoutGiftCardCode(code);
+    setCheckoutGiftCardDiscount(usable);
+  }
+
+  function removeGiftCardAtCheckout() {
+    setCheckoutGiftCardCode("");
+    setCheckoutGiftCardDiscount(0);
+    setGiftCardCode("");
+    setGiftCardApplyError("");
+  }
+
   function handleSelectShipping(shippingId) {
     const found = SHIPPING_OPTIONS.find((option) => option.id === shippingId);
     if (found) {
@@ -262,6 +315,15 @@ export default function Checkout() {
 
     if (!termsAccepted) {
       nextErrors.terms = true;
+    }
+
+    if (total <= 0) {
+      return nextErrors;
+    }
+
+    if (payMethod === "giftcard") {
+      nextErrors.needsAnotherMethod = true;
+      return nextErrors;
     }
 
     if (payMethod === "card") {
@@ -353,7 +415,8 @@ export default function Checkout() {
             orderSubtotal - orderDiscountAmount - orderPointsDiscountAmount
           ) +
             orderShippingCost -
-            orderGiftCardDiscount
+            orderGiftCardDiscount -
+            checkoutGiftCardDiscount
         );
 
         const receipt = {
@@ -414,6 +477,10 @@ export default function Checkout() {
           await redeemGiftCardAmount(orderGiftCardCode, orderGiftCardDiscount);
           localStorage.removeItem(LS_KEYS.GIFT_CARD_CODE);
           localStorage.removeItem(LS_KEYS.GIFT_CARD_DISCOUNT);
+        }
+
+        if (checkoutGiftCardCode && checkoutGiftCardDiscount > 0) {
+          await redeemGiftCardAmount(checkoutGiftCardCode, checkoutGiftCardDiscount);
         }
 
         await clearCheckoutCart();
@@ -507,6 +574,11 @@ export default function Checkout() {
             setPayMethod={setPayMethod}
             giftCardCode={giftCardCode}
             setGiftCardCode={setGiftCardCode}
+            giftCardApplyError={giftCardApplyError}
+            onApplyGiftCard={applyGiftCardAtCheckout}
+            appliedGiftCardCode={checkoutGiftCardCode}
+            appliedGiftCardDiscount={checkoutGiftCardDiscount}
+            onRemoveGiftCard={removeGiftCardAtCheckout}
             isGiftCardOnly={isGiftCardOnly}
             form={formData}
             errors={errors}
@@ -517,7 +589,7 @@ export default function Checkout() {
             subtotal={subtotal}
             discount={discountAmount}
             pointsDiscount={pointsDiscountAmount}
-            giftCardDiscount={preAppliedGiftCardDiscount}
+            giftCardDiscount={preAppliedGiftCardDiscount + checkoutGiftCardDiscount}
             shippingCost={shippingCost}
             total={total}
             termsAccepted={termsAccepted}
