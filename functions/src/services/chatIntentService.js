@@ -72,6 +72,8 @@ const INTENT_SCHEMA = {
     responseMode: {
       type: "string",
       enum: RESPONSE_MODE_VALUES,
+      description:
+        "Use IMAGE whenever the customer asks to see, build, create, visualize, modify, or receive an outfit or complete look. Use TEXT for ordinary answers and clarification questions.",
     },
 
     category: {
@@ -483,6 +485,35 @@ category="שמלות"
   responseMode: IMAGE
   outfitType: COMPLETE_OUTFIT
   needsClarification: false
+
+כאשר הלקוחה מבקשת לראות, להציג, ליצור או לקבל לוק חזותי,
+יש להחזיר:
+
+- intent = OUTFIT_RECOMMENDATION
+- responseMode = IMAGE
+
+דוגמאות לבקשות שדורשות IMAGE:
+
+- "תראי לי לוק לחתונה"
+- "תבני לי לוק לערב"
+- "אפשר לראות לוק עם שמלה שחורה?"
+- "תציעי לי הופעה מלאה"
+- "תכיני לי שילוב לאירוע"
+- "תראי איך הפריטים נראים יחד"
+- "אני רוצה לוק אחר"
+- "תחליפי את השמלה בלוק"
+
+אין צורך שהלקוחה תשתמש במילה "תמונה".
+כאשר הכוונה היא לראות לוק, שילוב או הופעה חזותית,
+responseMode חייב להיות IMAGE.
+
+כאשר חסר מידע הכרחי ויש לשאול שאלת הבהרה:
+- needsClarification = true
+- responseMode = TEXT
+
+לאחר שהלקוחה עונה על שאלת ההבהרה וכל המידע הדרוש קיים:
+- needsClarification = false
+- responseMode = IMAGE
 `.trim();
 
 /**

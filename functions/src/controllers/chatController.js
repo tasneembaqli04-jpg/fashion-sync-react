@@ -41,6 +41,9 @@ async function chatController(request, response) {
     const result = await handleChatMessage({
       message: message.trim(),
       history: Array.isArray(history) ? history : [],
+      currentOutfit: Array.isArray(currentOutfit)
+        ? currentOutfit
+        : [],
       onChunk: (text) => {
         if (!text) {
           return;
