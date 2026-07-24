@@ -440,11 +440,7 @@ export default function Customer() {
           if (!botMessageStarted) {
             botMessageStarted = true;
             setIsChatTyping(false);
-            setCurrentOutfit(
-              Array.isArray(result.products)
-                ? result.products
-                : []
-            );
+            
 
             setChatMessages((prev) => [
               ...prev,
@@ -473,6 +469,11 @@ export default function Customer() {
         result?.imageGenerated === true &&
         result?.image?.dataUrl
       ) {
+        setCurrentOutfit(
+          Array.isArray(result.products)
+            ? result.products
+            : []
+        );
         setIsChatTyping(false);
 
         setChatMessages((prev) => [

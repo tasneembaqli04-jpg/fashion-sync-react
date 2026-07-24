@@ -48,6 +48,10 @@ async function chatController(request, response) {
         if (!text) {
           return;
         }
+        console.log(
+          "CHAT CONTROLLER WRITING CHUNK:",
+          String(text)
+        );
 
         startTextStream();
         response.write(String(text));
@@ -59,6 +63,7 @@ async function chatController(request, response) {
       result?.imageGenerated === true &&
       result?.image?.dataUrl
     ) {
+
       if (textStreamStarted) {
         console.error(
           "Cannot return image after text streaming started."
@@ -80,6 +85,10 @@ async function chatController(request, response) {
         intent: result.intent || null,
       });
     }
+    console.log(
+      "CHAT CONTROLLER ENDING TEXT STREAM:",
+      textStreamStarted
+    );
 
     if (textStreamStarted) {
       return response.end();
