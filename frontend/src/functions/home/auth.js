@@ -1,6 +1,9 @@
 import { signIn, signUp } from "../../services/auth/firebaseAuth.js";
 import { saveAuthUser, CUSTOMER_PAGE } from "./storage.js";
-import { sendWelcomeEmail } from "../../services/email/emailService.js";
+import {
+  createAndSendVerificationCode,
+  isEmailVerified,
+} from "../../services/verification/verificationService.js";
 
 export function isGmail(email) {
   return /^[a-z0-9._%+-]+@gmail\.com$/.test(
@@ -35,8 +38,15 @@ export async function loginOrCreateUser(email, password, t) {
     return result;
   }
 
-  if (isNewSignup) {
-    sendWelcomeEmail({ toEmail: result.user.email, name: result.user.name });
+  if (isNewSignup || !(await isEmailVerified(normalizedEmail))) {
+    await createAndSendVerificationCode(normalizedEmail, result.user.name);
+
+    return {
+      needsVerification: true,
+      email: normalizedEmail,
+      name: result.user.name,
+      pendingUser: result.user,
+    };
   }
 
   saveAuthUser(result.user);
@@ -47,4 +57,12 @@ export async function loginOrCreateUser(email, password, t) {
       result.user.email
     )}&name=${encodeURIComponent(result.user.name)}`,
   };
+}
+
+export function completeVerifiedLogin(user) {
+  saveAuthUser(user);
+
+  return `${CUSTOMER_PAGE}?mode=auth&email=${encodeURIComponent(
+    user.email
+  )}&name=${encodeURIComponent(user.name)}`;
 }

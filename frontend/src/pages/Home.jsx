@@ -5,8 +5,13 @@ import HomeNavbar from "../components/home/HomeNavbar.jsx";
 import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
 import LoginModal from "../components/home/LoginModal.jsx";
-import { loginOrCreateUser } from "../functions/home/auth.js";
+import EmailVerificationModal from "../components/home/EmailVerificationModal.jsx";
+import { loginOrCreateUser, completeVerifiedLogin } from "../functions/home/auth.js";
 import { loadFeaturedImage } from "../functions/home/featuredProduct.js";
+import {
+  sendPasswordResetRequest,
+  sendWelcomeEmail,
+} from "../services/email/emailService.js";
 import styles from "../styles/Home.module.scss";
 import { loadTheme, saveTheme } from "../functions/home/theme.js";
 import {
@@ -27,6 +32,10 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordStatus, setForgotPasswordStatus] = useState("idle");
+
+  const [verificationOpen, setVerificationOpen] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(null);
 
   useEffect(() => {
     setIsLight(loadTheme());
@@ -48,32 +57,68 @@ export default function Home() {
     saveGuestMode();
     window.location.href = CUSTOMER_PAGE;
   }
-  
 
   function openLoginModal() {
     const saved = getSavedUser();
     setError("");
     setEmail(saved?.email || "");
     setPassword("");
+    setForgotPasswordStatus("idle");
     setLoginOpen(true);
+  }
+
+  async function handleForgotPassword(targetEmail) {
+    if (!targetEmail?.trim()) return;
+
+    setForgotPasswordStatus("sending");
+    await sendPasswordResetRequest({ toEmail: targetEmail.trim() });
+    setForgotPasswordStatus("sent");
   }
 
   async function handleLogin() {
     setError("");
     setLoading(true);
 
-    const result = await loginOrCreateUser(email, password, dict.home.authErrors);
+    try {
+      const result = await loginOrCreateUser(email, password, dict.home.authErrors);
 
-    setLoading(false);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
 
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.needsVerification) {
+        setPendingVerification(result);
+        setLoginOpen(false);
+        setVerificationOpen(true);
+        return;
+      }
+
+      window.location.href = result.redirectUrl;
+    } catch (err) {
+      console.error("Login failed:", err);
+      setError(dict.home.authErrors.genericError);
+    } finally {
+      setLoading(false);
     }
-
-    window.location.href = result.redirectUrl;
   }
 
+  async function handleVerified() {
+    if (!pendingVerification?.pendingUser) return;
+
+    await sendWelcomeEmail({
+      toEmail: pendingVerification.email,
+      name: pendingVerification.name,
+    });
+
+    const redirectUrl = completeVerifiedLogin(pendingVerification.pendingUser);
+    window.location.href = redirectUrl;
+  }
+
+  function closeVerificationModal() {
+    setVerificationOpen(false);
+    setPendingVerification(null);
+  }
 
   return (
     <div className={styles.homePage}>
@@ -93,6 +138,16 @@ export default function Home() {
         onPasswordChange={setPassword}
         onClose={() => setLoginOpen(false)}
         onSubmit={handleLogin}
+        onForgotPassword={handleForgotPassword}
+        forgotPasswordStatus={forgotPasswordStatus}
+      />
+
+      <EmailVerificationModal
+        isOpen={verificationOpen}
+        email={pendingVerification?.email || ""}
+        name={pendingVerification?.name || ""}
+        onClose={closeVerificationModal}
+        onVerified={handleVerified}
       />
     </div>
   );

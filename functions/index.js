@@ -10,6 +10,7 @@ const {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,
+  sendPasswordResetEmail,
 } = require("./src");
 
 exports.backendHealthCheck = backendHealthCheck;
@@ -23,3 +24,4 @@ exports.sendReturnStatusEmail = sendReturnStatusEmail;
 exports.sendVerificationEmail = sendVerificationEmail;
 exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.sendContactNotificationEmail = sendContactNotificationEmail;
+exports.sendPasswordResetEmail = sendPasswordResetEmail;

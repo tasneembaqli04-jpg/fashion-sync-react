@@ -11,6 +11,8 @@ export default function LoginModal({
   onPasswordChange,
   onClose,
   onSubmit,
+  onForgotPassword,
+  forgotPasswordStatus,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.home.loginModal;
@@ -55,6 +57,37 @@ export default function LoginModal({
             placeholder={t.passwordPlaceholder}
             onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           />
+        </div>
+
+        <div style={{ textAlign: "start", marginBottom: "0.7rem" }}>
+          <button
+            type="button"
+            onClick={() => onForgotPassword(email)}
+            disabled={forgotPasswordStatus === "sending" || !email.trim()}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--gold)",
+              fontSize: "0.82rem",
+              cursor: "pointer",
+              padding: 0,
+              textDecoration: "underline",
+            }}
+          >
+            {t.forgotPasswordLink}
+          </button>
+
+          {forgotPasswordStatus === "sending" && (
+            <div style={{ fontSize: "0.8rem", color: "var(--light-gray)", marginTop: "0.3rem" }}>
+              {t.forgotPasswordSending}
+            </div>
+          )}
+
+          {forgotPasswordStatus === "sent" && (
+            <div style={{ fontSize: "0.8rem", color: "var(--green)", marginTop: "0.3rem" }}>
+              {t.forgotPasswordSent}
+            </div>
+          )}
         </div>
 
         {error ? <div className={styles.fsErrVisible}>{error}</div> : null}

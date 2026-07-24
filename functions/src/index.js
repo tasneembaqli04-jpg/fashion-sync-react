@@ -23,6 +23,9 @@ const {
 const {
   contactNotificationEmailController,
 } = require("./controllers/contactNotificationEmailController");
+const {
+  passwordResetEmailController,
+} = require("./controllers/passwordResetEmailController");
 
 
 const backendHealthCheck = onRequest((request, response) => {
@@ -103,6 +106,13 @@ const sendContactNotificationEmail = onRequest(
   contactNotificationEmailController,
 );
 
+const sendPasswordResetEmail = onRequest(
+  {
+    cors: true,
+  },
+  passwordResetEmailController,
+);
+
 module.exports = {
   backendHealthCheck,
   tryOn,
@@ -115,4 +125,5 @@ module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,
+  sendPasswordResetEmail,
 };
