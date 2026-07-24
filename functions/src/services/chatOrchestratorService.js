@@ -44,7 +44,8 @@ function buildProductSearchOptions(intent) {
       intent.saleOnly ||
       intent.intent === INTENTS.SALE_SEARCH,
     limit:
-      intent.intent === INTENTS.OUTFIT_RECOMMENDATION
+      intent.intent === INTENTS.OUTFIT_RECOMMENDATION ||
+      intent.intent === INTENTS.OUTFIT_MODIFICATION
         ? 50
         : 5,
   };
@@ -194,11 +195,19 @@ async function handleChatMessage({
     intent.needsClarification &&
     intent.clarificationQuestion
   ) {
-    onChunk(intent.clarificationQuestion);
+    const clarificationText =
+      intent.clarificationQuestion;
+
+    if (typeof onChunk === "function") {
+      onChunk(clarificationText);
+    }
 
     return {
+      type: "text",
+      text: clarificationText,
       intent,
       products: [],
+      responseMode: "TEXT",
       needsClarification: true,
     };
   }
@@ -255,8 +264,10 @@ async function handleChatMessage({
     try {
       outfitPlan = await planOutfit({
         products,
+        currentOutfit,
         intent,
         message,
+        history,
       });
     } catch (error) {
       console.error(
