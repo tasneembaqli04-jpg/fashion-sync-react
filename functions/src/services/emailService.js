@@ -1,13 +1,4 @@
-const { Resend } = require("resend");
-
-let resendClient = null;
-
-function getResend() {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
+const { sendMail } = require("./gmailMailer");
 
 function buildOrderEmailHtml(order) {
   const itemsHtml = (order.items || [])
@@ -56,18 +47,11 @@ async function sendOrderConfirmationEmail({ toEmail, order }) {
     throw new Error("Order details are required");
   }
 
-  const result = await getResend().emails.send({
-    from: "FashionSync <onboarding@resend.dev>",
-    to: [toEmail],
+  return await sendMail({
+    to: toEmail,
     subject: `הזמנה בוצעה #${order.id} - FashionSync`,
     html: buildOrderEmailHtml(order),
   });
-
-  if (result.error) {
-    throw new Error(result.error.message || "Resend returned an error");
-  }
-
-  return { emailId: result.data?.id || null };
 }
 
 function buildStockAlertEmailHtml(productName) {
@@ -87,18 +71,11 @@ async function sendStockAlertEmail({ toEmail, productName }) {
     throw new Error("Recipient email is required");
   }
 
-  const result = await getResend().emails.send({
-    from: "FashionSync <onboarding@resend.dev>",
-    to: [toEmail],
+  return await sendMail({
+    to: toEmail,
     subject: `${productName || "מוצר"} חזר למלאי! - FashionSync`,
     html: buildStockAlertEmailHtml(productName),
   });
-
-  if (result.error) {
-    throw new Error(result.error.message || "Resend returned an error");
-  }
-
-  return { emailId: result.data?.id || null };
 }
 
 const STATUS_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
@@ -127,18 +104,11 @@ async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex }) {
 
   const stageName = STATUS_LABELS[stageIndex] || "עודכן";
 
-  const result = await getResend().emails.send({
-    from: "FashionSync <onboarding@resend.dev>",
-    to: [toEmail],
+  return await sendMail({
+    to: toEmail,
     subject: `הזמנה #${orderId} - ${stageName} - FashionSync`,
     html: buildShippingUpdateEmailHtml({ orderId, stageIndex }),
   });
-
-  if (result.error) {
-    throw new Error(result.error.message || "Resend returned an error");
-  }
-
-  return { emailId: result.data?.id || null };
 }
 
 module.exports = {

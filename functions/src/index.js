@@ -14,6 +14,15 @@ const {
 const {
   returnStatusEmailController,
 } = require("./controllers/returnStatusEmailController");
+const {
+  verificationEmailController,
+} = require("./controllers/verificationEmailController");
+const {
+  welcomeEmailController,
+} = require("./controllers/welcomeEmailController");
+const {
+  contactNotificationEmailController,
+} = require("./controllers/contactNotificationEmailController");
 
 
 const backendHealthCheck = onRequest((request, response) => {
@@ -73,6 +82,27 @@ const sendReturnStatusEmail = onRequest(
   returnStatusEmailController,
 );
 
+const sendVerificationEmail = onRequest(
+  {
+    cors: true,
+  },
+  verificationEmailController,
+);
+
+const sendWelcomeEmail = onRequest(
+  {
+    cors: true,
+  },
+  welcomeEmailController,
+);
+
+const sendContactNotificationEmail = onRequest(
+  {
+    cors: true,
+  },
+  contactNotificationEmailController,
+);
+
 module.exports = {
   backendHealthCheck,
   tryOn,
@@ -82,4 +112,7 @@ module.exports = {
   sendStockAlertEmail,
   sendShippingUpdateEmail,
   sendReturnStatusEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+  sendContactNotificationEmail,
 };

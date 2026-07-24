@@ -108,3 +108,57 @@ export async function sendReturnStatusEmail({ toEmail, itemName, status, giftCar
     return null;
   }
 }
+const CONTACT_NOTIFICATION_EMAIL_URL =
+  import.meta.env.VITE_CONTACT_NOTIFICATION_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendContactNotificationEmail";
+
+export async function sendContactNotificationEmail({ name, email, message }) {
+  if (!message) return null;
+
+  try {
+    const response = await fetch(CONTACT_NOTIFICATION_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, message }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Contact notification email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Contact notification email request failed:", err);
+    return null;
+  }
+}
+const WELCOME_EMAIL_URL =
+  import.meta.env.VITE_WELCOME_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendWelcomeEmail";
+
+export async function sendWelcomeEmail({ toEmail, name }) {
+  if (!toEmail) return null;
+
+  try {
+    const response = await fetch(WELCOME_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, name }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Welcome email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Welcome email request failed:", err);
+    return null;
+  }
+}

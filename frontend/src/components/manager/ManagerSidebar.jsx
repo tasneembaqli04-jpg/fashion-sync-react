@@ -13,6 +13,7 @@ export default function ManagerSidebar({
   pendingDeliveriesCount = 0,
   pendingStockRequestsCount = 0,
   pendingReturnsCount = 0,
+  unreadContactMessagesCount = 0,
   mobileOpen,
 }) {
   const { t: dict } = useLanguage();
@@ -143,6 +144,16 @@ export default function ManagerSidebar({
           <span className={styles.icon}>↩️</span>
           <span style={{ flex: 1 }}>{t.returnRequests}</span>
           <NavBadge count={pendingReturnsCount} />
+        </button>
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "contactMessages" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("contactMessages")}
+        >
+          <span className={styles.icon}>📩</span>
+          <span style={{ flex: 1 }}>{t.contactMessages}</span>
+          <NavBadge count={unreadContactMessagesCount} />
         </button>
 
         <button

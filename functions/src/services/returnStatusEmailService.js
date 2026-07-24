@@ -1,13 +1,4 @@
-const { Resend } = require("resend");
-
-let resendClient = null;
-
-function getResend() {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
+const { sendMail } = require("./gmailMailer");
 
 function buildReturnStatusEmailHtml({ itemName, status, giftCardCode, giftCardAmount }) {
   const approved = status === "approved";
@@ -45,21 +36,14 @@ async function sendReturnStatusEmail({ toEmail, itemName, status, giftCardCode, 
     throw new Error("Status is required");
   }
 
-  const result = await getResend().emails.send({
-    from: "FashionSync <onboarding@resend.dev>",
-    to: [toEmail],
+  return await sendMail({
+    to: toEmail,
     subject:
       status === "approved"
         ? "בקשת ההחזרה שלך אושרה - FashionSync"
         : "עדכון לגבי בקשת ההחזרה - FashionSync",
     html: buildReturnStatusEmailHtml({ itemName, status, giftCardCode, giftCardAmount }),
   });
-
-  if (result.error) {
-    throw new Error(result.error.message || "Resend returned an error");
-  }
-
-  return { emailId: result.data?.id || null };
 }
 
 module.exports = {

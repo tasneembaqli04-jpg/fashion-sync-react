@@ -7,6 +7,9 @@ const {
   sendStockAlertEmail,
   sendShippingUpdateEmail,
   sendReturnStatusEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+  sendContactNotificationEmail,
 } = require("./src");
 
 exports.backendHealthCheck = backendHealthCheck;
@@ -17,3 +20,6 @@ exports.sendOrderEmail = sendOrderEmail;
 exports.sendStockAlertEmail = sendStockAlertEmail;
 exports.sendShippingUpdateEmail = sendShippingUpdateEmail;
 exports.sendReturnStatusEmail = sendReturnStatusEmail;
+exports.sendVerificationEmail = sendVerificationEmail;
+exports.sendWelcomeEmail = sendWelcomeEmail;
+exports.sendContactNotificationEmail = sendContactNotificationEmail;
