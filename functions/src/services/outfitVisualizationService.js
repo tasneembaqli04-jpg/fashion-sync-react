@@ -28,14 +28,199 @@ function buildProductDescription(product, index) {
 }
 
 /**
+ * Creates a compact readable summary of one outfit product.
+ *
+ * @param {object} product Outfit product.
+ * @return {object} Safe product summary.
+ */
+function buildOutfitProductSummary(product) {
+  return {
+    code: product?.code || "",
+    name: product?.name || "",
+    category:
+      product?.category ||
+      product?.cat ||
+      "",
+    colors: Array.isArray(product?.colors)
+      ? product.colors
+      : [],
+  };
+}
+
+/**
+ * Builds explicit decisions for the image-generation model.
+ *
+ * This does not call Gemini. It converts the existing structured
+ * intent and planner result into clear visualization instructions.
+ *
+ * @param {object} options Decision options.
+ * @param {string} options.originalMessage Current customer message.
+ * @param {object} options.intent Structured intent.
+ * @param {object} options.outfitPlan Planner result.
+ * @param {object[]} options.currentOutfit Previous outfit.
+ * @param {object[]} options.products Selected products.
+ * @return {string} Explicit visualization decisions.
+ */
+function buildVisualizationDecisionSummary({
+  originalMessage = "",
+  intent = {},
+  outfitPlan = null,
+  currentOutfit = [],
+  products = [],
+}) {
+  const previousProducts = Array.isArray(currentOutfit)
+    ? currentOutfit.map(buildOutfitProductSummary)
+    : [];
+
+  const selectedProducts = Array.isArray(products)
+    ? products.map(buildOutfitProductSummary)
+    : [];
+
+  const requestedCategory =
+    intent.category ||
+    intent.productCategory ||
+    "";
+
+  const requestedColor =
+    intent.color || "";
+
+  const requestedStyle =
+    intent.style || "";
+
+  const requestedOccasion =
+    intent.occasion || "";
+
+  const plannerExplanation =
+    outfitPlan?.explanation || "";
+
+  const hasPreviousOutfit =
+    previousProducts.length > 0;
+
+  return `
+החלטות מחייבות ליצירת התמונה:
+
+בקשת הלקוחה:
+${originalMessage || "לא נמסרה בקשה מפורשת"}
+
+הפריט או הקטגוריה המבוקשים:
+${requestedCategory || "לא צוינו"}
+
+הצבע המבוקש:
+${requestedColor || "לא צוין"}
+
+הסגנון המבוקש:
+${requestedStyle || "לא צוין"}
+
+האירוע:
+${requestedOccasion || "לא צוין"}
+
+החלטת מתכנן הלוק:
+${plannerExplanation || "לא נמסרה החלטה מילולית"}
+
+האם קיים לוק קודם:
+${hasPreviousOutfit ? "כן" : "לא"}
+
+פריטי הלוק הקודם:
+${JSON.stringify(previousProducts, null, 2)}
+
+הפריטים שנבחרו לתמונה החדשה:
+${JSON.stringify(selectedProducts, null, 2)}
+
+כללי ביצוע:
+- יש להציג את הפריטים שנבחרו לתמונה החדשה.
+- אם הלקוחה ביקשה לשנות פריט אחד בלבד, יש לשמור על יתר פריטי הלוק הקודם.
+- אם צוין צבע מבוקש, יש להחיל אותו רק על הפריט הרלוונטי.
+- אין לשנות צבע של פריטים אחרים ללא בקשה מפורשת.
+- אין להחליף מוצר שנבחר במוצר אחר.
+- אין להוסיף פריט לבוש מרכזי שלא נבחר על ידי המתכנן.
+- יש לשמור על עיצוב המוצר לפי תמונת הייחוס.
+`.trim();
+}
+
+/**
+ * Builds the full context used for outfit visualization.
+ *
+ * @param {object} options Context options.
+ * @param {string} options.originalMessage Current customer message.
+ * @param {object[]} options.history Recent conversation history.
+ * @param {object} options.intent Structured intent.
+ * @param {object} options.outfitPlan Planner result.
+ * @param {object[]} options.currentOutfit Previous outfit.
+ * @param {object[]} options.products Selected catalog products.
+ * @return {string} Visualization context.
+ */
+function buildVisualizationContext({
+  originalMessage = "",
+  history = [],
+  intent = {},
+  outfitPlan = null,
+  currentOutfit = [],
+  products = [],
+}) {
+  const recentHistory = Array.isArray(history)
+    ? history.slice(-6)
+    : [];
+
+  const previousOutfit = Array.isArray(currentOutfit)
+    ? currentOutfit.map(buildOutfitProductSummary)
+    : [];
+
+  const selectedProducts = Array.isArray(products)
+    ? products.map(buildOutfitProductSummary)
+    : [];
+
+  const visualizationDecisions =
+    buildVisualizationDecisionSummary({
+      originalMessage,
+      intent,
+      outfitPlan,
+      currentOutfit,
+      products,
+    });
+
+  return `
+החלטות מפורשות ליצירת התמונה:
+${visualizationDecisions}
+
+הודעת הלקוחה הנוכחית:
+${originalMessage || "לא נמסרה"}
+
+היסטוריית שיחה אחרונה:
+${JSON.stringify(recentHistory, null, 2)}
+
+הכוונה שזוהתה:
+${JSON.stringify(intent, null, 2)}
+
+החלטת מתכנן הלוק:
+${JSON.stringify(
+  {
+    explanation:
+      outfitPlan?.explanation || "",
+    selectedProducts,
+  },
+  null,
+  2
+)}
+
+הלוק הקודם:
+${JSON.stringify(previousOutfit, null, 2)}
+
+הלוק שנבחר להצגה:
+${JSON.stringify(selectedProducts, null, 2)}
+`.trim();
+}
+
+/**
  * Builds the image-generation prompt.
  *
  * @param {object} options Prompt options.
+ * @param {string} options.visualizationContext Full request context.
  * @param {object} options.intent Structured intent.
  * @param {object[]} options.products Selected products.
  * @return {string} Image prompt.
  */
 function buildVisualizationPrompt({
+  visualizationContext,
   intent,
   products,
 }) {
@@ -49,20 +234,42 @@ function buildVisualizationPrompt({
 הדמות אינה הלקוחה ואינה מבוססת על אדם אמיתי.
 
 המטרה:
-להציג את פריטי FashionSync שבתמונות הייחוס כלוק אחד שלם והרמוני.
+להציג את פריטי FashionSync כלוק אחד שלם, מסחרי והרמוני,
+בהתאם לבקשת הלקוחה ולהחלטת מתכנן הלוק.
 
-פרטי הבקשה:
+הקשר מלא:
+${visualizationContext}
+
+פרטי הבקשה המרכזיים:
 קהל יעד: ${intent.gender || "לא צוין"}
 אירוע: ${intent.occasion || "לא צוין"}
 זמן האירוע: ${intent.eventTime || "לא צוין"}
 עונה: ${intent.season || "לא צוינה"}
 סגנון: ${intent.style || "לא צוין"}
+צבע מבוקש: ${intent.color || "לא צוין"}
 
-פריטי הלוק:
+פריטי הקטלוג שנבחרו:
 ${productDescriptions}
 
-הוראות מחייבות:
-- תמונות המוצרים המצורפות הן תמונות ייחוס מחייבות.
+סדר עדיפויות להבנת הבקשה:
+1. פעל לפי ההודעה הנוכחית של הלקוחה.
+2. פעל לפי החלטת מתכנן הלוק.
+3. שמור על פריטים מהלוק הקודם שלא התבקש לשנות.
+4. השתמש בפרטי ה-Intent כדי להבין צבע, אירוע, עונה וסגנון.
+5. השתמש בתמונות הייחוס כדי לשמור על העיצוב המדויק של המוצרים.
+
+כללי שינוי:
+- כאשר הלקוחה ביקשה לשנות רק פריט מסוים, אל תשנה את שאר הלוק.
+- כאשר הלקוחה ביקשה צבע מסוים, הצג את המוצר בצבע המבוקש,
+  בתנאי שהצבע מופיע בפרטי המוצר או בהחלטת מתכנן הלוק.
+- כאשר אין בקשת שינוי מפורשת, שמור על צבעי תמונות הייחוס.
+- אל תחליף מוצר שנבחר במוצר אחר.
+- אל תוסיף מוצר מרכזי שלא נבחר על ידי מתכנן הלוק.
+- כאשר יש לוק קודם, שמור על המשכיות חזותית ככל האפשר.
+- אם קיים ספק, העדף את החלטת מתכנן הלוק על פני ניחוש.
+
+הוראות חזותיות מחייבות:
+- תמונות המוצרים המצורפות הן תמונות ייחוס מחייבות לעיצוב המוצר.
 - כל תמונת ייחוס מתאימה לפריט המתואר מיד לפניה.
 - הצג דמות אחת בלבד.
 - הצג צילום מלא מכף רגל ועד ראש.
@@ -70,16 +277,20 @@ ${productDescriptions}
 - שמור במדויק ככל האפשר על הגזרה והמבנה של כל מוצר.
 - שמור על קו הכתפיים, הצווארון, השרוולים והאורך.
 - שמור על מלמלות, תחרה, קישוטים, אבזמים ופרטים מיוחדים.
-- שמור על הצבעים, הבד, המרקם והצללית של המוצרים.
+- שמור על הבד, המרקם והצללית של המוצרים.
 - אל תחליף מוצר בעיצוב כללי או במוצר דומה.
 - אל תשנה שמלה עם מלמלות לשמלה חלקה.
-- אל תמציא פריט לבוש מרכזי שלא נשלח כתמונת ייחוס.
 - אם סופקה שמלה, היא תהיה פריט הלבוש המרכזי בתמונה.
 - התאם את הנעליים, התיק והאביזרים לפי תמונות הייחוס שלהם.
 - השתמש במראה טבעי, מכובד ומסחרי.
 - אל תוסיף טקסט, מחיר, קוד מוצר או לוגו לתמונה.
 - אל תיצור קולאז׳ או כמה תמונות.
 - השתמש ברקע סטודיו נקי ועדין.
+
+לפני יצירת התמונה:
+- זהה מה הלקוחה ביקשה לשנות.
+- זהה אילו פריטים חייבים להישאר ללא שינוי.
+- ודא שהתמונה הסופית תואמת להחלטת מתכנן הלוק.
 `.trim();
 }
 
@@ -237,13 +448,21 @@ ${product.name || "מוצר ללא שם"}
  * Generates an outfit visualization image.
  *
  * @param {object} options Generation options.
+ * @param {string} options.originalMessage Current customer message.
+ * @param {object[]} options.history Recent conversation history.
  * @param {object} options.intent Structured customer intent.
+ * @param {object} options.outfitPlan Planner result.
+ * @param {object[]} options.currentOutfit Previous outfit.
  * @param {object[]} options.products Selected catalog products.
  * @return {Promise<object>} Generated image.
  */
 async function generateOutfitVisualization({
-  intent,
-  products,
+  originalMessage = "",
+  history = [],
+  intent = {},
+  outfitPlan = null,
+  currentOutfit = [],
+  products = [],
 }) {
   if (
     !Array.isArray(products) ||
@@ -256,7 +475,22 @@ async function generateOutfitVisualization({
 
   const ai = getGeminiClient();
 
+  const visualizationContext =
+    buildVisualizationContext({
+      originalMessage,
+      history,
+      intent,
+      outfitPlan,
+      currentOutfit,
+      products,
+    });
+    console.log(
+      "OUTFIT VISUALIZATION CONTEXT:",
+      visualizationContext
+    );
+
   const prompt = buildVisualizationPrompt({
+    visualizationContext,
     intent,
     products,
   });
