@@ -162,3 +162,51 @@ export async function sendWelcomeEmail({ toEmail, name }) {
     return null;
   }
 }
+const PASSWORD_RESET_EMAIL_URL =
+  import.meta.env.VITE_PASSWORD_RESET_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendPasswordResetEmail";
+
+export async function sendPasswordResetRequest({ toEmail }) {
+  if (!toEmail) return null;
+
+  try {
+    const response = await fetch(PASSWORD_RESET_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail }),
+    });
+
+    const data = await response.json().catch(() => null);
+    return data;
+  } catch (err) {
+    console.error("Password reset request failed:", err);
+    return null;
+  }
+}
+const VERIFICATION_EMAIL_URL =
+  import.meta.env.VITE_VERIFICATION_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendVerificationEmail";
+
+export async function sendVerificationCodeEmail({ toEmail, code }) {
+  if (!toEmail || !code) return null;
+
+  try {
+    const response = await fetch(VERIFICATION_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, code }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Verification email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Verification email request failed:", err);
+    return null;
+  }
+}

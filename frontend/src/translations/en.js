@@ -715,7 +715,7 @@ export const en = {
       privacyTitle: "🔒 Privacy & Security",
       privacyLine1: "We do not store credit card details. All transactions are encrypted.",
       contactTitle: "📞 Contact Us",
-      contactPhone: "Phone: 03-000-0000 (Sun–Thu 9:00–18:00)",
+      contactPhone: "Phone: 054-1234567 (Sun–Thu 9:00–18:00)",
       contactEmail: "Email: support@fashionsync.co.il",
       contactNameLabel: "Name",
       contactEmailLabel: "Email address to reach you",
@@ -895,7 +895,11 @@ export const en = {
       passwordLabel: "Password",
       passwordPlaceholder: "Password (at least 8 characters)",
       loggingIn: "Logging in...",
+      loggingIn: "Logging in...",
       loginButton: "Log in",
+      forgotPasswordLink: "Forgot password?",
+      forgotPasswordSending: "Sending reset link...",
+      forgotPasswordSent: "✅ If an account exists with this email, a password reset link has been sent.",
     },
     authErrors: {
       wrongPassword: "Incorrect email or password",
@@ -908,6 +912,20 @@ export const en = {
       passwordTooShort: "Password must be at least 8 characters",
     },
   },
+  verification: {
+      title: "🔐 Verify Your Email",
+      subtitle: "We sent a 6-digit code to {email}. Enter it to complete your registration.",
+      codeLabel: "Verification Code",
+      codePlaceholder: "000000",
+      verifyButton: "Verify Code",
+      verifying: "Verifying...",
+      resendButton: "Resend Code",
+      resendCooldown: "You can resend in {seconds} seconds",
+      resendSuccess: "✅ New code sent",
+      errorNotFound: "No verification request found. Please request a new code.",
+      errorExpired: "The code has expired. Please request a new one.",
+      errorMismatch: "Incorrect code, please try again.",
+    },
 
   shippingOptionLabels: {
     standard: {
