@@ -1,5 +1,6 @@
 import { signIn, signUp } from "../../services/auth/firebaseAuth.js";
 import { saveAuthUser, CUSTOMER_PAGE } from "./storage.js";
+import { sendWelcomeEmail } from "../../services/email/emailService.js";
 
 export function isGmail(email) {
   return /^[a-z0-9._%+-]+@gmail\.com$/.test(
@@ -20,16 +21,22 @@ export async function loginOrCreateUser(email, password, t) {
   }
 
   let result = await signIn(normalizedEmail, normalizedPass, t);
+  let isNewSignup = false;
 
   if (
     result.errorCode === "auth/wrong-password" ||
     result.errorCode === "auth/invalid-credential"
   ) {
     result = await signUp(normalizedEmail, normalizedPass, t);
+    isNewSignup = true;
   }
 
   if (result.error) {
     return result;
+  }
+
+  if (isNewSignup) {
+    sendWelcomeEmail({ toEmail: result.user.email, name: result.user.name });
   }
 
   saveAuthUser(result.user);

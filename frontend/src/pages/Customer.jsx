@@ -1241,7 +1241,7 @@ export default function Customer() {
           checkGiftCardBalance={checkGiftCardBalance}
         />
 
-        <CustomerPolicy show={activePanel === "policy"} />
+        <CustomerPolicy show={activePanel === "policy"} currentUser={currentUser} />
       </main>
 
       <ProductModal

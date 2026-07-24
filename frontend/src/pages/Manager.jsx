@@ -15,6 +15,7 @@ import AnalyticsView from "../components/manager/views/AnalyticsView";
 import FeedbackView from "../components/manager/views/FeedbackView";
 import StockNotificationsView from "../components/manager/views/StockNotificationsView";
 import ManagerReturns from "../components/manager/views/ManagerReturns";
+import ManagerContactMessages from "../components/manager/views/ManagerContactMessages";
 import CouponsView from "../components/manager/views/CouponsView";
 import SettingsView from "../components/manager/views/SettingsView";
 import styles from "../styles/Manager.module.scss";
@@ -24,6 +25,7 @@ import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
+import { getAllContactMessages } from "../services/contact/contactMessagesService";
 import { subscribeToOrders, updateOrderStatus, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";import {
   getAllDeliveries,
   addDelivery,
@@ -122,6 +124,14 @@ export default function Manager({ onPromote }) {
     getAllReturnRequests().then(setReturnRequests);
   }, [isLoggedIn, activeView, refreshKey]);
 
+  const [contactMessages, setContactMessages] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getAllContactMessages().then(setContactMessages);
+  }, [isLoggedIn, activeView, refreshKey]);
+
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -171,6 +181,10 @@ export default function Manager({ onPromote }) {
   const pendingReturnsCount = useMemo(
     () => returnRequests.filter((r) => r.status === "pending").length,
     [returnRequests],
+  );
+  const unreadContactMessagesCount = useMemo(
+    () => contactMessages.filter((m) => !m.read).length,
+    [contactMessages],
   );
   const receipts = useMemo(() => {
     return orders.map((order) => ({
@@ -427,6 +441,7 @@ export default function Manager({ onPromote }) {
         pendingDeliveriesCount={pendingDeliveriesCount}
         pendingStockRequestsCount={pendingStockRequestsCount}
         pendingReturnsCount={pendingReturnsCount}
+        unreadContactMessagesCount={unreadContactMessagesCount}
         onChangeView={(view) => {
           setActiveView(view);
           setMobileSidebarOpen(false);
@@ -533,6 +548,7 @@ export default function Manager({ onPromote }) {
           {activeView === "feedback" && <FeedbackView />}
           {activeView === "stockNotifications" && <StockNotificationsView />}
           {activeView === "returns" && <ManagerReturns />}
+          {activeView === "contactMessages" && <ManagerContactMessages />}
           {activeView === "coupons" && <CouponsView />}
           {activeView === "settings" && <SettingsView />}
         </div>
