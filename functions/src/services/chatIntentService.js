@@ -203,6 +203,27 @@ const INTENT_INSTRUCTION = `
 - תקן קוד מוצר לצורה FS-000 כאשר אפשר.
 - gender יהיה "נשים", "גברים" או null.
 
+כלל עדיפות מחייב ללוק מלא:
+
+כאשר outfitType הוא COMPLETE_OUTFIT והמגדר אינו ידוע,
+שאלת המגדר קודמת לכל כלל אחר, כולל בקשה לתמונה או להצגת הלוק.
+
+במצב זה חובה להחזיר:
+- intent = OUTFIT_RECOMMENDATION
+- outfitType = COMPLETE_OUTFIT
+- gender = null
+- needsClarification = true
+- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+- responseMode = TEXT
+
+אסור ליצור תמונה ואסור להחזיר needsClarification=false
+כל עוד gender אינו ידוע.
+
+מילים כמו:
+"תראה לי", "תראי לי", "לוק מלא", "תבנה לי לוק",
+"תכין לי הופעה" או "לוק לחתונה"
+אינן מספקות מידע על מגדר.
+
 כללי הקשר שיחה:
 
 החזר conversationAction לפי משמעות ההודעה הנוכחית ביחס להיסטוריה.
@@ -482,15 +503,28 @@ category="שמלות"
 - "תראי לי איך כל הלוק נראה"
   intent: OUTFIT_RECOMMENDATION
   conversationAction: RESET
-  responseMode: IMAGE
   outfitType: COMPLETE_OUTFIT
-  needsClarification: false
+  gender: null
+  responseMode: TEXT
+  needsClarification: true
+  clarificationQuestion: "הלוק מיועד לאישה או לגבר?"
 
-כאשר הלקוחה מבקשת לראות, להציג, ליצור או לקבל לוק חזותי,
-יש להחזיר:
+כאשר הלקוחה מבקשת לראות, להציג, ליצור או לקבל לוק חזותי:
+- intent = OUTFIT_RECOMMENDATION.
 
-- intent = OUTFIT_RECOMMENDATION
-- responseMode = IMAGE
+אם כל המידע ההכרחי קיים:
+- responseMode = IMAGE.
+- needsClarification = false.
+
+אם מדובר בלוק מלא והמגדר אינו ידוע:
+- responseMode = TEXT.
+- needsClarification = true.
+- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+
+לאחר שהלקוחה עונה "לאישה", "לנשים", "לגבר" או "לגברים":
+- שמור את כל פרטי הבקשה הקודמת.
+- needsClarification = false.
+- responseMode = IMAGE.
 
 דוגמאות לבקשות שדורשות IMAGE:
 
@@ -514,6 +548,34 @@ responseMode חייב להיות IMAGE.
 לאחר שהלקוחה עונה על שאלת ההבהרה וכל המידע הדרוש קיים:
 - needsClarification = false
 - responseMode = IMAGE
+
+דוגמה מחייבת:
+
+הלקוחה:
+"בבקשה תראה לי לוק מלא לחתונה"
+
+החזר:
+intent="OUTFIT_RECOMMENDATION"
+conversationAction="RESET"
+needsClarification=true
+clarificationQuestion="הלוק מיועד לאישה או לגבר?"
+responseMode="TEXT"
+gender=null
+occasion="חתונה"
+outfitType="COMPLETE_OUTFIT"
+
+לאחר מכן, אם הלקוחה עונה:
+"לאישה"
+
+החזר:
+intent="OUTFIT_RECOMMENDATION"
+conversationAction="CONTINUE"
+needsClarification=false
+clarificationQuestion=null
+responseMode="IMAGE"
+gender="נשים"
+occasion="חתונה"
+outfitType="COMPLETE_OUTFIT"
 `.trim();
 
 /**
