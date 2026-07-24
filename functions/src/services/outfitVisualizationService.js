@@ -23,6 +23,8 @@ function buildProductDescription(product, index) {
 קוד: ${product.code || "לא ידוע"}
 קטגוריה: ${product.category || "לא ידועה"}
 צבעים: ${colors}
+צבע שנבחר להצגה: ${product.selectedColor || "לא צוין"}
+פעולה בלוק: ${product.action || "לא צוינה"}
 תיאור: ${product.description || "ללא תיאור"}
 `.trim();
 }
@@ -41,9 +43,16 @@ function buildOutfitProductSummary(product) {
       product?.category ||
       product?.cat ||
       "",
+
     colors: Array.isArray(product?.colors)
       ? product.colors
       : [],
+
+    selectedColor:
+      product?.selectedColor || null,
+
+    action:
+      product?.action || null,
   };
 }
 
@@ -410,8 +419,12 @@ async function buildReferenceImageParts(products) {
 ${product.name || "מוצר ללא שם"}
 קוד מוצר: ${product.code || "לא ידוע"}
 קטגוריה: ${product.category || "לא ידועה"}
+צבע מחייב להצגה: ${product.selectedColor || "לפי תמונת הייחוס"}
+פעולה בלוק: ${product.action || "לא צוינה"}
 
 יש לשמור על העיצוב החזותי של מוצר זה.
+אם צוין צבע מחייב, יש לשנות רק את צבע המוצר לצבע זה,
+גם כאשר תמונת הייחוס מציגה צבע אחר.
 `.trim(),
         },
         imagePart,
@@ -462,6 +475,7 @@ async function generateOutfitVisualization({
   intent = {},
   outfitPlan = null,
   currentOutfit = [],
+  currentOutfitImage = "",
   products = [],
 }) {
   if (
@@ -474,6 +488,16 @@ async function generateOutfitVisualization({
   }
 
   const ai = getGeminiClient();
+  console.log("BASE OUTFIT IMAGE:", {
+    exists:
+      typeof currentOutfitImage === "string" &&
+      currentOutfitImage.length > 0,
+
+    length:
+      typeof currentOutfitImage === "string"
+        ? currentOutfitImage.length
+        : 0,
+  });
 
   const visualizationContext =
     buildVisualizationContext({

@@ -224,6 +224,7 @@ async function handleChatMessage({
   message,
   history = [],
   currentOutfit = [],
+  currentOutfitImage = "",
   onChunk,
 }) {
   const intent = await detectChatIntent({
@@ -424,18 +425,18 @@ async function handleChatMessage({
           {
             selectedColor:
               shouldKeep
-                ? previousProduct?.selectedColor ||
-                  null
-                : product?.selectedColor ||
-                  intent?.color ||
+                ? previousProduct?.selectedColor || null
+                : intent?.color ||
+                  product?.selectedColor ||
+                  previousProduct?.selectedColor ||
                   null,
 
-            action:
-              shouldKeep
-                ? "KEEP"
-                : isExistingProduct
+              action:
+                shouldKeep
                   ? "KEEP"
-                  : "REPLACE",
+                  : isExistingProduct
+                    ? "KEEP"
+                    : "REPLACE",
           }
         );
       });
@@ -462,10 +463,23 @@ async function handleChatMessage({
             name: product.name,
             category: product.category,
             colors: product.colors,
+            selectedColor: product.selectedColor,
+            action: product.action,
           })),
       });
 
     try {
+      console.log("CURRENT OUTFIT IMAGE RECEIVED:", {
+        exists:
+          typeof currentOutfitImage === "string" &&
+          currentOutfitImage.length > 0,
+
+        length:
+          typeof currentOutfitImage === "string"
+            ? currentOutfitImage.length
+            : 0,
+      });
+
       const visualization =
         await generateOutfitVisualization({
           originalMessage: message,
@@ -473,6 +487,7 @@ async function handleChatMessage({
           intent,
           outfitPlan,
           currentOutfit,
+          currentOutfitImage,
           products: productsForVisualization,
         });
 
