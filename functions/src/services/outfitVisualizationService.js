@@ -1,4 +1,4 @@
-const {getGeminiClient} = require("../config/gemini");
+const { getGeminiClient } = require("../config/gemini");
 
 const IMAGE_MODEL_NAME = "gemini-3.1-flash-image";
 const MAX_REFERENCE_IMAGES = 6;
@@ -39,20 +39,13 @@ function buildOutfitProductSummary(product) {
   return {
     code: product?.code || "",
     name: product?.name || "",
-    category:
-      product?.category ||
-      product?.cat ||
-      "",
+    category: product?.category || product?.cat || "",
 
-    colors: Array.isArray(product?.colors)
-      ? product.colors
-      : [],
+    colors: Array.isArray(product?.colors) ? product.colors : [],
 
-    selectedColor:
-      product?.selectedColor || null,
+    selectedColor: product?.selectedColor || null,
 
-    action:
-      product?.action || null,
+    action: product?.action || null,
   };
 }
 
@@ -67,6 +60,7 @@ function buildOutfitProductSummary(product) {
  * @param {object} options.intent Structured intent.
  * @param {object} options.outfitPlan Planner result.
  * @param {object[]} options.currentOutfit Previous outfit.
+ * @param {string} options.currentOutfitImage Previous generated outfit Data URL.
  * @param {object[]} options.products Selected products.
  * @return {string} Explicit visualization decisions.
  */
@@ -85,25 +79,17 @@ function buildVisualizationDecisionSummary({
     ? products.map(buildOutfitProductSummary)
     : [];
 
-  const requestedCategory =
-    intent.category ||
-    intent.productCategory ||
-    "";
+  const requestedCategory = intent.category || intent.productCategory || "";
 
-  const requestedColor =
-    intent.color || "";
+  const requestedColor = intent.color || "";
 
-  const requestedStyle =
-    intent.style || "";
+  const requestedStyle = intent.style || "";
 
-  const requestedOccasion =
-    intent.occasion || "";
+  const requestedOccasion = intent.occasion || "";
 
-  const plannerExplanation =
-    outfitPlan?.explanation || "";
+  const plannerExplanation = outfitPlan?.explanation || "";
 
-  const hasPreviousOutfit =
-    previousProducts.length > 0;
+  const hasPreviousOutfit = previousProducts.length > 0;
 
   return `
 החלטות מחייבות ליצירת התמונה:
@@ -166,9 +152,7 @@ function buildVisualizationContext({
   currentOutfit = [],
   products = [],
 }) {
-  const recentHistory = Array.isArray(history)
-    ? history.slice(-6)
-    : [];
+  const recentHistory = Array.isArray(history) ? history.slice(-6) : [];
 
   const previousOutfit = Array.isArray(currentOutfit)
     ? currentOutfit.map(buildOutfitProductSummary)
@@ -178,14 +162,13 @@ function buildVisualizationContext({
     ? products.map(buildOutfitProductSummary)
     : [];
 
-  const visualizationDecisions =
-    buildVisualizationDecisionSummary({
-      originalMessage,
-      intent,
-      outfitPlan,
-      currentOutfit,
-      products,
-    });
+  const visualizationDecisions = buildVisualizationDecisionSummary({
+    originalMessage,
+    intent,
+    outfitPlan,
+    currentOutfit,
+    products,
+  });
 
   return `
 החלטות מפורשות ליצירת התמונה:
@@ -203,12 +186,11 @@ ${JSON.stringify(intent, null, 2)}
 החלטת מתכנן הלוק:
 ${JSON.stringify(
   {
-    explanation:
-      outfitPlan?.explanation || "",
+    explanation: outfitPlan?.explanation || "",
     selectedProducts,
   },
   null,
-  2
+  2,
 )}
 
 הלוק הקודם:
@@ -228,11 +210,7 @@ ${JSON.stringify(selectedProducts, null, 2)}
  * @param {object[]} options.products Selected products.
  * @return {string} Image prompt.
  */
-function buildVisualizationPrompt({
-  visualizationContext,
-  intent,
-  products,
-}) {
+function buildVisualizationPrompt({ visualizationContext, intent, products }) {
   const productDescriptions = products
     .map(buildProductDescription)
     .join("\n\n");
@@ -311,9 +289,7 @@ ${productDescriptions}
  * @return {string} Supported MIME type.
  */
 function normalizeImageMimeType(mimeType, imageUrl) {
-  const normalizedMimeType = String(
-    mimeType || ""
-  )
+  const normalizedMimeType = String(mimeType || "")
     .split(";")[0]
     .trim()
     .toLowerCase();
@@ -326,14 +302,9 @@ function normalizeImageMimeType(mimeType, imageUrl) {
     return normalizedMimeType;
   }
 
-  const normalizedUrl = String(
-    imageUrl || ""
-  ).toLowerCase();
+  const normalizedUrl = String(imageUrl || "").toLowerCase();
 
-  if (
-    normalizedUrl.includes(".jpg") ||
-    normalizedUrl.includes(".jpeg")
-  ) {
+  if (normalizedUrl.includes(".jpg") || normalizedUrl.includes(".jpeg")) {
     return "image/jpeg";
   }
 
@@ -342,6 +313,44 @@ function normalizeImageMimeType(mimeType, imageUrl) {
   }
 
   return "image/png";
+}
+
+/**
+ * Converts a Data URL image into Gemini inlineData.
+ *
+ * @param {string} dataUrl Image Data URL.
+ * @return {object|null} Gemini inline image part.
+ */
+function convertDataUrlToInlineData(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== "string") {
+    return null;
+  }
+
+  const match = dataUrl.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/i);
+
+  if (!match) {
+    throw new Error("Current outfit image must be a valid image Data URL");
+  }
+
+  const mimeType = match[1].toLowerCase();
+  const base64Data = match[2];
+
+  const imageBuffer = Buffer.from(base64Data, "base64");
+
+  if (!imageBuffer.length) {
+    throw new Error("Current outfit image is empty");
+  }
+
+  if (imageBuffer.length > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error("Current outfit image is larger than the allowed limit");
+  }
+
+  return {
+    inlineData: {
+      mimeType,
+      data: base64Data,
+    },
+  };
 }
 
 /**
@@ -360,9 +369,7 @@ async function downloadImageAsInlineData(imageUrl) {
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to download product image: ${response.status}`
-    );
+    throw new Error(`Failed to download product image: ${response.status}`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
@@ -372,22 +379,18 @@ async function downloadImageAsInlineData(imageUrl) {
   }
 
   if (arrayBuffer.byteLength > MAX_IMAGE_SIZE_BYTES) {
-    throw new Error(
-      "Product image is larger than the allowed limit"
-    );
+    throw new Error("Product image is larger than the allowed limit");
   }
 
   const mimeType = normalizeImageMimeType(
     response.headers.get("content-type"),
-    imageUrl
+    imageUrl,
   );
 
   return {
     inlineData: {
       mimeType,
-      data: Buffer
-        .from(arrayBuffer)
-        .toString("base64"),
+      data: Buffer.from(arrayBuffer).toString("base64"),
     },
   };
 }
@@ -400,17 +403,12 @@ async function downloadImageAsInlineData(imageUrl) {
  */
 async function buildReferenceImageParts(products) {
   const productsWithImages = products
-    .filter((product) =>
-      Boolean(product?.imageUrl)
-    )
+    .filter((product) => Boolean(product?.imageUrl))
     .slice(0, MAX_REFERENCE_IMAGES);
 
   const settledResults = await Promise.allSettled(
     productsWithImages.map(async (product, index) => {
-      const imagePart =
-        await downloadImageAsInlineData(
-          product.imageUrl
-        );
+      const imagePart = await downloadImageAsInlineData(product.imageUrl);
 
       return [
         {
@@ -429,7 +427,7 @@ ${product.name || "מוצר ללא שם"}
         },
         imagePart,
       ];
-    })
+    }),
   );
 
   const parts = [];
@@ -440,18 +438,13 @@ ${product.name || "מוצר ללא שם"}
       return;
     }
 
-    console.warn(
-      "PRODUCT REFERENCE IMAGE DOWNLOAD FAILED:",
-      {
-        product:
-          productsWithImages[index]?.code ||
-          productsWithImages[index]?.name ||
-          null,
-        error:
-          result.reason?.message ||
-          String(result.reason),
-      }
-    );
+    console.warn("PRODUCT REFERENCE IMAGE DOWNLOAD FAILED:", {
+      product:
+        productsWithImages[index]?.code ||
+        productsWithImages[index]?.name ||
+        null,
+      error: result.reason?.message || String(result.reason),
+    });
   });
 
   return parts;
@@ -478,61 +471,68 @@ async function generateOutfitVisualization({
   currentOutfitImage = "",
   products = [],
 }) {
-  if (
-    !Array.isArray(products) ||
-    products.length === 0
-  ) {
+  if (!Array.isArray(products) || products.length === 0) {
     throw new Error(
-      "At least one product is required for outfit visualization"
+      "At least one product is required for outfit visualization",
     );
   }
 
   const ai = getGeminiClient();
-  console.log("BASE OUTFIT IMAGE:", {
-    exists:
-      typeof currentOutfitImage === "string" &&
-      currentOutfitImage.length > 0,
+  const baseOutfitImagePart = convertDataUrlToInlineData(currentOutfitImage);
 
-    length:
-      typeof currentOutfitImage === "string"
-        ? currentOutfitImage.length
-        : 0,
+  console.log("BASE OUTFIT IMAGE:", {
+    exists: Boolean(baseOutfitImagePart),
+
+    mimeType: baseOutfitImagePart?.inlineData?.mimeType || null,
+
+    size: baseOutfitImagePart?.inlineData?.data?.length || 0,
   });
 
-  const visualizationContext =
-    buildVisualizationContext({
-      originalMessage,
-      history,
-      intent,
-      outfitPlan,
-      currentOutfit,
-      products,
-    });
-    console.log(
-      "OUTFIT VISUALIZATION CONTEXT:",
-      visualizationContext
-    );
-
-  const prompt = buildVisualizationPrompt({
-    visualizationContext,
+  const visualizationContext = buildVisualizationContext({
+    originalMessage,
+    history,
     intent,
+    outfitPlan,
+    currentOutfit,
     products,
   });
 
-  const referenceImageParts =
-    await buildReferenceImageParts(products);
+  console.log("OUTFIT VISUALIZATION CONTEXT:", visualizationContext);
+
+  const baseImageInstruction = baseOutfitImagePart
+    ? `
+מצורפת תחילה תמונת הלוק הקודם.
+
+זוהי תמונת הבסיס המחייבת לעריכה:
+- יש לערוך את התמונה הקיימת ולא ליצור לוק חדש מאפס.
+- יש לשמור על אותה דמות, תנוחה, רקע והרכב חזותי ככל האפשר.
+- יש לשנות רק את הפריט שהלקוחה ביקשה לשנות.
+- יש להשאיר את יתר פריטי הלוק כפי שהם מופיעים בתמונת הבסיס.
+- תמונות המוצרים שמצורפות לאחר מכן הן תמונות ייחוס לפריטים החדשים או המעודכנים.
+`
+    : "";
+
+  const prompt = `
+${baseImageInstruction}
+
+${buildVisualizationPrompt({
+  visualizationContext,
+  intent,
+  products,
+})}
+`.trim();
+
+  const referenceImageParts = await buildReferenceImageParts(products);
 
   if (!referenceImageParts.length) {
     console.warn(
-      "No product reference images were downloaded; generating from text only"
+      "No product reference images were downloaded; generating from text only",
     );
   }
 
   console.log(
     "OUTFIT REFERENCE IMAGES:",
-    referenceImageParts.filter(
-      (part) => part?.inlineData
-    ).length
+    referenceImageParts.filter((part) => part?.inlineData).length,
   );
 
   const response = await ai.models.generateContent({
@@ -545,6 +545,19 @@ async function generateOutfitVisualization({
           {
             text: prompt,
           },
+
+          ...(baseOutfitImagePart
+            ? [
+                {
+                  text: `
+ זוהי תמונת הלוק הקודם.
+  יש לערוך אותה בלבד.
+  `.trim(),
+                },
+                baseOutfitImagePart,
+              ]
+            : []),
+
           ...referenceImageParts,
         ],
       },
@@ -562,22 +575,15 @@ async function generateOutfitVisualization({
     },
   });
 
-  const parts =
-    response?.candidates?.[0]?.content?.parts || [];
+  const parts = response?.candidates?.[0]?.content?.parts || [];
 
-  const imagePart = parts.find(
-    (part) => part?.inlineData?.data
-  );
+  const imagePart = parts.find((part) => part?.inlineData?.data);
 
   if (!imagePart) {
-    throw new Error(
-      "Gemini did not return an outfit image"
-    );
+    throw new Error("Gemini did not return an outfit image");
   }
 
-  const mimeType =
-    imagePart.inlineData.mimeType ||
-    "image/png";
+  const mimeType = imagePart.inlineData.mimeType || "image/png";
 
   const base64 = imagePart.inlineData.data;
 
