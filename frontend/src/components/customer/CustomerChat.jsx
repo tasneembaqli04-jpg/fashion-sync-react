@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import chatStyles from "../../styles/customer/CustomerChat.module.scss";
+import OutfitProductsCatalog from "./OutfitProductsCatalog";
 
 export default function CustomerChat({
   chatMessages = [],
@@ -12,6 +13,8 @@ export default function CustomerChat({
   setChatInput,
   onChatImageChange,
   isTyping = false,
+  addToCart,
+  openProductModal,
 }) {
   const msgsRef = useRef(null);
 
@@ -63,6 +66,13 @@ export default function CustomerChat({
                     className={chatStyles.generatedImage}
                   />
                 </div>
+              )}
+              {msg.products?.length > 0 && (
+                <OutfitProductsCatalog
+                  products={msg.products}
+                  addToCart={addToCart}
+                  openProductModal={openProductModal}
+                />
               )}
             </div>
           ))}

@@ -1165,6 +1165,8 @@ export default function Customer() {
             setChatInput={setChatInput}
             onChatImageChange={() => {}}
             isTyping={isChatTyping}
+            addToCart={addToCart}
+            openProductModal={openProductModal}
           />
         )}
 
