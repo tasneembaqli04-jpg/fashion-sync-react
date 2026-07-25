@@ -8,6 +8,7 @@ async function chatController(request, response) {
       message,
       history,
       currentOutfit,
+      currentOutfitImage,
     } = request.body || {};
 
     if (
@@ -41,10 +42,22 @@ async function chatController(request, response) {
     const result = await handleChatMessage({
       message: message.trim(),
       history: Array.isArray(history) ? history : [],
+      currentOutfit: Array.isArray(currentOutfit)
+        ? currentOutfit
+        : [],
+        
+      currentOutfitImage:
+        typeof currentOutfitImage === "string"
+        ? currentOutfitImage
+        : "",
       onChunk: (text) => {
         if (!text) {
           return;
         }
+        console.log(
+          "CHAT CONTROLLER WRITING CHUNK:",
+          String(text)
+        );
 
         startTextStream();
         response.write(String(text));
@@ -56,6 +69,7 @@ async function chatController(request, response) {
       result?.imageGenerated === true &&
       result?.image?.dataUrl
     ) {
+
       if (textStreamStarted) {
         console.error(
           "Cannot return image after text streaming started."
@@ -77,6 +91,10 @@ async function chatController(request, response) {
         intent: result.intent || null,
       });
     }
+    console.log(
+      "CHAT CONTROLLER ENDING TEXT STREAM:",
+      textStreamStarted
+    );
 
     if (textStreamStarted) {
       return response.end();

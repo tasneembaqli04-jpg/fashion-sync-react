@@ -101,6 +101,11 @@ export default function Customer() {
     },
   ]);
   const [isChatTyping, setIsChatTyping] = useState(false);
+  const [currentOutfit, setCurrentOutfit] = useState([]);
+  const [
+    currentOutfitImage,
+    setCurrentOutfitImage,
+  ] = useState("");
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -432,12 +437,15 @@ export default function Customer() {
       const result = await requestChatReplyStream({
         message: text,
         history,
+        currentOutfit,
+        currentOutfitImage,
         signal: controller.signal,
 
         onChunk: (fullTextSoFar) => {
           if (!botMessageStarted) {
             botMessageStarted = true;
             setIsChatTyping(false);
+            
 
             setChatMessages((prev) => [
               ...prev,
@@ -466,6 +474,14 @@ export default function Customer() {
         result?.imageGenerated === true &&
         result?.image?.dataUrl
       ) {
+        setCurrentOutfit(
+          Array.isArray(result.products)
+            ? result.products
+            : []
+        );
+        setCurrentOutfitImage(
+          result.image.dataUrl
+        );
         setIsChatTyping(false);
 
         setChatMessages((prev) => [
@@ -656,7 +672,7 @@ export default function Customer() {
     }
 
     if (coupon.seasonOnly && getCurrentSeason() !== coupon.seasonOnly) {
-      alertDialog(dict.customer.dialogs.couponSeasonOnly);ד
+      alertDialog(dict.customer.dialogs.couponSeasonOnly);
       return;
     }
 

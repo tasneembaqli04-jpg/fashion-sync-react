@@ -44,46 +44,94 @@ function buildProductSearchOptions(intent) {
       intent.saleOnly ||
       intent.intent === INTENTS.SALE_SEARCH,
     limit:
-      intent.intent === INTENTS.OUTFIT_RECOMMENDATION
+      intent.intent === INTENTS.OUTFIT_RECOMMENDATION ||
+      intent.intent === INTENTS.OUTFIT_MODIFICATION
         ? 50
         : 5,
   };
 }
 
-function buildProductForAi(product) {
-  const variants = Array.isArray(product.variants)
+function buildProductForAi(product, options = {}) {
+  const variants = Array.isArray(product?.variants)
     ? product.variants
     : [];
 
+  const variantColors = variants
+    .map(
+      (variant) =>
+        variant?.colorName ||
+        variant?.color ||
+        variant?.name
+    )
+    .filter(Boolean);
+
+  const existingColors = Array.isArray(product?.colors)
+    ? product.colors
+    : [];
+
   return {
-    code: product.code || product.id || "",
-    name: product.name || "",
-    category: product.category || product.cat || "",
-    imageUrl: product.img || product.imageUrl || "",
-    gender: product.gender || "",
-    price: product.price ?? null,
-    description: product.desc || product.description || "",
+    code:
+      product?.code ||
+      product?.id ||
+      "",
+
+    name:
+      product?.name ||
+      "",
+
+    category:
+      product?.category ||
+      product?.cat ||
+      "",
+
+    imageUrl:
+      product?.imageUrl ||
+      product?.img ||
+      "",
+
+    gender:
+      product?.gender ||
+      "",
+
+    price:
+      product?.price ?? null,
+
+    description:
+      product?.description ||
+      product?.desc ||
+      "",
+
     colors: [
-      ...new Set(
-        variants
-          .map(
-            (variant) =>
-              variant?.colorName ||
-              variant?.color ||
-              variant?.name
-          )
-          .filter(Boolean)
-      ),
+      ...new Set([
+        ...existingColors,
+        ...variantColors,
+      ]),
     ],
+
     sizes: variants.map((variant) => ({
       color:
         variant?.colorName ||
         variant?.color ||
         variant?.name ||
         "",
-      sizes: variant?.sizes || {},
+
+      sizes:
+        variant?.sizes ||
+        {},
     })),
-    sale: product.sale ?? false,
+
+    sale:
+      product?.sale ?? false,
+
+    selectedColor:
+      options.selectedColor ||
+      product?.selectedColor ||
+      null,
+
+    action:
+      options.action ||
+      product?.action ||
+      null,
   };
 }
 
@@ -176,6 +224,7 @@ async function handleChatMessage({
   message,
   history = [],
   currentOutfit = [],
+  currentOutfitImage = "",
   onChunk,
 }) {
   const intent = await detectChatIntent({
@@ -194,11 +243,19 @@ async function handleChatMessage({
     intent.needsClarification &&
     intent.clarificationQuestion
   ) {
-    onChunk(intent.clarificationQuestion);
+    const clarificationText =
+      intent.clarificationQuestion;
+
+    if (typeof onChunk === "function") {
+      onChunk(clarificationText);
+    }
 
     return {
+      type: "text",
+      text: clarificationText,
       intent,
       products: [],
+      responseMode: "TEXT",
       needsClarification: true,
     };
   }
@@ -255,8 +312,10 @@ async function handleChatMessage({
     try {
       outfitPlan = await planOutfit({
         products,
+        currentOutfit,
         intent,
         message,
+        history,
       });
     } catch (error) {
       console.error(
@@ -297,15 +356,138 @@ async function handleChatMessage({
       };
     }
 
+    const normalizedCurrentOutfit =
+      Array.isArray(currentOutfit)
+        ? currentOutfit
+        : [];
+
+    const requestedCategory =
+      intent?.category || "";
+
     const productsForVisualization =
-      outfitPlan.selectedProducts.map(
-        buildProductForAi
-      );
+      outfitPlan.selectedProducts.map((product) => {
+        const productCode =
+          product?.code ||
+          product?.id ||
+          "";
+
+        const previousProduct =
+          normalizedCurrentOutfit.find(
+            (currentProduct) =>
+              (
+                currentProduct?.code ||
+                currentProduct?.id ||
+                ""
+              ) === productCode
+          );
+
+        const productCategory =
+          product?.category ||
+          product?.cat ||
+          "";
+
+        const isExistingProduct =
+          Boolean(previousProduct);
+
+        const isRequestedCategory =
+          requestedCategory &&
+          productCategory === requestedCategory;
+
+        const shouldKeep =
+          intent?.intent === "OUTFIT_MODIFICATION" &&
+          isExistingProduct &&
+          !isRequestedCategory;
+
+        return buildProductForAi(
+          {
+            ...previousProduct,
+            ...product,
+
+            colors:
+              Array.isArray(product?.colors) &&
+              product.colors.length
+                ? product.colors
+                : previousProduct?.colors || [],
+
+            variants:
+              Array.isArray(product?.variants) &&
+              product.variants.length
+                ? product.variants
+                : previousProduct?.variants || [],
+
+            imageUrl:
+              product?.imageUrl ||
+              product?.img ||
+              previousProduct?.imageUrl ||
+              previousProduct?.img ||
+              "",
+          },
+          {
+            selectedColor:
+              shouldKeep
+                ? previousProduct?.selectedColor || null
+                : intent?.color ||
+                  product?.selectedColor ||
+                  previousProduct?.selectedColor ||
+                  null,
+
+              action:
+                shouldKeep
+                  ? "KEEP"
+                  : isExistingProduct
+                    ? "KEEP"
+                    : "REPLACE",
+          }
+        );
+      });
+      console.log("OUTFIT VISUALIZATION INPUT:", {
+        originalMessage: message,
+        intent: {
+          intent: intent.intent,
+          category: intent.category,
+          color: intent.color,
+          style: intent.style,
+          occasion: intent.occasion,
+        },
+        plannerExplanation:
+          outfitPlan.explanation || "",
+        currentOutfit:
+          Array.isArray(currentOutfit)
+            ? currentOutfit.map(
+                (product) => product?.code
+              )
+            : [],
+        selectedProducts:
+          productsForVisualization.map((product) => ({
+            code: product.code,
+            name: product.name,
+            category: product.category,
+            colors: product.colors,
+            selectedColor: product.selectedColor,
+            action: product.action,
+          })),
+      });
 
     try {
+      console.log("CURRENT OUTFIT IMAGE RECEIVED:", {
+        exists:
+          typeof currentOutfitImage === "string" &&
+          currentOutfitImage.length > 0,
+
+        length:
+          typeof currentOutfitImage === "string"
+            ? currentOutfitImage.length
+            : 0,
+      });
+
       const visualization =
         await generateOutfitVisualization({
+          originalMessage: message,
+          history,
           intent,
+          outfitPlan,
+          currentOutfit,
+          currentOutfitImage,
           products: productsForVisualization,
         });
 

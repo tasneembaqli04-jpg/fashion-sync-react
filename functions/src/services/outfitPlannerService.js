@@ -61,6 +61,24 @@ const PLANNER_INSTRUCTION = `
 
 - בחר בדרך כלל בין שלושה לשישה מוצרים,
   בהתאם למוצרים הקיימים ולבקשת הלקוחה.
+
+כאשר intent הוא OUTFIT_MODIFICATION:
+
+- התייחס ל-currentOutfit כלוק הקיים של הלקוחה.
+- הבן מתוך category, customerMessage והיסטוריית השיחה
+  איזה סוג פריט הלקוחה ביקשה להחליף.
+- שמור את כל המוצרים מהלוק הקיים שאינם שייכים
+  לקטגוריה שהתבקשה להחלפה.
+- בחר מתוך products מוצר חלופי אמיתי לקטגוריה שהתבקשה.
+- אל תבחר שוב את אותו קוד מוצר שמוחלף,
+  כאשר קיימת אפשרות חלופית מתאימה.
+- החזר ב-selectedProductCodes את כל הלוק הסופי:
+  גם המוצרים שנשמרו מה-currentOutfit וגם המוצר החדש.
+- אם הלקוחה ביקשה להחליף את כל הלוק,
+  בנה לוק חדש לחלוטין והימנע ככל האפשר
+  מקודי המוצרים שהופיעו ב-currentOutfit.
+- אל תסיר נעליים, תיק או אביזרים שלא התבקשו להחלפה.
+- אל תבחר שום מוצר שאינו מופיע ב-products או ב-currentOutfit.
 - החזר רק JSON לפי הסכמה.
 `.trim();
 
@@ -223,22 +241,46 @@ function matchesPrice(product, intent) {
 function serializeProduct(product) {
   return {
     code: getProductCode(product),
-    name: product?.name || null,
+
+    name:
+      product?.name || null,
+
     category:
       product?.cat ||
       product?.category ||
       product?.type ||
       null,
-    description: product?.desc || null,
-    gender: product?.gender || null,
-    season: product?.season || null,
+
+    description:
+      product?.desc ||
+      product?.description ||
+      null,
+
+    gender:
+      product?.gender || null,
+
+    season:
+      product?.season || null,
+
     price:
-      Number.isFinite(Number(product?.price)) ?
-        Number(product.price) :
-        null,
-    colors: extractColors(product),
-    bestseller: product?.bestseller === true,
-    trending: product?.trending === true,
+      Number.isFinite(Number(product?.price))
+        ? Number(product.price)
+        : null,
+
+    colors:
+      extractColors(product),
+
+    selectedColor:
+      product?.selectedColor || null,
+
+    action:
+      product?.action || null,
+
+    bestseller:
+      product?.bestseller === true,
+
+    trending:
+      product?.trending === true,
   };
 }
 
@@ -330,28 +372,47 @@ function parsePlannerResponse(rawText) {
 }
 
 /**
- * Validates that Gemini selected real catalog products.
+ * Validates that Gemini selected only real products
+ * from the catalog candidates or the current outfit.
  *
  * @param {object} result Parsed Gemini result.
  * @param {object[]} eligibleProducts Eligible catalog products.
+ * @param {object[]} currentOutfit Existing outfit products.
  * @return {object[]} Verified selected products.
  */
 function resolveSelectedProducts(
   result,
-  eligibleProducts
+  eligibleProducts,
+  currentOutfit = []
 ) {
-  const productMap = new Map(
-    eligibleProducts.map((product) => [
-      normalizeText(getProductCode(product)),
-      product,
-    ])
-  );
+  const allAllowedProducts = [
+    ...(Array.isArray(eligibleProducts)
+      ? eligibleProducts
+      : []),
+    ...(Array.isArray(currentOutfit)
+      ? currentOutfit
+      : []),
+  ];
+
+  const productMap = new Map();
+
+  allAllowedProducts.forEach((product) => {
+    const code = normalizeText(
+      getProductCode(product)
+    );
+
+    if (!code || productMap.has(code)) {
+      return;
+    }
+
+    productMap.set(code, product);
+  });
 
   const selectedCodes = Array.isArray(
     result?.selectedProductCodes
-  ) ?
-    result.selectedProductCodes :
-    [];
+  )
+    ? result.selectedProductCodes
+    : [];
 
   const seenCodes = new Set();
 
@@ -385,12 +446,23 @@ function resolveSelectedProducts(
  */
 async function planOutfit({
   products,
+  currentOutfit = [],
+  history = [],
   intent,
   message = "",
 }) {
   const safeProducts = Array.isArray(products) ?
     products :
     [];
+  console.log(
+    "PLANNER CURRENT OUTFIT:",
+    currentOutfit.map((product) => product?.code)
+  );
+
+  console.log(
+    "PLANNER HISTORY LENGTH:",
+    history.length
+  );
 
   const eligibleProducts = filterEligibleProducts(
     safeProducts,
@@ -412,10 +484,27 @@ async function planOutfit({
     serializeProduct
   );
 
+  const safeCurrentOutfit = Array.isArray(currentOutfit)
+    ? currentOutfit.filter(
+        (product) =>
+          product &&
+          typeof product === "object" &&
+          getProductCode(product)
+      )
+    : [];
+
+  const safeHistory = Array.isArray(history)
+    ? history.slice(-8)
+    : [];
+
   const plannerRequest = {
     customerMessage: message || null,
 
     request: {
+      intent: intent?.intent || null,
+      conversationAction:
+        intent?.conversationAction || null,
+      category: intent?.category || null,
       occasion: intent?.occasion || null,
       eventTime: intent?.eventTime || null,
       gender: intent?.gender || null,
@@ -426,6 +515,21 @@ async function planOutfit({
       maxPrice: intent?.maxPrice ?? null,
       outfitType: intent?.outfitType || null,
     },
+
+    currentOutfit: safeCurrentOutfit.map(
+      serializeProduct
+    ),
+
+    conversationHistory: safeHistory.map(
+      (item) => ({
+        role: item?.role || null,
+        content:
+          item?.content ||
+          item?.text ||
+          item?.message ||
+          null,
+      })
+    ),
 
     products: catalogForPlanner,
   };
@@ -475,7 +579,8 @@ async function planOutfit({
 
   const selectedProducts = resolveSelectedProducts(
     parsedResult,
-    eligibleProducts
+    eligibleProducts,
+    safeCurrentOutfit
   );
 
   if (!selectedProducts.length) {

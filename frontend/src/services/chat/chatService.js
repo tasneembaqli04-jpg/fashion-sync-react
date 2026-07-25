@@ -5,6 +5,8 @@ const CHAT_URL =
 export async function requestChatReplyStream({
   message,
   history = [],
+  currentOutfit = [],
+  currentOutfitImage = "",
   onChunk,
   signal,
 }) {
@@ -20,6 +22,13 @@ export async function requestChatReplyStream({
     body: JSON.stringify({
       message,
       history,
+      currentOutfit: Array.isArray(currentOutfit)
+        ? currentOutfit
+        : [],
+      currentOutfitImage:
+        typeof currentOutfitImage === "string"
+          ? currentOutfitImage
+          : "",
     }),
     signal,
   });

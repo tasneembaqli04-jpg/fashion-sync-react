@@ -1,5 +1,9 @@
 const {geminiApiKey} = require("./config/gemini");
 const {onRequest} = require("firebase-functions/v2/https");
+const {defineSecret} = require("firebase-functions/params");
+
+const gmailUser = defineSecret("GMAIL_USER");
+const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 
 const {tryOnController} = require("./controllers/tryOnController");
 const {tryOnV2Controller} = require("./controllers/tryOnV2Controller");
@@ -23,6 +27,9 @@ const {
 const {
   contactNotificationEmailController,
 } = require("./controllers/contactNotificationEmailController");
+const {
+  passwordResetEmailController,
+} = require("./controllers/passwordResetEmailController");
 
 
 const backendHealthCheck = onRequest((request, response) => {
@@ -57,6 +64,7 @@ const chat = onRequest(
 const sendOrderEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   emailController,
 );
@@ -64,6 +72,7 @@ const sendOrderEmail = onRequest(
 const sendStockAlertEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   stockAlertEmailController,
 );
@@ -71,6 +80,7 @@ const sendStockAlertEmail = onRequest(
 const sendShippingUpdateEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   shippingUpdateEmailController,
 );
@@ -78,6 +88,7 @@ const sendShippingUpdateEmail = onRequest(
 const sendReturnStatusEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   returnStatusEmailController,
 );
@@ -85,6 +96,7 @@ const sendReturnStatusEmail = onRequest(
 const sendVerificationEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   verificationEmailController,
 );
@@ -92,6 +104,7 @@ const sendVerificationEmail = onRequest(
 const sendWelcomeEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   welcomeEmailController,
 );
@@ -99,8 +112,17 @@ const sendWelcomeEmail = onRequest(
 const sendContactNotificationEmail = onRequest(
   {
     cors: true,
+    secrets: [gmailUser, gmailAppPassword],
   },
   contactNotificationEmailController,
+);
+
+const sendPasswordResetEmail = onRequest(
+  {
+    cors: true,
+    secrets: [gmailUser, gmailAppPassword],
+  },
+  passwordResetEmailController,
 );
 
 module.exports = {
@@ -115,4 +137,5 @@ module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,
+  sendPasswordResetEmail,
 };

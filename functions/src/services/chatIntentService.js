@@ -72,6 +72,8 @@ const INTENT_SCHEMA = {
     responseMode: {
       type: "string",
       enum: RESPONSE_MODE_VALUES,
+      description:
+        "Use IMAGE whenever the customer asks to see, build, create, visualize, modify, or receive an outfit or complete look. Use TEXT for ordinary answers and clarification questions.",
     },
 
     category: {
@@ -201,6 +203,27 @@ const INTENT_INSTRUCTION = `
 - תקן קוד מוצר לצורה FS-000 כאשר אפשר.
 - gender יהיה "נשים", "גברים" או null.
 
+כלל עדיפות מחייב ללוק מלא:
+
+כאשר outfitType הוא COMPLETE_OUTFIT והמגדר אינו ידוע,
+שאלת המגדר קודמת לכל כלל אחר, כולל בקשה לתמונה או להצגת הלוק.
+
+במצב זה חובה להחזיר:
+- intent = OUTFIT_RECOMMENDATION
+- outfitType = COMPLETE_OUTFIT
+- gender = null
+- needsClarification = true
+- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+- responseMode = TEXT
+
+אסור ליצור תמונה ואסור להחזיר needsClarification=false
+כל עוד gender אינו ידוע.
+
+מילים כמו:
+"תראה לי", "תראי לי", "לוק מלא", "תבנה לי לוק",
+"תכין לי הופעה" או "לוק לחתונה"
+אינן מספקות מידע על מגדר.
+
 כללי הקשר שיחה:
 
 החזר conversationAction לפי משמעות ההודעה הנוכחית ביחס להיסטוריה.
@@ -230,6 +253,30 @@ const INTENT_INSTRUCTION = `
 כאשר conversationAction הוא CONTINUE:
 - השתמש בהיסטוריה כדי להשלים שדות חסרים.
 - שמור תנאים קודמים שרלוונטיים לחיפוש הנוכחי.
+כאשר intent הוא OUTFIT_MODIFICATION:
+
+- אם הלקוחה מבקשת להחליף רק קטגוריה אחת (למשל נעליים, תיק או אביזרים),
+  אין להעביר אוטומטית צבע, מידה או מחיר מהפריט הקודם אל הקטגוריה החדשה.
+
+- צבע יוחזר רק אם הלקוחה ביקשה אותו במפורש עבור הפריט שמוחלף.
+
+דוגמאות:
+
+"תחליפי את הנעליים"
+category = "נעליים"
+color = null
+
+"תשאירי את השמלה אבל תחליפי את הנעליים"
+category = "נעליים"
+color = null
+
+"תחליפי את הנעליים לשחורות"
+category = "נעליים"
+color = "שחור"
+
+"תשאירי את השמלה האדומה"
+category = "שמלות"
+color = "אדום"
 
 כאשר conversationAction הוא RESET:
 - אל תעתיק תנאים מהחיפוש הקודם.
@@ -480,9 +527,79 @@ category="שמלות"
 - "תראי לי איך כל הלוק נראה"
   intent: OUTFIT_RECOMMENDATION
   conversationAction: RESET
-  responseMode: IMAGE
   outfitType: COMPLETE_OUTFIT
-  needsClarification: false
+  gender: null
+  responseMode: TEXT
+  needsClarification: true
+  clarificationQuestion: "הלוק מיועד לאישה או לגבר?"
+
+כאשר הלקוחה מבקשת לראות, להציג, ליצור או לקבל לוק חזותי:
+- intent = OUTFIT_RECOMMENDATION.
+
+אם כל המידע ההכרחי קיים:
+- responseMode = IMAGE.
+- needsClarification = false.
+
+אם מדובר בלוק מלא והמגדר אינו ידוע:
+- responseMode = TEXT.
+- needsClarification = true.
+- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+
+לאחר שהלקוחה עונה "לאישה", "לנשים", "לגבר" או "לגברים":
+- שמור את כל פרטי הבקשה הקודמת.
+- needsClarification = false.
+- responseMode = IMAGE.
+
+דוגמאות לבקשות שדורשות IMAGE:
+
+- "תראי לי לוק לחתונה"
+- "תבני לי לוק לערב"
+- "אפשר לראות לוק עם שמלה שחורה?"
+- "תציעי לי הופעה מלאה"
+- "תכיני לי שילוב לאירוע"
+- "תראי איך הפריטים נראים יחד"
+- "אני רוצה לוק אחר"
+- "תחליפי את השמלה בלוק"
+
+אין צורך שהלקוחה תשתמש במילה "תמונה".
+כאשר הכוונה היא לראות לוק, שילוב או הופעה חזותית,
+responseMode חייב להיות IMAGE.
+
+כאשר חסר מידע הכרחי ויש לשאול שאלת הבהרה:
+- needsClarification = true
+- responseMode = TEXT
+
+לאחר שהלקוחה עונה על שאלת ההבהרה וכל המידע הדרוש קיים:
+- needsClarification = false
+- responseMode = IMAGE
+
+דוגמה מחייבת:
+
+הלקוחה:
+"בבקשה תראה לי לוק מלא לחתונה"
+
+החזר:
+intent="OUTFIT_RECOMMENDATION"
+conversationAction="RESET"
+needsClarification=true
+clarificationQuestion="הלוק מיועד לאישה או לגבר?"
+responseMode="TEXT"
+gender=null
+occasion="חתונה"
+outfitType="COMPLETE_OUTFIT"
+
+לאחר מכן, אם הלקוחה עונה:
+"לאישה"
+
+החזר:
+intent="OUTFIT_RECOMMENDATION"
+conversationAction="CONTINUE"
+needsClarification=false
+clarificationQuestion=null
+responseMode="IMAGE"
+gender="נשים"
+occasion="חתונה"
+outfitType="COMPLETE_OUTFIT"
 `.trim();
 
 /**
