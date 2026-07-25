@@ -1,821 +1,171 @@
-import { useEffect, useRef, useState } from "react";
-import styles from "../../../styles/manager/ManagerModals.module.scss";
-import ScanModal from "./ScanModal";
-import { CATEGORIES } from "../../../data/categories";
-import { translateProductFields } from "../../../services/translation/translationService";
-import { useLanguage } from "../../../translations/LanguageProvider";
+import { useEffect, useState } from "react";
+import styles from "../../styles/Home.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
+import {
+  verifyCode,
+  resendVerificationCode,
+} from "../../services/verification/verificationService";
 
-const CATEGORY_SIZE_OPTIONS = {
-  חולצות: ["S", "M", "L", "XL"],
-  מכנסיים: ["28", "30", "32", "34"],
-  שמלות: ["S", "M", "L", "XL"],
-  עליוניות: ["S", "M", "L", "XL"],
-  נעליים: ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
-  אביזרים: ["אחיד"],
-};
-const MAX_STOCK = 99999;
-const MAX_PRICE = 999999;
-
-function clampNumberString(value, max) {
-  const num = parseInt(value, 10);
-  if (Number.isNaN(num)) return "";
-  return String(Math.max(0, Math.min(num, max)));
-}
-
-export default function AddProductModal({
+export default function EmailVerificationModal({
   isOpen,
+  email,
+  name,
   onClose,
-  onSubmit,
-  onOpenScanner,
-  theme,
-  products = [],
+  onVerified,
 }) {
   const { t: dict } = useLanguage();
-  const t = dict.manager.addProductModal;
+  const t = dict.home.verification;
 
-  const fileInputRef = useRef(null);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
-
-  const [form, setForm] = useState({
-    code: "",
-    name: "",
-    cat: "חולצות",
-    gender: "נשים",
-    season: "",
-    stock: "0",
-    price: "0",
-    cost: "0",
-    minStock: "10",
-    desc: "",
-    image: "",
-  });
-
-  const [uploadMode, setUploadMode] = useState("file");
-  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [isScanOpen, setIsScanOpen] = useState(false);
-  const [variantsDraft, setVariantsDraft] = useState([]);
-  const [translating, setTranslating] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendMessage, setResendMessage] = useState("");
+  const [secondsSinceOpen, setSecondsSinceOpen] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCode("");
+      setError("");
+      setVerifying(false);
+      setResendCooldown(30);
+      setResendMessage("");
+      setSecondsSinceOpen(0);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
-    if (form.code) return;
+    const timer = setInterval(() => {
+      setSecondsSinceOpen((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isOpen]);
 
-    const numericSuffixes = products
-      .map((p) => {
-        const match = (p.code || "").match(/(\d+)$/);
-        return match ? parseInt(match[1], 10) : null;
-      })
-      .filter((n) => n !== null);
+  const codeLikelyExpired = secondsSinceOpen >= 600;
 
-    if (numericSuffixes.length === 0) return;
-
-    const maxNumber = Math.max(...numericSuffixes);
-    const digits = String(maxNumber).length;
-    const nextNumber = String(maxNumber + 1).padStart(digits, "0");
-    const prefixMatch = products[0]?.code?.match(/^([A-Za-z]+-?)/);
-    const prefix = prefixMatch ? prefixMatch[1] : "FS-";
-
-    setForm((prev) => ({ ...prev, code: `${prefix}${nextNumber}` }));
-  }, [isOpen, products]);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   if (!isOpen) return null;
 
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addColorVariant = () => {
-    const sizeKeys = CATEGORY_SIZE_OPTIONS[form.cat] || ["S", "M", "L"];
-    const sizes = {};
-    sizeKeys.forEach((key) => {
-      sizes[key] = 0;
-    });
-
-    setVariantsDraft((prev) => [
-      ...prev,
-      { colorName: "", sizes },
-    ]);
-  };
-
-  const removeColorVariant = (variantIndex) => {
-    setVariantsDraft((prev) => prev.filter((_, index) => index !== variantIndex));
-  };
-
-  const handleColorNameChange = (variantIndex, value) => {
-    setVariantsDraft((prev) =>
-      prev.map((variant, index) =>
-        index !== variantIndex ? variant : { ...variant, colorName: value }
-      )
-    );
-  };
-  const handleVariantQtyChange = (variantIndex, sizeKey, value) => {
-    const safeValue = Math.max(0, Math.min(parseInt(value || "0", 10) || 0, MAX_STOCK));
-    setVariantsDraft((prev) =>
-      prev.map((variant, index) =>
-        index !== variantIndex
-          ? variant
-          : { ...variant, sizes: { ...variant.sizes, [sizeKey]: safeValue } }
-      )
-    );
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setIsCameraActive(false);
-  };
-
-  const resetForm = () => {
-    setForm({
-      code: "",
-      name: "",
-      cat: "חולצות",
-      gender: "נשים",
-      season: "",
-      stock: "0",
-      price: "0",
-      cost: "0",
-      minStock: "10",
-      desc: "",
-      image: "",
-    });
+  async function handleVerify() {
     setError("");
-    setUploadMode("file");
-    setVariantsDraft([]);
-    stopCamera();
-  };
+    setVerifying(true);
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-        audio: false,
-      });
-      streamRef.current = stream;
-      setIsCameraActive(true);
+      const result = await verifyCode(email, code);
 
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      }, 50);
-    } catch (err) {
-      setError(t.cameraAccessError + (err.message || err.name));
+      if (!result.ok) {
+        setError(
+          result.reason === "expired"
+            ? t.errorExpired
+            : result.reason === "notFound"
+            ? t.errorNotFound
+            : t.errorMismatch
+        );
+        return;
+      }
+
+      onVerified();
+    } finally {
+      setVerifying(false);
     }
-  };
+  }
 
-  const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+  async function handleResend() {
+    if (resendCooldown > 0) return;
 
-    const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth || 640;
-    canvas.height = videoRef.current.videoHeight || 480;
-
-    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-
-    handleChange("image", dataUrl);
-    stopCamera();
-    setUploadMode("file");
-  };
-
-  const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setError(t.selectImageFile);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      handleChange("image", event.target?.result || "");
-      setError("");
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  };
-
-  const handleSubmit = async () => {
-    if (
-      !form.code.trim() ||
-      !form.name.trim() ||
-      !form.cat.trim() ||
-      !form.gender.trim() ||
-      !form.season ||
-      form.stock === "" ||
-      form.price === "" ||
-      form.minStock === "" ||
-      !form.desc.trim() ||
-      !form.image
-    ) {
-      setError(t.fillAllFields);
-      return;
-    }
-
-    const normalizedCode = form.code.trim().toUpperCase();
-    const codeAlreadyExists = products.some(
-      (p) => p.code.toUpperCase() === normalizedCode
-    );
-
-    if (codeAlreadyExists) {
-      setError(t.codeAlreadyExists.replace("{code}", normalizedCode));
-      return;
-    }
-
-    const cleanedVariants = variantsDraft.filter(
-      (variant) => (variant.colorName || "").trim() !== ""
-    );
-
-    const colorNamesLower = cleanedVariants.map((v) =>
-      v.colorName.trim().toLowerCase()
-    );
-    const hasDuplicateColor =
-      new Set(colorNamesLower).size !== colorNamesLower.length;
-
-    if (hasDuplicateColor) {
-      setError(t.duplicateColor);
-      return;
-    }
-
-    const hasVariants = cleanedVariants.length > 0;
-    const variantsTotal = cleanedVariants.reduce(
-      (sum, variant) =>
-        sum +
-        Object.values(variant.sizes || {}).reduce(
-          (innerSum, qty) => innerSum + (Number(qty) || 0),
-          0
-        ),
-      0
-    );
-
-    setTranslating(true);
-
-    const { nameEn, descEn, colorNamesEn } = await translateProductFields({
-      name: form.name.trim(),
-      desc: form.desc.trim(),
-      colorNames: cleanedVariants.map((v) => v.colorName.trim()),
-    });
-
-    setTranslating(false);
-
-    const variantsWithTranslations = cleanedVariants.map((variant, index) => ({
-      ...variant,
-      colorNameEn: colorNamesEn[index] || variant.colorName,
-    }));
-
-    const newProduct = {
-      code: form.code.trim().toUpperCase(),
-      name: form.name.trim(),
-      nameEn: nameEn || form.name.trim(),
-      cat: form.cat,
-      gender: form.gender,
-      season: form.season,
-      stock: hasVariants ? variantsTotal : Number(form.stock),
-      price: Number(form.price),
-      cost: Number(form.cost) || 0,
-      minStock: Number(form.minStock),
-      desc: form.desc.trim(),
-      descEn: descEn || form.desc.trim(),
-      img: form.image,
-      notifyCount: 0,
-      trending: false,
-      bestseller: false,
-      salesLastMonth: 0,
-      variants: variantsWithTranslations,
-    };
-
-    onSubmit(newProduct);
-    handleClose();
-  };
+    await resendVerificationCode(email, name);
+    setResendCooldown(30);
+    setSecondsSinceOpen(0);
+    setResendMessage(t.resendSuccess);
+    setTimeout(() => setResendMessage(""), 3000);
+  }
 
   return (
-    <div
-      className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
-    >
-      <div className={styles.addProductModal}>
-        <button className={styles.modalCloseBtn} onClick={handleClose}>
-          ✕
-        </button>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            gap: "0.6rem",
-            marginBottom: "1.8rem",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "2rem",
-              fontWeight: 700,
-              color: "#8f6bff",
-              lineHeight: 1,
-            }}
-          >
-            ＋
-          </span>
-
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "1.7rem",
-              color: "var(--gold)",
-              margin: 0,
-            }}
-          >
-            {t.title}
-          </h2>
-        </div>
-
-        <div className={styles.addProductGrid}>
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.codeLabel}</label>
-            <div style={{ display: "flex", gap: "0.45rem" }}>
-              <input
-                className={styles.addInput}
-                placeholder="FS-XXX"
-                value={form.code}
-                onChange={(e) => handleChange("code", e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <button
-                type="button"
-                onClick={() => setIsScanOpen(true)}
-                title={t.scanTooltip}
-                style={{
-                  background: "rgba(52,152,219,0.1)",
-                  border: "1px solid rgba(52,152,219,0.25)",
-                  color: "var(--blue)",
-                  borderRadius: "14px",
-                  padding: "0 1rem",
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  height: "54px",
-                }}
-              >
-                📷
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.nameLabel}</label>
-            <input
-              className={styles.addInput}
-              placeholder={t.namePlaceholder}
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-            />
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.categoryLabel}</label>
-            <select
-              className={styles.addInput}
-              value={form.cat}
-              onChange={(e) => {
-                const newCat = e.target.value;
-                handleChange("cat", newCat);
-
-                const sizeKeys = CATEGORY_SIZE_OPTIONS[newCat] || ["S", "M", "L"];
-                setVariantsDraft((prev) =>
-                  prev.map((variant) => {
-                    const sizes = {};
-                    sizeKeys.forEach((key) => {
-                      sizes[key] = 0;
-                    });
-                    return { ...variant, sizes };
-                  })
-                );
-              }}
-            >
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {dict.categoryLabels[category] || category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.genderLabel}</label>
-            <select
-              className={styles.addInput}
-              value={form.gender}
-              onChange={(e) => handleChange("gender", e.target.value)}
-            >
-              <option value="נשים">{dict.genderLabels["נשים"]}</option>
-              <option value="גברים">{dict.genderLabels["גברים"]}</option>
-            </select>
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.seasonLabel}</label>
-            <select
-              className={styles.addInput}
-              value={form.season}
-              onChange={(e) => handleChange("season", e.target.value)}
-              style={{ color: form.season ? "var(--text)" : "var(--muted)" }}
-            >
-              <option value="" disabled>
-                {t.chooseSeasonPlaceholder}
-              </option>
-              <option value="all">{t.seasonAllYear}</option>
-              <option value="summer">{t.seasonSummer}</option>
-              <option value="winter">{t.seasonWinter}</option>
-              <option value="spring-autumn">{t.seasonSpringAutumn}</option>
-            </select>
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.quantityLabel}</label>
-            <input
-              className={styles.addInput}
-              type="number"
-              max={MAX_STOCK}
-              value={form.stock}
-              onChange={(e) =>
-                handleChange("stock", clampNumberString(e.target.value, MAX_STOCK))
-              }
-            />
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.priceLabel}</label>
-            <input
-              className={styles.addInput}
-              type="number"
-              max={MAX_PRICE}
-              value={form.price}
-              onChange={(e) =>
-                handleChange("price", clampNumberString(e.target.value, MAX_PRICE))
-              }
-            />
-          </div>
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.costLabel}</label>
-            <input
-              className={styles.addInput}
-              type="number"
-              max={MAX_PRICE}
-              value={form.cost}
-              onChange={(e) =>
-                handleChange("cost", clampNumberString(e.target.value, MAX_PRICE))
-              }
-              placeholder={t.costPlaceholder}
-            />
-          </div>
-
-          <div className={styles.addField}>
-            <label className={styles.addLabel}>{t.minStockLabel}</label>
-            <input
-              className={styles.addInput}
-              type="number"
-              max={MAX_STOCK}
-              value={form.minStock}
-              onChange={(e) =>
-                handleChange("minStock", clampNumberString(e.target.value, MAX_STOCK))
-              }
-            />
-          </div>
-        </div>
-
-        <div style={{ marginTop: "0.6rem" }}>
-          {variantsDraft.map((variant, variantIndex) => {
-            const canonicalOrder =
-              CATEGORY_SIZE_OPTIONS[form.cat] || ["S", "M", "L"];
-            const sizesEntries = Object.entries(variant.sizes || {}).sort(
-              ([sizeA], [sizeB]) =>
-                canonicalOrder.indexOf(sizeA) - canonicalOrder.indexOf(sizeB)
-            );
-            const variantTotal = sizesEntries.reduce(
-              (sum, [, qty]) => sum + (parseInt(qty, 10) || 0),
-              0
-            );
-
-            return (
-              <div key={variantIndex} className={styles.colorCard} style={{ marginBottom: "0.7rem" }}>
-                <div className={styles.colorCardHead}>
-                  <span>{t.variantTotal.replace("{total}", variantTotal)}</span>
-
-                  <div className={styles.colorCardTitleWrap}>
-                    <input
-                      type="text"
-                      placeholder={t.colorNamePlaceholder}
-                      value={variant.colorName || ""}
-                      onChange={(e) =>
-                        handleColorNameChange(variantIndex, e.target.value)
-                      }
-                      style={{ width: "90px" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeColorVariant(variantIndex)}
-                      style={{ background: "none", border: "none", cursor: "pointer" }}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.sizesGrid}>
-                  {sizesEntries.map(([sizeKey, qty]) => (
-                    <label key={sizeKey} className={styles.sizePill}>
-                      <strong>{sizeKey}</strong>
-                      <span className={styles.sizeSeparator}>•</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max={MAX_STOCK}
-                        value={qty}
-                        onChange={(e) =>
-                          handleVariantQtyChange(variantIndex, sizeKey, e.target.value)
-                        }
-                        className={styles.sizeQtyInput}
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-
-          <button
-            type="button"
-            className={styles.uploadBtn}
-            onClick={addColorVariant}
-          >
-            {t.addColorBreakdown}
+    <div className={`${styles.fsModal} ${styles.show}`}>
+      <div
+        className={styles.fsModalCard}
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.fsModalHeader}>
+          <h3>{t.title}</h3>
+          <button className={styles.fsClose} onClick={onClose} aria-label="close">
+            ✕
           </button>
         </div>
 
-        <div className={styles.addFieldFull}>
-          <label className={styles.addLabel}>{t.descriptionLabel}</label>
+        <div className={styles.fsHint}>
+          {t.subtitle.replace("{email}", email)}
+        </div>
+
+        <div className={styles.fsField}>
+          <label>{t.codeLabel}</label>
           <input
-            className={styles.addInput}
-            placeholder={t.descriptionPlaceholder}
-            value={form.desc}
-            onChange={(e) => handleChange("desc", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            placeholder={t.codePlaceholder}
+            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
           />
         </div>
 
-        <div className={styles.addFieldFull}>
-          <label className={styles.addLabel}>{t.productImageLabel}</label>
+        {error ? <div className={styles.fsErrVisible}>{error}</div> : null}
+
+        <div className={styles.fsActions}>
+          <button
+            className={`${styles.fsBtn} ${styles.fsBtnPrimary}`}
+            onClick={handleVerify}
+            disabled={verifying || code.length !== 6}
+          >
+            {verifying ? t.verifying : t.verifyButton}
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "0.9rem" }}>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resendCooldown > 0}
+            style={{
+              background: "none",
+              border: "none",
+              color: resendCooldown > 0 ? "var(--light-gray)" : "var(--gold)",
+              fontSize: "0.82rem",
+              cursor: resendCooldown > 0 ? "default" : "pointer",
+              textDecoration: resendCooldown > 0 ? "none" : "underline",
+            }}
+          >
+            {resendCooldown > 0
+              ? t.resendCooldown.replace("{seconds}", resendCooldown)
+              : t.resendButton}
+          </button>
+
+          {resendMessage && (
+            <div style={{ fontSize: "0.8rem", color: "var(--green)", marginTop: "0.3rem" }}>
+              {resendMessage}
+            </div>
+          )}
 
           <div
             style={{
-              display: "flex",
-              gap: "0.5rem",
-              marginBottom: "0.75rem",
+              fontSize: "0.76rem",
+              color: codeLikelyExpired ? "#ff6b6b" : "var(--light-gray)",
+              fontWeight: codeLikelyExpired ? 700 : 400,
+              marginTop: "0.6rem",
             }}
           >
-            <button
-              type="button"
-              onClick={() => {
-                setUploadMode("file");
-                stopCamera();
-              }}
-              style={{
-                flex: 1,
-                padding: "0.45rem 1.1rem",
-                borderRadius: "9px",
-                border: "1px solid",
-                borderColor:
-                  uploadMode === "file" ? "var(--gold)" : "var(--border)",
-                background:
-                  uploadMode === "file" ? "var(--gold-dim)" : "transparent",
-                color: uploadMode === "file" ? "var(--gold)" : "var(--muted)",
-                fontFamily: "Alef, sans-serif",
-                fontWeight: 700,
-                cursor: "pointer",
-                fontSize: "0.82rem",
-              }}
-            >
-              {t.fileTab}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setUploadMode("camera");
-                startCamera();
-              }}
-              style={{
-                flex: 1,
-                padding: "0.45rem 1.1rem",
-                borderRadius: "9px",
-                border: "1px solid",
-                borderColor:
-                  uploadMode === "camera" ? "var(--gold)" : "var(--border)",
-                background:
-                  uploadMode === "camera" ? "var(--gold-dim)" : "transparent",
-                color:
-                  uploadMode === "camera" ? "var(--gold)" : "var(--muted)",
-                fontFamily: "Alef, sans-serif",
-                fontWeight: 700,
-                cursor: "pointer",
-                fontSize: "0.82rem",
-              }}
-            >
-              {t.cameraTab}
-            </button>
+            {codeLikelyExpired ? t.likelyFakeEmailHint : t.didntReceiveHint}
           </div>
-
-          {uploadMode === "file" && (
-            <div
-              className={styles.imageUploadBox}
-              onClick={() => !form.image && fileInputRef.current?.click()}
-              style={{ cursor: form.image ? "default" : "pointer" }}
-            >
-              {form.image ? (
-                <>
-                  <img
-                    src={form.image}
-                    alt={t.previewAlt}
-                    className={styles.imagePreview}
-                  />
-                  <button
-                    className={styles.removeImageBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleChange("image", "");
-                    }}
-                  >
-                    {t.removeImage}
-                  </button>
-                </>
-              ) : (
-                <div
-                  style={{
-                    color: "var(--text)",
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    marginBottom: "0.3rem",
-                  }}
-                >
-                  {t.clickToUpload}
-                </div>
-              )}
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleFileSelect}
-              />
-            </div>
-          )}
-
-          {uploadMode === "camera" && (
-            <div
-              style={{
-                background: "#000",
-                borderRadius: "14px",
-                overflow: "hidden",
-                position: "relative",
-                aspectRatio: "4/3",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: isCameraActive ? "block" : "none",
-                }}
-              />
-              <canvas ref={canvasRef} style={{ display: "none" }} />
-
-              {!isCameraActive && (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "#060a14",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={startCamera}
-                    style={{
-                      background: "rgba(52,152,219,0.1)",
-                      border: "1px solid rgba(52,152,219,0.25)",
-                      color: "var(--blue)",
-                      borderRadius: "12px",
-                      padding: "0.72rem 1.5rem",
-                      fontFamily: "Alef, sans-serif",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    {t.openCamera}
-                  </button>
-                </div>
-              )}
-
-              {isCameraActive && (
-                <button
-                  type="button"
-                  onClick={capturePhoto}
-                  style={{
-                    position: "absolute",
-                    bottom: "12px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "#fff",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "52px",
-                    height: "52px",
-                    fontSize: "1.4rem",
-                    cursor: "pointer",
-                    boxShadow: "0 0 16px rgba(0,0,0,0.6)",
-                    zIndex: 2,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  📸
-                </button>
-              )}
-            </div>
-          )}
         </div>
-
-        {error && <div className={styles.addError}>{error}</div>}
-
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            marginTop: "1rem",
-            flexDirection: "row-reverse",
-          }}
-        >
-          <button
-            onClick={handleClose}
-            style={{
-              flex: 1,
-              height: "54px",
-              border: "1px solid var(--border)",
-              borderRadius: "14px",
-              background: "transparent",
-              color: "var(--muted)",
-              fontFamily: "Alef, sans-serif",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
-            }}
-          >
-            {dict.common.cancel}
-          </button>
-
-          <button
-            className={styles.addSubmitBtn}
-            style={{ flex: 2 }}
-            onClick={handleSubmit}
-            disabled={translating}
-          >
-            {translating ? t.translatingButton : t.addProductButton}
-          </button>
-        </div>
-
-        <ScanModal
-          open={isScanOpen}
-          onClose={() => setIsScanOpen(false)}
-          onCodeScanned={(code) => {
-            handleChange("code", code);
-            setIsScanOpen(false);
-          }}
-        />
       </div>
     </div>
   );
