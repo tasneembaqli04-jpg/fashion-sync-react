@@ -4,6 +4,7 @@ import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { translateProductFields } from "../../../services/translation/translationService";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -32,6 +33,7 @@ const SEASON_COLORS = {
 function deepCopyVariants(variants = []) {
   return variants.map((variant) => ({
     colorName: variant.colorName,
+    colorNameEn: variant.colorNameEn || "",
     sizes: { ...(variant.sizes || {}) },
   }));
 }
@@ -80,6 +82,9 @@ export default function DetailsModal({
   const [variantsDraft, setVariantsDraft] = useState([]);
   const [simpleStock, setSimpleStock] = useState(0);
   const [desc, setDesc] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [descEn, setDescEn] = useState("");
+  const [retranslating, setRetranslating] = useState(false);
 
   useEffect(() => {
     if (!product) return;
@@ -108,6 +113,8 @@ export default function DetailsModal({
     setSimpleStock(product.stock || 0);
     setDesc(product.desc || "");
     setName(product.name || "");
+    setNameEn(product.nameEn || "");
+    setDescEn(product.descEn || "");
     setImage(product.img || "");
   }, [product]);
 
@@ -138,6 +145,14 @@ export default function DetailsModal({
     setVariantsDraft((prev) =>
       prev.map((variant, index) =>
         index !== variantIndex ? variant : { ...variant, colorName: value }
+      )
+    );
+  };
+
+  const handleColorNameEnChange = (variantIndex, value) => {
+    setVariantsDraft((prev) =>
+      prev.map((variant, index) =>
+        index !== variantIndex ? variant : { ...variant, colorNameEn: value }
       )
     );
   };
@@ -215,6 +230,8 @@ export default function DetailsModal({
     onSave({
       ...product,
       name: name.trim(),
+      nameEn: nameEn.trim() || name.trim(),
+      variants: cleanedVariants.map((v) => ({ ...v })),
       img: image,
       price: Number(price),
       cost: Number(cost) || 0,
@@ -224,6 +241,7 @@ export default function DetailsModal({
       minStock: Number(minStock),
       season,
       desc: desc.trim(),
+      descEn: descEn.trim() || desc.trim(),
       variants: cleanedVariants,
       stock: cleanedUsesVariants ? cleanedTotal : Number(simpleStock),
     });
@@ -303,6 +321,77 @@ export default function DetailsModal({
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
+                rows={2}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  fontFamily: "Alef, sans-serif",
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "0.9rem",
+              }}
+            >
+              <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700 }}>
+                {t.englishContentTitle}
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  setRetranslating(true);
+                  const { nameEn: newNameEn, descEn: newDescEn, colorNamesEn } =
+                    await translateProductFields({
+                      name,
+                      desc,
+                      colorNames: variantsDraft.map((v) => v.colorName),
+                    });
+                  setNameEn(newNameEn || nameEn);
+                  setDescEn(newDescEn || descEn);
+                  setVariantsDraft((prev) =>
+                    prev.map((variant, index) => ({
+                      ...variant,
+                      colorNameEn: colorNamesEn[index] || variant.colorNameEn,
+                    }))
+                  );
+                  setRetranslating(false);
+                }}
+                disabled={retranslating}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--gold)",
+                  color: "var(--gold)",
+                  borderRadius: "8px",
+                  padding: "0.3rem 0.7rem",
+                  fontSize: "0.78rem",
+                  fontFamily: "Alef, sans-serif",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {retranslating ? t.retranslatingButton : t.retranslateButton}
+              </button>
+            </div>
+
+            <div className={formStyles.fg} style={{ marginTop: "0.3rem" }}>
+              <label>{t.productNameEnLabel}</label>
+              <input
+                type="text"
+                value={nameEn}
+                onChange={(e) => setNameEn(e.target.value)}
+                style={{ fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+            <div className={formStyles.fg} style={{ marginTop: "0.5rem" }}>
+              <label>{t.productDescEnLabel}</label>
+              <textarea
+                value={descEn}
+                onChange={(e) => setDescEn(e.target.value)}
                 rows={2}
                 style={{
                   width: "100%",
@@ -534,6 +623,15 @@ export default function DetailsModal({
                       value={variant.colorName || ""}
                       onChange={(e) =>
                         handleColorNameChange(variantIndex, e.target.value)
+                      }
+                      style={{ width: "90px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder={t.colorNameEnPlaceholder}
+                      value={variant.colorNameEn || ""}
+                      onChange={(e) =>
+                        handleColorNameEnChange(variantIndex, e.target.value)
                       }
                       style={{ width: "90px" }}
                     />

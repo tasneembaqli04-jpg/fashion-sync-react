@@ -1,5 +1,10 @@
-export function createAlerts(products, orders = [], t) {
+export function createAlerts(products, orders = [], t, lang = "he") {
   const alerts = [];
+
+  function displayName(entity) {
+    return lang === "en" && entity.nameEn ? entity.nameEn : entity.name;
+  }
+
   products.forEach((p) => {
     if (p.stock === 0)
       alerts.push({
@@ -7,7 +12,7 @@ export function createAlerts(products, orders = [], t) {
         type: "danger",
         code: p.code,
         title: t.outOfStockTitle,
-        msg: p.name,
+        msg: displayName(p),
         createdAt: Date.now(),
       });
     if (p.stock > 0 && p.stock <= p.minStock)
@@ -16,7 +21,7 @@ export function createAlerts(products, orders = [], t) {
         type: "warn",
         code: p.code,
         title: t.lowStockTitle,
-        msg: t.lowStockMsg.replace("{name}", p.name).replace("{stock}", p.stock),
+        msg: t.lowStockMsg.replace("{name}", displayName(p)).replace("{stock}", p.stock),
         createdAt: Date.now(),
       });
     if (p.notifyCount > 15)
@@ -25,7 +30,7 @@ export function createAlerts(products, orders = [], t) {
         type: "info",
         code: p.code,
         title: t.highDemandTitle,
-        msg: t.highDemandMsg.replace("{name}", p.name).replace("{count}", p.notifyCount),
+        msg: t.highDemandMsg.replace("{name}", displayName(p)).replace("{count}", p.notifyCount),
         demandCount: p.notifyCount,
         isDemand: true,
         createdAt: Date.now(),
@@ -53,7 +58,7 @@ export function createAlerts(products, orders = [], t) {
         title: t.customSizeTitle,
         msg: t.customSizeMsg
           .replace("{orderId}", order.id)
-          .replace("{name}", item.name)
+          .replace("{name}", displayName(item))
           .replace("{size}", item.size),
         createdAt: Date.now(),
       });

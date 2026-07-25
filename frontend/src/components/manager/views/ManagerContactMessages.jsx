@@ -120,7 +120,7 @@ export default function ManagerContactMessages() {
               }}
             >
               <div>
-                <strong>{msg.name || t.anonymous}</strong>
+                <strong>{(lang === "en" && msg.nameEn) ? msg.nameEn : (msg.name || t.anonymous)}</strong>
                 {msg.email && (
                   <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
                     {" "}
@@ -143,7 +143,7 @@ export default function ManagerContactMessages() {
             </div>
 
             <div style={{ marginTop: "0.7rem", whiteSpace: "pre-wrap" }}>
-              {msg.message}
+              {(lang === "en" && msg.messageEn) ? msg.messageEn : msg.message}
             </div>
           </div>
         ))

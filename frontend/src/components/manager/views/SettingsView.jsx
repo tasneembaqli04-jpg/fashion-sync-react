@@ -4,7 +4,11 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
-export default function SettingsView() {
+export default function SettingsView({
+  onTranslateHistorical,
+  translatingHistorical,
+  historicalProgress,
+}) {
   const { t: dict } = useLanguage();
   const t = dict.manager.settings;
 
@@ -100,6 +104,41 @@ export default function SettingsView() {
                 {t.detailsSaved}
               </div>
             )}
+          </div>
+        </div>
+
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>{t.translationSectionTitle}</div>
+          </div>
+
+          <div className={uiStyles.cardBody}>
+            <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "0.9rem" }}>
+              {t.translationSectionDesc}
+            </p>
+
+            <button
+              type="button"
+              onClick={onTranslateHistorical}
+              disabled={translatingHistorical}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--gold)",
+                color: "var(--gold)",
+                borderRadius: "10px",
+                padding: "0.6rem 1.2rem",
+                fontFamily: "Alef, sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 700,
+                cursor: translatingHistorical ? "default" : "pointer",
+              }}
+            >
+              {translatingHistorical
+                ? t.translationSectionProgress
+                    .replace("{done}", historicalProgress?.done ?? 0)
+                    .replace("{total}", historicalProgress?.total ?? 0)
+                : t.translationSectionButton}
+            </button>
           </div>
         </div>
 

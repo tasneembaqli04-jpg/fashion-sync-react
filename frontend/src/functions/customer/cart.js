@@ -52,12 +52,17 @@ export async function addToCart({
           }
     );
   } else {
+    const matchingVariant = product.variants?.find(
+      (v) => v.colorName === variant.color
+    );
+
     nextCart = [
       ...cart,
       {
         key,
         code: product.code,
         name: product.name,
+        nameEn: product.nameEn || product.name,
         img: product.img,
         price: product.price,
         originalPrice: product.originalPrice || product.price,
@@ -65,6 +70,7 @@ export async function addToCart({
         qty: 1,
         size: variant.size || "",
         color: variant.color || "",
+        colorEn: matchingVariant?.colorNameEn || variant.color || "",
         isCustomSize: Boolean(variant.isCustomSize),
       },
     ];

@@ -15,8 +15,19 @@ function getMonthKey(value) {
   if (Number.isNaN(d.getTime())) return "unknown";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
+const REASON_KEY_MAP = {
+  defective: "reasonDefective",
+  wrongSize: "reasonWrongSize",
+  notAsDescribed: "reasonNotAsDescribed",
+  changedMind: "reasonChangedMind",
+  other: "reasonOther",
+};
 
-export default function ManagerReturns() {
+function getReasonLabel(request, t) {
+  const key = REASON_KEY_MAP[request.reasonKey];
+  return key ? t[key] : request.reason;
+}
+export default function ManagerReturns({ products = [] }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.returns;
   const locale = lang === "en" ? "en-US" : "he-IL";
@@ -229,12 +240,19 @@ export default function ManagerReturns() {
               )}
 
               <div>
-                <strong>{request.itemName}</strong>
+                <strong>
+                  {(() => {
+                    const product = products.find((p) => p.code === request.itemCode);
+                    return lang === "en" && product?.nameEn
+                      ? product.nameEn
+                      : request.itemName;
+                  })()}
+                </strong>
                 <div style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.2rem" }}>
                   {t.orderLabel} {request.orderId} · {request.customerName || request.customerEmail}
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: "0.15rem" }}>
-                  {t.reasonLabel} {request.reason}
+                  {t.reasonLabel} {getReasonLabel(request, t)}
                   {request.reasonKey === "defective" && (
                     <span style={{ color: "var(--red)", marginInlineStart: "0.4rem" }}>
                       ({t.noRestockNote})

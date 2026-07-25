@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
+import { translateProductFields } from "../../../services/translation/translationService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
 const CATEGORY_SIZE_OPTIONS = {
@@ -56,6 +57,7 @@ export default function AddProductModal({
   const [error, setError] = useState("");
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [variantsDraft, setVariantsDraft] = useState([]);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -783,8 +785,9 @@ export default function AddProductModal({
             className={styles.addSubmitBtn}
             style={{ flex: 2 }}
             onClick={handleSubmit}
+            disabled={translating}
           >
-            {t.addProductButton}
+            {translating ? t.translatingButton : t.addProductButton}
           </button>
         </div>
 

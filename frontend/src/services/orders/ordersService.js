@@ -115,6 +115,11 @@ export async function updateOrderStatus(docId, ready) {
   });
 }
 
+export async function updateOrderItems(docId, items) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, { items });
+}
+
 export async function advanceOrderStatus(docId, statusIndex) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, {

@@ -10,7 +10,7 @@ function getMonthKey(value) {
 }
 
 export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.orders;
   const rt = dict.customer.returns;
   const STATUS_LABELS = dict.orderStatusLabels;
@@ -228,7 +228,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               <div className={modalStyles.orderItems}>
                 {order.items.map((item, index) => (
                   <span key={index}>
-                    {item.name} ×{item.qty}
+                    {lang === "en" && item.nameEn ? item.nameEn : item.name} ×{item.qty}
                     {index < order.items.length - 1 ? ", " : ""}
                   </span>
                 ))}
