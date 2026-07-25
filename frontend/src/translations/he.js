@@ -954,8 +954,7 @@ export const he = {
       invalidGmail: "אימייל לא תקין — חייב להיות ‎@gmail.com",
       passwordTooShort: "הסיסמה חייבת להכיל לפחות 8 תווים",
     },
-  },
-  verification: {
+    verification: {
       title: "🔐 אימות כתובת המייל",
       subtitle: "שלחנו קוד בן 6 ספרות לכתובת {email}. הזיני אותו כדי להשלים את ההרשמה.",
       codeLabel: "קוד אימות",
@@ -969,6 +968,7 @@ export const he = {
       errorExpired: "הקוד פג תוקף. בקשי קוד חדש.",
       errorMismatch: "קוד שגוי, נסי שוב.",
     },
+  },
 
   shippingOptionLabels: {
     standard: {
