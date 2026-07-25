@@ -209,7 +209,7 @@ export default function AddProductModal({
     e.target.value = "";
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !form.code.trim() ||
       !form.name.trim() ||
@@ -262,9 +262,25 @@ export default function AddProductModal({
       0
     );
 
+    setTranslating(true);
+
+    const { nameEn, descEn, colorNamesEn } = await translateProductFields({
+      name: form.name.trim(),
+      desc: form.desc.trim(),
+      colorNames: cleanedVariants.map((v) => v.colorName.trim()),
+    });
+
+    setTranslating(false);
+
+    const variantsWithTranslations = cleanedVariants.map((variant, index) => ({
+      ...variant,
+      colorNameEn: colorNamesEn[index] || variant.colorName,
+    }));
+
     const newProduct = {
       code: form.code.trim().toUpperCase(),
       name: form.name.trim(),
+      nameEn: nameEn || form.name.trim(),
       cat: form.cat,
       gender: form.gender,
       season: form.season,
@@ -273,12 +289,13 @@ export default function AddProductModal({
       cost: Number(form.cost) || 0,
       minStock: Number(form.minStock),
       desc: form.desc.trim(),
+      descEn: descEn || form.desc.trim(),
       img: form.image,
       notifyCount: 0,
       trending: false,
       bestseller: false,
       salesLastMonth: 0,
-      variants: cleanedVariants,
+      variants: variantsWithTranslations,
     };
 
     onSubmit(newProduct);

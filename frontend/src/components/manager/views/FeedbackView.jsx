@@ -183,7 +183,11 @@ export default function FeedbackView() {
               </div>
             )}
 
-            {item.text && <div style={{ marginBottom: "10px" }}>{item.text}</div>}
+            {item.text && (
+              <div style={{ marginBottom: "10px" }}>
+                {(lang === "en" && item.textEn) ? item.textEn : item.text}
+              </div>
+            )}
 
             {item.read ? (
               <span

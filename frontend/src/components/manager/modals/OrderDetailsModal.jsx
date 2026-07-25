@@ -111,7 +111,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
               }}
             />
             <div>
-              <div>{item.name}</div>
+              <div>{lang === "en" && item.nameEn ? item.nameEn : item.name}</div>
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
                 {t.sizeLabel} {item.size} · {t.qtyLabel} {item.qty} · ₪{item.price}
               </div>

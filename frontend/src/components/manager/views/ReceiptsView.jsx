@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import styles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
-function ReceiptBlock({ receipt, locale }) {
+function ReceiptBlock({ receipt, locale, lang }) {
   function fmtDate(date) {
     return new Date(date).toLocaleString(locale, {
       day: "2-digit",
@@ -48,7 +48,7 @@ function ReceiptBlock({ receipt, locale }) {
           />
 
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: ".88rem" }}>{item.name}</div>
+            <div style={{ fontWeight: 700, fontSize: ".88rem" }}>{lang === "en" && item.nameEn ? item.nameEn : item.name}</div>
             <div
               style={{
                 fontFamily: "monospace",
@@ -159,7 +159,7 @@ export default function ReceiptsView({ receipts }) {
                 {matches
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((receipt) => (
-                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} />
+                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} />
                   ))}
               </>
             )}
@@ -197,7 +197,7 @@ export default function ReceiptsView({ receipts }) {
             .slice()
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map((receipt) => (
-              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} />
+              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} />
             ))}
         </div>
       </div>

@@ -23,10 +23,15 @@ import ManagerOrders from "../components/manager/views/ManagerOrders";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
+import { translateProductFields } from "../services/translation/translationService";
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderStatus, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";import {
+import { subscribeToOrders, updateOrderStatus, updateOrderItems, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";
+import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
+import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
+import { translateText } from "../services/translation/translationService";
+import {
   getAllDeliveries,
   addDelivery,
   updateDeliveryStatus,
@@ -166,7 +171,7 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn]);
 
-  const alerts = useMemo(() => createAlerts(products, orders, dict.manager.alerts), [products, orders, dict]);
+  const alerts = useMemo(() => createAlerts(products, orders, dict.manager.alerts, lang), [products, orders, dict, lang]);
 
   const pendingOrdersCount = useMemo(
     () => orders.filter((o) => !o.confirmed).length,
@@ -290,6 +295,130 @@ export default function Manager({ onPromote }) {
      await deleteProduct(code);
      setProducts((prev) => prev.filter((p) => p.code !== code));
   };
+
+  const [translatingAll, setTranslatingAll] = useState(false);
+  const [translateAllProgress, setTranslateAllProgress] = useState({ done: 0, total: 0 });
+
+  async function handleTranslateAllProducts(force = false) {
+    const untranslated = force
+      ? products
+      : products.filter(
+          (p) =>
+            !p.nameEn ||
+            (p.variants || []).some((v) => v.colorName && !v.colorNameEn)
+        );
+    if (!untranslated.length) return;
+
+    setTranslatingAll(true);
+    setTranslateAllProgress({ done: 0, total: untranslated.length });
+
+    for (let i = 0; i < untranslated.length; i++) {
+      const product = untranslated[i];
+
+      const { nameEn, descEn, colorNamesEn } = await translateProductFields({
+        name: product.name,
+        desc: product.desc,
+        colorNames: (product.variants || []).map((v) => v.colorName),
+      });
+
+      const updatedVariants = (product.variants || []).map((variant, index) => ({
+        ...variant,
+        colorNameEn: colorNamesEn[index] || variant.colorName,
+      }));
+
+      const updatedProduct = {
+        ...product,
+        nameEn: nameEn || product.name,
+        descEn: descEn || product.desc,
+        variants: updatedVariants,
+      };
+
+      await updateProduct(updatedProduct);
+
+      setProducts((prev) =>
+        prev.map((p) => (p.code === product.code ? updatedProduct : p))
+      );
+
+      setTranslateAllProgress({ done: i + 1, total: untranslated.length });
+    }
+
+    setTranslatingAll(false);
+  }
+  const [translatingHistorical, setTranslatingHistorical] = useState(false);
+  const [historicalProgress, setHistoricalProgress] = useState({ done: 0, total: 0 });
+
+  async function handleTranslateHistoricalData() {
+    setTranslatingHistorical(true);
+
+    const ordersNeedingUpdate = orders.filter((order) =>
+      (order.items || []).some((item) => !item.nameEn)
+    );
+
+    const messagesNeedingUpdate = contactMessages.filter(
+      (m) => !m.nameEn || !m.messageEn
+    );
+
+    const allFeedback = await getAllFeedback();
+    const feedbackNeedingUpdate = allFeedback.filter(
+      (f) => f.text && !f.textEn
+    );
+
+    const total =
+      ordersNeedingUpdate.length +
+      messagesNeedingUpdate.length +
+      feedbackNeedingUpdate.length;
+
+    setHistoricalProgress({ done: 0, total });
+    let done = 0;
+
+    for (const order of ordersNeedingUpdate) {
+      const updatedItems = order.items.map((item) => {
+        if (item.nameEn) return item;
+        const product = products.find((p) => p.code === item.code);
+        return product?.nameEn ? { ...item, nameEn: product.nameEn } : item;
+      });
+
+      if (order.docId) {
+        await updateOrderItems(order.docId, updatedItems);
+      }
+
+      setOrders((prev) =>
+        prev.map((o) => (o.docId === order.docId ? { ...o, items: updatedItems } : o))
+      );
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    for (const message of messagesNeedingUpdate) {
+      const [nameEn, messageEn] = await Promise.all([
+        message.nameEn ? Promise.resolve(message.nameEn) : translateText(message.name || ""),
+        message.messageEn ? Promise.resolve(message.messageEn) : translateText(message.message || ""),
+      ]);
+
+      await updateContactMessageTranslation(message.id, {
+        nameEn: nameEn || message.name || "",
+        messageEn: messageEn || message.message || "",
+      });
+
+      setContactMessages((prev) =>
+        prev.map((m) => (m.id === message.id ? { ...m, nameEn, messageEn } : m))
+      );
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    for (const feedbackItem of feedbackNeedingUpdate) {
+      const textEn = await translateText(feedbackItem.text);
+      await updateFeedbackTranslation(feedbackItem.id, textEn || feedbackItem.text);
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    setTranslatingHistorical(false);
+  }
 
   function handleToggleOrderReady(orderId) {
     setOrders((prevOrders) => {
@@ -518,6 +647,10 @@ export default function Manager({ onPromote }) {
                 setIsPromoOpen(true);
               }}
               onCancelPromote={handleCancelPromote}
+              onTranslateAll={handleTranslateAllProducts}
+              onForceTranslateAll={() => handleTranslateAllProducts(true)}
+              translatingAll={translatingAll}
+              translateAllProgress={translateAllProgress}
             />
           )}
 
@@ -546,11 +679,17 @@ export default function Manager({ onPromote }) {
             <AnalyticsView orders={orders} products={products} returnRequests={returnRequests} />
           )}
           {activeView === "feedback" && <FeedbackView />}
-          {activeView === "stockNotifications" && <StockNotificationsView />}
-          {activeView === "returns" && <ManagerReturns />}
+          {activeView === "stockNotifications" && <StockNotificationsView products={products} />}
+          {activeView === "returns" && <ManagerReturns products={products} />}
           {activeView === "contactMessages" && <ManagerContactMessages />}
           {activeView === "coupons" && <CouponsView />}
-          {activeView === "settings" && <SettingsView />}
+          {activeView === "settings" && (
+            <SettingsView
+              onTranslateHistorical={handleTranslateHistoricalData}
+              translatingHistorical={translatingHistorical}
+              historicalProgress={historicalProgress}
+            />
+          )}
         </div>
       </div>
 

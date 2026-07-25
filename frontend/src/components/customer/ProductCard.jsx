@@ -132,7 +132,7 @@ export default function ProductCard({
   openNotifyModal,
   guestPrompt,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.productCard;
   const cartItem = cart.find((item) => item.code === product.code);
   const isInCart = Boolean(cartItem);
@@ -192,7 +192,9 @@ export default function ProductCard({
 
       <div className={cardStyles.productBody}>
         <div>
-          <div className={cardStyles.productName}>{product.name}</div>
+          <div className={cardStyles.productName}>
+            {lang === "en" && product.nameEn ? product.nameEn : product.name}
+          </div>
           <div className={cardStyles.productCode}>
             {product.code} · {dict.genderLabels[product.gender] || product.gender} · {dict.categoryLabels[product.cat] || product.cat}
           </div>

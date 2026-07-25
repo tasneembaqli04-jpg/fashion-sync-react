@@ -1,11 +1,15 @@
 import { db } from "../../firebase";
 import { collection, addDoc, getDocs, orderBy, query, doc, updateDoc } from "firebase/firestore";
+import { translateText } from "../translation/translationService";
 
 const feedbackCollection = collection(db, "feedback");
 
 export async function addFeedback(entry) {
+  const textEn = entry.text ? await translateText(entry.text) : "";
+
   await addDoc(feedbackCollection, {
     ...entry,
+    textEn: textEn || entry.text || "",
     createdAt: new Date().toISOString(),
     read: false,
   });
@@ -23,4 +27,8 @@ export async function getAllFeedback() {
 
 export async function updateFeedbackReadStatus(id, read) {
   await updateDoc(doc(db, "feedback", id), { read });
+}
+
+export async function updateFeedbackTranslation(id, textEn) {
+  await updateDoc(doc(db, "feedback", id), { textEn });
 }

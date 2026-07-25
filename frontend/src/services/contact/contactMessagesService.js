@@ -8,14 +8,22 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
+import { translateText } from "../translation/translationService";
 
 const contactCollection = collection(db, "contactMessages");
 
 export async function submitContactMessage({ name, email, message }) {
+  const [nameEn, messageEn] = await Promise.all([
+    translateText(name || ""),
+    translateText(message || ""),
+  ]);
+
   await addDoc(contactCollection, {
     name: name || "",
+    nameEn: nameEn || name || "",
     email: email || "",
     message: message || "",
+    messageEn: messageEn || message || "",
     read: false,
     createdAt: new Date().toISOString(),
   });
@@ -33,4 +41,8 @@ export async function getAllContactMessages() {
 
 export async function markContactMessageRead(id, read) {
   await updateDoc(doc(db, "contactMessages", id), { read });
+}
+
+export async function updateContactMessageTranslation(id, { nameEn, messageEn }) {
+  await updateDoc(doc(db, "contactMessages", id), { nameEn, messageEn });
 }

@@ -16,7 +16,7 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function StockNotificationsView() {
+export default function StockNotificationsView({ products = [] }) {
   const { confirmDialog } = useDialog();
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.stockNotifications;
@@ -188,7 +188,14 @@ export default function StockNotificationsView() {
             }}
           >
             <div>
-              <strong>{item.productName || item.productCode}</strong>
+              <strong>
+                {(() => {
+                  const product = products.find((p) => p.code === item.productCode);
+                  return lang === "en" && product?.nameEn
+                    ? product.nameEn
+                    : item.productName || item.productCode;
+                })()}
+              </strong>
               <div style={{ color: "var(--muted)", fontSize: "0.85rem", marginTop: "0.3rem" }}>
                 {item.email && <span>✉️ {item.email} · </span>}
                 {item.phone && <span>📞 {item.phone}</span>}

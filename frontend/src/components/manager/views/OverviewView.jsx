@@ -297,7 +297,7 @@ export default function OverviewView({
 
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: ".88rem" }}>
-                      {p.name}
+                      {lang === "en" && p.nameEn ? p.nameEn : p.name}
                     </div>
                     <div
                       style={{

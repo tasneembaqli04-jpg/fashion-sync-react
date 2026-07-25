@@ -47,6 +47,12 @@ export default function ProductModal({
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b, "he"));
 
+  function getColorLabel(colorName) {
+    if (lang !== "en") return colorName;
+    const variant = product.variants?.find((v) => v.colorName === colorName);
+    return variant?.colorNameEn || colorName;
+  }
+
   const sizesFromVariants = product.variants
     ? [...new Set(product.variants.flatMap((v) => Object.keys(v.sizes || {})))]
     : product.sizes || [];
@@ -123,7 +129,9 @@ export default function ProductModal({
 
           <div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: ".5rem" }}>
-              <div className={modalStyles.pdTitle}>{product.name}</div>
+              <div className={modalStyles.pdTitle}>
+                {lang === "en" && product.nameEn ? product.nameEn : product.name}
+              </div>
               <div style={{ display: "flex", gap: ".4rem", flexShrink: 0 }}>
                 {isGuest ? (
                   <button style={{ background: "none", border: "none", fontSize: "1.3rem", cursor: "pointer", opacity: ".4" }} onClick={guestPrompt}>🔒</button>
@@ -157,7 +165,9 @@ export default function ProductModal({
               )}
             </div>
 
-            <div className={modalStyles.pdDesc}>{product.desc || ""}</div>
+            <div className={modalStyles.pdDesc}>
+              {(lang === "en" && product.descEn) ? product.descEn : (product.desc || "")}
+            </div>
 
             <div className={modalStyles.pdRow}>
               <div className={modalStyles.pdField}>
@@ -168,7 +178,7 @@ export default function ProductModal({
                   onChange={(e) => setSelectedColor(e.target.value)}
                 >
                   {colorsFromVariants.map((color) => (
-                    <option key={color} value={color}>{color}</option>
+                    <option key={color} value={color}>{getColorLabel(color)}</option>
                   ))}
                 </select>
               </div>
