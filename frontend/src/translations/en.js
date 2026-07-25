@@ -911,8 +911,7 @@ export const en = {
       invalidGmail: "Invalid email — must be @gmail.com",
       passwordTooShort: "Password must be at least 8 characters",
     },
-  },
-  verification: {
+    verification: {
       title: "🔐 Verify Your Email",
       subtitle: "We sent a 6-digit code to {email}. Enter it to complete your registration.",
       codeLabel: "Verification Code",
@@ -926,6 +925,7 @@ export const en = {
       errorExpired: "The code has expired. Please request a new one.",
       errorMismatch: "Incorrect code, please try again.",
     },
+  },
 
   shippingOptionLabels: {
     standard: {
