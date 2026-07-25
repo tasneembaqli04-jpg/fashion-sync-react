@@ -924,6 +924,7 @@ export const en = {
       errorNotFound: "No verification request found. Please request a new code.",
       errorExpired: "The code has expired. Please request a new one.",
       errorMismatch: "Incorrect code, please try again.",
+      likelyFakeEmailHint: "⚠️ The code has expired — the address is likely incorrect or doesn't exist. Please check it and try again.",
     },
   },
 

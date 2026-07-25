@@ -21,6 +21,7 @@ export default function EmailVerificationModal({
   const [verifying, setVerifying] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendMessage, setResendMessage] = useState("");
+  const [secondsSinceOpen, setSecondsSinceOpen] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -29,8 +30,19 @@ export default function EmailVerificationModal({
       setVerifying(false);
       setResendCooldown(30);
       setResendMessage("");
+      setSecondsSinceOpen(0);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setInterval(() => {
+      setSecondsSinceOpen((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isOpen]);
+
+  const codeLikelyExpired = secondsSinceOpen >= 600;
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -69,6 +81,7 @@ export default function EmailVerificationModal({
 
     await resendVerificationCode(email, name);
     setResendCooldown(30);
+    setSecondsSinceOpen(0);
     setResendMessage(t.resendSuccess);
     setTimeout(() => setResendMessage(""), 3000);
   }
@@ -141,6 +154,17 @@ export default function EmailVerificationModal({
               {resendMessage}
             </div>
           )}
+
+          <div
+            style={{
+              fontSize: "0.76rem",
+              color: codeLikelyExpired ? "#ff6b6b" : "var(--light-gray)",
+              fontWeight: codeLikelyExpired ? 700 : 400,
+              marginTop: "0.6rem",
+            }}
+          >
+            {codeLikelyExpired ? t.likelyFakeEmailHint : t.didntReceiveHint}
+          </div>
         </div>
       </div>
     </div>
