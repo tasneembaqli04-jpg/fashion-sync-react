@@ -8,6 +8,7 @@ async function chatController(request, response) {
       message,
       history,
       currentOutfit,
+      currentOutfitImage,
     } = request.body || {};
 
     if (
@@ -44,6 +45,11 @@ async function chatController(request, response) {
       currentOutfit: Array.isArray(currentOutfit)
         ? currentOutfit
         : [],
+        
+      currentOutfitImage:
+        typeof currentOutfitImage === "string"
+        ? currentOutfitImage
+        : "",
       onChunk: (text) => {
         if (!text) {
           return;

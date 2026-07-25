@@ -241,22 +241,46 @@ function matchesPrice(product, intent) {
 function serializeProduct(product) {
   return {
     code: getProductCode(product),
-    name: product?.name || null,
+
+    name:
+      product?.name || null,
+
     category:
       product?.cat ||
       product?.category ||
       product?.type ||
       null,
-    description: product?.desc || null,
-    gender: product?.gender || null,
-    season: product?.season || null,
+
+    description:
+      product?.desc ||
+      product?.description ||
+      null,
+
+    gender:
+      product?.gender || null,
+
+    season:
+      product?.season || null,
+
     price:
-      Number.isFinite(Number(product?.price)) ?
-        Number(product.price) :
-        null,
-    colors: extractColors(product),
-    bestseller: product?.bestseller === true,
-    trending: product?.trending === true,
+      Number.isFinite(Number(product?.price))
+        ? Number(product.price)
+        : null,
+
+    colors:
+      extractColors(product),
+
+    selectedColor:
+      product?.selectedColor || null,
+
+    action:
+      product?.action || null,
+
+    bestseller:
+      product?.bestseller === true,
+
+    trending:
+      product?.trending === true,
   };
 }
 

@@ -102,6 +102,10 @@ export default function Customer() {
   ]);
   const [isChatTyping, setIsChatTyping] = useState(false);
   const [currentOutfit, setCurrentOutfit] = useState([]);
+  const [
+    currentOutfitImage,
+    setCurrentOutfitImage,
+  ] = useState("");
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -434,6 +438,7 @@ export default function Customer() {
         message: text,
         history,
         currentOutfit,
+        currentOutfitImage,
         signal: controller.signal,
 
         onChunk: (fullTextSoFar) => {
@@ -473,6 +478,9 @@ export default function Customer() {
           Array.isArray(result.products)
             ? result.products
             : []
+        );
+        setCurrentOutfitImage(
+          result.image.dataUrl
         );
         setIsChatTyping(false);
 
