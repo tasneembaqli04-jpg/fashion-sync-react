@@ -968,6 +968,7 @@ export const he = {
       errorNotFound: "לא נמצאה בקשת אימות. נסי לבקש קוד חדש.",
       errorExpired: "הקוד פג תוקף. בקשי קוד חדש.",
       errorMismatch: "קוד שגוי, נסי שוב.",
+      likelyFakeEmailHint: "⚠️ הקוד פג תוקף — כנראה שהכתובת שגויה או לא קיימת. בדקי אותה ונסי שוב.",
     },
 
   shippingOptionLabels: {
