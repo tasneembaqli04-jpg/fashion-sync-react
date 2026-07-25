@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 import { useDialog } from "../common/DialogProvider";
 import { submitContactMessage } from "../../services/contact/contactMessagesService";
 import { sendContactNotificationEmail } from "../../services/email/emailService";
+import { getBusinessHours } from "../../services/settings/businessHoursService";
 
 export default function CustomerPolicy({ show, currentUser }) {
   const { t: dict } = useLanguage();
@@ -15,6 +16,21 @@ export default function CustomerPolicy({ show, currentUser }) {
   const [contactEmail, setContactEmail] = useState(currentUser?.email || "");
   const [contactMessage, setContactMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [businessHours, setBusinessHoursState] = useState(null);
+
+  useEffect(() => {
+    getBusinessHours().then(setBusinessHoursState);
+  }, []);
+
+  const hoursText = businessHours
+    ? businessHours.days
+        .filter((d) => d.open)
+        .map(
+          (d) =>
+            `${dict.manager.settings.dayNames[d.key]} ${d.openTime}\u2013${d.closeTime}`
+        )
+        .join(", ")
+    : "";
 
   if (!show) return null;
 
@@ -79,6 +95,12 @@ export default function CustomerPolicy({ show, currentUser }) {
         <div className={modalStyles.policyTitle}>{t.contactTitle}</div>
         <div className={modalStyles.policyText} style={{ marginBottom: "1rem" }}>
           {t.contactPhone}
+          {hoursText && (
+            <>
+              <br />
+              {t.hoursPrefix} {hoursText}
+            </>
+          )}
         </div>
 
         <div className={modalStyles.pdField} style={{ marginBottom: "0.7rem" }}>

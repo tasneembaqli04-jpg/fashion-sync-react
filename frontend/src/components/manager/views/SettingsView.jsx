@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import {
+  getBusinessHours,
+  setBusinessHours,
+  DEFAULT_DAYS,
+} from "../../../services/settings/businessHoursService";
 
 export default function SettingsView({
   onTranslateHistorical,
@@ -17,6 +22,33 @@ export default function SettingsView({
   const [email, setEmail] = useState("store@fashionsync.co.il");
   const [address, setAddress] = useState("רחוב דיזנגוף 120, תל אביב");
   const [saved, setSaved] = useState(false);
+
+  const [days, setDays] = useState(DEFAULT_DAYS);
+  const [hoursSaved, setHoursSaved] = useState(false);
+
+  useEffect(() => {
+    getBusinessHours().then((hours) => {
+      setDays(hours.days);
+    });
+  }, []);
+
+  function toggleDay(dayKey) {
+    setDays((prev) =>
+      prev.map((d) => (d.key === dayKey ? { ...d, open: !d.open } : d))
+    );
+  }
+
+  function updateDayTime(dayKey, field, value) {
+    setDays((prev) =>
+      prev.map((d) => (d.key === dayKey ? { ...d, [field]: value } : d))
+    );
+  }
+
+  async function handleSaveHours() {
+    await setBusinessHours({ days });
+    setHoursSaved(true);
+    setTimeout(() => setHoursSaved(false), 2500);
+  }
 
   const [notifLow, setNotifLow] = useState(true);
   const [notifOos, setNotifOos] = useState(true);
@@ -102,6 +134,100 @@ export default function SettingsView({
                 style={{ marginTop: ".75rem" }}
               >
                 {t.detailsSaved}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>{t.hoursSectionTitle}</div>
+          </div>
+
+          <div className={uiStyles.cardBody}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1rem" }}>
+              {days.map((d) => (
+                <div
+                  key={d.key}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.8rem",
+                    flexWrap: "wrap",
+                    padding: "0.5rem 0.7rem",
+                    borderRadius: "10px",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleDay(d.key)}
+                    style={{
+                      padding: "0.5rem 0.9rem",
+                      borderRadius: "10px",
+                      border: d.open ? "1.5px solid var(--gold)" : "1px solid var(--border)",
+                      background: d.open ? "var(--gold-dim)" : "transparent",
+                      color: d.open ? "var(--gold)" : "var(--muted)",
+                      fontFamily: "Alef, sans-serif",
+                      fontWeight: d.open ? 700 : 400,
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                      minWidth: "60px",
+                    }}
+                  >
+                    {t.dayNames[d.key]}
+                  </button>
+
+                  {d.open ? (
+                    <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                      <input
+                        className={formStyles.fi}
+                        type="time"
+                        value={d.openTime}
+                        onChange={(e) => updateDayTime(d.key, "openTime", e.target.value)}
+                        style={{ width: "auto" }}
+                      />
+                      <span style={{ color: "var(--muted)" }}>–</span>
+                      <input
+                        className={formStyles.fi}
+                        type="time"
+                        value={d.closeTime}
+                        onChange={(e) => updateDayTime(d.key, "closeTime", e.target.value)}
+                        style={{ width: "auto" }}
+                      />
+                    </div>
+                  ) : (
+                    <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                      {t.dayClosed}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveHours}
+              style={{
+                background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+                color: "#080808",
+                border: "none",
+                borderRadius: "10px",
+                padding: "0.6rem 1.2rem",
+                fontFamily: "Alef, sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              {t.saveHoursButton}
+            </button>
+
+            {hoursSaved && (
+              <div
+                className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
+                style={{ marginTop: "0.75rem" }}
+              >
+                {t.hoursSaved}
               </div>
             )}
           </div>
