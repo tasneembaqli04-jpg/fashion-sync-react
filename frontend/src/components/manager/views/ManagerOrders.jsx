@@ -45,10 +45,13 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [orders]);
 
-  const pending = orders.filter((o) => !o.confirmed).length;
-  const confirmed = orders.filter((o) => o.confirmed).length;
+  const pending = orders.filter((o) => !o.confirmed && !o.cancelled).length;
+  const confirmed = orders.filter((o) => o.confirmed && !o.cancelled).length;
+  const cancelled = orders.filter((o) => o.cancelled).length;
 
   const visibleOrders = orders.filter((order) => {
+    if (statusFilter === "cancelled") return Boolean(order.cancelled);
+    if (order.cancelled) return false;
     if (statusFilter === "ready" && !order.confirmed) return false;
     if (statusFilter === "pending" && order.confirmed) return false;
 
@@ -86,7 +89,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
 
       <div
         className={overviewStyles.statsGrid}
-        style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
+        style={{ gridTemplateColumns: "repeat(4, 1fr)" }}
       >
         <div
           className={`${overviewStyles.stat} ${overviewStyles.gold}`}
@@ -139,6 +142,30 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             {confirmed}
           </div>
           <div className={overviewStyles.statSub}>{t.handled}</div>
+        </div>
+
+        <div
+          className={overviewStyles.stat}
+          style={{
+            ...cardStyle(statusFilter === "cancelled"),
+            borderColor: statusFilter === "cancelled" ? "var(--red)" : undefined,
+          }}
+          onClick={() => setStatusFilter("cancelled")}
+        >
+          <div className={overviewStyles.statIcon}>✕</div>
+          <div
+            className={overviewStyles.statLabel}
+            style={{ color: "var(--red)" }}
+          >
+            {t.cancelledLabel}
+          </div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: "var(--red)" }}
+          >
+            {cancelled}
+          </div>
+          <div className={overviewStyles.statSub}>{t.cancelledSuffix}</div>
         </div>
       </div>
 
@@ -219,10 +246,18 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                 <div>
                   <span
                     className={`${uiStyles.tag} ${
-                      order.confirmed ? uiStyles.tGreen : uiStyles.tYellow
+                      order.cancelled
+                        ? uiStyles.tRed
+                        : order.confirmed
+                        ? uiStyles.tGreen
+                        : uiStyles.tYellow
                     }`}
                   >
-                    {order.confirmed ? t.statusConfirmed : t.statusPending}
+                    {order.cancelled
+                      ? t.cancelledLabel
+                      : order.confirmed
+                      ? t.statusConfirmed
+                      : t.statusPending}
                   </span>
 
                   {hasCustomSize && (
@@ -255,7 +290,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                   {t.orderDetailsButton}
                 </button>
 
-                {!order.confirmed && (
+                {!order.confirmed && !order.cancelled && (
                   <button
                     type="button"
                     className={ordersStyles.orderPrepareBtn}

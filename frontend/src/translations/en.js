@@ -91,6 +91,8 @@ export const en = {
       customSizeTag: "⚠️ Custom size",
       confirmOrderButton: "✅ Confirm order",
       orderDetailsButton: "📋 Order details",
+      cancelledLabel: "✕ Cancelled",
+      cancelledSuffix: "Cancelled",
     },
     deliveries: {
       title: "Delivery Tracking",
@@ -256,6 +258,7 @@ export const en = {
       hoursSaved: "✅ Business hours saved",
       policySectionTitle: "📋 Policy Page Content",
       policyReturnsLabel: "Return Policy",
+      policyCancellationLabel: "Order Cancellation Policy",
       policyShippingLabel: "Shipping Policy (4 lines)",
       policyPrivacyLabel: "Privacy Policy",
       policyPhoneLabel: "Contact Phone",
@@ -731,6 +734,11 @@ export const en = {
       allFilter: "All",
       noOrdersInStatus: "No orders in this status",
       withReturnsFilter: "With Return Request",
+      cancelledFilter: "Cancelled",
+      cancelledLabel: "This order was cancelled",
+      cancelOrderButton: "Cancel Order",
+      confirmCancelOrder: "Cancel this order?",
+      cancelSuccess: "✅ Order cancelled successfully.",
     },
 
     wishlist: {
@@ -761,6 +769,9 @@ export const en = {
       returnsTitle: "🔄 Return Policy",
       returnsText:
         'You can request a return for delivered items, per item, from the "My Orders" page. Our team reviews each request, and you\'ll get an update in the app and by email on whether it was approved or rejected. If approved, you\'ll receive store credit as a gift card for the value of the returned item, usable on your next purchase.',
+      cancellationTitle: "❌ Order Cancellation Policy",
+      cancellationText:
+        'You can cancel an order entirely and immediately, with no approval needed from our team, within 24 hours of placing it — from the "My Orders" page. After 24 hours, the cancellation option is no longer available.',
       shippingTitle: "🚚 Shipping Policy",
       shippingLine1: "Standard shipping: 5–7 business days — ₪25 (free for orders over ₪200)",
       shippingLine2: "Express shipping: 2–3 business days — ₪29",

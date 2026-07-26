@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { getOrdersByUser } from "../services/orders/ordersService";
+import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
+import { restockOrderItems } from "../services/products/productsService";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
 import { getWishlist, saveWishlist } from "../services/wishlist/wishlistService";
 import { addFeedback } from "../services/feedback/feedbackService";
@@ -12,6 +13,7 @@ import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 import { getCoupon } from "../services/coupons/couponsService";
 import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
+import { sendOrderCancellationEmail } from "../services/email/emailService";
 import {
   applyTheme,
   getSavedTheme,
@@ -976,6 +978,24 @@ export default function Customer() {
   function openReturnRequestModal(order) {
     setReturnModalOrder(order);
   }
+  async function handleCancelOrder(order) {
+    const confirmed = await confirmDialog(dict.customer.orders.confirmCancelOrder);
+    if (!confirmed) return;
+
+    await cancelOrder(order.docId);
+    await restockOrderItems(order.items);
+
+    setOrders((prev) =>
+      prev.map((o) => (o.docId === order.docId ? { ...o, cancelled: true } : o))
+    );
+    sendOrderCancellationEmail({
+      toEmail: order.customerEmail || currentUser?.email || "",
+      orderId: order.id,
+      total: order.total,
+    });
+
+    alertDialog(dict.customer.orders.cancelSuccess);
+  }
 
   function closeReturnRequestModal() {
     setReturnModalOrder(null);
@@ -1228,6 +1248,7 @@ export default function Customer() {
           orders={orders}
           returnRequests={returnRequests}
           onRequestReturn={openReturnRequestModal}
+          onCancelOrder={handleCancelOrder}
         />
 
         <CustomerLoyalty
