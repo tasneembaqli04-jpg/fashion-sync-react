@@ -34,13 +34,13 @@ export default function SettingsView({
 
   function toggleDay(dayKey) {
     setDays((prev) =>
-      prev.map((d) => (d.key === dayKey ? { ...d, open: !d.open } : d))
+      prev.map((d) => (d.key === dayKey ? { ...d, open: !d.open } : d)),
     );
   }
 
   function updateDayTime(dayKey, field, value) {
     setDays((prev) =>
-      prev.map((d) => (d.key === dayKey ? { ...d, [field]: value } : d))
+      prev.map((d) => (d.key === dayKey ? { ...d, [field]: value } : d)),
     );
   }
 
@@ -144,7 +144,14 @@ export default function SettingsView({
           </div>
 
           <div className={uiStyles.cardBody}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1rem" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+                marginBottom: "1rem",
+              }}
+            >
               {days.map((d) => (
                 <div
                   key={d.key}
@@ -164,7 +171,9 @@ export default function SettingsView({
                     style={{
                       padding: "0.5rem 0.9rem",
                       borderRadius: "10px",
-                      border: d.open ? "1.5px solid var(--gold)" : "1px solid var(--border)",
+                      border: d.open
+                        ? "1.5px solid var(--gold)"
+                        : "1px solid var(--border)",
                       background: d.open ? "var(--gold-dim)" : "transparent",
                       color: d.open ? "var(--gold)" : "var(--muted)",
                       fontFamily: "Alef, sans-serif",
@@ -178,25 +187,63 @@ export default function SettingsView({
                   </button>
 
                   {d.open ? (
-                    <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "0.6rem",
+                        alignItems: "center",
+                      }}
+                    >
                       <input
                         className={formStyles.fi}
-                        type="time"
-                        value={d.openTime}
-                        onChange={(e) => updateDayTime(d.key, "openTime", e.target.value)}
-                        style={{ width: "auto" }}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="09:00"
+                        maxLength={5}
+                        value={d.openTime || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (/^[0-9:]*$/.test(value)) {
+                            updateDayTime(d.key, "openTime", value);
+                          }
+                        }}
+                        style={{
+                          width: "145px",
+                          direction: "ltr",
+                          textAlign: "center",
+                          cursor: "text",
+                        }}
                       />
+
                       <span style={{ color: "var(--muted)" }}>–</span>
+
                       <input
                         className={formStyles.fi}
-                        type="time"
-                        value={d.closeTime}
-                        onChange={(e) => updateDayTime(d.key, "closeTime", e.target.value)}
-                        style={{ width: "auto" }}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="18:00"
+                        maxLength={5}
+                        value={d.closeTime || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (/^[0-9:]*$/.test(value)) {
+                            updateDayTime(d.key, "closeTime", value);
+                          }
+                        }}
+                        style={{
+                          width: "145px",
+                          direction: "ltr",
+                          textAlign: "center",
+                          cursor: "text",
+                        }}
                       />
                     </div>
                   ) : (
-                    <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                    <span
+                      style={{ color: "var(--muted)", fontSize: "0.85rem" }}
+                    >
                       {t.dayClosed}
                     </span>
                   )}
@@ -208,7 +255,8 @@ export default function SettingsView({
               type="button"
               onClick={handleSaveHours}
               style={{
-                background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+                background:
+                  "linear-gradient(135deg, var(--gold), var(--gold-light))",
                 color: "#080808",
                 border: "none",
                 borderRadius: "10px",
@@ -235,11 +283,19 @@ export default function SettingsView({
 
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>{t.translationSectionTitle}</div>
+            <div className={uiStyles.cardTitle}>
+              {t.translationSectionTitle}
+            </div>
           </div>
 
           <div className={uiStyles.cardBody}>
-            <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginBottom: "0.9rem" }}>
+            <p
+              style={{
+                color: "var(--muted)",
+                fontSize: "0.85rem",
+                marginBottom: "0.9rem",
+              }}
+            >
               {t.translationSectionDesc}
             </p>
 
@@ -270,7 +326,9 @@ export default function SettingsView({
 
         <div className={uiStyles.card}>
           <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>{t.notificationSettingsTitle}</div>
+            <div className={uiStyles.cardTitle}>
+              {t.notificationSettingsTitle}
+            </div>
           </div>
 
           <div className={uiStyles.cardBody}>
@@ -396,7 +454,11 @@ export default function SettingsView({
                 className={formStyles.fi}
                 value={demandThreshold}
                 onChange={(e) => setDemandThreshold(e.target.value)}
-                style={{ width: "80px", textAlign: "center", padding: "0.45rem 0.6rem" }}
+                style={{
+                  width: "80px",
+                  textAlign: "center",
+                  padding: "0.45rem 0.6rem",
+                }}
               />
             </div>
 
