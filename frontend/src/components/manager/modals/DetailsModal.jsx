@@ -203,7 +203,7 @@ export default function DetailsModal({
     e.target.value = "";
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const cleanedVariants = variantsDraft.filter(
       (variant) => (variant.colorName || "").trim() !== ""
     );
@@ -227,11 +227,48 @@ export default function DetailsModal({
     const cleanedUsesVariants = cleanedVariants.length > 0;
     const cleanedTotal = calcVariantsTotal(cleanedVariants);
 
+    const missingNameEn = !nameEn.trim();
+    const missingDescEn = !descEn.trim();
+    const missingColorEn = cleanedVariants.some(
+      (v) => v.colorName && !(v.colorNameEn || "").trim()
+    );
+
+    let finalNameEn = nameEn;
+    let finalDescEn = descEn;
+    let finalVariants = cleanedVariants;
+
+    if (missingNameEn || missingDescEn || missingColorEn) {
+      setRetranslating(true);
+
+      const { nameEn: newNameEn, descEn: newDescEn, colorNamesEn } =
+        await translateProductFields({
+          name,
+          desc,
+          colorNames: cleanedVariants.map((v) => v.colorName),
+        });
+
+      finalNameEn = nameEn.trim() || newNameEn;
+      finalDescEn = descEn.trim() || newDescEn;
+      finalVariants = cleanedVariants.map((v, index) => ({
+        ...v,
+        colorNameEn: (v.colorNameEn || "").trim() || colorNamesEn[index] || v.colorName,
+      }));
+
+      setNameEn(finalNameEn);
+      setDescEn(finalDescEn);
+      setVariantsDraft((prev) =>
+        prev.map((variant) => {
+          const updated = finalVariants.find((v) => v.colorName === variant.colorName);
+          return updated ? { ...variant, colorNameEn: updated.colorNameEn } : variant;
+        })
+      );
+      setRetranslating(false);
+    }
+
     onSave({
       ...product,
       name: name.trim(),
-      nameEn: nameEn.trim() || name.trim(),
-      variants: cleanedVariants.map((v) => ({ ...v })),
+      nameEn: finalNameEn.trim() || name.trim(),
       img: image,
       price: Number(price),
       cost: Number(cost) || 0,
@@ -241,8 +278,8 @@ export default function DetailsModal({
       minStock: Number(minStock),
       season,
       desc: desc.trim(),
-      descEn: descEn.trim() || desc.trim(),
-      variants: cleanedVariants,
+      descEn: finalDescEn.trim() || desc.trim(),
+      variants: finalVariants,
       stock: cleanedUsesVariants ? cleanedTotal : Number(simpleStock),
     });
   };
@@ -330,52 +367,8 @@ export default function DetailsModal({
               />
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginTop: "0.9rem",
-              }}
-            >
-              <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700 }}>
-                {t.englishContentTitle}
-              </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  setRetranslating(true);
-                  const { nameEn: newNameEn, descEn: newDescEn, colorNamesEn } =
-                    await translateProductFields({
-                      name,
-                      desc,
-                      colorNames: variantsDraft.map((v) => v.colorName),
-                    });
-                  setNameEn(newNameEn || nameEn);
-                  setDescEn(newDescEn || descEn);
-                  setVariantsDraft((prev) =>
-                    prev.map((variant, index) => ({
-                      ...variant,
-                      colorNameEn: colorNamesEn[index] || variant.colorNameEn,
-                    }))
-                  );
-                  setRetranslating(false);
-                }}
-                disabled={retranslating}
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--gold)",
-                  color: "var(--gold)",
-                  borderRadius: "8px",
-                  padding: "0.3rem 0.7rem",
-                  fontSize: "0.78rem",
-                  fontFamily: "Alef, sans-serif",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {retranslating ? t.retranslatingButton : t.retranslateButton}
-              </button>
+            <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700, marginTop: "0.9rem" }}>
+              {t.englishContentTitle}
             </div>
 
             <div className={formStyles.fg} style={{ marginTop: "0.3rem" }}>
