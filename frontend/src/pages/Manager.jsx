@@ -300,55 +300,6 @@ export default function Manager({ onPromote }) {
      await deleteProduct(code);
      setProducts((prev) => prev.filter((p) => p.code !== code));
   };
-
-  const [translatingAll, setTranslatingAll] = useState(false);
-  const [translateAllProgress, setTranslateAllProgress] = useState({ done: 0, total: 0 });
-
-  async function handleTranslateAllProducts(force = false) {
-    const untranslated = force
-      ? products
-      : products.filter(
-          (p) =>
-            !p.nameEn ||
-            (p.variants || []).some((v) => v.colorName && !v.colorNameEn)
-        );
-    if (!untranslated.length) return;
-
-    setTranslatingAll(true);
-    setTranslateAllProgress({ done: 0, total: untranslated.length });
-
-    for (let i = 0; i < untranslated.length; i++) {
-      const product = untranslated[i];
-
-      const { nameEn, descEn, colorNamesEn } = await translateProductFields({
-        name: product.name,
-        desc: product.desc,
-        colorNames: (product.variants || []).map((v) => v.colorName),
-      });
-
-      const updatedVariants = (product.variants || []).map((variant, index) => ({
-        ...variant,
-        colorNameEn: colorNamesEn[index] || variant.colorName,
-      }));
-
-      const updatedProduct = {
-        ...product,
-        nameEn: nameEn || product.name,
-        descEn: descEn || product.desc,
-        variants: updatedVariants,
-      };
-
-      await updateProduct(updatedProduct);
-
-      setProducts((prev) =>
-        prev.map((p) => (p.code === product.code ? updatedProduct : p))
-      );
-
-      setTranslateAllProgress({ done: i + 1, total: untranslated.length });
-    }
-
-    setTranslatingAll(false);
-  }
   const [translatingHistorical, setTranslatingHistorical] = useState(false);
   const [historicalProgress, setHistoricalProgress] = useState({ done: 0, total: 0 });
 
@@ -652,10 +603,6 @@ export default function Manager({ onPromote }) {
                 setIsPromoOpen(true);
               }}
               onCancelPromote={handleCancelPromote}
-              onTranslateAll={handleTranslateAllProducts}
-              onForceTranslateAll={() => handleTranslateAllProducts(true)}
-              translatingAll={translatingAll}
-              translateAllProgress={translateAllProgress}
             />
           )}
 
