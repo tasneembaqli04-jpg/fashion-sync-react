@@ -101,10 +101,14 @@ export default function Manager({ onPromote }) {
             confirmed: Boolean(order.confirmed),
             items: Array.isArray(order.items) ? order.items : [],
             total: Number(order.total) || 0,
+            subtotal: Number(order.subtotal) || 0,
+            discountAmount: Number(order.discountAmount) || 0,
+            shippingCost: Number(order.shippingCost) || 0,
             date: order.date || order.createdAt || null,
             createdAt: order.date || order.createdAt || null,
             payMethod: order.payMethod || "",
             shipping: order.shipping || null,
+            customer: order.customer || null,
           };
         });
 
@@ -201,6 +205,12 @@ export default function Manager({ onPromote }) {
       id: order.id,
       date: order.date || order.createdAt || new Date().toISOString(),
       total: Number(order.total) || 0,
+      subtotal: Number(order.subtotal) || 0,
+      discountAmount: Number(order.discountAmount) || 0,
+      shippingCost: Number(order.shippingCost) || 0,
+      payMethod: order.payMethod || "",
+      shipping: order.shipping || null,
+      customer: order.customer || order.customerDetails || null,
       items: Array.isArray(order.items) ? order.items : [],
     }));
   }, [orders]);
