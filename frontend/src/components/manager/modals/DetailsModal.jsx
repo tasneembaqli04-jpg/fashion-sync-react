@@ -227,43 +227,32 @@ export default function DetailsModal({
     const cleanedUsesVariants = cleanedVariants.length > 0;
     const cleanedTotal = calcVariantsTotal(cleanedVariants);
 
-    const missingNameEn = !nameEn.trim();
-    const missingDescEn = !descEn.trim();
-    const missingColorEn = cleanedVariants.some(
-      (v) => v.colorName && !(v.colorNameEn || "").trim()
+   
+    setRetranslating(true);
+
+    const { nameEn: newNameEn, descEn: newDescEn, colorNamesEn } =
+      await translateProductFields({
+        name,
+        desc,
+        colorNames: cleanedVariants.map((v) => v.colorName),
+      });
+
+    const finalNameEn = newNameEn || name;
+    const finalDescEn = newDescEn || desc;
+    const finalVariants = cleanedVariants.map((v, index) => ({
+      ...v,
+      colorNameEn: colorNamesEn[index] || v.colorName,
+    }));
+
+    setNameEn(finalNameEn);
+    setDescEn(finalDescEn);
+    setVariantsDraft((prev) =>
+      prev.map((variant) => {
+        const updated = finalVariants.find((v) => v.colorName === variant.colorName);
+        return updated ? { ...variant, colorNameEn: updated.colorNameEn } : variant;
+      })
     );
-
-    let finalNameEn = nameEn;
-    let finalDescEn = descEn;
-    let finalVariants = cleanedVariants;
-
-    if (missingNameEn || missingDescEn || missingColorEn) {
-      setRetranslating(true);
-
-      const { nameEn: newNameEn, descEn: newDescEn, colorNamesEn } =
-        await translateProductFields({
-          name,
-          desc,
-          colorNames: cleanedVariants.map((v) => v.colorName),
-        });
-
-      finalNameEn = nameEn.trim() || newNameEn;
-      finalDescEn = descEn.trim() || newDescEn;
-      finalVariants = cleanedVariants.map((v, index) => ({
-        ...v,
-        colorNameEn: (v.colorNameEn || "").trim() || colorNamesEn[index] || v.colorName,
-      }));
-
-      setNameEn(finalNameEn);
-      setDescEn(finalDescEn);
-      setVariantsDraft((prev) =>
-        prev.map((variant) => {
-          const updated = finalVariants.find((v) => v.colorName === variant.colorName);
-          return updated ? { ...variant, colorNameEn: updated.colorNameEn } : variant;
-        })
-      );
-      setRetranslating(false);
-    }
+    setRetranslating(false);
 
     onSave({
       ...product,

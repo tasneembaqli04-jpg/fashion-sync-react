@@ -92,11 +92,12 @@ export default function SettingsView({
       setPolicyPrivacyEn(content.privacyLine1En || "");
       setPolicyPhoneEn(content.contactPhoneEn || "");
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   async function handleTranslatePolicy() {
     setTranslatingPolicy(true);
+
 
     const translations = await translatePolicyFields({
       returnsText: policyReturns,
@@ -108,64 +109,21 @@ export default function SettingsView({
       contactPhone: policyPhone,
     });
 
-    setPolicyReturnsEn(translations.returnsTextEn);
-    setPolicyShipping1En(translations.shippingLine1En);
-    setPolicyShipping2En(translations.shippingLine2En);
-    setPolicyShipping3En(translations.shippingLine3En);
-    setPolicyShipping4En(translations.shippingLine4En);
-    setPolicyPrivacyEn(translations.privacyLine1En);
-    setPolicyPhoneEn(translations.contactPhoneEn);
+    const finalReturnsEn = translations.returnsTextEn;
+    const finalShipping1En = translations.shippingLine1En;
+    const finalShipping2En = translations.shippingLine2En;
+    const finalShipping3En = translations.shippingLine3En;
+    const finalShipping4En = translations.shippingLine4En;
+    const finalPrivacyEn = translations.privacyLine1En;
+    const finalPhoneEn = translations.contactPhoneEn;
 
-    setTranslatingPolicy(false);
-  }
-
-  async function handleSavePolicy() {
-    setSavingPolicy(true);
-
-    const needsAutoTranslate =
-      !policyReturnsEn ||
-      !policyShipping1En ||
-      !policyShipping2En ||
-      !policyShipping3En ||
-      !policyShipping4En ||
-      !policyPrivacyEn ||
-      !policyPhoneEn;
-
-    let finalReturnsEn = policyReturnsEn;
-    let finalShipping1En = policyShipping1En;
-    let finalShipping2En = policyShipping2En;
-    let finalShipping3En = policyShipping3En;
-    let finalShipping4En = policyShipping4En;
-    let finalPrivacyEn = policyPrivacyEn;
-    let finalPhoneEn = policyPhoneEn;
-
-    if (needsAutoTranslate) {
-      const translations = await translatePolicyFields({
-        returnsText: policyReturns,
-        shippingLine1: policyShipping1,
-        shippingLine2: policyShipping2,
-        shippingLine3: policyShipping3,
-        shippingLine4: policyShipping4,
-        privacyLine1: policyPrivacy,
-        contactPhone: policyPhone,
-      });
-
-      finalReturnsEn = policyReturnsEn || translations.returnsTextEn;
-      finalShipping1En = policyShipping1En || translations.shippingLine1En;
-      finalShipping2En = policyShipping2En || translations.shippingLine2En;
-      finalShipping3En = policyShipping3En || translations.shippingLine3En;
-      finalShipping4En = policyShipping4En || translations.shippingLine4En;
-      finalPrivacyEn = policyPrivacyEn || translations.privacyLine1En;
-      finalPhoneEn = policyPhoneEn || translations.contactPhoneEn;
-
-      setPolicyReturnsEn(finalReturnsEn);
-      setPolicyShipping1En(finalShipping1En);
-      setPolicyShipping2En(finalShipping2En);
-      setPolicyShipping3En(finalShipping3En);
-      setPolicyShipping4En(finalShipping4En);
-      setPolicyPrivacyEn(finalPrivacyEn);
-      setPolicyPhoneEn(finalPhoneEn);
-    }
+    setPolicyReturnsEn(finalReturnsEn);
+    setPolicyShipping1En(finalShipping1En);
+    setPolicyShipping2En(finalShipping2En);
+    setPolicyShipping3En(finalShipping3En);
+    setPolicyShipping4En(finalShipping4En);
+    setPolicyPrivacyEn(finalPrivacyEn);
+    setPolicyPhoneEn(finalPhoneEn);
 
     await setPolicyContent({
       returnsText: policyReturns,
@@ -184,7 +142,7 @@ export default function SettingsView({
       contactPhoneEn: finalPhoneEn,
     });
 
-    setSavingPolicy(false);
+    setTranslatingPolicy(false);
     setPolicySaved(true);
     setTimeout(() => setPolicySaved(false), 2500);
   }
@@ -216,7 +174,6 @@ export default function SettingsView({
     setHoursSaved(true);
     setTimeout(() => setHoursSaved(false), 2500);
   }
-
   const [notifLow, setNotifLow] = useState(true);
   const [notifOos, setNotifOos] = useState(true);
   const [notifDemand, setNotifDemand] = useState(true);
@@ -224,12 +181,8 @@ export default function SettingsView({
   const [notifSaved, setNotifSaved] = useState(false);
 
   const handleSaveStore = async () => {
-    let finalAddressEn = addressEn;
-
-    if (!finalAddressEn) {
-      finalAddressEn = await translateStoreAddress(address);
-      setAddressEn(finalAddressEn);
-    }
+    const finalAddressEn = await translateStoreAddress(address);
+    setAddressEn(finalAddressEn);
 
     await setStoreDetails({ storeName, phone, email, address, addressEn: finalAddressEn });
     setSaved(true);
@@ -295,33 +248,8 @@ export default function SettingsView({
               </div>
 
               <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "0.3rem",
-                  }}
-                >
-                  <div className={formStyles.fl}>{t.addressEnLabel}</div>
-                  <button
-                    type="button"
-                    onClick={handleTranslateAddress}
-                    disabled={translatingAddress}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid var(--gold)",
-                      color: "var(--gold)",
-                      borderRadius: "8px",
-                      padding: "0.2rem 0.6rem",
-                      fontSize: "0.74rem",
-                      fontFamily: "Alef, sans-serif",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {translatingAddress ? t.policyTranslatingButton : t.policyTranslateButton}
-                  </button>
+                <div className={formStyles.fl} style={{ marginBottom: "0.3rem" }}>
+                  {t.addressEnLabel}
                 </div>
                 <input
                   className={formStyles.fi}
@@ -558,36 +486,8 @@ export default function SettingsView({
               />
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginTop: "0.5rem",
-                marginBottom: "0.9rem",
-              }}
-            >
-              <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700 }}>
-                {t.policyEnglishTitle}
-              </div>
-              <button
-                type="button"
-                onClick={handleTranslatePolicy}
-                disabled={translatingPolicy}
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--gold)",
-                  color: "var(--gold)",
-                  borderRadius: "8px",
-                  padding: "0.3rem 0.7rem",
-                  fontSize: "0.78rem",
-                  fontFamily: "Alef, sans-serif",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {translatingPolicy ? t.policyTranslatingButton : t.policyTranslateButton}
-              </button>
+            <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700, marginTop: "0.5rem", marginBottom: "0.9rem" }}>
+              {t.policyEnglishTitle}
             </div>
 
             <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
@@ -652,8 +552,8 @@ export default function SettingsView({
 
             <button
               type="button"
-              onClick={handleSavePolicy}
-              disabled={savingPolicy}
+              onClick={handleTranslatePolicy}
+              disabled={translatingPolicy}
               style={{
                 background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
                 color: "#080808",
@@ -666,7 +566,7 @@ export default function SettingsView({
                 cursor: "pointer",
               }}
             >
-              {savingPolicy ? t.policySavingButton : t.policySaveButton}
+              {translatingPolicy ? t.policySavingButton : t.policySaveButton}
             </button>
 
             {policySaved && (
@@ -677,49 +577,6 @@ export default function SettingsView({
                 {t.policySaved}
               </div>
             )}
-          </div>
-        </div>
-
-        <div className={uiStyles.card}>
-          <div className={uiStyles.cardHd}>
-            <div className={uiStyles.cardTitle}>
-              {t.translationSectionTitle}
-            </div>
-          </div>
-
-          <div className={uiStyles.cardBody}>
-            <p
-              style={{
-                color: "var(--muted)",
-                fontSize: "0.85rem",
-                marginBottom: "0.9rem",
-              }}
-            >
-              {t.translationSectionDesc}
-            </p>
-
-            <button
-              type="button"
-              onClick={onTranslateHistorical}
-              disabled={translatingHistorical}
-              style={{
-                background: "transparent",
-                border: "1px solid var(--gold)",
-                color: "var(--gold)",
-                borderRadius: "10px",
-                padding: "0.6rem 1.2rem",
-                fontFamily: "Alef, sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: 700,
-                cursor: translatingHistorical ? "default" : "pointer",
-              }}
-            >
-              {translatingHistorical
-                ? t.translationSectionProgress
-                    .replace("{done}", historicalProgress?.done ?? 0)
-                    .replace("{total}", historicalProgress?.total ?? 0)
-                : t.translationSectionButton}
-            </button>
           </div>
         </div>
 

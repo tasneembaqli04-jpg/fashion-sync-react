@@ -191,62 +191,6 @@ export default function InventoryView({
             {products.length} {t.summary.products}
           </p>
         </div>
-
-        {products.some(
-          (p) =>
-            !p.nameEn ||
-            (p.variants || []).some((v) => v.colorName && !v.colorNameEn)
-        ) && (
-          <button
-            type="button"
-            onClick={onTranslateAll}
-            disabled={translatingAll}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--gold)",
-              color: "var(--gold)",
-              borderRadius: "10px",
-              padding: "0.55rem 1.1rem",
-              fontFamily: "Alef, sans-serif",
-              fontSize: "0.88rem",
-              fontWeight: 700,
-              cursor: translatingAll ? "default" : "pointer",
-              whiteSpace: "nowrap",
-              alignSelf: "flex-start",
-            }}
-          >
-            {translatingAll
-              ? t.translateAllProgress
-                  .replace("{done}", translateAllProgress?.done ?? 0)
-                  .replace("{total}", translateAllProgress?.total ?? 0)
-              : t.translateAllButton}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onForceTranslateAll}
-          disabled={translatingAll}
-          style={{
-            background: "transparent",
-            border: "1px solid var(--red)",
-            color: "var(--red)",
-            borderRadius: "10px",
-            padding: "0.55rem 1.1rem",
-            fontFamily: "Alef, sans-serif",
-            fontSize: "0.82rem",
-            fontWeight: 700,
-            cursor: translatingAll ? "default" : "pointer",
-            whiteSpace: "nowrap",
-            alignSelf: "flex-start",
-          }}
-        >
-          {translatingAll
-            ? t.translateAllProgress
-                .replace("{done}", translateAllProgress?.done ?? 0)
-                .replace("{total}", translateAllProgress?.total ?? 0)
-            : t.forceTranslateAllButton}
-        </button>
       </div>
 
       <div className={inventoryStyles.filtersHeader}>
