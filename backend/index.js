@@ -11,6 +11,7 @@ const {
   sendWelcomeEmail,
   sendContactNotificationEmail,
   sendPasswordResetEmail,
+  sendOrderCancellationEmail,
 } = require("./src");
 
 exports.backendHealthCheck = backendHealthCheck;
@@ -25,3 +26,4 @@ exports.sendVerificationEmail = sendVerificationEmail;
 exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.sendContactNotificationEmail = sendContactNotificationEmail;
 exports.sendPasswordResetEmail = sendPasswordResetEmail;
+exports.sendOrderCancellationEmail = sendOrderCancellationEmail;

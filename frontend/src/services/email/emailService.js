@@ -108,6 +108,33 @@ export async function sendReturnStatusEmail({ toEmail, itemName, status, giftCar
     return null;
   }
 }
+const ORDER_CANCELLATION_EMAIL_URL =
+  import.meta.env.VITE_ORDER_CANCELLATION_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendOrderCancellationEmail";
+
+export async function sendOrderCancellationEmail({ toEmail, orderId, total }) {
+  if (!toEmail) return null;
+
+  try {
+    const response = await fetch(ORDER_CANCELLATION_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, orderId, total }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Order cancellation email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Order cancellation email request failed:", err);
+    return null;
+  }
+}
 const CONTACT_NOTIFICATION_EMAIL_URL =
   import.meta.env.VITE_CONTACT_NOTIFICATION_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendContactNotificationEmail";

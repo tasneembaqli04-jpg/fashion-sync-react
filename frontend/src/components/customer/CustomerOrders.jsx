@@ -9,7 +9,7 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn }) {
+export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn, onCancelOrder }) {
   const { t: dict, lang } = useLanguage();
   const t = dict.customer.orders;
   const rt = dict.customer.returns;
@@ -33,6 +33,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
   const [activeFilter, setActiveFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
   const [showOnlyWithReturns, setShowOnlyWithReturns] = useState(false);
+  const [showOnlyCancelled, setShowOnlyCancelled] = useState(false);
 
   const sortedOrders = useMemo(() => {
     const withStatus = orders.map((order) => ({
@@ -85,9 +86,12 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
         )
       );
     }
+    if (showOnlyCancelled) {
+      list = list.filter((order) => order.cancelled);
+    }
 
     return list;
-  }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, returnRequests]);
+  }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, returnRequests, showOnlyCancelled]);
 
   const countsByStatus = useMemo(() => {
     const counts = { all: monthFilteredOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -106,6 +110,10 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       )
     ).length;
   }, [monthFilteredOrders, returnRequests]);
+
+  const cancelledOrdersCount = useMemo(() => {
+    return monthFilteredOrders.filter((order) => order.cancelled).length;
+  }, [monthFilteredOrders]);
 
   if (!show) return null;
 
@@ -197,6 +205,29 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
           </button>
         </div>
       )}
+      {cancelledOrdersCount > 0 && (
+        <div style={{ marginBottom: "1.2rem" }}>
+          <button
+            onClick={() => setShowOnlyCancelled((prev) => !prev)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.45rem 0.9rem",
+              borderRadius: "10px",
+              border: showOnlyCancelled ? "1.5px solid var(--red)" : "1px solid var(--border)",
+              background: showOnlyCancelled ? "rgba(220,53,69,0.12)" : "transparent",
+              color: showOnlyCancelled ? "var(--red)" : "var(--muted)",
+              fontFamily: "Alef, sans-serif",
+              fontSize: "0.82rem",
+              fontWeight: showOnlyCancelled ? 700 : 400,
+              cursor: "pointer",
+            }}
+          >
+            ✕ {t.cancelledFilter} ({cancelledOrdersCount})
+          </button>
+        </div>
+      )}
 
       {filteredOrders.length ? (
         filteredOrders.map((order) => {
@@ -207,11 +238,24 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
           const status = order._statusNum;
 
           return (
-            <div key={order.id} className={modalStyles.orderCard}>
+            <div
+              key={order.id}
+              className={modalStyles.orderCard}
+              style={
+                order.cancelled
+                  ? { border: "1.5px solid var(--red)", background: "rgba(220,53,69,0.06)" }
+                  : undefined
+              }
+            >
               <div className={modalStyles.orderTop}>
                 <div>
                   <div style={{ fontWeight: 900 }}>{order.id}</div>
                   <div className={modalStyles.orderId}>{order.date}</div>
+                  {order.cancelled && (
+                    <div style={{ color: "var(--red)", fontWeight: 700, fontSize: "0.8rem", marginTop: "0.2rem" }}>
+                      ✕ {t.cancelledLabel}
+                    </div>
+                  )}
                 </div>
                 <div
                   style={{
@@ -233,6 +277,30 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                   </span>
                 ))}
               </div>
+
+              {!order.cancelled &&
+                status !== 3 &&
+                Date.now() - new Date(order.createdAt || order.date).getTime() < 24 * 60 * 60 * 1000 && (
+                  <div style={{ padding: "0.4rem 0" }}>
+                    <button
+                      type="button"
+                      onClick={() => onCancelOrder?.(order)}
+                      style={{
+                        background: "none",
+                        border: "1px solid var(--red)",
+                        color: "var(--red)",
+                        borderRadius: "8px",
+                        padding: "0.3rem 0.7rem",
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        fontFamily: "Alef, sans-serif",
+                      }}
+                    >
+                      ✕ {t.cancelOrderButton}
+                    </button>
+                  </div>
+                )}
 
               {status === 3 && (() => {
                 const hasAvailableItem = order.items.some(

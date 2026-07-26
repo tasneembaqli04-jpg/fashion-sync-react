@@ -91,6 +91,8 @@ export const he = {
       customSizeTag: "⚠️ מידה מיוחדת",
       confirmOrderButton: "✅ אשר הזמנה",
       orderDetailsButton: "📋 פרטי הזמנה",
+      cancelledLabel: "✕ בוטלה",
+      cancelledSuffix: "בוטלו",
     },
     deliveries: {
       title: "מעקב משלוחים",
@@ -262,6 +264,7 @@ export const he = {
       hoursSaved: "✅ שעות הפעילות נשמרו",
       policySectionTitle: "📋 תוכן עמוד המדיניות",
       policyReturnsLabel: "מדיניות החזרות",
+      policyCancellationLabel: "מדיניות ביטול הזמנה",
       policyShippingLabel: "מדיניות משלוחים (4 שורות)",
       policyPrivacyLabel: "מדיניות פרטיות",
       policyPhoneLabel: "טלפון ליצירת קשר",
@@ -782,6 +785,11 @@ export const he = {
       allFilter: "הכל",
       noOrdersInStatus: "אין הזמנות במצב הזה",
       withReturnsFilter: "עם בקשת החזרה",
+      cancelledFilter: "בוטלו",
+      cancelledLabel: "ההזמנה בוטלה",
+      cancelOrderButton: "ביטול הזמנה",
+      confirmCancelOrder: "לבטל את ההזמנה?",
+      cancelSuccess: "✅ ההזמנה בוטלה בהצלחה.",
     },
 
     wishlist: {
@@ -811,7 +819,10 @@ export const he = {
       subtitle: "כל המידע שאתה צריך לדעת",
       returnsTitle: "🔄 מדיניות החזרות",
       returnsText:
-        "ניתן לבקש החזרה עבור פריטים שנמסרו, דרך עמוד \"ההזמנות שלי\" — לפי כל פריט בנפרד. הבקשה נבדקת על ידי הצוות שלנו, ותקבל/י עדכון באתר ובמייל האם היא אושרה או נדחתה. במקרה של אישור, יינתן זיכוי בכרטיס מתנה בסכום הפריט שהוחזר, לשימוש בקנייה הבאה. ",
+        "ניתן לבקש החזרה עבור פריטים שנמסרו, דרך עמוד \"ההזמנות שלי\" — לפי כל פריט בנפרד. הבקשה נבדקת על ידי הצוות שלנו, ותקבל/י עדכון באתר ובמייל האם היא אושרה או נדחתה. במקרה של אישור, יינתן זיכוי בכרטיס מתנה בסכום הפריט שהוחזר, לשימוש בקנייה הבאה.",
+      cancellationTitle: "❌ מדיניות ביטול הזמנה",
+      cancellationText:
+        "ניתן לבטל הזמנה לגמרי ובאופן מיידי, ללא צורך באישור מהצוות שלנו, עד 24 שעות בלבד מרגע ביצוע ההזמנה — דרך עמוד \"ההזמנות שלי\". לאחר 24 שעות אפשרות הביטול אינה זמינה עוד.",
       shippingTitle: "🚚 מדיניות משלוחים",
       shippingLine1: "משלוח רגיל: 5–7 ימי עסקים — ₪25 (חינם לרכישות מעל ₪200)",
       shippingLine2: "משלוח מהיר: 2–3 ימי עסקים — ₪29",

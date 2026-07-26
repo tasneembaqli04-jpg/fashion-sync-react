@@ -119,6 +119,13 @@ export async function updateOrderItems(docId, items) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, { items });
 }
+export async function cancelOrder(docId) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, {
+    cancelled: true,
+    cancelledAt: new Date().toISOString(),
+  });
+}
 
 export async function advanceOrderStatus(docId, statusIndex) {
   const orderRef = doc(db, "orders", docId);

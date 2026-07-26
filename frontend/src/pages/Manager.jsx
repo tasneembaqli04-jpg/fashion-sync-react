@@ -110,6 +110,7 @@ export default function Manager({ onPromote }) {
             payMethod: order.payMethod || "",
             shipping: order.shipping || null,
             customer: order.customer || null,
+            cancelled: Boolean(order.cancelled),
           };
         });
 
@@ -222,7 +223,13 @@ export default function Manager({ onPromote }) {
     const lowCount = products.filter(
       (p) => p.stock === 0 || (p.stock > 0 && p.stock <= p.minStock),
     ).length;
-    const demandCount = products.filter((p) => p.notifyCount > 15).length;
+    const demandCount = products.filter((p) => {
+      if (p.stock !== 0) return false;
+      const requestCount = stockNotifications.filter(
+        (n) => n.productCode === p.code
+      ).length;
+      return requestCount > 15;
+    }).length;
     const sales = receipts.reduce((sum, r) => sum + r.total, 0);
     return {
       totalStock,
@@ -232,7 +239,7 @@ export default function Manager({ onPromote }) {
       productCount: products.length,
       receiptCount: receipts.length,
     };
-  }, [products, receipts]);
+  }, [products, receipts, stockNotifications]);
 
   const filteredProducts = useMemo(() => {
     if (!globalSearch.trim()) return products;

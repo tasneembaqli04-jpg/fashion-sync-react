@@ -81,6 +81,12 @@ export default function CustomerPolicy({ show, currentUser }) {
           {field("returnsText")}
         </div>
       </div>
+      <div className={modalStyles.policySection}>
+        <div className={modalStyles.policyTitle}>{t.cancellationTitle}</div>
+        <div className={modalStyles.policyText}>
+          {field("cancellationText")}
+        </div>
+      </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.shippingTitle}</div>

@@ -187,3 +187,19 @@ export async function restockReturnedItem({ code, qty, color, size }) {
     });
   }
 }
+export async function restockOrderItems(items = []) {
+  for (const item of items) {
+    if (item.isGiftCard || !item.code) continue;
+
+    try {
+      await restockReturnedItem({
+        code: item.code,
+        qty: item.qty,
+        color: item.color,
+        size: item.size,
+      });
+    } catch (err) {
+      console.error("Restock failed for item", item.code, err);
+    }
+  }
+}
