@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import styles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import ReceiptDetailsModal from "../modals/ReceiptDetailsModal";
 
-function ReceiptBlock({ receipt, locale, lang }) {
+function ReceiptBlock({ receipt, locale, lang, t, onOpenDetails }) {
   function fmtDate(date) {
     return new Date(date).toLocaleString(locale, {
       day: "2-digit",
@@ -21,55 +22,38 @@ function ReceiptBlock({ receipt, locale, lang }) {
           <div className={styles.receiptDate}>{fmtDate(receipt.date)}</div>
         </div>
 
-        <div
-          style={{
-            color: "var(--gold)",
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "1.25rem",
-            fontWeight: 700,
-          }}
-        >
-          ₪{receipt.total.toLocaleString()}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+          <div
+            style={{
+              color: "var(--gold)",
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "1.25rem",
+              fontWeight: 700,
+            }}
+          >
+            ₪{receipt.total.toLocaleString()}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onOpenDetails(receipt)}
+            style={{
+              background: "transparent",
+              border: "1px solid var(--blue)",
+              color: "var(--blue)",
+              borderRadius: "8px",
+              padding: "0.35rem 0.7rem",
+              fontSize: "0.78rem",
+              fontFamily: "Alef, sans-serif",
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t.receiptDetailsButton}
+          </button>
         </div>
       </div>
-
-      {receipt.items.map((item, index) => (
-        <div key={`${receipt.id}-${index}`} className={styles.receiptItem}>
-          <img
-            src={item.img}
-            alt={item.name}
-            style={{
-              width: 42,
-              height: 42,
-              objectFit: "cover",
-              borderRadius: 7,
-              border: "1px solid var(--border)",
-            }}
-          />
-
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: ".88rem" }}>{lang === "en" && item.nameEn ? item.nameEn : item.name}</div>
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: ".72rem",
-                color: "var(--muted)",
-              }}
-            >
-              {item.code}
-            </div>
-          </div>
-
-          <div style={{ textAlign: "left" }}>
-            <div style={{ color: "var(--gold)" }}>
-              ₪{item.price} × {item.qty}
-            </div>
-            <div style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-              = ₪{item.price * item.qty}
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -87,6 +71,7 @@ export default function ReceiptsView({ receipts }) {
   const MONTH_NAMES = dict.monthNames;
   const [query, setQuery] = useState("");
   const [monthFilter, setMonthFilter] = useState("all");
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   function getMonthLabel(monthKey) {
     if (monthKey === "unknown") return dict.customer.orders.noDate;
@@ -159,7 +144,7 @@ export default function ReceiptsView({ receipts }) {
                 {matches
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((receipt) => (
-                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} />
+                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
                   ))}
               </>
             )}
@@ -171,25 +156,30 @@ export default function ReceiptsView({ receipts }) {
         <div className={styles.cardHd}>
           <div className={styles.cardTitle}>{t.allRecentReceipts}</div>
 
-          <select
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "9px",
-              border: "1px solid var(--border)",
-              background: "var(--surface2)",
-              color: "var(--text)",
-              fontSize: "0.85rem",
-            }}
-          >
-            <option value="all">{t.allMonths}</option>
-            {availableMonths.map((key) => (
-              <option key={key} value={key}>
-                {getMonthLabel(key)}
-              </option>
-            ))}
-          </select>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <label style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+              {t.filterByMonthLabel}
+            </label>
+            <select
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "9px",
+                border: "1px solid var(--border)",
+                background: "var(--surface2)",
+                color: "var(--text)",
+                fontSize: "0.85rem",
+              }}
+            >
+              <option value="all">{t.allMonths}</option>
+              {availableMonths.map((key) => (
+                <option key={key} value={key}>
+                  {getMonthLabel(key)}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className={styles.cardBody}>
@@ -197,10 +187,16 @@ export default function ReceiptsView({ receipts }) {
             .slice()
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map((receipt) => (
-              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} />
+              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
             ))}
         </div>
       </div>
+
+      <ReceiptDetailsModal
+        open={Boolean(selectedReceipt)}
+        receipt={selectedReceipt}
+        onClose={() => setSelectedReceipt(null)}
+      />
     </div>
   );
 }
