@@ -1,8 +1,12 @@
-export function createAlerts(products, orders = [], t, lang = "he") {
+export function createAlerts(products, orders = [], t, lang = "he", stockNotifications = []) {
   const alerts = [];
 
   function displayName(entity) {
     return lang === "en" && entity.nameEn ? entity.nameEn : entity.name;
+  }
+
+  function notifyRequestCount(productCode) {
+    return stockNotifications.filter((n) => n.productCode === productCode).length;
   }
 
   products.forEach((p) => {
@@ -24,14 +28,17 @@ export function createAlerts(products, orders = [], t, lang = "he") {
         msg: t.lowStockMsg.replace("{name}", displayName(p)).replace("{stock}", p.stock),
         createdAt: Date.now(),
       });
-    if (p.notifyCount > 15)
+
+    const demandCount = p.stock === 0 ? notifyRequestCount(p.code) : 0;
+
+    if (demandCount > 15)
       alerts.push({
         key: `demand_${p.code}`,
         type: "info",
         code: p.code,
         title: t.highDemandTitle,
-        msg: t.highDemandMsg.replace("{name}", displayName(p)).replace("{count}", p.notifyCount),
-        demandCount: p.notifyCount,
+        msg: t.highDemandMsg.replace("{name}", displayName(p)).replace("{count}", demandCount),
+        demandCount,
         isDemand: true,
         createdAt: Date.now(),
       });

@@ -121,6 +121,7 @@ export default function Manager({ onPromote }) {
 
   const [deliveries, setDeliveries] = useState([]);
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
+  const [stockNotifications, setStockNotifications] = useState([]);
   const [returnRequests, setReturnRequests] = useState([]);
 
   useEffect(() => {
@@ -142,6 +143,7 @@ export default function Manager({ onPromote }) {
 
     getAllStockNotifications().then((items) => {
       setPendingStockRequestsCount(items.filter((item) => !item.notified).length);
+      setStockNotifications(items);
     });
   }, [isLoggedIn, activeView, refreshKey]);
 
@@ -171,7 +173,10 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn]);
 
-  const alerts = useMemo(() => createAlerts(products, orders, dict.manager.alerts, lang), [products, orders, dict, lang]);
+  const alerts = useMemo(
+    () => createAlerts(products, orders, dict.manager.alerts, lang, stockNotifications),
+    [products, orders, dict, lang, stockNotifications],
+  );
 
   const pendingOrdersCount = useMemo(
     () => orders.filter((o) => !o.confirmed).length,

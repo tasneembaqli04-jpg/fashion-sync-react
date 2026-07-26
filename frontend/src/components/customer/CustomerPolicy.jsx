@@ -6,9 +6,10 @@ import { useDialog } from "../common/DialogProvider";
 import { submitContactMessage } from "../../services/contact/contactMessagesService";
 import { sendContactNotificationEmail } from "../../services/email/emailService";
 import { getBusinessHours } from "../../services/settings/businessHoursService";
+import { getPolicyContent } from "../../services/settings/policyContentService";
 
 export default function CustomerPolicy({ show, currentUser }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.policy;
   const { alertDialog } = useDialog();
 
@@ -17,10 +18,20 @@ export default function CustomerPolicy({ show, currentUser }) {
   const [contactMessage, setContactMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [businessHours, setBusinessHoursState] = useState(null);
+  const [policyContent, setPolicyContentState] = useState(null);
 
   useEffect(() => {
     getBusinessHours().then(setBusinessHoursState);
+    getPolicyContent().then(setPolicyContentState);
   }, []);
+
+  function field(key) {
+    if (!policyContent) return t[key];
+    const enKey = `${key}En`;
+    if (lang === "en" && policyContent[enKey]) return policyContent[enKey];
+    if (lang !== "en" && policyContent[key]) return policyContent[key];
+    return t[key];
+  }
 
   const hoursText = businessHours
     ? businessHours.days
@@ -67,34 +78,34 @@ export default function CustomerPolicy({ show, currentUser }) {
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.returnsTitle}</div>
         <div className={modalStyles.policyText}>
-          {t.returnsText}
+          {field("returnsText")}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.shippingTitle}</div>
         <div className={modalStyles.policyText}>
-          {t.shippingLine1}
+          {field("shippingLine1")}
           <br />
-          {t.shippingLine2}
+          {field("shippingLine2")}
           <br />
-          {t.shippingLine3}
+          {field("shippingLine3")}
           <br />
-          {t.shippingLine4}
+          {field("shippingLine4")}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.privacyTitle}</div>
         <div className={modalStyles.policyText}>
-          {t.privacyLine1}
+          {field("privacyLine1")}
         </div>
       </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.contactTitle}</div>
         <div className={modalStyles.policyText} style={{ marginBottom: "1rem" }}>
-          {t.contactPhone}
+          {field("contactPhone")}
           {hoursText && (
             <>
               <br />

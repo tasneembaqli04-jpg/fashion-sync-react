@@ -8,6 +8,16 @@ import {
   setBusinessHours,
   DEFAULT_DAYS,
 } from "../../../services/settings/businessHoursService";
+import {
+  getPolicyContent,
+  setPolicyContent,
+  translatePolicyFields,
+} from "../../../services/settings/policyContentService";
+import {
+  getStoreDetails,
+  setStoreDetails,
+  translateStoreAddress,
+} from "../../../services/settings/storeDetailsService";
 
 export default function SettingsView({
   onTranslateHistorical,
@@ -16,12 +26,169 @@ export default function SettingsView({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.settings;
+  const policyDefaults = dict.customer.policy;
 
   const [storeName, setStoreName] = useState("FashionSync");
   const [phone, setPhone] = useState("054-1234567");
   const [email, setEmail] = useState("store@fashionsync.co.il");
   const [address, setAddress] = useState("רחוב דיזנגוף 120, תל אביב");
+  const [addressEn, setAddressEn] = useState("");
   const [saved, setSaved] = useState(false);
+  const [translatingAddress, setTranslatingAddress] = useState(false);
+
+  useEffect(() => {
+    getStoreDetails().then((details) => {
+      if (!details) return;
+      setStoreName(details.storeName || "FashionSync");
+      setPhone(details.phone || "054-1234567");
+      setEmail(details.email || "store@fashionsync.co.il");
+      setAddress(details.address || "רחוב דיזנגוף 120, תל אביב");
+      setAddressEn(details.addressEn || "");
+    });
+  }, []);
+
+  async function handleTranslateAddress() {
+    setTranslatingAddress(true);
+    const translated = await translateStoreAddress(address);
+    setAddressEn(translated);
+    setTranslatingAddress(false);
+  }
+
+  const [policyReturns, setPolicyReturns] = useState(policyDefaults.returnsText);
+  const [policyShipping1, setPolicyShipping1] = useState(policyDefaults.shippingLine1);
+  const [policyShipping2, setPolicyShipping2] = useState(policyDefaults.shippingLine2);
+  const [policyShipping3, setPolicyShipping3] = useState(policyDefaults.shippingLine3);
+  const [policyShipping4, setPolicyShipping4] = useState(policyDefaults.shippingLine4);
+  const [policyPrivacy, setPolicyPrivacy] = useState(policyDefaults.privacyLine1);
+  const [policyPhone, setPolicyPhone] = useState(policyDefaults.contactPhone);
+  const [savingPolicy, setSavingPolicy] = useState(false);
+  const [policySaved, setPolicySaved] = useState(false);
+  const [translatingPolicy, setTranslatingPolicy] = useState(false);
+
+  const [policyReturnsEn, setPolicyReturnsEn] = useState("");
+  const [policyShipping1En, setPolicyShipping1En] = useState("");
+  const [policyShipping2En, setPolicyShipping2En] = useState("");
+  const [policyShipping3En, setPolicyShipping3En] = useState("");
+  const [policyShipping4En, setPolicyShipping4En] = useState("");
+  const [policyPrivacyEn, setPolicyPrivacyEn] = useState("");
+  const [policyPhoneEn, setPolicyPhoneEn] = useState("");
+
+  useEffect(() => {
+    getPolicyContent().then((content) => {
+      if (!content) return;
+      setPolicyReturns(content.returnsText || policyDefaults.returnsText);
+      setPolicyShipping1(content.shippingLine1 || policyDefaults.shippingLine1);
+      setPolicyShipping2(content.shippingLine2 || policyDefaults.shippingLine2);
+      setPolicyShipping3(content.shippingLine3 || policyDefaults.shippingLine3);
+      setPolicyShipping4(content.shippingLine4 || policyDefaults.shippingLine4);
+      setPolicyPrivacy(content.privacyLine1 || policyDefaults.privacyLine1);
+      setPolicyPhone(content.contactPhone || policyDefaults.contactPhone);
+
+      setPolicyReturnsEn(content.returnsTextEn || "");
+      setPolicyShipping1En(content.shippingLine1En || "");
+      setPolicyShipping2En(content.shippingLine2En || "");
+      setPolicyShipping3En(content.shippingLine3En || "");
+      setPolicyShipping4En(content.shippingLine4En || "");
+      setPolicyPrivacyEn(content.privacyLine1En || "");
+      setPolicyPhoneEn(content.contactPhoneEn || "");
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleTranslatePolicy() {
+    setTranslatingPolicy(true);
+
+    const translations = await translatePolicyFields({
+      returnsText: policyReturns,
+      shippingLine1: policyShipping1,
+      shippingLine2: policyShipping2,
+      shippingLine3: policyShipping3,
+      shippingLine4: policyShipping4,
+      privacyLine1: policyPrivacy,
+      contactPhone: policyPhone,
+    });
+
+    setPolicyReturnsEn(translations.returnsTextEn);
+    setPolicyShipping1En(translations.shippingLine1En);
+    setPolicyShipping2En(translations.shippingLine2En);
+    setPolicyShipping3En(translations.shippingLine3En);
+    setPolicyShipping4En(translations.shippingLine4En);
+    setPolicyPrivacyEn(translations.privacyLine1En);
+    setPolicyPhoneEn(translations.contactPhoneEn);
+
+    setTranslatingPolicy(false);
+  }
+
+  async function handleSavePolicy() {
+    setSavingPolicy(true);
+
+    const needsAutoTranslate =
+      !policyReturnsEn ||
+      !policyShipping1En ||
+      !policyShipping2En ||
+      !policyShipping3En ||
+      !policyShipping4En ||
+      !policyPrivacyEn ||
+      !policyPhoneEn;
+
+    let finalReturnsEn = policyReturnsEn;
+    let finalShipping1En = policyShipping1En;
+    let finalShipping2En = policyShipping2En;
+    let finalShipping3En = policyShipping3En;
+    let finalShipping4En = policyShipping4En;
+    let finalPrivacyEn = policyPrivacyEn;
+    let finalPhoneEn = policyPhoneEn;
+
+    if (needsAutoTranslate) {
+      const translations = await translatePolicyFields({
+        returnsText: policyReturns,
+        shippingLine1: policyShipping1,
+        shippingLine2: policyShipping2,
+        shippingLine3: policyShipping3,
+        shippingLine4: policyShipping4,
+        privacyLine1: policyPrivacy,
+        contactPhone: policyPhone,
+      });
+
+      finalReturnsEn = policyReturnsEn || translations.returnsTextEn;
+      finalShipping1En = policyShipping1En || translations.shippingLine1En;
+      finalShipping2En = policyShipping2En || translations.shippingLine2En;
+      finalShipping3En = policyShipping3En || translations.shippingLine3En;
+      finalShipping4En = policyShipping4En || translations.shippingLine4En;
+      finalPrivacyEn = policyPrivacyEn || translations.privacyLine1En;
+      finalPhoneEn = policyPhoneEn || translations.contactPhoneEn;
+
+      setPolicyReturnsEn(finalReturnsEn);
+      setPolicyShipping1En(finalShipping1En);
+      setPolicyShipping2En(finalShipping2En);
+      setPolicyShipping3En(finalShipping3En);
+      setPolicyShipping4En(finalShipping4En);
+      setPolicyPrivacyEn(finalPrivacyEn);
+      setPolicyPhoneEn(finalPhoneEn);
+    }
+
+    await setPolicyContent({
+      returnsText: policyReturns,
+      returnsTextEn: finalReturnsEn,
+      shippingLine1: policyShipping1,
+      shippingLine1En: finalShipping1En,
+      shippingLine2: policyShipping2,
+      shippingLine2En: finalShipping2En,
+      shippingLine3: policyShipping3,
+      shippingLine3En: finalShipping3En,
+      shippingLine4: policyShipping4,
+      shippingLine4En: finalShipping4En,
+      privacyLine1: policyPrivacy,
+      privacyLine1En: finalPrivacyEn,
+      contactPhone: policyPhone,
+      contactPhoneEn: finalPhoneEn,
+    });
+
+    setSavingPolicy(false);
+    setPolicySaved(true);
+    setTimeout(() => setPolicySaved(false), 2500);
+  }
+
 
   const [days, setDays] = useState(DEFAULT_DAYS);
   const [hoursSaved, setHoursSaved] = useState(false);
@@ -56,7 +223,15 @@ export default function SettingsView({
   const [demandThreshold, setDemandThreshold] = useState(15);
   const [notifSaved, setNotifSaved] = useState(false);
 
-  const handleSaveStore = () => {
+  const handleSaveStore = async () => {
+    let finalAddressEn = addressEn;
+
+    if (!finalAddressEn) {
+      finalAddressEn = await translateStoreAddress(address);
+      setAddressEn(finalAddressEn);
+    }
+
+    await setStoreDetails({ storeName, phone, email, address, addressEn: finalAddressEn });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -116,6 +291,42 @@ export default function SettingsView({
                   className={formStyles.fi}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+
+              <div className={formStyles.fg} style={{ gridColumn: "span 2" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.3rem",
+                  }}
+                >
+                  <div className={formStyles.fl}>{t.addressEnLabel}</div>
+                  <button
+                    type="button"
+                    onClick={handleTranslateAddress}
+                    disabled={translatingAddress}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid var(--gold)",
+                      color: "var(--gold)",
+                      borderRadius: "8px",
+                      padding: "0.2rem 0.6rem",
+                      fontSize: "0.74rem",
+                      fontFamily: "Alef, sans-serif",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {translatingAddress ? t.policyTranslatingButton : t.policyTranslateButton}
+                  </button>
+                </div>
+                <input
+                  className={formStyles.fi}
+                  value={addressEn}
+                  onChange={(e) => setAddressEn(e.target.value)}
                 />
               </div>
             </div>
@@ -276,6 +487,194 @@ export default function SettingsView({
                 style={{ marginTop: "0.75rem" }}
               >
                 {t.hoursSaved}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>{t.policySectionTitle}</div>
+          </div>
+
+          <div className={uiStyles.cardBody}>
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyReturnsLabel}</div>
+              <textarea
+                className={formStyles.fi}
+                rows={3}
+                value={policyReturns}
+                onChange={(e) => setPolicyReturns(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.5rem" }}>
+              <div className={formStyles.fl}>{t.policyShippingLabel}</div>
+            </div>
+            <input
+              className={formStyles.fi}
+              value={policyShipping1}
+              onChange={(e) => setPolicyShipping1(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping2}
+              onChange={(e) => setPolicyShipping2(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping3}
+              onChange={(e) => setPolicyShipping3(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping4}
+              onChange={(e) => setPolicyShipping4(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.9rem" }}
+            />
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyPrivacyLabel}</div>
+              <textarea
+                className={formStyles.fi}
+                rows={2}
+                value={policyPrivacy}
+                onChange={(e) => setPolicyPrivacy(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyPhoneLabel}</div>
+              <input
+                className={formStyles.fi}
+                value={policyPhone}
+                onChange={(e) => setPolicyPhone(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "0.5rem",
+                marginBottom: "0.9rem",
+              }}
+            >
+              <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700 }}>
+                {t.policyEnglishTitle}
+              </div>
+              <button
+                type="button"
+                onClick={handleTranslatePolicy}
+                disabled={translatingPolicy}
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--gold)",
+                  color: "var(--gold)",
+                  borderRadius: "8px",
+                  padding: "0.3rem 0.7rem",
+                  fontSize: "0.78rem",
+                  fontFamily: "Alef, sans-serif",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {translatingPolicy ? t.policyTranslatingButton : t.policyTranslateButton}
+              </button>
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyReturnsLabel} (EN)</div>
+              <textarea
+                className={formStyles.fi}
+                rows={3}
+                value={policyReturnsEn}
+                onChange={(e) => setPolicyReturnsEn(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.5rem" }}>
+              <div className={formStyles.fl}>{t.policyShippingLabel} (EN)</div>
+            </div>
+            <input
+              className={formStyles.fi}
+              value={policyShipping1En}
+              onChange={(e) => setPolicyShipping1En(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping2En}
+              onChange={(e) => setPolicyShipping2En(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping3En}
+              onChange={(e) => setPolicyShipping3En(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.5rem" }}
+            />
+            <input
+              className={formStyles.fi}
+              value={policyShipping4En}
+              onChange={(e) => setPolicyShipping4En(e.target.value)}
+              style={{ width: "100%", marginBottom: "0.9rem" }}
+            />
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyPrivacyLabel} (EN)</div>
+              <textarea
+                className={formStyles.fi}
+                rows={2}
+                value={policyPrivacyEn}
+                onChange={(e) => setPolicyPrivacyEn(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyPhoneLabel} (EN)</div>
+              <input
+                className={formStyles.fi}
+                value={policyPhoneEn}
+                onChange={(e) => setPolicyPhoneEn(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSavePolicy}
+              disabled={savingPolicy}
+              style={{
+                background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+                color: "#080808",
+                border: "none",
+                borderRadius: "10px",
+                padding: "0.6rem 1.2rem",
+                fontFamily: "Alef, sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              {savingPolicy ? t.policySavingButton : t.policySaveButton}
+            </button>
+
+            {policySaved && (
+              <div
+                className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
+                style={{ marginTop: "0.75rem" }}
+              >
+                {t.policySaved}
               </div>
             )}
           </div>
