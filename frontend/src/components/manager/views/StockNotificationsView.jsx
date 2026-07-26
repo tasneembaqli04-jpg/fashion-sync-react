@@ -16,7 +16,7 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function StockNotificationsView({ products = [] }) {
+export default function StockNotificationsView({ products = [], initialProductCode = "" }) {
   const { confirmDialog } = useDialog();
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.stockNotifications;
@@ -44,8 +44,13 @@ export default function StockNotificationsView({ products = [] }) {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [monthFilter, setMonthFilter] = useState("all");
+  const [productCodeFilter, setProductCodeFilter] = useState(initialProductCode);
+
+  useEffect(() => {
+    if (initialProductCode) setProductCodeFilter(initialProductCode);
+  }, [initialProductCode]);
 
   useEffect(() => {
     getAllStockNotifications().then((data) => {
@@ -89,9 +94,12 @@ export default function StockNotificationsView({ products = [] }) {
       if (monthFilter !== "all" && getMonthKey(item.createdAt) !== monthFilter) {
         return false;
       }
+      if (productCodeFilter && item.productCode !== productCodeFilter) {
+        return false;
+      }
       return true;
     });
-  }, [items, statusFilter, monthFilter]);
+  }, [items, statusFilter, monthFilter, productCodeFilter]);
 
   return (
     <div className={layoutStyles.view}>
@@ -108,6 +116,40 @@ export default function StockNotificationsView({ products = [] }) {
           </p>
         </div>
       </div>
+
+      {productCodeFilter && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            background: "rgba(52,152,219,0.1)",
+            border: "1px solid var(--blue)",
+            color: "var(--blue)",
+            borderRadius: "20px",
+            padding: "0.35rem 0.9rem",
+            fontSize: "0.82rem",
+            fontWeight: 700,
+            marginBottom: "1rem",
+          }}
+        >
+          {t.filteredByProduct} {productCodeFilter}
+          <button
+            type="button"
+            onClick={() => setProductCodeFilter("")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--blue)",
+              cursor: "pointer",
+              fontWeight: 700,
+              fontSize: "0.9rem",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div
         style={{

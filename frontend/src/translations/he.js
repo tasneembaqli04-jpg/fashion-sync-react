@@ -143,6 +143,7 @@ export const he = {
       filterPending: "⏳ ממתין",
       filterNotified: "✓ טופל",
       allMonths: "📅 כל החודשים",
+      filteredByProduct: "מסונן למוצר:",
     },
     returns: {
       title: "בקשות החזרה וזיכוי",
@@ -438,6 +439,7 @@ export const he = {
       greaterThan60: "גדול מ־60",
       total: 'סה״כ:',
       requestsSuffix: "בקשות",
+      viewRequestsButton: "📋 צפה בבקשות",
       noAlertsInFilter: "✅ אין התראות בסינון הנוכחי",
       outOfStockTitle: "🚫 המוצר אזל מהמלאי",
       lowStockTitle: "⚠️ מלאי נמוך",

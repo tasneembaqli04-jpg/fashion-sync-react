@@ -18,7 +18,7 @@ function alertClass(type) {
   return `${alertStyles.alert} ${alertStyles.aSuccess}`;
 }
 
-export default function AlertsView({ alerts = [], products = [] }) {
+export default function AlertsView({ alerts = [], products = [], onViewStockRequests }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.alerts;
   const locale = lang === "en" ? "en-US" : "he-IL";
@@ -205,21 +205,43 @@ export default function AlertsView({ alerts = [], products = [] }) {
                 </div>
 
                 {alert.isDemand && (
-                  <span
-                    style={{
-                      background: "rgba(52,152,219,0.1)",
-                      color: "#7fb8e0",
-                      border: "1px solid rgba(52,152,219,0.2)",
-                      borderRadius: "20px",
-                      padding: "0.2rem 0.75rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      flexShrink: 0,
-                      alignSelf: "center",
-                    }}
-                  >
-                    {alert.demandCount} {t.requestsSuffix}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                    <span
+                      style={{
+                        background: "rgba(52,152,219,0.1)",
+                        color: "#7fb8e0",
+                        border: "1px solid rgba(52,152,219,0.2)",
+                        borderRadius: "20px",
+                        padding: "0.2rem 0.75rem",
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        alignSelf: "center",
+                      }}
+                    >
+                      {alert.demandCount} {t.requestsSuffix}
+                    </span>
+
+                    {onViewStockRequests && (
+                      <button
+                        type="button"
+                        onClick={() => onViewStockRequests(alert.code)}
+                        style={{
+                          background: "transparent",
+                          border: "1px solid var(--blue)",
+                          color: "var(--blue)",
+                          borderRadius: "8px",
+                          padding: "0.25rem 0.6rem",
+                          fontSize: "0.72rem",
+                          fontFamily: "Alef, sans-serif",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {t.viewRequestsButton}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             );
