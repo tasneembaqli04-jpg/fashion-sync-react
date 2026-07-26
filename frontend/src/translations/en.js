@@ -143,6 +143,7 @@ export const en = {
       filterPending: "⏳ Pending",
       filterNotified: "✓ Handled",
       allMonths: "📅 All months",
+      filteredByProduct: "Filtered by product:",
     },
     returns: {
       title: "Return & Refund Requests",
@@ -431,6 +432,7 @@ export const en = {
       greaterThan60: "Greater than 60",
       total: "Total:",
       requestsSuffix: "requests",
+      viewRequestsButton: "📋 View Requests",
       noAlertsInFilter: "✅ No alerts in the current filter",
       outOfStockTitle: "🚫 Product is out of stock",
       lowStockTitle: "⚠️ Low stock",

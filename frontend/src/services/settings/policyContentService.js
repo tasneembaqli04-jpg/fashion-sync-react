@@ -1,6 +1,7 @@
 import { db } from "../../firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { translateText } from "../translation/translationService";
+import { omitEmpty } from "../translation/omitEmpty";
 
 const POLICY_DOC = doc(db, "settings", "policyContent");
 
@@ -27,7 +28,7 @@ export async function setPolicyContent(values) {
     payload[`${field}En`] = values[`${field}En`] || "";
   });
 
-  await setDoc(POLICY_DOC, payload);
+  await setDoc(POLICY_DOC, omitEmpty(payload));
 
   return payload;
 }

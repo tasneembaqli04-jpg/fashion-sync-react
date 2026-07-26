@@ -70,6 +70,7 @@ export default function Manager({ onPromote }) {
   const [theme, setTheme] = useState(loadTheme);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [stockRequestsProductFilter, setStockRequestsProductFilter] = useState("");
 
   const [orders, setOrders] = useState([]);
 
@@ -617,7 +618,14 @@ export default function Manager({ onPromote }) {
           )}
 
           {activeView === "alerts" && (
-            <AlertsView alerts={alerts} products={products} />
+            <AlertsView
+              alerts={alerts}
+              products={products}
+              onViewStockRequests={(code) => {
+                setStockRequestsProductFilter(code);
+                setActiveView("stockNotifications");
+              }}
+            />
           )}
 
 
@@ -641,7 +649,12 @@ export default function Manager({ onPromote }) {
             <AnalyticsView orders={orders} products={products} returnRequests={returnRequests} />
           )}
           {activeView === "feedback" && <FeedbackView />}
-          {activeView === "stockNotifications" && <StockNotificationsView products={products} />}
+          {activeView === "stockNotifications" && (
+            <StockNotificationsView
+              products={products}
+              initialProductCode={stockRequestsProductFilter}
+            />
+          )}
           {activeView === "returns" && <ManagerReturns products={products} />}
           {activeView === "contactMessages" && <ManagerContactMessages />}
           {activeView === "coupons" && <CouponsView />}
