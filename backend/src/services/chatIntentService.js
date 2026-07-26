@@ -14,6 +14,7 @@ const INTENTS = Object.freeze({
   OUTFIT_RECOMMENDATION: "OUTFIT_RECOMMENDATION",
   OUTFIT_MODIFICATION: "OUTFIT_MODIFICATION",
   STORE_INFO: "STORE_INFO",
+  BUSINESS_HOURS: "BUSINESS_HOURS",
   ORDER_STATUS: "ORDER_STATUS",
   LOYALTY_POINTS: "LOYALTY_POINTS",
   COUPONS: "COUPONS",
@@ -480,6 +481,39 @@ category="שמלות"
 
 - אם הלקוח מבקש המלצה לפי אירוע, סגנון או לוק:
   intent יהיה OUTFIT_RECOMMENDATION.
+
+- אם הלקוח שואל על שעות פתיחה, שעות סגירה,
+  באילו ימים החנות פתוחה, באילו ימים היא סגורה,
+  האם החנות פתוחה היום, מתי אתם נפתחים,
+  מתי אתם סוגרים או כל שאלה דומה על שעות פעילות:
+
+  intent יהיה BUSINESS_HOURS.
+
+- שאלות על שעות פעילות חייבות להיות BUSINESS_HOURS
+  ולא STORE_INFO.
+
+- גם כאשר הלקוחה שואלת "עד איזה שעה פתוחים היום?",
+  "פתוחים היום?", "מתי סוגרים?", "מה שעות הפתיחה?"
+  או שאלה דומה:
+  intent יהיה BUSINESS_HOURS.
+
+- STORE_INFO מיועד לשאלות כלליות על החנות,
+  כגון כתובת, טלפון, משלוחים, החזרות או מידע כללי,
+  אך לא לשעות פתיחה וסגירה.
+
+דוגמאות:
+
+"מה שעות הפתיחה?"
+intent: BUSINESS_HOURS
+
+"אתם פתוחים ביום ראשון?"
+intent: BUSINESS_HOURS
+
+"מתי אתם סוגרים היום?"
+intent: BUSINESS_HOURS
+
+"באילו ימים החנות פתוחה?"
+intent: BUSINESS_HOURS
 
 - שאלות על חתונה, מסיבה, עבודה, ראיון, דייט,
   חופשה, לימודים או אירוע אחר חייבות לכלול occasion.

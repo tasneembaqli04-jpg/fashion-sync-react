@@ -1,24 +1,14 @@
-const {
-  INTENTS,
-  detectChatIntent,
-} = require("./chatIntentService");
+const { INTENTS, detectChatIntent } = require("./chatIntentService");
 
-const {
-  getProductByCode,
-  searchProducts,
-} = require("./chatProductService");
+const { getBusinessHours } = require("./chatBusinessHoursService");
 
-const {
-  streamChatReply,
-} = require("./chatService");
+const { getProductByCode, searchProducts } = require("./chatProductService");
 
-const {
-  generateOutfitVisualization,
-} = require("./outfitVisualizationService");
+const { streamChatReply } = require("./chatService");
 
-const {
-  planOutfit,
-} = require("./outfitPlannerService");
+const { generateOutfitVisualization } = require("./outfitVisualizationService");
+
+const { planOutfit } = require("./outfitPlannerService");
 
 const PRODUCT_INTENTS = new Set([
   INTENTS.PRODUCT_SEARCH,
@@ -40,9 +30,7 @@ function buildProductSearchOptions(intent) {
     minPrice: intent.minPrice,
     maxPrice: intent.maxPrice,
     inStockOnly: intent.inStockOnly,
-    saleOnly:
-      intent.saleOnly ||
-      intent.intent === INTENTS.SALE_SEARCH,
+    saleOnly: intent.saleOnly || intent.intent === INTENTS.SALE_SEARCH,
     limit:
       intent.intent === INTENTS.OUTFIT_RECOMMENDATION ||
       intent.intent === INTENTS.OUTFIT_MODIFICATION
@@ -51,87 +39,98 @@ function buildProductSearchOptions(intent) {
   };
 }
 
+function buildBusinessHoursContext(businessHours) {
+  if (!businessHours) {
+    return `
+לא נמצא מסמך שעות פעילות ב-Firestore.
+אל תמציא שעות פעילות.
+אמור ללקוחה שמידע שעות הפעילות אינו זמין כרגע.
+`.trim();
+  }
+
+  const currentDayKey = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      timeZone: "Asia/Jerusalem",
+      weekday: "short",
+    }
+  )
+    .format(new Date())
+    .toLowerCase();
+
+  const todayData = Array.isArray(
+    businessHours.days
+  )
+    ? businessHours.days.find(
+        (day) => day?.key === currentDayKey
+      )
+    : null;
+
+  return `
+נתוני שעות הפעילות הבאים הגיעו ישירות
+מהמסמך settings/businessHours ב-Firestore:
+
+${JSON.stringify(businessHours, null, 2)}
+
+היום הנוכחי בישראל:
+${currentDayKey}
+
+נתוני היום הנוכחי:
+${JSON.stringify(todayData, null, 2)}
+
+כללים:
+- בכל אובייקט יום:
+  - key הוא מפתח היום.
+  - open מציין אם החנות פתוחה.
+  - openTime היא שעת הפתיחה של אותו יום.
+  - closeTime היא שעת הסגירה של אותו יום.
+- אין להשתמש בשעה של יום אחר.
+- כאשר open=false, אמור שהחנות סגורה באותו יום.
+- כאשר הלקוחה שואלת על היום, ענה לפי todayData בלבד.
+- כאשר הלקוחה שואלת על יום מסוים, מצא את האובייקט של אותו יום.
+- כאשר הלקוחה שואלת על כל השבוע, סכם את כל הימים.
+- אל תמציא כתובת, איסוף עצמי, משלוחים או שעות חסרות.
+- הצג את שמות הימים בשפה שבה הלקוחה כתבה.
+`.trim();
+}
+
 function buildProductForAi(product, options = {}) {
-  const variants = Array.isArray(product?.variants)
-    ? product.variants
-    : [];
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
 
   const variantColors = variants
-    .map(
-      (variant) =>
-        variant?.colorName ||
-        variant?.color ||
-        variant?.name
-    )
+    .map((variant) => variant?.colorName || variant?.color || variant?.name)
     .filter(Boolean);
 
-  const existingColors = Array.isArray(product?.colors)
-    ? product.colors
-    : [];
+  const existingColors = Array.isArray(product?.colors) ? product.colors : [];
 
   return {
-    code:
-      product?.code ||
-      product?.id ||
-      "",
+    code: product?.code || product?.id || "",
 
-    name:
-      product?.name ||
-      "",
+    name: product?.name || "",
 
-    category:
-      product?.category ||
-      product?.cat ||
-      "",
+    category: product?.category || product?.cat || "",
 
-    imageUrl:
-      product?.imageUrl ||
-      product?.img ||
-      "",
+    imageUrl: product?.imageUrl || product?.img || "",
 
-    gender:
-      product?.gender ||
-      "",
+    gender: product?.gender || "",
 
-    price:
-      product?.price ?? null,
+    price: product?.price ?? null,
 
-    description:
-      product?.description ||
-      product?.desc ||
-      "",
+    description: product?.description || product?.desc || "",
 
-    colors: [
-      ...new Set([
-        ...existingColors,
-        ...variantColors,
-      ]),
-    ],
+    colors: [...new Set([...existingColors, ...variantColors])],
 
     sizes: variants.map((variant) => ({
-      color:
-        variant?.colorName ||
-        variant?.color ||
-        variant?.name ||
-        "",
+      color: variant?.colorName || variant?.color || variant?.name || "",
 
-      sizes:
-        variant?.sizes ||
-        {},
+      sizes: variant?.sizes || {},
     })),
 
-    sale:
-      product?.sale ?? false,
+    sale: product?.sale ?? false,
 
-    selectedColor:
-      options.selectedColor ||
-      product?.selectedColor ||
-      null,
+    selectedColor: options.selectedColor || product?.selectedColor || null,
 
-    action:
-      options.action ||
-      product?.action ||
-      null,
+    action: options.action || product?.action || null,
   };
 }
 
@@ -186,9 +185,7 @@ ${JSON.stringify(productsForAi, null, 2)}
 }
 
 function buildConversationInstruction(intent) {
-  if (
-    intent.conversationAction === "RELATED_SEARCH"
-  ) {
+  if (intent.conversationAction === "RELATED_SEARCH") {
     return `
 הנחיית הקשר שיחה:
 ההודעה הנוכחית עשויה להיות תשובה לשאלת הבהרה קודמת.
@@ -212,13 +209,10 @@ function buildConversationInstruction(intent) {
 function isImageResponseRequested(intent) {
   return (
     intent?.responseMode === "IMAGE" &&
-    (
-      intent?.intent === INTENTS.OUTFIT_RECOMMENDATION ||
-      intent?.intent === INTENTS.OUTFIT_MODIFICATION
-    )
+    (intent?.intent === INTENTS.OUTFIT_RECOMMENDATION ||
+      intent?.intent === INTENTS.OUTFIT_MODIFICATION)
   );
 }
-
 
 async function handleChatMessage({
   message,
@@ -236,15 +230,11 @@ async function handleChatMessage({
     "CURRENT OUTFIT:",
     Array.isArray(currentOutfit)
       ? currentOutfit.map((product) => product?.code)
-      : []
+      : [],
   );
 
-  if (
-    intent.needsClarification &&
-    intent.clarificationQuestion
-  ) {
-    const clarificationText =
-      intent.clarificationQuestion;
+  if (intent.needsClarification && intent.clarificationQuestion) {
+    const clarificationText = intent.clarificationQuestion;
 
     if (typeof onChunk === "function") {
       onChunk(clarificationText);
@@ -267,6 +257,30 @@ async function handleChatMessage({
       onChunk,
     });
   }
+  if (intent.intent === INTENTS.BUSINESS_HOURS) {
+    let businessHours = null;
+
+    try {
+      businessHours = await getBusinessHours();
+
+      console.log("BUSINESS HOURS FROM FIRESTORE:", businessHours);
+    } catch (error) {
+      console.error("BUSINESS HOURS ERROR:", error?.message || error);
+    }
+
+    const businessHoursContext = buildBusinessHoursContext(businessHours);
+
+    return streamChatReply({
+      message: `
+הודעת הלקוחה הנוכחית:
+${message}
+
+${businessHoursContext}
+`.trim(),
+      history,
+      onChunk,
+    });
+  }
 
   if (!PRODUCT_INTENTS.has(intent.intent)) {
     return streamChatReply({
@@ -279,19 +293,15 @@ async function handleChatMessage({
   let products = [];
 
   if (intent.productCode) {
-    const product = await getProductByCode(
-      intent.productCode
-    );
+    const product = await getProductByCode(intent.productCode);
 
     if (product) {
       products = [product];
     }
   } else {
-    products = await searchProducts(
-      buildProductSearchOptions(intent)
-    );
+    products = await searchProducts(buildProductSearchOptions(intent));
   }
-  
+
   if (isImageResponseRequested(intent)) {
     if (!products.length) {
       const messageText =
@@ -318,10 +328,7 @@ async function handleChatMessage({
         history,
       });
     } catch (error) {
-      console.error(
-        "OUTFIT PLANNER ERROR:",
-        error?.message || error
-      );
+      console.error("OUTFIT PLANNER ERROR:", error?.message || error);
 
       const messageText =
         "לא הצלחתי לבחור כרגע לוק מתאים מתוך הקטלוג. אפשר לנסות שוב בעוד רגע.";
@@ -337,10 +344,7 @@ async function handleChatMessage({
       };
     }
 
-    if (
-      !outfitPlan?.success ||
-      !outfitPlan.selectedProducts?.length
-    ) {
+    if (!outfitPlan?.success || !outfitPlan.selectedProducts?.length) {
       const messageText =
         outfitPlan?.explanation ||
         "לא נמצאו כרגע מספיק מוצרים מתאימים לבניית הלוק.";
@@ -356,42 +360,27 @@ async function handleChatMessage({
       };
     }
 
-    const normalizedCurrentOutfit =
-      Array.isArray(currentOutfit)
-        ? currentOutfit
-        : [];
+    const normalizedCurrentOutfit = Array.isArray(currentOutfit)
+      ? currentOutfit
+      : [];
 
-    const requestedCategory =
-      intent?.category || "";
+    const requestedCategory = intent?.category || "";
 
-    const productsForVisualization =
-      outfitPlan.selectedProducts.map((product) => {
-        const productCode =
-          product?.code ||
-          product?.id ||
-          "";
+    const productsForVisualization = outfitPlan.selectedProducts.map(
+      (product) => {
+        const productCode = product?.code || product?.id || "";
 
-        const previousProduct =
-          normalizedCurrentOutfit.find(
-            (currentProduct) =>
-              (
-                currentProduct?.code ||
-                currentProduct?.id ||
-                ""
-              ) === productCode
-          );
+        const previousProduct = normalizedCurrentOutfit.find(
+          (currentProduct) =>
+            (currentProduct?.code || currentProduct?.id || "") === productCode,
+        );
 
-        const productCategory =
-          product?.category ||
-          product?.cat ||
-          "";
+        const productCategory = product?.category || product?.cat || "";
 
-        const isExistingProduct =
-          Boolean(previousProduct);
+        const isExistingProduct = Boolean(previousProduct);
 
         const isRequestedCategory =
-          requestedCategory &&
-          productCategory === requestedCategory;
+          requestedCategory && productCategory === requestedCategory;
 
         const shouldKeep =
           intent?.intent === "OUTFIT_MODIFICATION" &&
@@ -404,14 +393,12 @@ async function handleChatMessage({
             ...product,
 
             colors:
-              Array.isArray(product?.colors) &&
-              product.colors.length
+              Array.isArray(product?.colors) && product.colors.length
                 ? product.colors
                 : previousProduct?.colors || [],
 
             variants:
-              Array.isArray(product?.variants) &&
-              product.variants.length
+              Array.isArray(product?.variants) && product.variants.length
                 ? product.variants
                 : previousProduct?.variants || [],
 
@@ -423,50 +410,44 @@ async function handleChatMessage({
               "",
           },
           {
-            selectedColor:
-              shouldKeep
-                ? previousProduct?.selectedColor || null
-                : intent?.color ||
-                  product?.selectedColor ||
-                  previousProduct?.selectedColor ||
-                  null,
+            selectedColor: shouldKeep
+              ? previousProduct?.selectedColor || null
+              : intent?.color ||
+                product?.selectedColor ||
+                previousProduct?.selectedColor ||
+                null,
 
-              action:
-                shouldKeep
-                  ? "KEEP"
-                  : isExistingProduct
-                    ? "KEEP"
-                    : "REPLACE",
-          }
+            action: shouldKeep
+              ? "KEEP"
+              : isExistingProduct
+                ? "KEEP"
+                : "REPLACE",
+          },
         );
-      });
-      console.log("OUTFIT VISUALIZATION INPUT:", {
-        originalMessage: message,
-        intent: {
-          intent: intent.intent,
-          category: intent.category,
-          color: intent.color,
-          style: intent.style,
-          occasion: intent.occasion,
-        },
-        plannerExplanation:
-          outfitPlan.explanation || "",
-        currentOutfit:
-          Array.isArray(currentOutfit)
-            ? currentOutfit.map(
-                (product) => product?.code
-              )
-            : [],
-        selectedProducts:
-          productsForVisualization.map((product) => ({
-            code: product.code,
-            name: product.name,
-            category: product.category,
-            colors: product.colors,
-            selectedColor: product.selectedColor,
-            action: product.action,
-          })),
-      });
+      },
+    );
+    console.log("OUTFIT VISUALIZATION INPUT:", {
+      originalMessage: message,
+      intent: {
+        intent: intent.intent,
+        category: intent.category,
+        color: intent.color,
+        style: intent.style,
+        occasion: intent.occasion,
+      },
+      plannerExplanation: outfitPlan.explanation || "",
+      currentOutfit: Array.isArray(currentOutfit)
+        ? currentOutfit.map((product) => product?.code)
+        : [],
+      selectedProducts: productsForVisualization.map((product) => ({
+        code: product.code,
+        name: product.name,
+        category: product.category,
+        colors: product.colors,
+        selectedColor: product.selectedColor,
+        action: product.action,
+      })),
+    });
 
     try {
       console.log("CURRENT OUTFIT IMAGE RECEIVED:", {
@@ -480,16 +461,15 @@ async function handleChatMessage({
             : 0,
       });
 
-      const visualization =
-        await generateOutfitVisualization({
-          originalMessage: message,
-          history,
-          intent,
-          outfitPlan,
-          currentOutfit,
-          currentOutfitImage,
-          products: productsForVisualization,
-        });
+      const visualization = await generateOutfitVisualization({
+        originalMessage: message,
+        history,
+        intent,
+        outfitPlan,
+        currentOutfit,
+        currentOutfitImage,
+        products: productsForVisualization,
+      });
 
       return {
         intent,
@@ -497,14 +477,10 @@ async function handleChatMessage({
         responseMode: "IMAGE",
         imageGenerated: true,
         image: visualization,
-        outfitExplanation:
-          outfitPlan.explanation || "",
+        outfitExplanation: outfitPlan.explanation || "",
       };
     } catch (error) {
-      console.error(
-        "OUTFIT VISUALIZATION ERROR:",
-        error?.message || error
-      );
+      console.error("OUTFIT VISUALIZATION ERROR:", error?.message || error);
 
       const messageText =
         "בחרתי לוק מתוך הקטלוג, אבל לא הצלחתי ליצור כרגע את התמונה. אפשר לנסות שוב בעוד רגע.";
@@ -521,12 +497,8 @@ async function handleChatMessage({
     }
   }
 
-  const productContext = buildProductContext(
-    intent,
-    products
-  );
-  const conversationInstruction =
-    buildConversationInstruction(intent);
+  const productContext = buildProductContext(intent, products);
+  const conversationInstruction = buildConversationInstruction(intent);
 
   return streamChatReply({
     message: `
