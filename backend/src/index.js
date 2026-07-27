@@ -22,6 +22,9 @@ const {
   orderCancellationEmailController,
 } = require("./controllers/orderCancellationEmailController");
 const {
+  pickupScheduledEmailController,
+} = require("./controllers/pickupScheduledEmailController");
+const {
   verificationEmailController,
 } = require("./controllers/verificationEmailController");
 const {
@@ -95,12 +98,20 @@ const sendReturnStatusEmail = onRequest(
   },
   returnStatusEmailController,
 );
+
 const sendOrderCancellationEmail = onRequest(
   {
     cors: true,
     secrets: [gmailUser, gmailAppPassword],
   },
   orderCancellationEmailController,
+);
+const sendPickupScheduledEmail = onRequest(
+  {
+    cors: true,
+    secrets: [gmailUser, gmailAppPassword],
+  },
+  pickupScheduledEmailController,
 );
 
 const sendVerificationEmail = onRequest(
@@ -145,6 +156,7 @@ module.exports = {
   sendShippingUpdateEmail,
   sendReturnStatusEmail,
   sendOrderCancellationEmail,
+  sendPickupScheduledEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,

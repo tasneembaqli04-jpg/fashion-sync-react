@@ -15,6 +15,13 @@ import {
 const ordersCollection = collection(db, "orders");
 
 const STEPS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
+const PICKUP_STEPS = ["אושרה", "בהכנה", "מוכן לאיסוף", "נאסף"];
+
+function getStepLabels(isPickup) {
+  return isPickup ? PICKUP_STEPS : STEPS;
+}
+
+export { getStepLabels };
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -42,9 +49,11 @@ export async function addOrder(receipt) {
     statusLabel: STEPS[0],
     confirmed: false,
     ready: false,
-    steps: STEPS,
+    steps: getStepLabels(receipt.shipping?.id === "pickup"),
     payMethod: receipt.payMethod || "",
     shipping: receipt.shipping || null,
+    pickupDate: receipt.pickupDate || "",
+    pickupTime: receipt.pickupTime || "",
     createdAt: new Date().toISOString(),
   };
 
@@ -119,6 +128,13 @@ export async function updateOrderItems(docId, items) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, { items });
 }
+export async function setPickupSchedule(docId, pickupDate, pickupTime) {
+  if (!pickupDate || !pickupTime) {
+    throw new Error("pickupDate and pickupTime are required");
+  }
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, { pickupDate, pickupTime });
+}
 export async function cancelOrder(docId) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, {
@@ -127,11 +143,11 @@ export async function cancelOrder(docId) {
   });
 }
 
-export async function advanceOrderStatus(docId, statusIndex) {
+export async function advanceOrderStatus(docId, statusIndex, isPickup = false) {
   const orderRef = doc(db, "orders", docId);
   const payload = {
     status: statusIndex,
-    statusLabel: STEPS[statusIndex] || "",
+    statusLabel: getStepLabels(isPickup)[statusIndex] || "",
   };
 
   if (statusIndex === 3) {

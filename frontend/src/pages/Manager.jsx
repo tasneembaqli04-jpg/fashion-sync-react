@@ -109,9 +109,10 @@ export default function Manager({ onPromote }) {
             createdAt: order.date || order.createdAt || null,
             payMethod: order.payMethod || "",
             shipping: order.shipping || null,
-            customer: order.customer || null,
             cancelled: Boolean(order.cancelled),
             deliveredAt: order.deliveredAt || null,
+            pickupDate: order.pickupDate || "",
+            pickupTime: order.pickupTime || "",
           };
         });
 
@@ -510,8 +511,8 @@ export default function Manager({ onPromote }) {
     }
   }
 
-  function handleAdvanceOrderStage(orderDocId, nextIndex) {
-    advanceOrderStatus(orderDocId, nextIndex);
+  function handleAdvanceOrderStage(orderDocId, nextIndex, isPickup = false) {
+    advanceOrderStatus(orderDocId, nextIndex, isPickup);
 
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
@@ -525,6 +526,7 @@ export default function Manager({ onPromote }) {
         toEmail: order.customerEmail,
         orderId: order.id,
         stageIndex: nextIndex,
+        isPickup,
       });
     }
   }

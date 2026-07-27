@@ -104,6 +104,7 @@ export const he = {
       sizeLabel: "מידה:",
       qtyLabel: "כמות:",
       updateToPrefix: "✓ עדכן ל:",
+      selfPickupBadge: "איסוף עצמי",
       itemsCountSuffix: "פריטים בהזמנה",
       orderDetailsButton: "📋 פרטי הזמנה",
     },
@@ -571,6 +572,7 @@ export const he = {
   },
 
   orderStatusLabels: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
+  pickupStatusLabels: ["אושרה", "בהכנה", "מוכן לאיסוף", "נאסף"],
 
   monthNames: [
     "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
@@ -671,7 +673,7 @@ export const he = {
     checkout: {
       secureBadge: "🔒 תשלום מאובטח",
       sameDayDelivery: "⚡ אספקה עד הערב!",
-      pickupDelivery: "ניתן לאסוף מחר בין 10:00–20:00, הרצל 42, תל אביב",
+      pickupDelivery: "המועד לאיסוף ייקבע בהמשך — לאחר שההזמנה תהיה מוכנה, נשלח אליך מייל לבחירת יום ושעה נוחים.",
       estimatedDeliveryPrefix: "זמן אספקה משוער:",
       stepDetails: "פרטים",
       stepShipping: "משלוח",
@@ -717,7 +719,8 @@ export const he = {
       step3: {
         paymentMethodTitle: "💳 שיטת תשלום",
         creditCard: "כרטיס אשראי",
-        cashOnPickup: "מזומן באיסוף",
+        cashOnPickup: "מזומן באיסוף עצמי",
+        cashToCourier: "מזומן לשליח",
         giftCard: "כרטיס מתנה",
         cardNumber: "מספר כרטיס",
         invalidCardNumber: "מספר כרטיס לא תקין",
@@ -736,9 +739,10 @@ export const he = {
         paypalInfo: '🅿️ לאחר לחיצה על "שלם" תועבר ל-PayPal לביצוע התשלום.',
         paypalEmailRequired: "כדי להמשיך עם PayPal צריך אימייל תקין בשלב הפרטים",
         cashInfoLine1: "💵 תשלום במזומן יבוצע בעת איסוף הסחורה מהחנות.",
-        cashInfoLine2Bold: "48 שעות",
-        cashInfoLine2Rest: "בלבד.",
-        cashInfoLine2Prefix: "ההזמנה תישמר",
+        cashInfoLine1Courier: "💵 תשלום במזומן יבוצע לשליח בעת מסירת ההזמנה.",
+        cashInfoLine2Bold: "",
+        cashInfoLine2Rest: "",
+        cashInfoLine2Prefix: "ההזמנה תישמר עבורך עד למועד האיסוף שייקבע.",
         giftCardCode: "קוד כרטיס מתנה",
         invalidGiftCard: "קוד לא תקין, כרטיס מנוצל, או שהיתרה נמוכה מסכום ההזמנה",
         termsAgreement: "קראתי ואני מסכים/ה לתנאי השימוש ולמדיניות הפרטיות.",
@@ -788,10 +792,19 @@ export const he = {
       noOrdersInStatus: "אין הזמנות במצב הזה",
       withReturnsFilter: "עם בקשת החזרה",
       cancelledFilter: "בוטלו",
+      pickupFilter: "איסוף עצמי",
       cancelledLabel: "ההזמנה בוטלה",
       cancelOrderButton: "ביטול הזמנה",
       confirmCancelOrder: "לבטל את ההזמנה?",
       cancelSuccess: "✅ ההזמנה בוטלה בהצלחה.",
+      pickupReadyTitle: "ההזמנה מוכנה לאיסוף — בחרי מועד",
+      pickupConfirmButton: "אישור מועד",
+      pickupSavingButton: "⏳ שומר...",
+      pickupScheduledLabel: "מועד איסוף שנקבע:",
+      pickupErrorRequired: "נא לבחור תאריך ושעה",
+      pickupErrorFormat: "פורמט שעה לא תקין (לדוגמה 14:00)",
+      pickupErrorClosed: "החנות סגורה בתאריך שנבחר",
+      pickupErrorOutsideHours: "השעה חייבת להיות בין {open} ל-{close}",
     },
 
     wishlist: {
@@ -1067,7 +1080,7 @@ export const he = {
     },
     pickup: {
       label: "איסוף עצמי",
-      days: "מחר 10:00–20:00",
+      days: "מועד ייקבע לאחר אישור ההזמנה",
       note: "הרצל 42, ת״א",
     },
   },

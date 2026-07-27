@@ -5,6 +5,7 @@ import { useLanguage } from "../../translations/LanguageProvider";
 export default function CheckoutStep3Payment({
   payMethod = "card",
   setPayMethod,
+  selectedShipping,
   giftCardCode = "",
   setGiftCardCode,
   giftCardApplyError = "",
@@ -84,7 +85,7 @@ export default function CheckoutStep3Payment({
                   tabIndex={0}
                 >
                   <span className={styles.payIcon}>💵</span>
-                  {t.cashOnPickup}
+                  {selectedShipping?.id === "pickup" ? t.cashOnPickup : t.cashToCourier}
                 </div>
               )}
 
@@ -267,9 +268,13 @@ export default function CheckoutStep3Payment({
 
             {payMethod === "cash" && (
               <div className={`${styles.alert} ${styles.alertWarn}`}>
-                {t.cashInfoLine1}
-                <br />
-                {t.cashInfoLine2Prefix} <strong>{t.cashInfoLine2Bold}</strong> {t.cashInfoLine2Rest}
+                {selectedShipping?.id === "pickup" ? t.cashInfoLine1 : t.cashInfoLine1Courier}
+                {selectedShipping?.id === "pickup" && (
+                  <>
+                    <br />
+                    {t.cashInfoLine2Prefix}
+                  </>
+                )}
               </div>
             )}
 

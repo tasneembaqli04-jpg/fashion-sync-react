@@ -48,6 +48,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
   const [stageFilter, setStageFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [pickupOnly, setPickupOnly] = useState(false);
 
   const availableMonths = useMemo(() => {
     const keys = new Set(orders.map((o) => getMonthKey(o.createdAt)));
@@ -71,9 +72,20 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
   }, [monthFilteredOrders]);
 
   const visibleOrders = useMemo(() => {
-    if (stageFilter === "all") return sortedOrders;
-    return sortedOrders.filter((order) => (order.stageIndex ?? 0) === stageFilter);
-  }, [sortedOrders, stageFilter]);
+    let list = sortedOrders;
+    if (stageFilter !== "all") {
+      list = list.filter((order) => (order.stageIndex ?? 0) === stageFilter);
+    }
+    if (pickupOnly) {
+      list = list.filter((order) => order.shipping?.id === "pickup");
+    }
+    return list;
+  }, [sortedOrders, stageFilter, pickupOnly]);
+
+  const pickupOrdersCount = useMemo(
+    () => sortedOrders.filter((order) => order.shipping?.id === "pickup").length,
+    [sortedOrders]
+  );
 
   function countFor(stageValue) {
     if (stageValue === "all") return monthFilteredOrders.length;
@@ -138,6 +150,29 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
             {tab.label} ({countFor(tab.value)})
           </button>
         ))}
+
+        {pickupOrdersCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setPickupOnly((prev) => !prev)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.5rem 1rem",
+              borderRadius: "10px",
+              border: pickupOnly ? "1.5px solid var(--blue)" : "1px solid var(--border)",
+              background: pickupOnly ? "rgba(52,152,219,0.12)" : "transparent",
+              color: pickupOnly ? "var(--blue)" : "var(--muted)",
+              fontFamily: "Alef, sans-serif",
+              fontSize: "0.85rem",
+              fontWeight: pickupOnly ? 700 : 400,
+              cursor: "pointer",
+            }}
+          >
+            🏪 {t.selfPickupBadge} ({pickupOrdersCount})
+          </button>
+        )}
       </div>
 
       {!visibleOrders.length ? (
@@ -151,6 +186,8 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
             const currentIndex = order.stageIndex ?? 0;
             const nextIndex = currentIndex < 3 ? currentIndex + 1 : null;
             const createdAtText = fmtDate(order.createdAt);
+            const isPickup = order.shipping?.id === "pickup";
+            const orderStepLabels = isPickup ? dict.pickupStatusLabels : STEP_LABELS;
 
             return (
               <div className={deliveriesStyles.deliveryCard} key={order.docId}>
@@ -164,6 +201,22 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                           t.defaultCustomer}
                       </span>
                       <span className={deliveriesStyles.deliveryUserIcon}>👤</span>
+                      {isPickup && (
+                        <span
+                          style={{
+                            marginInlineStart: "0.5rem",
+                            background: "rgba(52,152,219,0.1)",
+                            color: "var(--blue)",
+                            border: "1px solid rgba(52,152,219,0.25)",
+                            borderRadius: "20px",
+                            padding: "0.15rem 0.6rem",
+                            fontSize: "0.72rem",
+                            fontWeight: 700,
+                          }}
+                        >
+                          🏪 {t.selfPickupBadge}
+                        </span>
+                      )}
                     </div>
 
                     <div className={deliveriesStyles.deliveryMetaLine}>
@@ -171,6 +224,12 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                         {order.id}
                       </span>
                     </div>
+
+                    {isPickup && (order.pickupDate || order.pickupTime) && (
+                      <div style={{ fontSize: "0.8rem", color: "var(--blue)" }}>
+                        🗓️ {order.pickupDate} {order.pickupTime}
+                      </div>
+                    )}
 
                     {!!createdAtText && (
                       <div className={deliveriesStyles.deliveryDate}>
@@ -184,7 +243,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                 <div className={deliveriesStyles.deliveryTimeline}>
                   <div className={deliveriesStyles.deliveryTimelineLine} />
 
-                  {STEP_LABELS.map((label, i) => {
+                  {orderStepLabels.map((label, i) => {
                     const isDone = i <= currentIndex;
                     const isActive = i === currentIndex;
 
@@ -235,9 +294,9 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                     <button
                       type="button"
                       className={deliveriesStyles.deliveryActionBtn}
-                      onClick={() => onAdvanceStatus?.(order.docId, nextIndex)}
+                      onClick={() => onAdvanceStatus?.(order.docId, nextIndex, isPickup)}
                     >
-                      {t.updateToPrefix} {STEP_LABELS[nextIndex]}
+                      {t.updateToPrefix} {orderStepLabels[nextIndex]}
                     </button>
                   )}
                 </div>
