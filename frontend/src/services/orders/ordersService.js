@@ -129,10 +129,16 @@ export async function cancelOrder(docId) {
 
 export async function advanceOrderStatus(docId, statusIndex) {
   const orderRef = doc(db, "orders", docId);
-  await updateDoc(orderRef, {
+  const payload = {
     status: statusIndex,
     statusLabel: STEPS[statusIndex] || "",
-  });
+  };
+
+  if (statusIndex === 3) {
+    payload.deliveredAt = new Date().toISOString();
+  }
+
+  await updateDoc(orderRef, payload);
 }
 export async function confirmOrder(docId) {
   const orderRef = doc(db, "orders", docId);

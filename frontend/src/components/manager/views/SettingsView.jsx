@@ -56,6 +56,7 @@ export default function SettingsView({
 
   const [policyReturns, setPolicyReturns] = useState(policyDefaults.returnsText);
   const [policyCancellation, setPolicyCancellation] = useState(policyDefaults.cancellationText);
+  const [policyAboutStore, setPolicyAboutStore] = useState(policyDefaults.aboutStoreText);
   const [policyShipping1, setPolicyShipping1] = useState(policyDefaults.shippingLine1);
   const [policyShipping2, setPolicyShipping2] = useState(policyDefaults.shippingLine2);
   const [policyShipping3, setPolicyShipping3] = useState(policyDefaults.shippingLine3);
@@ -68,6 +69,7 @@ export default function SettingsView({
 
   const [policyReturnsEn, setPolicyReturnsEn] = useState("");
   const [policyCancellationEn, setPolicyCancellationEn] = useState("");
+  const [policyAboutStoreEn, setPolicyAboutStoreEn] = useState("");
   const [policyShipping1En, setPolicyShipping1En] = useState("");
   const [policyShipping2En, setPolicyShipping2En] = useState("");
   const [policyShipping3En, setPolicyShipping3En] = useState("");
@@ -80,6 +82,7 @@ export default function SettingsView({
       if (!content) return;
       setPolicyReturns(content.returnsText || policyDefaults.returnsText);
       setPolicyCancellation(content.cancellationText || policyDefaults.cancellationText);
+      setPolicyAboutStore(content.aboutStoreText || policyDefaults.aboutStoreText);
       setPolicyShipping1(content.shippingLine1 || policyDefaults.shippingLine1);
       setPolicyShipping2(content.shippingLine2 || policyDefaults.shippingLine2);
       setPolicyShipping3(content.shippingLine3 || policyDefaults.shippingLine3);
@@ -89,6 +92,7 @@ export default function SettingsView({
 
       setPolicyReturnsEn(content.returnsTextEn || "");
       setPolicyCancellationEn(content.cancellationTextEn || "");
+      setPolicyAboutStoreEn(content.aboutStoreTextEn || "");
       setPolicyShipping1En(content.shippingLine1En || "");
       setPolicyShipping2En(content.shippingLine2En || "");
       setPolicyShipping3En(content.shippingLine3En || "");
@@ -106,6 +110,7 @@ export default function SettingsView({
     const translations = await translatePolicyFields({
       returnsText: policyReturns,
       cancellationText: policyCancellation,
+      aboutStoreText: policyAboutStore,
       shippingLine1: policyShipping1,
       shippingLine2: policyShipping2,
       shippingLine3: policyShipping3,
@@ -116,6 +121,7 @@ export default function SettingsView({
 
     const finalReturnsEn = translations.returnsTextEn;
     const finalCancellationEn = translations.cancellationTextEn;
+    const finalAboutStoreEn = translations.aboutStoreTextEn;
     const finalShipping1En = translations.shippingLine1En;
     const finalShipping2En = translations.shippingLine2En;
     const finalShipping3En = translations.shippingLine3En;
@@ -125,6 +131,7 @@ export default function SettingsView({
 
     setPolicyReturnsEn(finalReturnsEn);
     setPolicyCancellationEn(finalCancellationEn);
+    setPolicyAboutStoreEn(finalAboutStoreEn);
     setPolicyShipping1En(finalShipping1En);
     setPolicyShipping2En(finalShipping2En);
     setPolicyShipping3En(finalShipping3En);
@@ -137,6 +144,8 @@ export default function SettingsView({
       returnsTextEn: finalReturnsEn,
       cancellationText: policyCancellation,
       cancellationTextEn: finalCancellationEn,
+      aboutStoreText: policyAboutStore,
+      aboutStoreTextEn: finalAboutStoreEn,
       shippingLine1: policyShipping1,
       shippingLine1En: finalShipping1En,
       shippingLine2: policyShipping2,
@@ -457,6 +466,20 @@ export default function SettingsView({
               />
             </div>
 
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyAboutStoreLabel}</div>
+              <textarea
+                className={formStyles.fi}
+                rows={2}
+                value={policyAboutStore}
+                onChange={(e) => setPolicyAboutStore(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+              <div style={{ fontSize: "0.72rem", color: "var(--muted)", marginTop: "0.2rem" }}>
+                {t.policyAboutStoreHint}
+              </div>
+            </div>
+
             <div className={formStyles.fg} style={{ marginBottom: "0.5rem" }}>
               <div className={formStyles.fl}>{t.policyShippingLabel}</div>
             </div>
@@ -528,6 +551,17 @@ export default function SettingsView({
                 rows={3}
                 value={policyCancellationEn}
                 onChange={(e) => setPolicyCancellationEn(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
+              />
+            </div>
+
+            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+              <div className={formStyles.fl}>{t.policyAboutStoreLabel} (EN)</div>
+              <textarea
+                className={formStyles.fi}
+                rows={2}
+                value={policyAboutStoreEn}
+                onChange={(e) => setPolicyAboutStoreEn(e.target.value)}
                 style={{ width: "100%", resize: "vertical", fontFamily: "Alef, sans-serif" }}
               />
             </div>

@@ -314,6 +314,13 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                   (r) => r.orderId === order.id
                 );
 
+                const deliveredTimestamp = new Date(
+                  order.deliveredAt || order.createdAt || order.date
+                ).getTime();
+                const withinReturnWindow =
+                  !Number.isNaN(deliveredTimestamp) &&
+                  Date.now() - deliveredTimestamp < 7 * 24 * 60 * 60 * 1000;
+
                 return (
                   <div
                     style={{
@@ -351,7 +358,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                       </div>
                     )}
 
-                    {hasAvailableItem && (
+                    {hasAvailableItem && withinReturnWindow && (
                       <button
                         type="button"
                         onClick={() => onRequestReturn?.(order)}
@@ -368,6 +375,12 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                       >
                         {rt.requestButton}
                       </button>
+                    )}
+
+                    {hasAvailableItem && !withinReturnWindow && (
+                      <span style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
+                        {rt.returnWindowExpired}
+                      </span>
                     )}
                   </div>
                 );
