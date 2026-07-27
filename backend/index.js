@@ -12,6 +12,7 @@ const {
   sendContactNotificationEmail,
   sendPasswordResetEmail,
   sendOrderCancellationEmail,
+  sendPickupScheduledEmail,
 } = require("./src");
 
 exports.backendHealthCheck = backendHealthCheck;
@@ -27,3 +28,4 @@ exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.sendContactNotificationEmail = sendContactNotificationEmail;
 exports.sendPasswordResetEmail = sendPasswordResetEmail;
 exports.sendOrderCancellationEmail = sendOrderCancellationEmail;
+exports.sendPickupScheduledEmail = sendPickupScheduledEmail;

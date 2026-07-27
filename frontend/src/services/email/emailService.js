@@ -57,14 +57,14 @@ const SHIPPING_UPDATE_EMAIL_URL =
   import.meta.env.VITE_SHIPPING_UPDATE_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendShippingUpdateEmail";
 
-export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex }) {
+export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup }) {
   if (!toEmail || !orderId) return null;
 
   try {
     const response = await fetch(SHIPPING_UPDATE_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, orderId, stageIndex }),
+      body: JSON.stringify({ toEmail, orderId, stageIndex, isPickup }),
     });
 
     const data = await response.json().catch(() => null);
@@ -77,6 +77,33 @@ export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex }) 
     return data;
   } catch (err) {
     console.error("Shipping update email request failed:", err);
+    return null;
+  }
+}
+const PICKUP_SCHEDULED_EMAIL_URL =
+  import.meta.env.VITE_PICKUP_SCHEDULED_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendPickupScheduledEmail";
+
+export async function sendPickupScheduledEmail({ toEmail, orderId, pickupDate, pickupTime }) {
+  if (!toEmail) return null;
+
+  try {
+    const response = await fetch(PICKUP_SCHEDULED_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, orderId, pickupDate, pickupTime }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Pickup scheduled email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Pickup scheduled email request failed:", err);
     return null;
   }
 }

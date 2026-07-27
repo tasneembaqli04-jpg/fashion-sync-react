@@ -1,7 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { getBusinessHours } from "../../services/settings/businessHoursService";
+import { setPickupSchedule } from "../../services/orders/ordersService";
+import { sendPickupScheduledEmail } from "../../services/email/emailService";
+
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -9,10 +14,67 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn, onCancelOrder }) {
+export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn, onCancelOrder, onUpdateOrder }) {
   const { t: dict, lang } = useLanguage();
   const t = dict.customer.orders;
   const rt = dict.customer.returns;
+
+  const [businessHours, setBusinessHoursState] = useState(null);
+  const [pickupInputs, setPickupInputs] = useState({});
+  const [pickupErrors, setPickupErrors] = useState({});
+  const [pickupSaving, setPickupSaving] = useState({});
+
+  useEffect(() => {
+    getBusinessHours().then(setBusinessHoursState);
+  }, []);
+
+  function validatePickupSlot(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return t.pickupErrorRequired || "נא לבחור תאריך ושעה";
+    if (!/^\d{2}:\d{2}$/.test(timeStr)) return t.pickupErrorFormat || "פורמט שעה לא תקין";
+    if (!businessHours) return t.pickupErrorFormat || "פורמט שעה לא תקין";
+
+    const dayIndex = new Date(dateStr).getDay();
+    const dayKey = DAY_KEYS[dayIndex];
+    const dayConfig = businessHours.days.find((d) => d.key === dayKey);
+
+    if (!dayConfig || !dayConfig.open) return t.pickupErrorClosed || "החנות סגורה בתאריך שנבחר";
+
+    if (timeStr < dayConfig.openTime || timeStr > dayConfig.closeTime) {
+      return (
+        t.pickupErrorOutsideHours || "השעה חייבת להיות בין {open} ל-{close}"
+      )
+        .replace("{open}", dayConfig.openTime)
+        .replace("{close}", dayConfig.closeTime);
+    }
+
+    return "";
+  }
+
+  async function handleConfirmPickupSlot(order) {
+    const input = pickupInputs[order.id] || {};
+    const error = validatePickupSlot(input.date, input.time);
+
+    if (error) {
+      setPickupErrors((prev) => ({ ...prev, [order.id]: error }));
+      return;
+    }
+
+    setPickupSaving((prev) => ({ ...prev, [order.id]: true }));
+
+    await setPickupSchedule(order.docId, input.date, input.time);
+
+    sendPickupScheduledEmail({
+      toEmail: order.customerEmail,
+      orderId: order.id,
+      pickupDate: input.date,
+      pickupTime: input.time,
+    });
+
+    onUpdateOrder?.(order.docId, { pickupDate: input.date, pickupTime: input.time });
+
+    setPickupSaving((prev) => ({ ...prev, [order.id]: false }));
+    setPickupErrors((prev) => ({ ...prev, [order.id]: "" }));
+  }
   const STATUS_LABELS = dict.orderStatusLabels;
   const MONTH_NAMES = dict.monthNames;
 
@@ -34,6 +96,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
   const [showOnlyWithReturns, setShowOnlyWithReturns] = useState(false);
   const [showOnlyCancelled, setShowOnlyCancelled] = useState(false);
+  const [showOnlyPickup, setShowOnlyPickup] = useState(false);
 
   const sortedOrders = useMemo(() => {
     const withStatus = orders.map((order) => ({
@@ -86,12 +149,17 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
         )
       );
     }
+
     if (showOnlyCancelled) {
       list = list.filter((order) => order.cancelled);
     }
 
+    if (showOnlyPickup) {
+      list = list.filter((order) => order.shipping?.id === "pickup");
+    }
+
     return list;
-  }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, returnRequests, showOnlyCancelled]);
+  }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, showOnlyCancelled, showOnlyPickup, returnRequests]);
 
   const countsByStatus = useMemo(() => {
     const counts = { all: monthFilteredOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -113,6 +181,10 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
   const cancelledOrdersCount = useMemo(() => {
     return monthFilteredOrders.filter((order) => order.cancelled).length;
+  }, [monthFilteredOrders]);
+
+  const pickupOrdersCount = useMemo(() => {
+    return monthFilteredOrders.filter((order) => order.shipping?.id === "pickup").length;
   }, [monthFilteredOrders]);
 
   if (!show) return null;
@@ -205,6 +277,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
           </button>
         </div>
       )}
+
       {cancelledOrdersCount > 0 && (
         <div style={{ marginBottom: "1.2rem" }}>
           <button
@@ -215,8 +288,12 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               gap: "0.4rem",
               padding: "0.45rem 0.9rem",
               borderRadius: "10px",
-              border: showOnlyCancelled ? "1.5px solid var(--red)" : "1px solid var(--border)",
-              background: showOnlyCancelled ? "rgba(220,53,69,0.12)" : "transparent",
+              border: showOnlyCancelled
+                ? "1.5px solid var(--red)"
+                : "1px solid var(--border)",
+              background: showOnlyCancelled
+                ? "rgba(220,53,69,0.12)"
+                : "transparent",
               color: showOnlyCancelled ? "var(--red)" : "var(--muted)",
               fontFamily: "Alef, sans-serif",
               fontSize: "0.82rem",
@@ -225,6 +302,34 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
             }}
           >
             ✕ {t.cancelledFilter} ({cancelledOrdersCount})
+          </button>
+        </div>
+      )}
+
+      {pickupOrdersCount > 0 && (
+        <div style={{ marginBottom: "1.2rem" }}>
+          <button
+            onClick={() => setShowOnlyPickup((prev) => !prev)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              padding: "0.45rem 0.9rem",
+              borderRadius: "10px",
+              border: showOnlyPickup
+                ? "1.5px solid var(--blue)"
+                : "1px solid var(--border)",
+              background: showOnlyPickup
+                ? "rgba(52,152,219,0.12)"
+                : "transparent",
+              color: showOnlyPickup ? "var(--blue)" : "var(--muted)",
+              fontFamily: "Alef, sans-serif",
+              fontSize: "0.82rem",
+              fontWeight: showOnlyPickup ? 700 : 400,
+              cursor: "pointer",
+            }}
+          >
+            🏪 {t.pickupFilter} ({pickupOrdersCount})
           </button>
         </div>
       )}
@@ -243,7 +348,10 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               className={modalStyles.orderCard}
               style={
                 order.cancelled
-                  ? { border: "1.5px solid var(--red)", background: "rgba(220,53,69,0.06)" }
+                  ? {
+                      border: "1.5px solid var(--red)",
+                      background: "rgba(220,53,69,0.06)",
+                    }
                   : undefined
               }
             >
@@ -252,7 +360,14 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                   <div style={{ fontWeight: 900 }}>{order.id}</div>
                   <div className={modalStyles.orderId}>{order.date}</div>
                   {order.cancelled && (
-                    <div style={{ color: "var(--red)", fontWeight: 700, fontSize: "0.8rem", marginTop: "0.2rem" }}>
+                    <div
+                      style={{
+                        color: "var(--red)",
+                        fontWeight: 700,
+                        fontSize: "0.8rem",
+                        marginTop: "0.2rem",
+                      }}
+                    >
                       ✕ {t.cancelledLabel}
                     </div>
                   )}
@@ -278,9 +393,103 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                 ))}
               </div>
 
+              {order.shipping?.id === "pickup" &&
+                status === 2 &&
+                !order.pickupDate && (
+                  <div
+                    style={{
+                      border: "1px solid var(--blue)",
+                      borderRadius: "10px",
+                      padding: "0.7rem",
+                      marginTop: "0.6rem",
+                      background: "rgba(52,152,219,0.06)",
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+                      🏪 {t.pickupReadyTitle}
+                    </div>
+
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                      <input
+                        type="date"
+                        min={new Date().toISOString().split("T")[0]}
+                        value={pickupInputs[order.id]?.date || ""}
+                        onChange={(e) =>
+                          setPickupInputs((prev) => ({
+                            ...prev,
+                            [order.id]: { ...prev[order.id], date: e.target.value },
+                          }))
+                        }
+                        style={{
+                          padding: "0.4rem",
+                          borderRadius: "8px",
+                          border: "1px solid var(--border)",
+                          background: "var(--surface2)",
+                          color: "var(--text)",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="14:00"
+                        maxLength={5}
+                        value={pickupInputs[order.id]?.time || ""}
+                        onChange={(e) => {
+                          if (/^[0-9:]*$/.test(e.target.value)) {
+                            setPickupInputs((prev) => ({
+                              ...prev,
+                              [order.id]: { ...prev[order.id], time: e.target.value },
+                            }));
+                          }
+                        }}
+                        style={{
+                          padding: "0.4rem",
+                          borderRadius: "8px",
+                          border: "1px solid var(--border)",
+                          background: "var(--surface2)",
+                          color: "var(--text)",
+                          direction: "ltr",
+                          textAlign: "center",
+                          width: "90px",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmPickupSlot(order)}
+                        disabled={pickupSaving[order.id]}
+                        style={{
+                          background: "var(--blue)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "0.4rem 0.9rem",
+                          fontSize: "0.8rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {pickupSaving[order.id] ? t.pickupSavingButton : t.pickupConfirmButton}
+                      </button>
+                    </div>
+
+                    {pickupErrors[order.id] && (
+                      <div style={{ color: "var(--red)", fontSize: "0.78rem" }}>
+                        {pickupErrors[order.id]}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              {order.shipping?.id === "pickup" && order.pickupDate && (
+                <div style={{ color: "var(--blue)", fontSize: "0.82rem", marginTop: "0.4rem" }}>
+                  🗓️ {t.pickupScheduledLabel} {order.pickupDate} {order.pickupTime}
+                </div>
+              )}
+
               {!order.cancelled &&
                 status !== 3 &&
-                Date.now() - new Date(order.createdAt || order.date).getTime() < 24 * 60 * 60 * 1000 && (
+                Date.now() - new Date(order.createdAt || order.date).getTime() < 
+                  24 * 60 * 60 * 1000 && (
                   <div style={{ padding: "0.4rem 0" }}>
                     <button
                       type="button"

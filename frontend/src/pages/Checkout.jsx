@@ -441,6 +441,8 @@ export default function Checkout() {
           pointsDiscountAmount: orderPointsDiscountAmount,
           shipping: selectedShipping,
           shippingCost: orderShippingCost,
+          pickupDate: "",
+          pickupTime: "",
           total: orderTotal,
           payMethod,
           installments: payMethod === "card" ? selectedInstallments : 1,
@@ -456,6 +458,7 @@ export default function Checkout() {
             customerName: formData.firstName || "",
             items: orderItems,
             total: orderTotal,
+            isPickup: selectedShipping?.id === "pickup",
           },
         });
 
@@ -572,6 +575,7 @@ export default function Checkout() {
           <CheckoutStep3Payment
             payMethod={payMethod}
             setPayMethod={setPayMethod}
+            selectedShipping={selectedShipping}
             giftCardCode={giftCardCode}
             setGiftCardCode={setGiftCardCode}
             giftCardApplyError={giftCardApplyError}

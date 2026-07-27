@@ -14,6 +14,10 @@ function buildOrderEmailHtml(order) {
     )
     .join("");
 
+  const followUpLine = order.isPickup
+    ? "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף."
+    : "נעדכן אותך בכל שלב במסלול המשלוח.";
+
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
       <h2 style="color: #c9a84c;">ההזמנה שלך התקבלה! 🛍️</h2>
@@ -32,7 +36,7 @@ function buildOrderEmailHtml(order) {
       </table>
 
       <p style="font-size: 1.1em;"><strong>סה"כ לתשלום: ₪${order.total}</strong></p>
-      <p>נעדכן אותך בכל שלב במסלול המשלוח.</p>
+      <p>${followUpLine}</p>
       <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync — תודה שקנית אצלנו</p>
     </div>
   `;
@@ -79,21 +83,28 @@ async function sendStockAlertEmail({ toEmail, productName }) {
 }
 
 const STATUS_LABELS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
+const PICKUP_STATUS_LABELS = ["אושרה", "בהכנה", "מוכן לאיסוף", "נאסף"];
 
-function buildShippingUpdateEmailHtml({ orderId, stageIndex }) {
-  const stageName = STATUS_LABELS[stageIndex] || "עודכן";
+function buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup }) {
+  const labels = isPickup ? PICKUP_STATUS_LABELS : STATUS_LABELS;
+  const stageName = labels[stageIndex] || "עודכן";
+  const pickupNote =
+    isPickup && stageIndex === 2
+      ? `<p>היכנסי ל"ההזמנות שלי" באתר כדי לבחור מועד לאיסוף.</p>`
+      : "";
 
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
       <h2 style="color: #c9a84c;">עדכון להזמנה שלך 📦</h2>
       <p>שלום,</p>
       <p>ההזמנה <strong>${orderId}</strong> עודכנה לסטטוס: <strong>${stageName}</strong>.</p>
+      ${pickupNote}
       <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync — תודה שקנית אצלנו</p>
     </div>
   `;
 }
 
-async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex }) {
+async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup }) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -102,12 +113,13 @@ async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex }) {
     throw new Error("Order id is required");
   }
 
-  const stageName = STATUS_LABELS[stageIndex] || "עודכן";
+  const labels = isPickup ? PICKUP_STATUS_LABELS : STATUS_LABELS;
+  const stageName = labels[stageIndex] || "עודכן";
 
   return await sendMail({
     to: toEmail,
     subject: `הזמנה #${orderId} - ${stageName} - FashionSync`,
-    html: buildShippingUpdateEmailHtml({ orderId, stageIndex }),
+    html: buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup }),
   });
 }
 

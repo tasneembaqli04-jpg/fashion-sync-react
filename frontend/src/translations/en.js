@@ -104,6 +104,7 @@ export const en = {
       sizeLabel: "Size:",
       qtyLabel: "Qty:",
       updateToPrefix: "✓ Update to:",
+      selfPickupBadge: "Self-Pickup",
       itemsCountSuffix: "items in order",
       orderDetailsButton: "📋 Order details",
     },
@@ -520,6 +521,7 @@ export const en = {
   },
 
   orderStatusLabels: ["Confirmed", "Preparing", "Shipped", "Delivered"],
+  pickupStatusLabels: ["Confirmed", "Preparing", "Ready for Pickup", "Picked Up"],
 
   monthNames: [
     "January", "February", "March", "April", "May", "June",
@@ -620,7 +622,7 @@ export const en = {
     checkout: {
       secureBadge: "🔒 Secure payment",
       sameDayDelivery: "⚡ Delivery by tonight!",
-      pickupDelivery: "Pickup available tomorrow 10:00–20:00, Herzl 42, Tel Aviv",
+      pickupDelivery: "The pickup time will be set later — once your order is ready, we'll email you to choose a convenient date and time.",
       estimatedDeliveryPrefix: "Estimated delivery time:",
       stepDetails: "Details",
       stepShipping: "Shipping",
@@ -666,7 +668,8 @@ export const en = {
       step3: {
         paymentMethodTitle: "💳 Payment Method",
         creditCard: "Credit Card",
-        cashOnPickup: "Cash on Pickup",
+        cashOnPickup: "Cash on Self-Pickup",
+        cashToCourier: "Cash to Courier",
         giftCard: "Gift Card",
         cardNumber: "Card Number",
         invalidCardNumber: "Invalid card number",
@@ -685,9 +688,10 @@ export const en = {
         paypalInfo: 'After clicking "Pay" you will be redirected to PayPal to complete payment.',
         paypalEmailRequired: "A valid email is required in the details step to continue with PayPal",
         cashInfoLine1: "💵 Cash payment will be made upon pickup from the store.",
-        cashInfoLine2Bold: "48 hours",
-        cashInfoLine2Rest: "only.",
-        cashInfoLine2Prefix: "The order will be held for",
+        cashInfoLine1Courier: "💵 Cash payment will be made to the courier upon delivery.",
+        cashInfoLine2Bold: "",
+        cashInfoLine2Rest: "",
+        cashInfoLine2Prefix: "The order will be held for you until the pickup date is set.",
         giftCardCode: "Gift Card Code",
         invalidGiftCard: "Invalid code, card already used, or balance is lower than the order amount",
         termsAgreement: "I have read and agree to the terms of use and privacy policy.",
@@ -737,10 +741,19 @@ export const en = {
       noOrdersInStatus: "No orders in this status",
       withReturnsFilter: "With Return Request",
       cancelledFilter: "Cancelled",
+      pickupFilter: "Self-Pickup",
       cancelledLabel: "This order was cancelled",
       cancelOrderButton: "Cancel Order",
       confirmCancelOrder: "Cancel this order?",
       cancelSuccess: "✅ Order cancelled successfully.",
+      pickupReadyTitle: "Order is ready for pickup — choose a time",
+      pickupConfirmButton: "Confirm Time",
+      pickupSavingButton: "⏳ Saving...",
+      pickupScheduledLabel: "Scheduled pickup:",
+      pickupErrorRequired: "Please choose a date and time",
+      pickupErrorFormat: "Invalid time format (e.g. 14:00)",
+      pickupErrorClosed: "The store is closed on the selected date",
+      pickupErrorOutsideHours: "Time must be between {open} and {close}",
     },
 
     wishlist: {
@@ -1018,8 +1031,8 @@ export const en = {
     },
     pickup: {
       label: "Self Pickup",
-      days: "Tomorrow 10:00–20:00",
-      note: "Herzl 42, Tel Aviv",
+      days: "Time will be set after order confirmation",
+      note: "42 Herzl St., Tel Aviv",
     },
   },
 };

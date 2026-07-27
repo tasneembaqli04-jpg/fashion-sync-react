@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import styles from "../../styles/checkout/CheckoutForms.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
 import { getShippingCost } from "../../functions/checkout/checkoutPricing";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { getStoreDetails } from "../../services/settings/storeDetailsService";
 
 export default function CheckoutStep2Shipping({
   shippingOptions = [],
@@ -17,8 +19,20 @@ export default function CheckoutStep2Shipping({
   onBack,
   onNext,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.checkout.step2;
+
+  const [storeDetails, setStoreDetails] = useState(null);
+
+  useEffect(() => {
+    getStoreDetails().then(setStoreDetails);
+  }, []);
+
+  const pickupAddress = storeDetails
+    ? lang === "en" && storeDetails.addressEn
+      ? storeDetails.addressEn
+      : storeDetails.address || ""
+    : "";
 
   return (
     <div className={styles.stepPanel}>
@@ -50,7 +64,13 @@ export default function CheckoutStep2Shipping({
                   <div className={styles.shipLabel}>{optionT.label}</div>
                   <div className={styles.shipSub}>
                     {optionT.days}
-                    {optionT.note ? ` · ${optionT.note}` : ""}
+                    {option.id === "pickup"
+                      ? pickupAddress
+                        ? ` · ${pickupAddress}`
+                        : ""
+                      : optionT.note
+                      ? ` · ${optionT.note}`
+                      : ""}
                   </div>
                 </div>
 

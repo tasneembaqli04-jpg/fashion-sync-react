@@ -1268,6 +1268,11 @@ export default function Customer() {
           returnRequests={returnRequests}
           onRequestReturn={openReturnRequestModal}
           onCancelOrder={handleCancelOrder}
+          onUpdateOrder={(docId, updates) =>
+            setOrders((prev) =>
+              prev.map((o) => (o.docId === docId ? { ...o, ...updates } : o))
+            )
+          }
         />
 
         <CustomerLoyalty
