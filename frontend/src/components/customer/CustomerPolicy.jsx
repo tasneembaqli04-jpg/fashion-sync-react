@@ -129,6 +129,12 @@ export default function CustomerPolicy({ show, currentUser }) {
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.contactTitle}</div>
         <div className={modalStyles.policyText} style={{ marginBottom: "1rem" }}>
+          {storeDetails?.email && (
+            <>
+              {t.contactEmailPrefix} {storeDetails.email}
+              <br />
+            </>
+          )}
           {field("contactPhone")}
           {hoursText && (
             <>
