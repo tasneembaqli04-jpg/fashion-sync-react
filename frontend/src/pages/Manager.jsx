@@ -111,6 +111,7 @@ export default function Manager({ onPromote }) {
             shipping: order.shipping || null,
             customer: order.customer || null,
             cancelled: Boolean(order.cancelled),
+            deliveredAt: order.deliveredAt || null,
           };
         });
 

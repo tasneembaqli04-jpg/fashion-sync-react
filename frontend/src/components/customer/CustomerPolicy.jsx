@@ -7,6 +7,7 @@ import { submitContactMessage } from "../../services/contact/contactMessagesServ
 import { sendContactNotificationEmail } from "../../services/email/emailService";
 import { getBusinessHours } from "../../services/settings/businessHoursService";
 import { getPolicyContent } from "../../services/settings/policyContentService";
+import { getStoreDetails } from "../../services/settings/storeDetailsService";
 
 export default function CustomerPolicy({ show, currentUser }) {
   const { t: dict, lang } = useLanguage();
@@ -19,10 +20,12 @@ export default function CustomerPolicy({ show, currentUser }) {
   const [submitting, setSubmitting] = useState(false);
   const [businessHours, setBusinessHoursState] = useState(null);
   const [policyContent, setPolicyContentState] = useState(null);
+  const [storeDetails, setStoreDetailsState] = useState(null);
 
   useEffect(() => {
     getBusinessHours().then(setBusinessHoursState);
     getPolicyContent().then(setPolicyContentState);
+    getStoreDetails().then(setStoreDetailsState);
   }, []);
 
   function field(key) {
@@ -32,6 +35,14 @@ export default function CustomerPolicy({ show, currentUser }) {
     if (lang !== "en" && policyContent[key]) return policyContent[key];
     return t[key];
   }
+
+  const storeAddress = storeDetails
+    ? lang === "en" && storeDetails.addressEn
+      ? storeDetails.addressEn
+      : storeDetails.address || ""
+    : "";
+
+  const aboutStoreText = field("aboutStoreText").replace("{address}", storeAddress);
 
   const hoursText = businessHours
     ? businessHours.days
@@ -74,6 +85,13 @@ export default function CustomerPolicy({ show, currentUser }) {
     <div>
       <div className={commonStyles.pageTitle}>{t.title}</div>
       <div className={commonStyles.pageSub}>{t.subtitle}</div>
+
+      <div className={modalStyles.policySection}>
+        <div className={modalStyles.policyTitle}>{t.aboutStoreTitle}</div>
+        <div className={modalStyles.policyText}>
+          {aboutStoreText}
+        </div>
+      </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.returnsTitle}</div>

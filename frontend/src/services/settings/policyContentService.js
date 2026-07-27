@@ -8,6 +8,7 @@ const POLICY_DOC = doc(db, "settings", "policyContent");
 const FIELDS = [
   "returnsText",
   "cancellationText",
+  "aboutStoreText",
   "shippingLine1",
   "shippingLine2",
   "shippingLine3",
