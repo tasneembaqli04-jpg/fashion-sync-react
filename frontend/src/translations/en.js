@@ -785,6 +785,7 @@ export const en = {
       privacyLine1: "We do not store credit card details. All transactions are encrypted.",
       contactTitle: "📞 Contact Us",
       contactPhone: "Phone: 054-1234567",
+      contactEmailPrefix: "✉️ Email:",
       hoursPrefix: "🕒 Business hours:",
       contactEmail: "Email: support@fashionsync.co.il",
       contactNameLabel: "Name",

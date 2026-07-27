@@ -836,6 +836,7 @@ export const he = {
       privacyLine1: "אנחנו לא שומרים פרטי כרטיס אשראי. כל העסקאות מוצפנות.",
       contactTitle: "📞 יצירת קשר",
       contactPhone: "טלפון: 054-1234567",
+      contactEmailPrefix: "✉️ מייל:",
       hoursPrefix: "🕒 שעות פעילות:",
       contactEmail: "אימייל: support@fashionsync.co.il",
       contactNameLabel: "שם",
