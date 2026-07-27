@@ -45,9 +45,7 @@ export default function CustomerChat({
             <div
               key={index}
               className={`${chatStyles.msg} ${
-                msg.type === "user"
-                  ? chatStyles.userMsg
-                  : chatStyles.botMsg
+                msg.type === "user" ? chatStyles.userMsg : chatStyles.botMsg
               }`}
             >
               {msg.html && (
@@ -70,8 +68,8 @@ export default function CustomerChat({
               {msg.products?.length > 0 && (
                 <OutfitProductsCatalog
                   products={msg.products}
-                  addToCart={addToCart}
                   openProductModal={openProductModal}
+                  title={msg.imageUrl ? "הפריטים בלוק" : "מוצרים מתאימים"}
                 />
               )}
             </div>
@@ -89,37 +87,133 @@ export default function CustomerChat({
         </div>
 
         <div className={chatStyles.chatPills}>
-          <button className={chatStyles.pill} onClick={() => quickMsg("שלום")}>שלום</button>
-          <button className={chatStyles.pill} onClick={() => quickMsg("מה יש חדש בחנות?")}>מה חדש?</button>
-          <button className={chatStyles.pill} onClick={() => quickMsg("יש מבצעים עכשיו?")}>מבצעים</button>
-          <button className={chatStyles.pill} onClick={() => quickMsg("יש משלוחים?")}>משלוחים</button>
-          <button className={chatStyles.pill} onClick={() => quickMsg("אפשר החזרה?")}>החזרות</button>
-          <button className={chatStyles.pill} onClick={toggleMoreQuestions}>עוד שאלות</button>
+          <button className={chatStyles.pill} onClick={() => quickMsg("שלום")}>
+            שלום
+          </button>
+          <button
+            className={chatStyles.pill}
+            onClick={() => quickMsg("מה יש חדש בחנות?")}
+          >
+            מה חדש?
+          </button>
+          <button
+            className={chatStyles.pill}
+            onClick={() => quickMsg("יש מבצעים עכשיו?")}
+          >
+            מבצעים
+          </button>
+          <button
+            className={chatStyles.pill}
+            onClick={() => quickMsg("יש משלוחים?")}
+          >
+            משלוחים
+          </button>
+          <button
+            className={chatStyles.pill}
+            onClick={() => quickMsg("אפשר החזרה?")}
+          >
+            החזרות
+          </button>
+          <button className={chatStyles.pill} onClick={toggleMoreQuestions}>
+            עוד שאלות
+          </button>
         </div>
 
         {moreQuestionsOpen && (
           <div className={chatStyles.chatPills}>
-            <button className={chatStyles.pill} onClick={() => quickMsg("מה המחירים?")}>מחירים</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("מה שעות הפתיחה?")}>שעות פתיחה</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("מה הכתובת?")}>כתובת</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש חולצות?")}>חולצות</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש מכנסיים?")}>מכנסיים</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש שמלות?")}>שמלות</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש עליוניות?")}>עליוניות</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש נעליים?")}>נעליים</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש אביזרים?")}>אביזרים</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש מידות?")}>מידות</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("יש צבעים?")}>צבעים</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("איך עובדות הנקודות?")}>נקודות</button>
-            <button className={chatStyles.pill} onClick={() => quickMsg("איך משלמים?")}>תשלום</button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("מה המחירים?")}
+            >
+              מחירים
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("מה שעות הפתיחה?")}
+            >
+              שעות פתיחה
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("מה הכתובת?")}
+            >
+              כתובת
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש חולצות?")}
+            >
+              חולצות
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש מכנסיים?")}
+            >
+              מכנסיים
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש שמלות?")}
+            >
+              שמלות
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש עליוניות?")}
+            >
+              עליוניות
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש נעליים?")}
+            >
+              נעליים
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש אביזרים?")}
+            >
+              אביזרים
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש מידות?")}
+            >
+              מידות
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("יש צבעים?")}
+            >
+              צבעים
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("איך עובדות הנקודות?")}
+            >
+              נקודות
+            </button>
+            <button
+              className={chatStyles.pill}
+              onClick={() => quickMsg("איך משלמים?")}
+            >
+              תשלום
+            </button>
           </div>
         )}
 
         <div className={chatStyles.chatBottom}>
-          <button className={chatStyles.sendBtn} onClick={sendMsg}>➤</button>
+          <button className={chatStyles.sendBtn} onClick={sendMsg}>
+            ➤
+          </button>
           <label className={chatStyles.attachBtn} title="שלח תמונה">
             📎
-            <input type="file" accept="image/*" style={{ display: "none" }} onChange={onChatImageChange} />
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={onChatImageChange}
+            />
           </label>
           <textarea
             className={chatStyles.chatIn}

@@ -32,35 +32,49 @@ async function chatController(request, response) {
       response.status(200);
       response.setHeader(
         "Content-Type",
-        "text/plain; charset=utf-8"
+        "application/x-ndjson; charset=utf-8",
       );
       response.setHeader("Cache-Control", "no-cache");
+      response.setHeader("X-Accel-Buffering", "no");
 
       textStreamStarted = true;
     }
 
+    function writeStreamEvent(event) {
+      startTextStream();
+      response.write(`${JSON.stringify(event)}\n`);
+    }
+
     const result = await handleChatMessage({
       message: message.trim(),
-      history: Array.isArray(history) ? history : [],
+
+      history: Array.isArray(history)
+        ? history
+        : [],
+
       currentOutfit: Array.isArray(currentOutfit)
         ? currentOutfit
         : [],
-        
+
       currentOutfitImage:
         typeof currentOutfitImage === "string"
-        ? currentOutfitImage
-        : "",
+          ? currentOutfitImage
+          : "",
+
       onChunk: (text) => {
         if (!text) {
           return;
         }
+
         console.log(
           "CHAT CONTROLLER WRITING CHUNK:",
-          String(text)
+          String(text),
         );
 
-        startTextStream();
-        response.write(String(text));
+        writeStreamEvent({
+          type: "chunk",
+          text: String(text),
+        });
       },
     });
 
@@ -69,10 +83,9 @@ async function chatController(request, response) {
       result?.imageGenerated === true &&
       result?.image?.dataUrl
     ) {
-
       if (textStreamStarted) {
         console.error(
-          "Cannot return image after text streaming started."
+          "Cannot return image after text streaming started.",
         );
 
         return response.end();
@@ -82,28 +95,38 @@ async function chatController(request, response) {
         success: true,
         responseMode: "IMAGE",
         imageGenerated: true,
+
         image: {
           mimeType:
             result.image.mimeType || "image/png",
+
           dataUrl: result.image.dataUrl,
         },
+
         products: result.products || [],
         intent: result.intent || null,
       });
-    }
-    console.log(
-      "CHAT CONTROLLER ENDING TEXT STREAM:",
-      textStreamStarted
-    );
-
-    if (textStreamStarted) {
-      return response.end();
     }
 
     if (
       result?.responseMode === "IMAGE" &&
       result?.imageGenerated === false
     ) {
+      if (textStreamStarted) {
+        writeStreamEvent({
+          type: "result",
+          success: false,
+          responseMode: "IMAGE",
+          imageGenerated: false,
+          error:
+            result.error || "IMAGE_GENERATION_FAILED",
+          products: result.products || [],
+          intent: result.intent || null,
+        });
+
+        return response.end();
+      }
+
       return response.status(500).json({
         success: false,
         responseMode: "IMAGE",
@@ -111,13 +134,40 @@ async function chatController(request, response) {
         error:
           result.error || "IMAGE_GENERATION_FAILED",
         products: result.products || [],
+        intent: result.intent || null,
       });
+    }
+
+    if (textStreamStarted) {
+      writeStreamEvent({
+        type: "result",
+        success: true,
+        responseMode: "TEXT",
+        products: Array.isArray(result?.products)
+          ? result.products
+          : [],
+        intent: result?.intent || null,
+      });
+
+      console.log(
+        "CHAT CONTROLLER ENDING TEXT STREAM:",
+        true,
+      );
+
+      return response.end();
     }
 
     return response.status(200).json({
       success: true,
       responseMode: "TEXT",
-      message: "",
+      text:
+        typeof result === "string"
+          ? result
+          : result?.text || "",
+      products: Array.isArray(result?.products)
+        ? result.products
+        : [],
+      intent: result?.intent || null,
     });
   } catch (error) {
     console.error("Chat controller error:", error);
