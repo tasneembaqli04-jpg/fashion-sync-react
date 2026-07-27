@@ -4,10 +4,17 @@ import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
 import { restockOrderItems } from "../services/products/productsService";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
-import { getWishlist, saveWishlist } from "../services/wishlist/wishlistService";
+import {
+  getWishlist,
+  saveWishlist,
+} from "../services/wishlist/wishlistService";
 import { addFeedback } from "../services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../services/customer/customerFirestore";
-import { requestStockNotification, getMyStockAlerts, markStockAlertSeen } from "../services/notifications/notificationsService";
+import {
+  requestStockNotification,
+  getMyStockAlerts,
+  markStockAlertSeen,
+} from "../services/notifications/notificationsService";
 import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
@@ -104,10 +111,7 @@ export default function Customer() {
   ]);
   const [isChatTyping, setIsChatTyping] = useState(false);
   const [currentOutfit, setCurrentOutfit] = useState([]);
-  const [
-    currentOutfitImage,
-    setCurrentOutfitImage,
-  ] = useState("");
+  const [currentOutfitImage, setCurrentOutfitImage] = useState("");
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -143,7 +147,7 @@ export default function Customer() {
   const [tryOnResult, setTryOnResult] = useState(null);
   const [tryOnError, setTryOnError] = useState("");
   const tryOnAbortRef = useRef(null);
-  
+
   const [giftAmount, setGiftAmount] = useState("100");
   const [giftCustomAmount, setGiftCustomAmount] = useState("");
   const [giftName, setGiftName] = useState("");
@@ -172,7 +176,6 @@ export default function Customer() {
         setOrders(userOrders.slice().reverse());
       }
     });
-
 
     getLoyaltyPoints(currentUser.email).then((points) => {
       if (!cancelled) {
@@ -203,7 +206,7 @@ export default function Customer() {
 
     const unsubscribe = subscribeToReturnRequestsByUser(
       currentUser.email,
-      setReturnRequests
+      setReturnRequests,
     );
 
     return () => unsubscribe();
@@ -230,12 +233,10 @@ export default function Customer() {
       setFeaturedCode(featured?.code || "");
 
       const sharedItemCode = new URLSearchParams(window.location.search).get(
-        "item"
+        "item",
       );
       if (sharedItemCode) {
-        const sharedProduct = products.find(
-          (p) => p.code === sharedItemCode
-        );
+        const sharedProduct = products.find((p) => p.code === sharedItemCode);
         if (sharedProduct) {
           openProductModal(sharedItemCode);
         }
@@ -334,7 +335,7 @@ export default function Customer() {
   }, [rawStockAlerts, products]);
   const unseenReturnUpdates = useMemo(() => {
     return returnRequests.filter(
-      (r) => r.status !== "pending" && !r.seenByCustomer
+      (r) => r.status !== "pending" && !r.seenByCustomer,
     );
   }, [returnRequests]);
   const activeOrdersCount = useMemo(
@@ -447,7 +448,6 @@ export default function Customer() {
           if (!botMessageStarted) {
             botMessageStarted = true;
             setIsChatTyping(false);
-            
 
             setChatMessages((prev) => [
               ...prev,
@@ -470,20 +470,31 @@ export default function Customer() {
           }
         },
       });
+      if (
+        botMessageStarted &&
+        result?.responseMode === "TEXT" &&
+        Array.isArray(result?.products) &&
+        result.products.length > 0
+      ) {
+        setChatMessages((prev) => {
+          const next = [...prev];
+
+          next[next.length - 1] = {
+            ...next[next.length - 1],
+            products: result.products,
+          };
+
+          return next;
+        });
+      }
 
       if (
         result?.responseMode === "IMAGE" &&
         result?.imageGenerated === true &&
         result?.image?.dataUrl
       ) {
-        setCurrentOutfit(
-          Array.isArray(result.products)
-            ? result.products
-            : []
-        );
-        setCurrentOutfitImage(
-          result.image.dataUrl
-        );
+        setCurrentOutfit(Array.isArray(result.products) ? result.products : []);
+        setCurrentOutfitImage(result.image.dataUrl);
         setIsChatTyping(false);
 
         setChatMessages((prev) => [
@@ -510,14 +521,12 @@ export default function Customer() {
           {
             type: "bot",
             html: result.text,
+            products: result.products || [],
           },
         ]);
       }
     } catch (err) {
-      console.error(
-        "Real chat API failed, using fallback reply:",
-        err
-      );
+      console.error("Real chat API failed, using fallback reply:", err);
 
       if (err?.name === "AbortError") {
         setChatMessages((prev) => [
@@ -609,11 +618,12 @@ export default function Customer() {
     if (fromModal && !selectedSize) return;
 
     const variant = fromModal ? getChosenVariant() : { size: "", color: "" };
-    const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+    const hasVariants =
+      Array.isArray(product.variants) && product.variants.length > 0;
 
     if (fromModal && hasVariants && selectedSize !== "אחר") {
       const matchingVariant = product.variants.find(
-        (v) => v.colorName === variant.color
+        (v) => v.colorName === variant.color,
       );
       const availableQty = Number(matchingVariant?.sizes?.[variant.size]) || 0;
 
@@ -691,7 +701,12 @@ export default function Customer() {
     }
 
     if (requested > loyaltyPoints) {
-      alertDialog(dict.customer.dialogs.insufficientPoints.replace("{points}", loyaltyPoints.toLocaleString()));
+      alertDialog(
+        dict.customer.dialogs.insufficientPoints.replace(
+          "{points}",
+          loyaltyPoints.toLocaleString(),
+        ),
+      );
       return;
     }
 
@@ -789,7 +804,9 @@ export default function Customer() {
     } else if (type === "email") {
       window.location.href =
         "mailto:?subject=" +
-        encodeURIComponent(dict.customer.misc.shareEmailSubjectPrefix + product.name) +
+        encodeURIComponent(
+          dict.customer.misc.shareEmailSubjectPrefix + product.name,
+        ) +
         "&body=" +
         encodeURIComponent(text + "\n" + url);
     }
@@ -807,7 +824,7 @@ export default function Customer() {
     const confirmed = await confirmDialog(
       dict.customer.dialogs.notifyConfirmMessage
         .replace("{email}", currentUser?.email || "")
-        .replace("{name}", product.name)
+        .replace("{name}", product.name),
     );
     if (!confirmed) return;
 
@@ -818,7 +835,10 @@ export default function Customer() {
     });
 
     alertDialog(
-      dict.customer.dialogs.notifySuccessMessage.replace("{email}", currentUser?.email || "")
+      dict.customer.dialogs.notifySuccessMessage.replace(
+        "{email}",
+        currentUser?.email || "",
+      ),
     );
   }
 
@@ -856,8 +876,7 @@ export default function Customer() {
     }
 
     const productForTryOn = products.find(
-      (product) =>
-        String(product.code) === String(selectedProductCode)
+      (product) => String(product.code) === String(selectedProductCode),
     );
 
     if (!productForTryOn) {
@@ -865,7 +884,6 @@ export default function Customer() {
       return;
     }
 
-  
     tryOnAbortRef.current?.abort();
 
     const controller = new AbortController();
@@ -882,7 +900,6 @@ export default function Customer() {
         signal: controller.signal,
       });
 
-    
       if (controller.signal.aborted) return;
 
       setTryOnResult(result);
@@ -891,22 +908,17 @@ export default function Customer() {
         console.log("Try On request cancelled");
         return;
       }
-    
 
-    console.error("Try On request failed:", error);
+      console.error("Try On request failed:", error);
 
-    setTryOnError(
-      error?.message || dict.customer.dialogs.tryOnErrorGeneric
-    );
+      setTryOnError(error?.message || dict.customer.dialogs.tryOnErrorGeneric);
     } finally {
-    
       if (tryOnAbortRef.current === controller) {
         tryOnAbortRef.current = null;
         setTryOnLoading(false);
       }
     }
   }
-
 
   function openTryOnFromProduct(code) {
     setSelectedProductCode(code);
@@ -967,7 +979,7 @@ export default function Customer() {
   async function dismissReturnUpdate(id) {
     await markReturnSeenByCustomer(id);
     setReturnRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, seenByCustomer: true } : r))
+      prev.map((r) => (r.id === id ? { ...r, seenByCustomer: true } : r)),
     );
   }
 
@@ -979,14 +991,18 @@ export default function Customer() {
     setReturnModalOrder(order);
   }
   async function handleCancelOrder(order) {
-    const confirmed = await confirmDialog(dict.customer.orders.confirmCancelOrder);
+    const confirmed = await confirmDialog(
+      dict.customer.orders.confirmCancelOrder,
+    );
     if (!confirmed) return;
 
     await cancelOrder(order.docId);
     await restockOrderItems(order.items);
 
     setOrders((prev) =>
-      prev.map((o) => (o.docId === order.docId ? { ...o, cancelled: true } : o))
+      prev.map((o) =>
+        o.docId === order.docId ? { ...o, cancelled: true } : o,
+      ),
     );
     sendOrderCancellationEmail({
       toEmail: order.customerEmail || currentUser?.email || "",
@@ -1101,7 +1117,9 @@ export default function Customer() {
                     return (
                       <>
                         {before}
-                        <strong>{alert.productName || alert.productCode}</strong>
+                        <strong>
+                          {alert.productName || alert.productCode}
+                        </strong>
                         {after}
                       </>
                     );
@@ -1123,10 +1141,11 @@ export default function Customer() {
         {unseenReturnUpdates.length > 0 && (
           <div
             style={{
-              background:
-                unseenReturnUpdates.some((r) => r.status === "approved")
-                  ? "rgba(39,174,96,0.1)"
-                  : "rgba(192,57,43,0.1)",
+              background: unseenReturnUpdates.some(
+                (r) => r.status === "approved",
+              )
+                ? "rgba(39,174,96,0.1)"
+                : "rgba(192,57,43,0.1)",
               border: `1px solid ${
                 unseenReturnUpdates.some((r) => r.status === "approved")
                   ? "var(--green)"
@@ -1280,7 +1299,10 @@ export default function Customer() {
           checkGiftCardBalance={checkGiftCardBalance}
         />
 
-        <CustomerPolicy show={activePanel === "policy"} currentUser={currentUser} />
+        <CustomerPolicy
+          show={activePanel === "policy"}
+          currentUser={currentUser}
+        />
       </main>
 
       <ProductModal
@@ -1319,7 +1341,9 @@ export default function Customer() {
         cartPoints={total}
         cartTotal={total}
         discountText={
-          appliedDiscount ? `${Math.round(appliedDiscount * 100)}${dict.customer.misc.discountSuffix}` : ""
+          appliedDiscount
+            ? `${Math.round(appliedDiscount * 100)}${dict.customer.misc.discountSuffix}`
+            : ""
         }
         couponValue={couponValue}
         setCouponValue={setCouponValue}

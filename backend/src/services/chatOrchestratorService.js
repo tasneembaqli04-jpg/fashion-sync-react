@@ -48,22 +48,15 @@ function buildBusinessHoursContext(businessHours) {
 `.trim();
   }
 
-  const currentDayKey = new Intl.DateTimeFormat(
-    "en-US",
-    {
-      timeZone: "Asia/Jerusalem",
-      weekday: "short",
-    }
-  )
+  const currentDayKey = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jerusalem",
+    weekday: "short",
+  })
     .format(new Date())
     .toLowerCase();
 
-  const todayData = Array.isArray(
-    businessHours.days
-  )
-    ? businessHours.days.find(
-        (day) => day?.key === currentDayKey
-      )
+  const todayData = Array.isArray(businessHours.days)
+    ? businessHours.days.find((day) => day?.key === currentDayKey)
     : null;
 
   return `
@@ -176,7 +169,16 @@ ${JSON.stringify(productsForAi, null, 2)}
 
 ענה ללקוחה על סמך המוצרים האלה בלבד.
 אל תמציא מוצרים, מחירים, צבעים, מידות או מלאי.
-אם מדובר בהמלצה לאירוע, הסבר בקצרה למה המוצרים מתאימים.
+
+כאשר מוצג קטלוג מוצרים מתחת לתשובה:
+- כתוב תשובה קצרה בלבד (משפט אחד או שניים).
+- אל תכתוב רשימות או פירוט של מוצרים בתוך הטקסט.
+- אל תפרט את שמות המוצרים.
+- אל תפרט את המחירים.
+- אל תחזור על מידע שמופיע כבר בכרטיסי המוצרים.
+- במקום זאת, סכם בקצרה את תוצאות החיפוש והפנה את הלקוחה לעיין בקטלוג המוצג מתחת.
+
+אם מדובר בהמלצה לאירוע, אפשר להוסיף משפט קצר אחד שמסביר למה המוצרים מתאימים.
 
 כאשר הלקוחה מבקשת צבע או מידה, בדוק את ההתאמה בתוך אותו וריאנט.
 אל תאמר שמידה זמינה בצבע מסוים אם הכמות שלה בווריאנט הזה היא אפס או אם המידה אינה קיימת.
@@ -500,18 +502,36 @@ ${businessHoursContext}
   const productContext = buildProductContext(intent, products);
   const conversationInstruction = buildConversationInstruction(intent);
 
-  return streamChatReply({
+  const chatResult = await streamChatReply({
     message: `
-  הודעת הלקוחה הנוכחית:   
-  ${message}
+הודעת הלקוחה הנוכחית:
+${message}
 
-  ${conversationInstruction}
+${conversationInstruction}
 
-  ${productContext}
-  `.trim(),
+${productContext}
+`.trim(),
     history,
     onChunk,
   });
+
+  const catalogProducts = products.map((product) => buildProductForAi(product));
+
+  return {
+    ...(chatResult && typeof chatResult === "object" ? chatResult : {}),
+
+    type: catalogProducts.length ? "products" : "text",
+
+    text: typeof chatResult === "string" ? chatResult : chatResult?.text || "",
+
+    intent,
+
+    products: catalogProducts,
+
+    responseMode: "TEXT",
+
+    imageGenerated: false,
+  };
 }
 
 module.exports = {

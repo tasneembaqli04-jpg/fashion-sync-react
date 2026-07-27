@@ -4,6 +4,7 @@ export default function OutfitProductsCatalog({
   products = [],
   openProductModal,
   onAddAll,
+  title = "מוצרים מתאימים",
 }) {
   if (!Array.isArray(products) || products.length === 0) {
     return null;
@@ -11,7 +12,7 @@ export default function OutfitProductsCatalog({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.title}>🛍️ הפריטים בלוק</div>
+      <div className={styles.title}>🛍️ {title}</div>
 
       <div className={styles.products}>
         {products.map((product) => (

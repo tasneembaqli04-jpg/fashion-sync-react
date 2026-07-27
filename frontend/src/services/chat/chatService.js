@@ -22,36 +22,25 @@ export async function requestChatReplyStream({
     body: JSON.stringify({
       message,
       history,
-      currentOutfit: Array.isArray(currentOutfit)
-        ? currentOutfit
-        : [],
+      currentOutfit: Array.isArray(currentOutfit) ? currentOutfit : [],
       currentOutfitImage:
-        typeof currentOutfitImage === "string"
-          ? currentOutfitImage
-          : "",
+        typeof currentOutfitImage === "string" ? currentOutfitImage : "",
     }),
     signal,
   });
 
-  const contentType =
-    response.headers.get("content-type") || "";
+  const contentType = response.headers.get("content-type") || "";
 
   if (!response.ok) {
     if (contentType.includes("application/json")) {
       const data = await response.json().catch(() => null);
 
-      throw new Error(
-        data?.message ||
-          data?.error ||
-          "בקשת הצ'אט נכשלה"
-      );
+      throw new Error(data?.message || data?.error || "בקשת הצ'אט נכשלה");
     }
 
     const errorText = await response.text().catch(() => "");
 
-    throw new Error(
-      errorText || "בקשת הצ'אט נכשלה"
-    );
+    throw new Error(errorText || "בקשת הצ'אט נכשלה");
   }
 
   if (contentType.includes("application/json")) {
@@ -83,7 +72,42 @@ export async function requestChatReplyStream({
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
+
+  let buffer = "";
   let fullText = "";
+  let finalResult = null;
+
+  function processLine(line) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine) {
+      return;
+    }
+
+    let event;
+
+    try {
+      event = JSON.parse(trimmedLine);
+    } catch (error) {
+      console.error("Failed to parse chat stream event:", trimmedLine, error);
+
+      return;
+    }
+
+    if (event.type === "chunk") {
+      fullText += event.text || "";
+
+      if (onChunk) {
+        onChunk(fullText);
+      }
+
+      return;
+    }
+
+    if (event.type === "result") {
+      finalResult = event;
+    }
+  }
 
   while (true) {
     const { done, value } = await reader.read();
@@ -92,27 +116,39 @@ export async function requestChatReplyStream({
       break;
     }
 
-    const chunkText = decoder.decode(value, {
+    buffer += decoder.decode(value, {
       stream: true,
     });
 
-    if (chunkText) {
-      fullText += chunkText;
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
 
-      if (onChunk) {
-        onChunk(fullText);
-      }
+    for (const line of lines) {
+      processLine(line);
     }
   }
 
-  fullText += decoder.decode();
+  buffer += decoder.decode();
 
-  if (!fullText.trim()) {
+  if (buffer.trim()) {
+    processLine(buffer);
+  }
+
+  if (!fullText.trim() && !finalResult) {
     throw new Error("לא התקבלה תשובה");
   }
 
   return {
-    responseMode: "TEXT",
+    responseMode: finalResult?.responseMode || "TEXT",
+
     text: fullText.trim(),
+
+    products: Array.isArray(finalResult?.products) ? finalResult.products : [],
+
+    intent: finalResult?.intent || null,
+
+    imageGenerated: finalResult?.imageGenerated || false,
+
+    error: finalResult?.error || null,
   };
 }
