@@ -9,7 +9,7 @@ function buildVerificationEmailHtml(code) {
       <div style="background: #f5f0e8; border-radius: 10px; padding: 18px; text-align: center; margin: 20px 0;">
         <span style="font-size: 2rem; font-weight: 900; letter-spacing: 6px; color: #1a1a1a;">${code}</span>
       </div>
-      <p>הקוד תקף ל-10 דקות. אם לא ביקשת קוד זה, אפשר להתעלם מהמייל הזה.</p>
+      <p>הקוד תקף ל-3 דקות. אם לא ביקשת קוד זה, אפשר להתעלם מהמייל הזה.</p>
       <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
     </div>
   `;

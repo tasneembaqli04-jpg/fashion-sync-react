@@ -960,7 +960,7 @@ export const en = {
     },
     hero: {
       welcomeTo: "Welcome to",
-      subtitle: "Smart management and a perfect shopping experience – all in one place",
+      subtitle: "Your style is waiting for you here",
       customerAreaQuote: "\"Customer area ✨ Your style starts here – log in and continue shopping\"",
       loginButtonLabel: "Log in with email and password",
       loginButtonSub: "Full access to your orders, favorites, and shopping cart",
