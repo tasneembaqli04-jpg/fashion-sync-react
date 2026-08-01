@@ -37,7 +37,7 @@ import {
   updateDeliveryStatus,
   deleteDelivery,
 } from "../services/deliveries/deliveriesService";
-import { getAllCustomers } from "../services/customer/customerFirestore";
+import { getAllCustomers, updateCustomerNameTranslation } from "../services/customer/customerFirestore";
 import {
   getFeaturedProduct,
   setFeaturedProduct,
@@ -339,10 +339,16 @@ export default function Manager({ onPromote }) {
       (f) => f.text && !f.textEn
     );
 
+    const allCustomers = await getAllCustomers();
+    const customersNeedingUpdate = allCustomers.filter(
+      (c) => c.name && !c.nameEn
+    );
+
     const total =
       ordersNeedingUpdate.length +
       messagesNeedingUpdate.length +
-      feedbackNeedingUpdate.length;
+      feedbackNeedingUpdate.length +
+      customersNeedingUpdate.length;
 
     setHistoricalProgress({ done: 0, total });
     let done = 0;
@@ -388,6 +394,14 @@ export default function Manager({ onPromote }) {
     for (const feedbackItem of feedbackNeedingUpdate) {
       const textEn = await translateText(feedbackItem.text);
       await updateFeedbackTranslation(feedbackItem.id, textEn || feedbackItem.text);
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    for (const customer of customersNeedingUpdate) {
+      const nameEn = await translateText(customer.name);
+      await updateCustomerNameTranslation(customer.email, nameEn || customer.name);
 
       done += 1;
       setHistoricalProgress({ done, total });

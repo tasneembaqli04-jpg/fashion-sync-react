@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { translateText } from "../services/translation/translationService";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
@@ -419,13 +419,17 @@ export default function Checkout() {
             checkoutGiftCardDiscount
         );
 
+        const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+        const nameEn = await translateText(fullName);
+
         const receipt = {
           id: `RCP-${Date.now()}`,
           date: new Date().toISOString(),
           customer: {
             firstName: formData.firstName,
             lastName: formData.lastName,
-            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            name: fullName,
+            nameEn: nameEn || fullName,
             email: formData.email,
             phone: formData.phone,
             street: formData.street,

@@ -825,14 +825,13 @@ export const en = {
       giftCardLabel: "Gift Card",
       forLabel: "For:",
       checkBalanceTitle: "💳 Check Gift Card Balance",
-      checkCodePlaceholder: "Enter gift card code (GC-...)",
       checkBalanceButton: "Check Balance",
       currentBalance: "Current balance:",
       outOf: "out of",
       statusLabel: "Status:",
       statusUsed: "Fully used",
       statusActive: "Active",
-      checkCodePlaceholder: "Enter gift card code (GC-... or RTN-...)",
+      checkCodePlaceholder: "Gift/credit code (GC-... or RTN-...)",
     },
 
     dialogs: {
