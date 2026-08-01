@@ -115,7 +115,7 @@ export default function CustomerPolicy({ show, currentUser }) {
           <br />
           {field("shippingLine3")}
           <br />
-          {field("shippingLine4")}
+          {field("shippingLine4").replace("{address}", storeAddress)}
         </div>
       </div>
 

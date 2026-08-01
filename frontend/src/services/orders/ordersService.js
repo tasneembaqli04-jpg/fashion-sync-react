@@ -35,6 +35,7 @@ export async function addOrder(receipt) {
   const order = {
     id: receipt.id,
     customerEmail,
+    customer: receipt.customer || null,
     date: receipt.date || new Date().toISOString(),
     items: receipt.items || [],
     subtotal: Number(receipt.subtotal) || 0,

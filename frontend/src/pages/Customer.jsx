@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getStoreDetails } from "../services/settings/storeDetailsService";
+import { getBusinessHours } from "../services/settings/businessHoursService";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
@@ -90,6 +92,23 @@ export default function Customer() {
   const [isGuest, setIsGuest] = useState(false);
 
   const [products, setProducts] = useState([]);
+  const [storeAddressForChat, setStoreAddressForChat] = useState("");
+  const [hoursTextForChat, setHoursTextForChat] = useState("");
+
+  useEffect(() => {
+    getStoreDetails().then((details) => {
+      if (details) setStoreAddressForChat(details.address || "");
+    });
+
+    getBusinessHours().then((hours) => {
+      if (!hours?.days) return;
+      const summary = hours.days
+        .filter((d) => d.open)
+        .map((d) => `${dict.manager.settings.dayNames[d.key]} ${d.openTime}–${d.closeTime}`)
+        .join(", ");
+      setHoursTextForChat(summary);
+    });
+  }, []);
   const [featuredCode, setFeaturedCode] = useState("");
   const [cart, setCart] = useState(loadCart());
 
@@ -540,7 +559,10 @@ export default function Customer() {
         return;
       }
 
-      const fallbackReply = getReply(text, products);
+      const fallbackReply = getReply(text, products, {
+        storeAddress: storeAddressForChat,
+        hoursText: hoursTextForChat,
+      });
 
       setChatMessages((prev) => [
         ...prev,

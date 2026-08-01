@@ -96,6 +96,7 @@ export default function Manager({ onPromote }) {
 
             customerDetails: customer || null,
             customerEmail: order.customerEmail,
+            customerEmbedded: order.customer || null,
 
             status: order.ready ? "ready" : "pending",
             stageIndex: Number(order.status) || 0,
@@ -125,7 +126,7 @@ export default function Manager({ onPromote }) {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [isLoggedIn]);
+   }, [isLoggedIn, refreshKey]);
 
   const [deliveries, setDeliveries] = useState([]);
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
@@ -214,7 +215,7 @@ export default function Manager({ onPromote }) {
       shippingCost: Number(order.shippingCost) || 0,
       payMethod: order.payMethod || "",
       shipping: order.shipping || null,
-      customer: order.customer || order.customerDetails || null,
+      customer: order.customerEmbedded || order.customerDetails || null,
       items: Array.isArray(order.items) ? order.items : [],
     }));
   }, [orders]);
@@ -408,6 +409,7 @@ export default function Manager({ onPromote }) {
     }
 
     setTranslatingHistorical(false);
+    setRefreshKey((k) => k + 1);
   }
 
   function handleToggleOrderReady(orderId) {

@@ -272,7 +272,7 @@ export const en = {
       policyTranslateButton: "🔄 Translate Now",
       policyTranslatingButton: "⏳ Translating...",
       translationSectionTitle: "🌐 Translate Historical Data",
-      translationSectionDesc: "Orders, contact messages, and feedback saved before automatic translation was enabled were not translated retroactively. Click here to translate them now, based on current products and content.",
+      translationSectionDesc: "Orders, contact messages, feedback, and customer names saved before automatic translation was enabled were not translated retroactively. Click here to translate them now, based on current products and content.",
       translationSectionButton: "🌐 Translate Old Data",
       translationSectionProgress: "⏳ Translating... ({done}/{total})",
       storeName: "Store Name",
@@ -793,7 +793,7 @@ export const en = {
       shippingLine1: "Standard shipping: 5–7 business days — ₪25 (free for orders over ₪200)",
       shippingLine2: "Express shipping: 2–3 business days — ₪29",
       shippingLine3: "Same-day delivery: by 23:59 today — ₪59 (central area only)",
-      shippingLine4: "Self pickup: tomorrow 10:00–20:00, free — Herzl 42, Tel Aviv",
+      shippingLine4: "Self pickup: tomorrow 10:00–20:00, free — {address}",
       privacyTitle: "🔒 Privacy & Security",
       privacyLine1: "We do not store credit card details. All transactions are encrypted.",
       contactTitle: "📞 Contact Us",
@@ -1031,7 +1031,7 @@ export const en = {
     pickup: {
       label: "Self Pickup",
       days: "Time will be set after order confirmation",
-      note: "42 Herzl St., Tel Aviv",
+      note: "",
     },
   },
 };

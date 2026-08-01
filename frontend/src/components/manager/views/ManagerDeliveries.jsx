@@ -195,8 +195,10 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
                   <div className={deliveriesStyles.deliveryHeadInfo}>
                     <div className={deliveriesStyles.deliveryCustomerLine}>
                       <span className={deliveriesStyles.deliveryCustomerName}>
-                        {(lang === "en" && order.customerDetails?.nameEn) ||
+                        {(lang === "en" && (order.customerDetails?.nameEn || order.customerEmbedded?.nameEn)) ||
                           order.customerDetails?.name ||
+                          order.customerEmbedded?.name ||
+                          `${order.customerEmbedded?.firstName || ""} ${order.customerEmbedded?.lastName || ""}`.trim() ||
                           order.customerDetails?.email ||
                           order.customerEmail ||
                           t.defaultCustomer}
