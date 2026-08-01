@@ -80,7 +80,7 @@ import VisualSearchModal from "../components/customer/VisualSearchModal";
 export default function Customer() {
   const navigate = useNavigate();
   const { confirmDialog, alertDialog } = useDialog();
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
 
   const [theme, setTheme] = useState(getSavedTheme());
   const [activePanel, setActivePanel] = useState("browse");
@@ -1008,6 +1008,7 @@ export default function Customer() {
       toEmail: order.customerEmail || currentUser?.email || "",
       orderId: order.id,
       total: order.total,
+      lang,
     });
 
     alertDialog(dict.customer.orders.cancelSuccess);

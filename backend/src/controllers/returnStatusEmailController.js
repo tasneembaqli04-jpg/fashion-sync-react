@@ -2,7 +2,7 @@ const { sendReturnStatusEmail } = require("../services/returnStatusEmailService"
 
 async function returnStatusEmailController(request, response) {
   try {
-    const { toEmail, itemName, status, giftCardCode, giftCardAmount } = request.body || {};
+    const { toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang } = request.body || {};
 
     if (!toEmail || !status) {
       return response.status(400).json({
@@ -14,9 +14,11 @@ async function returnStatusEmailController(request, response) {
     const result = await sendReturnStatusEmail({
       toEmail,
       itemName,
+      itemNameEn,
       status,
       giftCardCode,
       giftCardAmount,
+      lang,
     });
 
     return response.status(200).json({

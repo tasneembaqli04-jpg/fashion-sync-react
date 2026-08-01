@@ -39,7 +39,7 @@ import { useDialog } from "../components/common/DialogProvider";
 export default function Checkout() {
   const navigate = useNavigate();
   const { alertDialog } = useDialog();
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
@@ -453,6 +453,7 @@ export default function Checkout() {
         await decrementProductsStock(orderItems);
         sendOrderConfirmationEmail({
           toEmail: formData.email,
+          lang,
           order: {
             id: receipt.id,
             customerName: formData.firstName || "",

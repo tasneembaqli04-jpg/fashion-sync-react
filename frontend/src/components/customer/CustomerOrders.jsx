@@ -68,6 +68,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       orderId: order.id,
       pickupDate: input.date,
       pickupTime: input.time,
+      lang,
     });
 
     onUpdateOrder?.(order.docId, { pickupDate: input.date, pickupTime: input.time });

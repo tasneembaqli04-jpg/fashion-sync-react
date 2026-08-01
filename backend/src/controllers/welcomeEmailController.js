@@ -2,7 +2,7 @@ const { sendWelcomeEmail } = require("../services/verificationEmailService");
 
 async function welcomeEmailController(request, response) {
   try {
-    const { toEmail, name } = request.body || {};
+    const { toEmail, name, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,7 +11,7 @@ async function welcomeEmailController(request, response) {
       });
     }
 
-    const result = await sendWelcomeEmail({ toEmail, name });
+    const result = await sendWelcomeEmail({ toEmail, name, lang });
 
     return response.status(200).json({
       success: true,

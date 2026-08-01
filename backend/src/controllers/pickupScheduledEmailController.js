@@ -2,7 +2,7 @@ const { sendPickupScheduledEmail } = require("../services/pickupScheduledEmailSe
 
 async function pickupScheduledEmailController(request, response) {
   try {
-    const { toEmail, orderId, pickupDate, pickupTime } = request.body || {};
+    const { toEmail, orderId, pickupDate, pickupTime, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -16,6 +16,7 @@ async function pickupScheduledEmailController(request, response) {
       orderId,
       pickupDate,
       pickupTime,
+      lang,
     });
 
     return response.status(200).json({

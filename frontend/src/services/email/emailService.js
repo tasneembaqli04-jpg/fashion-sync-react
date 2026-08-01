@@ -2,14 +2,14 @@ const EMAIL_URL =
   import.meta.env.VITE_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendOrderEmail";
 
-export async function sendOrderConfirmationEmail({ toEmail, order }) {
+export async function sendOrderConfirmationEmail({ toEmail, order, lang }) {
   if (!toEmail || !order) return null;
 
   try {
     const response = await fetch(EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, order }),
+      body: JSON.stringify({ toEmail, order, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -30,14 +30,14 @@ const STOCK_ALERT_EMAIL_URL =
   import.meta.env.VITE_STOCK_ALERT_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendStockAlertEmail";
 
-export async function sendStockAlertEmail({ toEmail, productName }) {
+export async function sendStockAlertEmail({ toEmail, productName, productNameEn, lang }) {
   if (!toEmail) return null;
 
   try {
     const response = await fetch(STOCK_ALERT_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, productName }),
+      body: JSON.stringify({ toEmail, productName, productNameEn, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -57,14 +57,14 @@ const SHIPPING_UPDATE_EMAIL_URL =
   import.meta.env.VITE_SHIPPING_UPDATE_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendShippingUpdateEmail";
 
-export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup }) {
+export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup, lang }) {
   if (!toEmail || !orderId) return null;
 
   try {
     const response = await fetch(SHIPPING_UPDATE_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, orderId, stageIndex, isPickup }),
+      body: JSON.stringify({ toEmail, orderId, stageIndex, isPickup, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -84,14 +84,14 @@ const PICKUP_SCHEDULED_EMAIL_URL =
   import.meta.env.VITE_PICKUP_SCHEDULED_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendPickupScheduledEmail";
 
-export async function sendPickupScheduledEmail({ toEmail, orderId, pickupDate, pickupTime }) {
+export async function sendPickupScheduledEmail({ toEmail, orderId, pickupDate, pickupTime, lang }) {
   if (!toEmail) return null;
 
   try {
     const response = await fetch(PICKUP_SCHEDULED_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, orderId, pickupDate, pickupTime }),
+      body: JSON.stringify({ toEmail, orderId, pickupDate, pickupTime, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -112,14 +112,14 @@ const RETURN_STATUS_EMAIL_URL =
   import.meta.env.VITE_RETURN_STATUS_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendReturnStatusEmail";
 
-export async function sendReturnStatusEmail({ toEmail, itemName, status, giftCardCode, giftCardAmount }) {
+export async function sendReturnStatusEmail({ toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang }) {
   if (!toEmail || !status) return null;
 
   try {
     const response = await fetch(RETURN_STATUS_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, itemName, status, giftCardCode, giftCardAmount }),
+      body: JSON.stringify({ toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -139,14 +139,14 @@ const ORDER_CANCELLATION_EMAIL_URL =
   import.meta.env.VITE_ORDER_CANCELLATION_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendOrderCancellationEmail";
 
-export async function sendOrderCancellationEmail({ toEmail, orderId, total }) {
+export async function sendOrderCancellationEmail({ toEmail, orderId, total, lang }) {
   if (!toEmail) return null;
 
   try {
     const response = await fetch(ORDER_CANCELLATION_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, orderId, total }),
+      body: JSON.stringify({ toEmail, orderId, total, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -193,14 +193,14 @@ const WELCOME_EMAIL_URL =
   import.meta.env.VITE_WELCOME_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendWelcomeEmail";
 
-export async function sendWelcomeEmail({ toEmail, name }) {
+export async function sendWelcomeEmail({ toEmail, name, lang }) {
   if (!toEmail) return null;
 
   try {
     const response = await fetch(WELCOME_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, name }),
+      body: JSON.stringify({ toEmail, name, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -220,14 +220,14 @@ const PASSWORD_RESET_EMAIL_URL =
   import.meta.env.VITE_PASSWORD_RESET_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendPasswordResetEmail";
 
-export async function sendPasswordResetRequest({ toEmail }) {
+export async function sendPasswordResetRequest({ toEmail, lang }) {
   if (!toEmail) return null;
 
   try {
     const response = await fetch(PASSWORD_RESET_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail }),
+      body: JSON.stringify({ toEmail, lang }),
     });
 
     const data = await response.json().catch(() => null);
@@ -241,14 +241,14 @@ const VERIFICATION_EMAIL_URL =
   import.meta.env.VITE_VERIFICATION_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendVerificationEmail";
 
-export async function sendVerificationCodeEmail({ toEmail, code }) {
+export async function sendVerificationCodeEmail({ toEmail, code, lang }) {
   if (!toEmail || !code) return null;
 
   try {
     const response = await fetch(VERIFICATION_EMAIL_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toEmail, code }),
+      body: JSON.stringify({ toEmail, code, lang }),
     });
 
     const data = await response.json().catch(() => null);

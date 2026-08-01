@@ -2,7 +2,7 @@ const { sendVerificationCodeEmail } = require("../services/verificationEmailServ
 
 async function verificationEmailController(request, response) {
   try {
-    const { toEmail, code } = request.body || {};
+    const { toEmail, code, lang } = request.body || {};
 
     if (!toEmail || !code) {
       return response.status(400).json({
@@ -11,7 +11,7 @@ async function verificationEmailController(request, response) {
       });
     }
 
-    const result = await sendVerificationCodeEmail({ toEmail, code });
+    const result = await sendVerificationCodeEmail({ toEmail, code, lang });
 
     return response.status(200).json({
       success: true,

@@ -507,6 +507,7 @@ export default function Manager({ onPromote }) {
         toEmail: order.customerEmail,
         orderId: order.id,
         stageIndex: 0,
+        lang,
       });
     }
   }
@@ -527,6 +528,7 @@ export default function Manager({ onPromote }) {
         orderId: order.id,
         stageIndex: nextIndex,
         isPickup,
+        lang,
       });
     }
   }

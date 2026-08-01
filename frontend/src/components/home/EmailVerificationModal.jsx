@@ -13,7 +13,7 @@ export default function EmailVerificationModal({
   onClose,
   onVerified,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.home.verification;
 
   const [code, setCode] = useState("");
@@ -79,7 +79,7 @@ export default function EmailVerificationModal({
   async function handleResend() {
     if (resendCooldown > 0) return;
 
-    await resendVerificationCode(email, name);
+    await resendVerificationCode(email, name, lang);
     setResendCooldown(30);
     setSecondsSinceOpen(0);
     setResendMessage(t.resendSuccess);

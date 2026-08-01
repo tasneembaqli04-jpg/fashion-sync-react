@@ -2,7 +2,7 @@ const { sendOrderCancellationEmail } = require("../services/orderCancellationEma
 
 async function orderCancellationEmailController(request, response) {
   try {
-    const { toEmail, orderId, total } = request.body || {};
+    const { toEmail, orderId, total, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,7 +11,7 @@ async function orderCancellationEmailController(request, response) {
       });
     }
 
-    const result = await sendOrderCancellationEmail({ toEmail, orderId, total });
+    const result = await sendOrderCancellationEmail({ toEmail, orderId, total, lang });
 
     return response.status(200).json({
       success: true,

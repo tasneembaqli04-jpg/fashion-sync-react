@@ -24,7 +24,7 @@ import {
 import { useLanguage } from "../translations/LanguageProvider";
 
 export default function Home() {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const [isLight, setIsLight] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
@@ -71,7 +71,7 @@ export default function Home() {
     if (!targetEmail?.trim()) return;
 
     setForgotPasswordStatus("sending");
-    await sendPasswordResetRequest({ toEmail: targetEmail.trim() });
+    await sendPasswordResetRequest({ toEmail: targetEmail.trim(), lang });
     setForgotPasswordStatus("sent");
   }
 
@@ -80,7 +80,7 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const result = await loginOrCreateUser(email, password, dict.home.authErrors);
+      const result = await loginOrCreateUser(email, password, dict.home.authErrors, lang);
 
       if (result.error) {
         setError(result.error);
@@ -109,6 +109,7 @@ export default function Home() {
     await sendWelcomeEmail({
       toEmail: pendingVerification.email,
       name: pendingVerification.name,
+      lang,
     });
 
     const redirectUrl = completeVerifiedLogin(pendingVerification.pendingUser);

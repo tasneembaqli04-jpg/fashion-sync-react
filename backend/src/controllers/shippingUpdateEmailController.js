@@ -2,7 +2,7 @@ const { sendShippingUpdateEmail } = require("../services/emailService");
 
 async function shippingUpdateEmailController(request, response) {
   try {
-    const { toEmail, orderId, stageIndex, isPickup } = request.body || {};
+    const { toEmail, orderId, stageIndex, isPickup, lang } = request.body || {};
 
     if (!toEmail || !orderId) {
       return response.status(400).json({
@@ -16,6 +16,7 @@ async function shippingUpdateEmailController(request, response) {
       orderId,
       stageIndex,
       isPickup,
+      lang,
     });
 
     return response.status(200).json({

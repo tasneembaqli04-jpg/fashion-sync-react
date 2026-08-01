@@ -61,9 +61,13 @@ export default function StockNotificationsView({ products = [], initialProductCo
 
   async function handleMarkDone(id, item) {
     if (item?.email) {
+      const product = products.find((p) => p.code === item.productCode);
+
       await sendStockAlertEmail({
         toEmail: item.email,
         productName: item.productName || item.productCode,
+        productNameEn: product?.nameEn || "",
+        lang,
       });
     }
 
