@@ -32,6 +32,7 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
   const items = Array.isArray(receipt.items) ? receipt.items : [];
   const customer = receipt.customer || {};
   const fullName =
+    (lang === "en" && customer.nameEn) ||
     `${customer.firstName || ""} ${customer.lastName || ""}`.trim() ||
     customer.name ||
     "";

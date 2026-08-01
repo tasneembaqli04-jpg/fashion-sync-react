@@ -337,10 +337,9 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
       {filteredOrders.length ? (
         filteredOrders.map((order) => {
-          const steps =
-            Array.isArray(order.steps) && order.steps.length
-              ? order.steps
-              : STATUS_LABELS;
+          const steps = order.shipping?.id === "pickup"
+            ? dict.pickupStatusLabels
+            : STATUS_LABELS;
           const status = order._statusNum;
 
           return (

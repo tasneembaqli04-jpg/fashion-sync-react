@@ -330,7 +330,7 @@ export const he = {
       pointsRedeemed: "נוצלו {points} נקודות נאמנות (−₪{amount})",
       totalToPayLabel: '💰 סה"כ לתשלום:',
       close: "סגור",
-      checkCodePlaceholder: "הזן/י קוד כרטיס מתנה (GC-... או RTN-...)",
+      checkCodePlaceholder: "קוד כרטיס מתנה/זיכוי (GC-... או RTN-...)",
     },
     scanModal: {
       title: "📷 סריקת ברקוד",

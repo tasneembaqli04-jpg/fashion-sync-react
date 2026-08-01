@@ -24,6 +24,7 @@ export async function saveCustomer(customer) {
       firstName: customer.firstName || "",
       lastName: customer.lastName || "",
       name: customer.name || "",
+      nameEn: customer.nameEn || "",
       email,
       phone: customer.phone || "",
       street: customer.street || "",
@@ -35,7 +36,16 @@ export async function saveCustomer(customer) {
     { merge: true }
   );
 }
+export async function updateCustomerNameTranslation(email, nameEn) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return;
 
+  await setDoc(
+    doc(db, "customers", normalizedEmail),
+    { nameEn: nameEn || "" },
+    { merge: true }
+  );
+}
 export async function getCustomer(email) {
   const customerRef = doc(db, "customers", normalizeEmail(email));
   const snapshot = await getDoc(customerRef);

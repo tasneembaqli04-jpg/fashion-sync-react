@@ -30,6 +30,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
 
   const customer = order.customerDetails || {};
   const fullName =
+    (lang === "en" && customer.nameEn) ||
     `${customer.firstName || ""} ${customer.lastName || ""}`.trim() ||
     customer.name ||
     t.notEntered;
