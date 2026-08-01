@@ -42,7 +42,7 @@ export default function EmailVerificationModal({
     return () => clearInterval(timer);
   }, [isOpen]);
 
-  const codeLikelyExpired = secondsSinceOpen >= 180;
+  const codeLikelyExpired = secondsSinceOpen >= 60;
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
