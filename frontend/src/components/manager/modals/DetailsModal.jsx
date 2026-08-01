@@ -386,7 +386,7 @@ export default function DetailsModal({
 
           <div style={{ position: "relative", flexShrink: 0 }}>
             <img
-              src={image}
+              src={image || null}
               alt={name}
               className={modalStyles.detailsProductImage}
             />

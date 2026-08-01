@@ -1,4 +1,4 @@
-export function getReply(message, products) {
+export function getReply(message, products, storeAddress) {
   const text = String(message || "").trim().toLowerCase();
 
   if (
@@ -62,7 +62,7 @@ export function getReply(message, products) {
     return "שעות הפתיחה הן א'–ה' 9:00–21:00 ו־ו' 9:00–15:00 ⏰";
 
   if (text.includes("כתובת") || text.includes("איפה"))
-    return "הכתובת היא רחוב הרצל 42, תל אביב 📍";
+    return `הכתובת היא ${storeAddress || "זמינה בעמוד המדיניות"} 📍`;
 
   if (text.includes("משלוח") || text.includes("משלוחים"))
     return "משלוח רגיל 3–5 ימי עסקים ב־₪25, משלוח מהיר 1–2 ימי עסקים ב־₪49, ומשלוח חינם מעל ₪350 🚚";

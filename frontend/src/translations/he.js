@@ -278,7 +278,7 @@ export const he = {
       policyTranslateButton: "🔄 תרגם עכשיו",
       policyTranslatingButton: "⏳ מתרגם...",
       translationSectionTitle: "🌐 תרגום נתונים ישנים",
-      translationSectionDesc: "הזמנות, הודעות יצירת קשר ומשוב שנשמרו לפני שהופעל התרגום האוטומטי לא תורגמו למפרע. לחיצה כאן תתרגם אותם עכשיו, לפי המוצרים והתוכן הקיימים.",
+      translationSectionDesc: "הזמנות, הודעות יצירת קשר, משוב ושמות לקוחות שנשמרו לפני שהופעל התרגום האוטומטי לא תורגמו למפרע. לחיצה כאן תתרגם אותם עכשיו, לפי המוצרים והתוכן הקיימים.",
       translationSectionButton: "🌐 תרגם נתונים ישנים",
       translationSectionProgress: "⏳ מתרגם... ({done}/{total})",
       storeName: "שם החנות",
@@ -844,7 +844,7 @@ export const he = {
       shippingLine1: "משלוח רגיל: 5–7 ימי עסקים — ₪25 (חינם לרכישות מעל ₪200)",
       shippingLine2: "משלוח מהיר: 2–3 ימי עסקים — ₪29",
       shippingLine3: "משלוח באותו יום: עד 23:59 היום — ₪59 (מרכז בלבד)",
-      shippingLine4: "איסוף עצמי: מחר 10:00–20:00, חינם — הרצל 42, ת״א",
+      shippingLine4: "איסוף עצמי: מחר 10:00–20:00, חינם — {address}",
       privacyTitle: "🔒 פרטיות ואבטחה",
       privacyLine1: "אנחנו לא שומרים פרטי כרטיס אשראי. כל העסקאות מוצפנות.",
       contactTitle: "📞 יצירת קשר",
@@ -1081,7 +1081,7 @@ export const he = {
     pickup: {
       label: "איסוף עצמי",
       days: "מועד ייקבע לאחר אישור ההזמנה",
-      note: "הרצל 42, ת״א",
+      note: "",
     },
   },
 };

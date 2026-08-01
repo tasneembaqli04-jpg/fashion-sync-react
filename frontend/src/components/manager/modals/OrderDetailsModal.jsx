@@ -28,7 +28,20 @@ export default function OrderDetailsModal({ open, order, onClose }) {
 
   if (!open || !order) return null;
 
-  const customer = order.customerDetails || {};
+  const embedded = order.customerEmbedded || {};
+  const profile = order.customerDetails || {};
+  const customer = {
+    firstName: profile.firstName || embedded.firstName || "",
+    lastName: profile.lastName || embedded.lastName || "",
+    name: profile.name || embedded.name || "",
+    nameEn: profile.nameEn || embedded.nameEn || "",
+    phone: profile.phone || embedded.phone || "",
+    email: profile.email || embedded.email || "",
+    city: profile.city || embedded.city || "",
+    street: profile.street || embedded.street || "",
+    zip: profile.zip || embedded.zip || "",
+    notes: profile.notes || embedded.notes || "",
+  };
   const fullName =
     (lang === "en" && customer.nameEn) ||
     `${customer.firstName || ""} ${customer.lastName || ""}`.trim() ||

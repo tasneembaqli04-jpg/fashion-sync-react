@@ -62,7 +62,9 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
     const term = searchTerm.trim();
     if (term) {
       const phoneDigits = term.replace(/\D/g, "");
-      const customerPhone = String(order.customerDetails?.phone || "").replace(/\D/g, "");
+      const customerPhone = String(
+        order.customerDetails?.phone || order.customerEmbedded?.phone || ""
+      ).replace(/\D/g, "");
       const matchesPhone = phoneDigits && customerPhone.includes(phoneDigits);
       const matchesOrderId = String(order.id || "").toLowerCase().includes(term.toLowerCase());
 
