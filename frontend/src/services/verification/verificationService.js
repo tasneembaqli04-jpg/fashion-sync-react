@@ -2,7 +2,7 @@ import { db } from "../../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { sendVerificationCodeEmail } from "../email/emailService";
 
-const CODE_TTL_MS = 3 * 60 * 1000; 
+const CODE_TTL_MS = 1 * 60 * 1000; 
 
 function normalize(email) {
   return String(email || "").trim().toLowerCase();
