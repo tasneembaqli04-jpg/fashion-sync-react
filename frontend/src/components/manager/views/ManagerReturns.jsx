@@ -111,12 +111,16 @@ export default function ManagerReturns({ products = [] }) {
     }
 
     if (request.customerEmail) {
+      const product = products.find((p) => p.code === request.itemCode);
+
       sendReturnStatusEmail({
         toEmail: request.customerEmail,
         itemName: request.itemName,
+        itemNameEn: product?.nameEn || "",
         status,
         giftCardCode,
         giftCardAmount,
+        lang,
       });
     }
   }

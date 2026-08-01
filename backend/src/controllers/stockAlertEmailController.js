@@ -2,7 +2,7 @@ const { sendStockAlertEmail } = require("../services/emailService");
 
 async function stockAlertEmailController(request, response) {
   try {
-    const { toEmail, productName } = request.body || {};
+    const { toEmail, productName, productNameEn, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,7 +11,7 @@ async function stockAlertEmailController(request, response) {
       });
     }
 
-    const result = await sendStockAlertEmail({ toEmail, productName });
+    const result = await sendStockAlertEmail({ toEmail, productName, productNameEn, lang });
 
     return response.status(200).json({
       success: true,

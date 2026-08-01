@@ -11,7 +11,7 @@ export function isGmail(email) {
   );
 }
 
-export async function loginOrCreateUser(email, password, t) {
+export async function loginOrCreateUser(email, password, t, lang) {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPass = password.trim();
 
@@ -39,7 +39,7 @@ export async function loginOrCreateUser(email, password, t) {
   }
 
   if (isNewSignup || !(await isEmailVerified(normalizedEmail))) {
-    await createAndSendVerificationCode(normalizedEmail, result.user.name);
+    await createAndSendVerificationCode(normalizedEmail, result.user.name, lang);
 
     return {
       needsVerification: true,
