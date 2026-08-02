@@ -25,7 +25,7 @@ import { useLanguage } from "../translations/LanguageProvider";
 
 export default function Home() {
   const { t: dict, lang } = useLanguage();
-  const [isLight, setIsLight] = useState(false);
+  const [isLight, setIsLight] = useState(() => loadTheme());
   const [loginOpen, setLoginOpen] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
   const [email, setEmail] = useState("");
@@ -36,10 +36,6 @@ export default function Home() {
 
   const [verificationOpen, setVerificationOpen] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(null);
-
-  useEffect(() => {
-    setIsLight(loadTheme());
-  }, []);
 
   useEffect(() => {
     saveTheme(isLight);

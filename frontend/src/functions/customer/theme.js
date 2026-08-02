@@ -1,10 +1,10 @@
 import { LS_KEYS } from "../../data/constants";
 export function applyTheme(theme) {
-  document.body.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  document.body.classList.toggle("light", theme === "light");
 }
 
 export function getSavedTheme() {
-  return localStorage.getItem(LS_KEYS.THEME) || "dark";
+  return localStorage.getItem(LS_KEYS.THEME) || "light";
 }
 
 export function toggleTheme(setTheme) {

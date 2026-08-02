@@ -1,9 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import FloatingItems from "../home/FloatingItems";
 import { signInAsManager } from "../../services/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import homeStyles from "../../styles/Home.module.scss";
+import HomeBackground from "../home/HomeBackground";
+import HomeNavbar from "../home/HomeNavbar";
+import { loadFeaturedImage } from "../../functions/home/featuredProduct.js";
+import HomeHero from "../home/HomeHero";
 
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
@@ -12,6 +18,11 @@ export default function LoginOverlay({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorVisible, setErrorVisible] = useState(false);
+  const [featuredImage, setFeaturedImage] = useState("");
+
+  useEffect(() => {
+    loadFeaturedImage().then(setFeaturedImage);
+  }, []);
 
   const handleLogin = async () => {
     if (username.trim() === "manager" && password === "admin123") {
@@ -27,6 +38,17 @@ export default function LoginOverlay({ onLoginSuccess }) {
 
   return (
     <div className={loginStyles.loginOverlay}>
+      <div className={loginStyles.bgLayer}>
+        <div className={homeStyles.homePage}>
+          <HomeBackground featuredImage={featuredImage} />
+          <FloatingItems />
+          <HomeNavbar isLight={false} onToggleTheme={() => {}} />
+          <HomeHero onOpenLogin={() => {}} onBrowse={() => {}} />
+        </div>
+      </div>
+
+      <div className={loginStyles.blurLayer} />
+
       <div className={loginStyles.loginBox}>
         <button
           onClick={() => navigate("/")}
@@ -49,7 +71,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
         <div className={loginStyles.loginSub}>{t.title}</div>
 
         <div className={formStyles.fg}>
-          <div className={formStyles.fl}>{t.username}</div>
+          <div className={loginStyles.loginLabel}>{t.username}</div>
           <input
             className={formStyles.fi}
             type="text"
@@ -60,7 +82,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
         </div>
 
         <div className={formStyles.fg}>
-          <div className={formStyles.fl}>{t.password}</div>
+          <div className={loginStyles.loginLabel}>{t.password}</div>
           <input
             className={formStyles.fi}
             type="password"

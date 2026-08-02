@@ -15,7 +15,7 @@
   --sidebar: 260px;
 }
 
-:global(body[data-theme="light"]) {
+:global(body.light) {
   --black: #f6f6f3;
   --white: #111;
   --charcoal: #ffffff;
@@ -114,7 +114,7 @@
   padding: 1rem;
 }
 
-:global(body[data-theme="light"]) .card {
+:global(body.light) .card {
   background: rgba(0, 0, 0, 0.02);
 }
 

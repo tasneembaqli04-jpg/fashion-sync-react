@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
 import { restockOrderItems } from "../services/products/productsService";
+import FloatingItems from "../components/home/FloatingItems";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
 import {
   getWishlist,
@@ -1089,6 +1090,7 @@ export default function Customer() {
 
   return (
     <>
+      <FloatingItems />
       <CustomerTopbar
         cartCountMobile={cartCount}
         toggleSidebar={toggleSidebar}

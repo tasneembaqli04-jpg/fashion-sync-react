@@ -158,8 +158,8 @@
   outline: none;
 }
 
-:global(body[data-theme="light"]) .pdField select,
-:global(body[data-theme="light"]) .pdField input {
+:global(body.light) .pdField select,
+:global(body.light) .pdField input {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }
@@ -296,7 +296,7 @@
   font-weight: 900;
 }
 
-:global(body[data-theme="light"]) .qtyBtn {
+:global(body.light) .qtyBtn {
   background: rgba(0, 0, 0, 0.03);
 }
 
@@ -380,7 +380,7 @@
   outline: none;
 }
 
-:global(body[data-theme="light"]) .couponInput {
+:global(body.light) .couponInput {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }
@@ -860,8 +860,8 @@
   margin-bottom: 0.75rem;
 }
 
-:global(body[data-theme="light"]) .pcfTextarea,
-:global(body[data-theme="light"]) .feedbackTextarea {
+:global(body.light) .pcfTextarea,
+:global(body.light) .feedbackTextarea {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }

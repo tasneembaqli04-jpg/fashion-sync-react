@@ -218,7 +218,7 @@
 }
 
 :global(body.light) .homePage .heroTitle {
-  color: var(--white);
+  color: #e8c97a;
   text-shadow: 0 2px 30px rgba(0, 0, 0, 0.85);
 }
 
@@ -227,6 +227,12 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+:global(body.light) .heroTitle span {
+  background: none;
+  -webkit-text-fill-color: #fafaf8;
+  color: #fafaf8;
 }
 
 .heroSub {
@@ -463,18 +469,16 @@
 
 .fsModalCard {
   width: min(500px, 92vw);
-  background: rgba(10, 10, 10, 0.9);
+  background: var(--surface);
   border: 1px solid rgba(201, 168, 76, 0.18);
   border-radius: 20px;
   padding: 1.6rem 1.5rem 1.5rem;
-  backdrop-filter: blur(24px);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   text-align: start;
   animation: riseIn 0.25s ease forwards;
 }
 
 :global(body.light) .fsModalCard {
-  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
@@ -610,32 +614,25 @@
 
 .fsField label {
   display: block;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
   margin-bottom: 0.45rem;
-}
-
-:global(body.light) .fsField label {
-  color: rgba(0, 0, 0, 0.55);
 }
 
 .fsField input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 11px;
   padding: 0.85rem 1rem;
-  color: var(--white);
+  color: var(--text);
   font-family: "Alef", sans-serif;
   font-size: 0.95rem;
   outline: none;
   transition: border 0.2s, background 0.2s;
-}
-
-:global(body.light) .fsField input {
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #0b0b0b;
 }
 
 .fsField input:focus {
