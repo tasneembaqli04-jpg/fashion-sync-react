@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import chatStyles from "../../styles/customer/CustomerChat.module.scss";
 import OutfitProductsCatalog from "./OutfitProductsCatalog";
@@ -17,6 +17,7 @@ export default function CustomerChat({
   openProductModal,
 }) {
   const msgsRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (msgsRef.current) {
@@ -31,13 +32,35 @@ export default function CustomerChat({
         שאל אותנו כל שאלה על החנות, מוצרים ומבצעים
       </div>
 
-      <div className={chatStyles.chatShell}>
+      <div
+        className={`${chatStyles.chatShell} ${
+          isFullscreen ? chatStyles.chatShellFullscreen : ""
+        }`}
+      >
         <div className={chatStyles.chatTop}>
           <div className={chatStyles.chatAvatar}>F</div>
           <div>
             <div className={chatStyles.chatBotName}>SYNC – עוזר החנות</div>
             <div className={chatStyles.chatOnline}>● מחובר ומוכן לעזור</div>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsFullscreen((prev) => !prev)}
+            aria-label={isFullscreen ? "צא ממסך מלא" : "הרחב למסך מלא"}
+            style={{
+              marginInlineStart: "auto",
+              background: "none",
+              border: "1px solid var(--border)",
+              borderRadius: "8px",
+              color: "var(--text)",
+              padding: "0.4rem 0.6rem",
+              cursor: "pointer",
+              fontSize: "1rem",
+              lineHeight: 1,
+            }}
+          >
+            {isFullscreen ? "✕" : "⛶"}
+          </button>
         </div>
 
         <div className={chatStyles.chatMsgs} ref={msgsRef}>
@@ -85,122 +108,6 @@ export default function CustomerChat({
             </div>
           )}
         </div>
-
-        <div className={chatStyles.chatPills}>
-          <button className={chatStyles.pill} onClick={() => quickMsg("שלום")}>
-            שלום
-          </button>
-          <button
-            className={chatStyles.pill}
-            onClick={() => quickMsg("מה יש חדש בחנות?")}
-          >
-            מה חדש?
-          </button>
-          <button
-            className={chatStyles.pill}
-            onClick={() => quickMsg("יש מבצעים עכשיו?")}
-          >
-            מבצעים
-          </button>
-          <button
-            className={chatStyles.pill}
-            onClick={() => quickMsg("יש משלוחים?")}
-          >
-            משלוחים
-          </button>
-          <button
-            className={chatStyles.pill}
-            onClick={() => quickMsg("אפשר החזרה?")}
-          >
-            החזרות
-          </button>
-          <button className={chatStyles.pill} onClick={toggleMoreQuestions}>
-            עוד שאלות
-          </button>
-        </div>
-
-        {moreQuestionsOpen && (
-          <div className={chatStyles.chatPills}>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("מה המחירים?")}
-            >
-              מחירים
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("מה שעות הפתיחה?")}
-            >
-              שעות פתיחה
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("מה הכתובת?")}
-            >
-              כתובת
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש חולצות?")}
-            >
-              חולצות
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש מכנסיים?")}
-            >
-              מכנסיים
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש שמלות?")}
-            >
-              שמלות
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש עליוניות?")}
-            >
-              עליוניות
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש נעליים?")}
-            >
-              נעליים
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש אביזרים?")}
-            >
-              אביזרים
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש מידות?")}
-            >
-              מידות
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("יש צבעים?")}
-            >
-              צבעים
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("איך עובדות הנקודות?")}
-            >
-              נקודות
-            </button>
-            <button
-              className={chatStyles.pill}
-              onClick={() => quickMsg("איך משלמים?")}
-            >
-              תשלום
-            </button>
-          </div>
-        )}
 
         <div className={chatStyles.chatBottom}>
           <button className={chatStyles.sendBtn} onClick={sendMsg}>
