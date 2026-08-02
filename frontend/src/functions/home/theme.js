@@ -1,7 +1,7 @@
 import { LS } from "./storage.js";
 
 export function loadTheme() {
-  return localStorage.getItem(LS.THEME) === "light";
+  return localStorage.getItem(LS.THEME) !== "dark";
 }
 
 export function saveTheme(isLight) {

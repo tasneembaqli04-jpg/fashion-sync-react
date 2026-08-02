@@ -26,7 +26,7 @@
   background: #1a1a1a;
 }
 
-:global(body[data-theme="light"]) .productImgWrap {
+:global(body.light) .productImgWrap {
   background: #f0f0f0;
 }
 
@@ -246,7 +246,7 @@
   color: white !important;
 }
 
-:global(body[data-theme="light"]) .actBtn {
+:global(body.light) .actBtn {
   background: rgba(0, 0, 0, 0.03);
 }
 

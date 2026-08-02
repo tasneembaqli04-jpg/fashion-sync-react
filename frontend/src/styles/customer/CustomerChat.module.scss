@@ -99,7 +99,7 @@
   border-radius: 12px 12px 3px 12px;
 }
 
-:global(body[data-theme="light"]) .botMsg {
+:global(body.light) .botMsg {
   background: rgba(0, 0, 0, 0.04);
 }
 
@@ -166,7 +166,7 @@
   transition: border 0.2s;
 }
 
-:global(body[data-theme="light"]) .chatIn {
+:global(body.light) .chatIn {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }
@@ -299,7 +299,7 @@
   resize: none;
 }
 
-:global(body[data-theme="light"]) .miniIn {
+:global(body.light) .miniIn {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }

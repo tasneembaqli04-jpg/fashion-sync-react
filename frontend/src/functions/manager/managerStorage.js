@@ -1,5 +1,5 @@
 export function loadTheme() {
-  return localStorage.getItem("fs_theme") === "light" ? "light" : "dark";
+  return localStorage.getItem("fs_theme") === "dark" ? "dark" : "light";
 }
 
 export function saveTheme(theme) {

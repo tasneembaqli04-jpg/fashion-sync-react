@@ -1,16 +1,36 @@
 .loginOverlay {
   position: fixed;
   inset: 0;
-  background: var(--bg);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "Alef", sans-serif;
+  overflow: hidden;
+}
+
+.bgLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blurLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+:global(body.light) .blurLayer {
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .loginBox {
   position: relative;
+  z-index: 10;
   background: var(--surface);
   border: 1px solid rgba(201, 168, 76, 0.2);
   border-radius: 20px;
@@ -35,8 +55,16 @@
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(201, 168, 76, 0.4);
+  color: rgba(201, 168, 76, 0.85);
   margin-bottom: 2rem;
+}
+
+.loginLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
 }
 
 .errMsg {

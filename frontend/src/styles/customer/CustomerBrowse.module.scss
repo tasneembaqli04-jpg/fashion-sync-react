@@ -83,8 +83,8 @@
   transition: border 0.2s;
 }
 
-:global(body[data-theme="light"]) .filterBar input,
-:global(body[data-theme="light"]) .filterBar select {
+:global(body.light) .filterBar input,
+:global(body.light) .filterBar select {
   color: var(--white);
 }
 
