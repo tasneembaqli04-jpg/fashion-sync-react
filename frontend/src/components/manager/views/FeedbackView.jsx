@@ -40,8 +40,8 @@ export default function FeedbackView() {
 
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [readFilter, setReadFilter] = useState("all");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [readFilter, setReadFilter] = useState("unread");
+  const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
 
   useEffect(() => {
     getAllFeedback().then((items) => {

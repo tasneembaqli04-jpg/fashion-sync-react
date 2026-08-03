@@ -179,6 +179,7 @@ export const he = {
       filterAll: "🔔 הכל",
       filterUnread: "🔵 לא נקרא",
       filterRead: "✓ נקרא",
+      allMonths: "📅 כל החודשים",
       noMessagesYet: "עדיין אין הודעות",
       anonymous: "לקוח/ה",
       markAsRead: "✓ סמן כנקרא",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import HomeBackground from "../components/home/HomeBackground.jsx";
 import FloatingItems from "../components/home/FloatingItems.jsx";
 import HomeNavbar from "../components/home/HomeNavbar.jsx";
@@ -37,7 +37,7 @@ export default function Home() {
   const [verificationOpen, setVerificationOpen] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     saveTheme(isLight);
   }, [isLight]);
 

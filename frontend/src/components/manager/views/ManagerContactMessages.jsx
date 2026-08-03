@@ -7,14 +7,28 @@ import {
 } from "../../../services/contact/contactMessagesService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 
+function getMonthKey(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export default function ManagerContactMessages() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.contactMessages;
   const locale = lang === "en" ? "en-US" : "he-IL";
+  const MONTH_NAMES = dict.monthNames;
+
+  function getMonthLabel(monthKey) {
+    if (monthKey === "unknown") return dict.customer.orders.noDate;
+    const [year, month] = monthKey.split("-");
+    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  }
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("unread");
+  const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
 
   useEffect(() => {
     getAllContactMessages().then((data) => {
@@ -43,11 +57,21 @@ export default function ManagerContactMessages() {
     );
   }
 
+  const availableMonths = useMemo(() => {
+    const keys = new Set(messages.map((m) => getMonthKey(m.createdAt)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [messages]);
+
   const visibleMessages = useMemo(() => {
-    if (filter === "all") return messages;
-    if (filter === "unread") return messages.filter((m) => !m.read);
-    return messages.filter((m) => m.read);
-  }, [messages, filter]);
+    return messages.filter((m) => {
+      if (filter === "unread" && m.read) return false;
+      if (filter === "read" && !m.read) return false;
+      if (monthFilter !== "all" && getMonthKey(m.createdAt) !== monthFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [messages, filter, monthFilter]);
 
   return (
     <div className={layoutStyles.view}>
@@ -63,6 +87,7 @@ export default function ManagerContactMessages() {
           display: "flex",
           gap: "0.5rem",
           flexWrap: "wrap",
+          alignItems: "center",
           marginBottom: "1.2rem",
         }}
       >
@@ -89,6 +114,26 @@ export default function ManagerContactMessages() {
             {tab.label}
           </button>
         ))}
+
+        <select
+          value={monthFilter}
+          onChange={(e) => setMonthFilter(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: "10px",
+            border: "1px solid var(--border)",
+            background: "var(--surface2)",
+            color: "var(--text)",
+            fontSize: "0.9rem",
+          }}
+        >
+          <option value="all">{t.allMonths}</option>
+          {availableMonths.map((key) => (
+            <option key={key} value={key}>
+              {getMonthLabel(key)}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading ? (

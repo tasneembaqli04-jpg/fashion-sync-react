@@ -63,7 +63,6 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         justifyContent: "center",
         padding: "20px",
       }}
-      onClick={onClose}
     >
       <div
         style={{
@@ -76,9 +75,32 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           maxHeight: "85vh",
           overflowY: "auto",
           border: "1px solid var(--border-gold)",
+          position: "relative",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
+        <button
+          onClick={onClose}
+          aria-label={t.close}
+          style={{
+            position: "absolute",
+            top: "0.6rem",
+            left: "0.6rem",
+            width: "44px",
+            height: "44px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "none",
+            border: "none",
+            color: "var(--muted)",
+            fontSize: "1.3rem",
+            cursor: "pointer",
+            borderRadius: "50%",
+          }}
+        >
+          ✕
+        </button>
+
         <h2 style={{ marginBottom: "4px" }}>{t.title}</h2>
         <p style={{ opacity: 0.7, marginTop: 0 }}>{order.id}</p>
 
@@ -176,25 +198,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           {t.totalToPayLabel} <strong>₪{Number(order.total || 0).toLocaleString()}</strong>
         </p>
 
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            marginTop: "16px",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "none",
-            background: "#d6b65c",
-            color: "#111",
-            fontWeight: "700",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          {t.close}
-        </button>
-      </div>
+        </div>
     </div>
   );
 }
