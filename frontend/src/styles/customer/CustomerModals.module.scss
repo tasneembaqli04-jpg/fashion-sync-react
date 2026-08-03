@@ -146,7 +146,8 @@
 }
 
 .pdField select,
-.pdField input {
+.pdField input,
+.pdField textarea {
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
@@ -159,7 +160,8 @@
 }
 
 :global(body.light) .pdField select,
-:global(body.light) .pdField input {
+:global(body.light) .pdField input,
+:global(body.light) .pdField textarea {
   background: rgba(0, 0, 0, 0.03);
   color: var(--white);
 }

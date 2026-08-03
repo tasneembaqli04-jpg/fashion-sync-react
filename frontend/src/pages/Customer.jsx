@@ -1100,6 +1100,7 @@ export default function Customer() {
         isGuest={isGuest}
         currentUser={currentUser}
         sidebarOpen={sidebarOpen}
+        theme={theme}
         toggleTheme={handleToggleTheme}
         goHome={goHome}
         goLogin={goLogin}

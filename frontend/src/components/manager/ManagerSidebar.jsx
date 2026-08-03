@@ -180,9 +180,12 @@ export default function ManagerSidebar({
       </nav>
 
       <div className={styles.sbFooter}>
-        <button className={styles.navBtn} onClick={onToggleTheme}>
+        <button
+          className={`${styles.navBtn} ${styles.themeToggleBtn}`}
+          onClick={onToggleTheme}
+        >
           <span className={styles.icon}>{theme === "light" ? "☀️" : "🌙"}</span>
-          <span style={{ flex: 1 }}>{t.themeToggle}</span>
+          <span style={{ flex: 1 }}>{theme === "light" ? t.lightMode : t.darkMode}</span>
         </button>
 
         <button

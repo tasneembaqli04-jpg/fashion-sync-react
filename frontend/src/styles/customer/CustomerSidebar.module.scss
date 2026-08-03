@@ -139,6 +139,19 @@
   background: var(--border);
 }
 
+.themeToggleBtn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body.light) .themeToggleBtn {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.themeToggleBtn:hover {
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
 .active {
   background: linear-gradient(90deg, rgba(201, 168, 76, 0.18), rgba(201, 168, 76, 0.08));
   color: var(--gold);

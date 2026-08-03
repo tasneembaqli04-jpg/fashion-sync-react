@@ -174,10 +174,6 @@ export default function CustomerPolicy({ show, currentUser }) {
               resize: "vertical",
               fontFamily: "inherit",
               padding: "0.6rem",
-              borderRadius: "8px",
-              border: "1px solid var(--border)",
-              background: "var(--surface2)",
-              color: "var(--text)",
             }}
           />
         </div>
