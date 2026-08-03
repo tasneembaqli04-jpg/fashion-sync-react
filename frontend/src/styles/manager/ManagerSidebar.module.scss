@@ -75,7 +75,19 @@
   position: relative;
   margin-bottom: 0.05rem;
 }
+.themeToggleBtn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
 
+:global(body.light) .themeToggleBtn {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.themeToggleBtn:hover {
+  border-color: rgba(201, 168, 76, 0.4);
+}
 .navBtn:hover {
   background: var(--surface2);
   color: var(--text);

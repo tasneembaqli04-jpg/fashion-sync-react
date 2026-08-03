@@ -7,6 +7,7 @@ export default function CustomerSidebar({
   isGuest = false,
   currentUser = null,
   sidebarOpen = false,
+  theme,
   toggleTheme,
   goLogin,
   doLogout,
@@ -181,9 +182,12 @@ export default function CustomerSidebar({
         </button>
 
         <div className={sidebarStyles.sidebarFooter}>
-          <button className={sidebarStyles.navItem} onClick={toggleTheme}>
-            <span className={sidebarStyles.navIcon}>🌓</span>
-            <span style={{ flex: 1 }}>{t.themeToggle}</span>
+          <button
+            className={`${sidebarStyles.navItem} ${sidebarStyles.themeToggleBtn}`}
+            onClick={toggleTheme}
+          >
+            <span className={sidebarStyles.navIcon}>{theme === "light" ? "☀️" : "🌙"}</span>
+            <span style={{ flex: 1 }}>{theme === "light" ? t.lightMode : t.darkMode}</span>
           </button>
 
           {!isGuest && (
