@@ -70,7 +70,7 @@ export default function ReceiptsView({ receipts }) {
   const locale = lang === "en" ? "en-US" : "he-IL";
   const MONTH_NAMES = dict.monthNames;
   const [query, setQuery] = useState("");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   function getMonthLabel(monthKey) {

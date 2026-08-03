@@ -45,7 +45,7 @@ export default function StockNotificationsView({ products = [], initialProductCo
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
   const [productCodeFilter, setProductCodeFilter] = useState(initialProductCode);
 
   useEffect(() => {

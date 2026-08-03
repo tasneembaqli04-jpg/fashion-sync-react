@@ -59,7 +59,6 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
         justifyContent: "center",
         padding: "20px",
       }}
-      onClick={onClose}
     >
       <div
         style={{
@@ -72,9 +71,32 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
           maxHeight: "85vh",
           overflowY: "auto",
           border: "1px solid var(--border-gold)",
+          position: "relative",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
+        <button
+          onClick={onClose}
+          aria-label={t.close}
+          style={{
+            position: "absolute",
+            top: "0.6rem",
+            left: "0.6rem",
+            width: "44px",
+            height: "44px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "none",
+            border: "none",
+            color: "var(--muted)",
+            fontSize: "1.3rem",
+            cursor: "pointer",
+            borderRadius: "50%",
+          }}
+        >
+          ✕
+        </button>
+
         <div style={{ textAlign: "center", marginBottom: "1rem" }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🧾</div>
           <h2 style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: "var(--gold)" }}>
@@ -186,23 +208,7 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
           </p>
         )}
 
-        <button
-          onClick={onClose}
-          style={{
-            marginTop: "18px",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "transparent",
-            color: "var(--text)",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          {t.close}
-        </button>
-      </div>
+        </div>
     </div>
   );
 }

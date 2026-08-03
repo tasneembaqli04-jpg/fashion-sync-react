@@ -179,6 +179,7 @@ export const en = {
       filterAll: "🔔 All",
       filterUnread: "🔵 Unread",
       filterRead: "✓ Read",
+      allMonths: "📅 All months",
       noMessagesYet: "No messages yet",
       anonymous: "Customer",
       markAsRead: "✓ Mark as read",

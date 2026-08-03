@@ -55,7 +55,7 @@ export default function ManagerReturns({ products = [] }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
 
   useEffect(() => {
     getAllReturnRequests().then((data) => {
