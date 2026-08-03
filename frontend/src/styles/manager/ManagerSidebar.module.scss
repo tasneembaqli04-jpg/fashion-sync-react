@@ -63,7 +63,7 @@
   gap: 0.55rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: 9px;
+   border-radius: 22px;
   background: none;
   border: none;
   color: var(--muted);
@@ -94,8 +94,10 @@
 }
 
 .active {
-  background: var(--gold-dim);
+  background: linear-gradient(90deg, rgba(201, 168, 76, 0.18), rgba(201, 168, 76, 0.08));
   color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 .icon {
