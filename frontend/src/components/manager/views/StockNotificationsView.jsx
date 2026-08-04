@@ -88,6 +88,7 @@ export default function StockNotificationsView({ products = [], initialProductCo
 
   const availableMonths = useMemo(() => {
     const keys = new Set(items.map((item) => getMonthKey(item.createdAt)));
+    keys.add(getMonthKey(new Date()));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [items]);
 

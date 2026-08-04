@@ -127,6 +127,7 @@ export default function ManagerReturns({ products = [] }) {
 
   const availableMonths = useMemo(() => {
     const keys = new Set(requests.map((r) => getMonthKey(r.createdAt)));
+    keys.add(getMonthKey(new Date()));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [requests]);
 

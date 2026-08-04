@@ -60,6 +60,7 @@ export default function FeedbackView() {
 
   const availableMonths = useMemo(() => {
     const keys = new Set(feedback.map((f) => getMonthKey(f.createdAt)));
+    keys.add(getMonthKey(new Date()));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [feedback]);
 

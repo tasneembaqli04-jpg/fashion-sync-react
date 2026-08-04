@@ -81,6 +81,7 @@ export default function ReceiptsView({ receipts }) {
 
   const availableMonths = useMemo(() => {
     const keys = new Set(receipts.map((r) => getMonthKey(r.date)));
+    keys.add(getMonthKey(new Date()));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [receipts]);
 
