@@ -59,6 +59,7 @@ export default function ManagerContactMessages() {
 
   const availableMonths = useMemo(() => {
     const keys = new Set(messages.map((m) => getMonthKey(m.createdAt)));
+    keys.add(getMonthKey(new Date()));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [messages]);
 
