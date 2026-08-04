@@ -40,7 +40,9 @@ function buildProductSearchOptions(intent) {
   };
 }
 
-function buildBusinessHoursContext(businessHours) {
+function buildBusinessHoursContext(businessHours, lang) {
+  const isEnglish = lang === "en";
+
   if (!businessHours) {
     return `
 לא נמצא מסמך שעות פעילות ב-Firestore.
@@ -84,11 +86,12 @@ ${JSON.stringify(todayData, null, 2)}
 - כאשר הלקוחה שואלת על יום מסוים, מצא את האובייקט של אותו יום.
 - כאשר הלקוחה שואלת על כל השבוע, סכם את כל הימים.
 - אל תמציא כתובת, איסוף עצמי, משלוחים או שעות חסרות.
-- הצג את שמות הימים בשפה שבה הלקוחה כתבה.
+- ${isEnglish ? "Show day names and answer in English regardless of the language the customer wrote in." : "הצג את שמות הימים ועני בעברית, בלי קשר לשפה שבה הלקוחה כתבה."}
 `.trim();
 }
 
-function buildPolicyContext(policyContent, storeDetails) {
+function buildPolicyContext(policyContent, storeDetails, lang) {
+  const isEnglish = lang === "en";
   if (!policyContent && !storeDetails) {
     return `
 לא נמצאו מסמכי מדיניות/פרטי חנות ב-Firestore.
@@ -112,7 +115,7 @@ ${JSON.stringify(storeDetails, null, 2)}
   אך ורק לפי הנתונים שלמעלה.
 - אם שדה מסוים חסר/ריק, אמור שהמידע הזה אינו זמין כרגע ותפני לעמוד המדיניות.
 - אל תמציא מספרי ימים, מחירים או כתובות שלא מופיעים בנתונים.
-- אם הלקוחה כתבה באנגלית, ענה באנגלית; אם בעברית, ענה בעברית.
+- ${isEnglish ? "Answer in English regardless of the language the customer wrote in." : "ענה תמיד בעברית, בלי קשר לשפה שבה הלקוחה כתבה."}
 `.trim();
 }
 
@@ -312,7 +315,7 @@ async function handleChatMessage({
     });
   }
   if (intent.intent === INTENTS.BUSINESS_HOURS) {
-    const businessHoursContext = buildBusinessHoursContext(liveBusinessHours);
+    const businessHoursContext = buildBusinessHoursContext(liveBusinessHours, lang);
 
     return streamChatReply({
       message: `
@@ -328,7 +331,7 @@ ${businessHoursContext}
   }
 
   if (intent.intent === INTENTS.STORE_INFO) {
-    const policyContext = buildPolicyContext(livePolicyContent, liveStoreDetails);
+    const policyContext = buildPolicyContext(livePolicyContent, liveStoreDetails, lang);
 
     return streamChatReply({
       message: `

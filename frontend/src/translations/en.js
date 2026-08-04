@@ -543,9 +543,11 @@ export const en = {
       matchingProductsTitle: "Matching products",
       attachImageTitle: "Send image",
       messagePlaceholder: "Type a message...",
+      welcomeMessage: "Hello! 👋 I'm SYNC, FashionSync's smart assistant.<br />I can help you find clothes, check prices, business hours, and more.<br />How can I help you today?",
     },
     browse: {
       searchPlaceholder: "Search by name or barcode...",
+      refreshTitle: "🔄 Refresh",
       scanTooltip: "Scan barcode",
       genderAll: "Everyone",
       allCategories: "All Categories",

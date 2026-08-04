@@ -143,6 +143,16 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(201, 168, 76, 0.28);
 }
+.btnGhost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.btnGhost:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.15);
+}
 
 .btnOutline {
   background: transparent;

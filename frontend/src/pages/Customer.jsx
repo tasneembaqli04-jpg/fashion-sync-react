@@ -125,7 +125,7 @@ export default function Customer() {
   const [chatMessages, setChatMessages] = useState([
     {
       type: "bot",
-      html: `שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?`,
+      html: dict.customer.chat.welcomeMessage,
     },
   ]);
   const [isChatTyping, setIsChatTyping] = useState(false);

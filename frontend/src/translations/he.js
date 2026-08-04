@@ -45,6 +45,7 @@ export const he = {
     },
     topbar: {
       searchPlaceholder: "חיפוש לפי שם או ברקוד...",
+      refreshTitle: "🔄 רענן",
       scanTitle: "סריקה",
       cancelPromoTitle: "בטל פרסום פעיל",
       promoActiveButton: "📢 פרסום פעיל — בטל",
@@ -594,6 +595,7 @@ export const he = {
       matchingProductsTitle: "מוצרים מתאימים",
       attachImageTitle: "שלח תמונה",
       messagePlaceholder: "כתוב הודעה...",
+      welcomeMessage: "שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?",
     },
     browse: {
       searchPlaceholder: "חיפוש לפי שם או ברקוד...",

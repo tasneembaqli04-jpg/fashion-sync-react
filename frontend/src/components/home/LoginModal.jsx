@@ -45,6 +45,7 @@ export default function LoginModal({
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             placeholder="mail@gmail.com"
+            autoComplete="off"
           />
         </div>
 
@@ -56,6 +57,7 @@ export default function LoginModal({
             onChange={(e) => onPasswordChange(e.target.value)}
             placeholder={t.passwordPlaceholder}
             onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+            autoComplete="off"
           />
         </div>
 
