@@ -7,6 +7,7 @@ export async function requestChatReplyStream({
   history = [],
   currentOutfit = [],
   currentOutfitImage = "",
+  lang,
   onChunk,
   signal,
 }) {
@@ -25,6 +26,7 @@ export async function requestChatReplyStream({
       currentOutfit: Array.isArray(currentOutfit) ? currentOutfit : [],
       currentOutfitImage:
         typeof currentOutfitImage === "string" ? currentOutfitImage : "",
+      lang,
     }),
     signal,
   });

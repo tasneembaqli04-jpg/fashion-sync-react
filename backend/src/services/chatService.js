@@ -2,34 +2,61 @@ const {getGeminiClient} = require("../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
 
-const SYSTEM_INSTRUCTION = `
-את/ה "SYNC" - עוזר/ת שירות הלקוחות של FashionSync, חנות בגדים אונליין ישראלית.
-ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.
+function buildSystemInstruction({
+  lang,
+  businessHours,
+  policyContent,
+  storeDetails,
+} = {}) {
+  const isEnglish = lang === "en";
 
-מידע קבוע על החנות:
-- משלוח רגיל: 5-7 ימי עסקים, ₪25 (חינם לרכישות מעל ₪200).
-- משלוח מהיר: 2-3 ימי עסקים, ₪29.
-- משלוח באותו יום: ₪59 (מרכז הארץ בלבד).
-- איסוף עצמי: חינם, הרצל 42 תל אביב.
-- החזרות: עד 30 יום מיום הרכישה, באריזה מקורית.
-- קטגוריות בקטלוג: חולצות, מכנסיים, שמלות, עליוניות, נעליים, אביזרים - לגברים ולנשים.
-- יש תוכנית נאמנות (נקודה אחת לכל ₪1 שהוצא), וקופונים (מוצגים במסך "נקודות וקופונים").
+  const languageLine = isEnglish
+    ? "Always answer in English, briefly and in a friendly tone (2-4 sentences max), like a real customer service rep."
+    : "ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.";
 
-אם השאלה לא קשורה לחנות בגדים בכלל - הפני בנימוס בחזרה לנושא החנות.
-אם אינך יודע משהו ספציפי (כמו מלאי של מוצר מסוים) - הצע ללקוחה לבדוק בקטלוג או לפנות לצוות.
-לעולם אל תמציא מספרי הזמנה, מחירים ספציפיים למוצר, או פרטים אישיים על לקוחות.
+  const liveDataBlock = `
+נתונים חיים מ-Firestore (settings/businessHours, settings/policyContent, settings/storeDetails):
+
+שעות פעילות:
+${businessHours ? JSON.stringify(businessHours, null, 2) : "לא זמין"}
+
+תוכן מדיניות:
+${policyContent ? JSON.stringify(policyContent, null, 2) : "לא זמין"}
+
+פרטי חנות:
+${storeDetails ? JSON.stringify(storeDetails, null, 2) : "לא זמין"}
 `.trim();
 
-const GEMINI_CONFIG = {
-  systemInstruction: SYSTEM_INSTRUCTION,
-  temperature: 1,
-  maxOutputTokens: 1024,
-  thinkingConfig: {
-    thinkingLevel: "minimal",
-  },
-};
+  return `
+את/ה "SYNC" - עוזר/ת שירות הלקוחות של FashionSync, חנות בגדים אונליין ישראלית.
+${languageLine}
 
-async function generateChatReply({message, history = []}) {
+${liveDataBlock}
+
+כללים:
+- כל תשובה על שעות פעילות, מדיניות החזרות/ביטול, משלוחים, כתובת, או פרטי קשר -
+  אך ורק לפי הנתונים החיים שלמעלה. אל תמציא ואל תשתמש בידע כללי/ישן.
+- אם נתון מסוים חסר/"לא זמין", אמור שהמידע אינו זמין כרגע והפני לעמוד המדיניות באתר.
+- קטגוריות בקטלוג: חולצות, מכנסיים, שמלות, עליוניות, נעליים, אביזרים - לגברים ולנשים.
+- יש תוכנית נאמנות (נקודה אחת לכל ₪1 שהוצא), וקופונים (מוצגים במסך "נקודות וקופונים").
+- אם השאלה לא קשורה לחנות בגדים בכלל - הפני בנימוס בחזרה לנושא החנות.
+- אם אינך יודע משהו ספציפי (כמו מלאי של מוצר מסוים) - הצע ללקוחה לבדוק בקטלוג או לפנות לצוות.
+- לעולם אל תמציא מספרי הזמנה, מחירים ספציפיים למוצר, או פרטים אישיים על לקוחות.
+`.trim();
+}
+
+function buildGeminiConfig(liveDataContext) {
+  return {
+    systemInstruction: buildSystemInstruction(liveDataContext),
+    temperature: 1,
+    maxOutputTokens: 1024,
+    thinkingConfig: {
+      thinkingLevel: "minimal",
+    },
+  };
+}
+
+async function generateChatReply({message, history = [], lang, businessHours, policyContent, storeDetails}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
@@ -54,7 +81,7 @@ async function generateChatReply({message, history = []}) {
   const result = await ai.models.generateContent({
     model: MODEL_NAME,
     contents,
-    config: GEMINI_CONFIG,
+    config: buildGeminiConfig({lang, businessHours, policyContent, storeDetails}),
   });
 
   const reply =
@@ -71,7 +98,7 @@ async function generateChatReply({message, history = []}) {
   };
 }
 
-async function streamChatReply({message, history = [], onChunk}) {
+async function streamChatReply({message, history = [], onChunk, lang, businessHours, policyContent, storeDetails}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
@@ -107,7 +134,7 @@ async function streamChatReply({message, history = [], onChunk}) {
         ai.models.generateContentStream({
           model: MODEL_NAME,
           contents,
-          config: GEMINI_CONFIG,
+          config: buildGeminiConfig({lang, businessHours, policyContent, storeDetails}),
         }),
         new Promise((_, reject) =>
           setTimeout(
@@ -135,7 +162,6 @@ async function streamChatReply({message, history = [], onChunk}) {
         throw new Error("Empty streamed reply from model");
       }
 
-   
       return fullText.trim();
     } catch (err) {
       lastError = err;

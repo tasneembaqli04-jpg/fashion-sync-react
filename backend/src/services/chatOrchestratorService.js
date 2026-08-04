@@ -1,6 +1,7 @@
 const { INTENTS, detectChatIntent } = require("./chatIntentService");
 
 const { getBusinessHours } = require("./chatBusinessHoursService");
+const { getPolicyContent, getStoreDetails } = require("./chatPolicyService");
 
 const { getProductByCode, searchProducts } = require("./chatProductService");
 
@@ -84,6 +85,34 @@ ${JSON.stringify(todayData, null, 2)}
 - כאשר הלקוחה שואלת על כל השבוע, סכם את כל הימים.
 - אל תמציא כתובת, איסוף עצמי, משלוחים או שעות חסרות.
 - הצג את שמות הימים בשפה שבה הלקוחה כתבה.
+`.trim();
+}
+
+function buildPolicyContext(policyContent, storeDetails) {
+  if (!policyContent && !storeDetails) {
+    return `
+לא נמצאו מסמכי מדיניות/פרטי חנות ב-Firestore.
+אל תמציא מדיניות החזרות, ביטול, משלוחים, כתובת או פרטי קשר.
+אמור ללקוחה שהמידע אינו זמין כרגע ושהיא יכולה לבדוק בעמוד המדיניות באתר.
+`.trim();
+  }
+
+  return `
+נתוני המדיניות והחנות הבאים הגיעו ישירות
+מהמסמכים settings/policyContent ו-settings/storeDetails ב-Firestore:
+
+תוכן מדיניות:
+${JSON.stringify(policyContent, null, 2)}
+
+פרטי חנות:
+${JSON.stringify(storeDetails, null, 2)}
+
+כללים:
+- ענה על שאלות לגבי החזרות, ביטול הזמנה, משלוחים, כתובת, פרטיות ופרטי קשר
+  אך ורק לפי הנתונים שלמעלה.
+- אם שדה מסוים חסר/ריק, אמור שהמידע הזה אינו זמין כרגע ותפני לעמוד המדיניות.
+- אל תמציא מספרי ימים, מחירים או כתובות שלא מופיעים בנתונים.
+- אם הלקוחה כתבה באנגלית, ענה באנגלית; אם בעברית, ענה בעברית.
 `.trim();
 }
 
@@ -221,8 +250,30 @@ async function handleChatMessage({
   history = [],
   currentOutfit = [],
   currentOutfitImage = "",
+  lang,
   onChunk,
 }) {
+  let liveBusinessHours = null;
+  let livePolicyContent = null;
+  let liveStoreDetails = null;
+
+  try {
+    [liveBusinessHours, livePolicyContent, liveStoreDetails] = await Promise.all([
+      getBusinessHours(),
+      getPolicyContent(),
+      getStoreDetails(),
+    ]);
+  } catch (error) {
+    console.error("LIVE CHAT CONTEXT FETCH ERROR:", error?.message || error);
+  }
+
+  const liveDataContext = {
+    lang,
+    businessHours: liveBusinessHours,
+    policyContent: livePolicyContent,
+    storeDetails: liveStoreDetails,
+  };
+
   const intent = await detectChatIntent({
     message,
     history,
@@ -257,20 +308,11 @@ async function handleChatMessage({
       message,
       history,
       onChunk,
+      ...liveDataContext,
     });
   }
   if (intent.intent === INTENTS.BUSINESS_HOURS) {
-    let businessHours = null;
-
-    try {
-      businessHours = await getBusinessHours();
-
-      console.log("BUSINESS HOURS FROM FIRESTORE:", businessHours);
-    } catch (error) {
-      console.error("BUSINESS HOURS ERROR:", error?.message || error);
-    }
-
-    const businessHoursContext = buildBusinessHoursContext(businessHours);
+    const businessHoursContext = buildBusinessHoursContext(liveBusinessHours);
 
     return streamChatReply({
       message: `
@@ -281,6 +323,23 @@ ${businessHoursContext}
 `.trim(),
       history,
       onChunk,
+      ...liveDataContext,
+    });
+  }
+
+  if (intent.intent === INTENTS.STORE_INFO) {
+    const policyContext = buildPolicyContext(livePolicyContent, liveStoreDetails);
+
+    return streamChatReply({
+      message: `
+הודעת הלקוחה הנוכחית:
+${message}
+
+${policyContext}
+`.trim(),
+      history,
+      onChunk,
+      ...liveDataContext,
     });
   }
 
@@ -289,6 +348,7 @@ ${businessHoursContext}
       message,
       history,
       onChunk,
+      ...liveDataContext,
     });
   }
 
@@ -513,6 +573,7 @@ ${productContext}
 `.trim(),
     history,
     onChunk,
+    ...liveDataContext,
   });
 
   const catalogProducts = products.map((product) => buildProductForAi(product));
