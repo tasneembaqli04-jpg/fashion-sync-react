@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import chatStyles from "../../styles/customer/CustomerChat.module.scss";
 import OutfitProductsCatalog from "./OutfitProductsCatalog";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function CustomerChat({
   chatMessages = [],
@@ -16,6 +17,8 @@ export default function CustomerChat({
   addToCart,
   openProductModal,
 }) {
+  const { t: dict } = useLanguage();
+  const t = dict.customer.chat;
   const msgsRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -27,10 +30,8 @@ export default function CustomerChat({
 
   return (
     <div>
-      <div className={commonStyles.pageTitle}>💬 צ'אטבוט FashionSync</div>
-      <div className={commonStyles.pageSub}>
-        שאל אותנו כל שאלה על החנות, מוצרים ומבצעים
-      </div>
+      <div className={commonStyles.pageTitle}>{t.pageTitle}</div>
+      <div className={commonStyles.pageSub}>{t.pageSub}</div>
 
       <div
         className={`${chatStyles.chatShell} ${
@@ -40,13 +41,13 @@ export default function CustomerChat({
         <div className={chatStyles.chatTop}>
           <div className={chatStyles.chatAvatar}>F</div>
           <div>
-            <div className={chatStyles.chatBotName}>SYNC – עוזר החנות</div>
-            <div className={chatStyles.chatOnline}>● מחובר ומוכן לעזור</div>
+            <div className={chatStyles.chatBotName}>{t.botName}</div>
+            <div className={chatStyles.chatOnline}>{t.onlineStatus}</div>
           </div>
           <button
             type="button"
             onClick={() => setIsFullscreen((prev) => !prev)}
-            aria-label={isFullscreen ? "צא ממסך מלא" : "הרחב למסך מלא"}
+            aria-label={isFullscreen ? t.exitFullscreen : t.enterFullscreen}
             style={{
               marginInlineStart: "auto",
               background: "none",
@@ -72,18 +73,14 @@ export default function CustomerChat({
               }`}
             >
               {msg.html && (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: msg.html,
-                  }}
-                />
+                <div dangerouslySetInnerHTML={{ __html: msg.html }} />
               )}
 
               {msg.imageUrl && (
                 <div className={chatStyles.generatedImageWrapper}>
                   <img
                     src={msg.imageUrl}
-                    alt="המחשת לוק שנוצרה על ידי SYNC"
+                    alt={t.generatedImageAlt}
                     className={chatStyles.generatedImage}
                   />
                 </div>
@@ -92,7 +89,7 @@ export default function CustomerChat({
                 <OutfitProductsCatalog
                   products={msg.products}
                   openProductModal={openProductModal}
-                  title={msg.imageUrl ? "הפריטים בלוק" : "מוצרים מתאימים"}
+                  title={msg.imageUrl ? t.outfitItemsTitle : t.matchingProductsTitle}
                 />
               )}
             </div>
@@ -113,7 +110,7 @@ export default function CustomerChat({
           <button className={chatStyles.sendBtn} onClick={sendMsg}>
             ➤
           </button>
-          <label className={chatStyles.attachBtn} title="שלח תמונה">
+          <label className={chatStyles.attachBtn} title={t.attachImageTitle}>
             📎
             <input
               type="file"
@@ -124,7 +121,7 @@ export default function CustomerChat({
           </label>
           <textarea
             className={chatStyles.chatIn}
-            placeholder="כתוב הודעה..."
+            placeholder={t.messagePlaceholder}
             rows="1"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}

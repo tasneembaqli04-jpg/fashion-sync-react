@@ -461,6 +461,7 @@ export default function Customer() {
         history,
         currentOutfit,
         currentOutfitImage,
+        lang,
         signal: controller.signal,
 
         onChunk: (fullTextSoFar) => {

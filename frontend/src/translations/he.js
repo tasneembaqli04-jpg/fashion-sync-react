@@ -582,6 +582,19 @@ export const he = {
   ],
 
   customer: {
+    chat: {
+      pageTitle: "💬 צ'אטבוט FashionSync",
+      pageSub: "שאל אותנו כל שאלה על החנות, מוצרים ומבצעים",
+      botName: "SYNC – עוזר החנות",
+      onlineStatus: "● מחובר ומוכן לעזור",
+      exitFullscreen: "צא ממסך מלא",
+      enterFullscreen: "הרחב למסך מלא",
+      generatedImageAlt: "המחשת לוק שנוצרה על ידי SYNC",
+      outfitItemsTitle: "הפריטים בלוק",
+      matchingProductsTitle: "מוצרים מתאימים",
+      attachImageTitle: "שלח תמונה",
+      messagePlaceholder: "כתוב הודעה...",
+    },
     browse: {
       searchPlaceholder: "חיפוש לפי שם או ברקוד...",
       scanTooltip: "סריקת ברקוד",

@@ -1,21 +1,11 @@
-const {
-  handleChatMessage,
-} = require("../services/chatOrchestratorService");
+const { handleChatMessage } = require("../services/chatOrchestratorService");
 
 async function chatController(request, response) {
   try {
-    const {
-      message,
-      history,
-      currentOutfit,
-      currentOutfitImage,
-    } = request.body || {};
+    const { message, history, currentOutfit, currentOutfitImage, lang } =
+      request.body || {};
 
-    if (
-      !message ||
-      typeof message !== "string" ||
-      !message.trim()
-    ) {
+    if (!message || typeof message !== "string" || !message.trim()) {
       return response.status(400).json({
         success: false,
         message: "message is required",
@@ -30,10 +20,7 @@ async function chatController(request, response) {
       }
 
       response.status(200);
-      response.setHeader(
-        "Content-Type",
-        "application/x-ndjson; charset=utf-8",
-      );
+      response.setHeader("Content-Type", "application/x-ndjson; charset=utf-8");
       response.setHeader("Cache-Control", "no-cache");
       response.setHeader("X-Accel-Buffering", "no");
 
@@ -48,28 +35,23 @@ async function chatController(request, response) {
     const result = await handleChatMessage({
       message: message.trim(),
 
-      history: Array.isArray(history)
-        ? history
-        : [],
+      history: Array.isArray(history) ? history : [],
 
-      currentOutfit: Array.isArray(currentOutfit)
-        ? currentOutfit
-        : [],
+      currentOutfit: Array.isArray(currentOutfit) ? currentOutfit : [],
 
       currentOutfitImage:
         typeof currentOutfitImage === "string"
           ? currentOutfitImage
           : "",
 
+      lang: lang === "en" ? "en" : "he",
+
       onChunk: (text) => {
         if (!text) {
           return;
         }
 
-        console.log(
-          "CHAT CONTROLLER WRITING CHUNK:",
-          String(text),
-        );
+        console.log("CHAT CONTROLLER WRITING CHUNK:", String(text));
 
         writeStreamEvent({
           type: "chunk",
@@ -84,9 +66,7 @@ async function chatController(request, response) {
       result?.image?.dataUrl
     ) {
       if (textStreamStarted) {
-        console.error(
-          "Cannot return image after text streaming started.",
-        );
+        console.error("Cannot return image after text streaming started.");
 
         return response.end();
       }
@@ -97,8 +77,7 @@ async function chatController(request, response) {
         imageGenerated: true,
 
         image: {
-          mimeType:
-            result.image.mimeType || "image/png",
+          mimeType: result.image.mimeType || "image/png",
 
           dataUrl: result.image.dataUrl,
         },
@@ -108,18 +87,14 @@ async function chatController(request, response) {
       });
     }
 
-    if (
-      result?.responseMode === "IMAGE" &&
-      result?.imageGenerated === false
-    ) {
+    if (result?.responseMode === "IMAGE" && result?.imageGenerated === false) {
       if (textStreamStarted) {
         writeStreamEvent({
           type: "result",
           success: false,
           responseMode: "IMAGE",
           imageGenerated: false,
-          error:
-            result.error || "IMAGE_GENERATION_FAILED",
+          error: result.error || "IMAGE_GENERATION_FAILED",
           products: result.products || [],
           intent: result.intent || null,
         });
@@ -131,8 +106,7 @@ async function chatController(request, response) {
         success: false,
         responseMode: "IMAGE",
         imageGenerated: false,
-        error:
-          result.error || "IMAGE_GENERATION_FAILED",
+        error: result.error || "IMAGE_GENERATION_FAILED",
         products: result.products || [],
         intent: result.intent || null,
       });
@@ -143,16 +117,11 @@ async function chatController(request, response) {
         type: "result",
         success: true,
         responseMode: "TEXT",
-        products: Array.isArray(result?.products)
-          ? result.products
-          : [],
+        products: Array.isArray(result?.products) ? result.products : [],
         intent: result?.intent || null,
       });
 
-      console.log(
-        "CHAT CONTROLLER ENDING TEXT STREAM:",
-        true,
-      );
+      console.log("CHAT CONTROLLER ENDING TEXT STREAM:", true);
 
       return response.end();
     }
@@ -160,13 +129,8 @@ async function chatController(request, response) {
     return response.status(200).json({
       success: true,
       responseMode: "TEXT",
-      text:
-        typeof result === "string"
-          ? result
-          : result?.text || "",
-      products: Array.isArray(result?.products)
-        ? result.products
-        : [],
+      text: typeof result === "string" ? result : result?.text || "",
+      products: Array.isArray(result?.products) ? result.products : [],
       intent: result?.intent || null,
     });
   } catch (error) {
