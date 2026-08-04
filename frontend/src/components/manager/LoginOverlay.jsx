@@ -73,7 +73,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
         <div className={formStyles.fg}>
           <div className={loginStyles.loginLabel}>{t.username}</div>
           <input
-            className={formStyles.fi}
+            className={`${formStyles.fi} ${loginStyles.loginInput}`}
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -84,7 +84,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
         <div className={formStyles.fg}>
           <div className={loginStyles.loginLabel}>{t.password}</div>
           <input
-            className={formStyles.fi}
+            className={`${formStyles.fi} ${loginStyles.loginInput}`}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

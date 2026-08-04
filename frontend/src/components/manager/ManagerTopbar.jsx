@@ -32,6 +32,19 @@ export default function ManagerTopbar({
         >📷</button>
       </div>
 
+      <button
+        className={`${styles.btn} ${styles.btnGhost}`}
+        onClick={onRefresh}
+        title={t.refreshTitle}
+        style={{ flexShrink: 0 }}
+      >🔄</button>
+
+      <button
+        className={`${styles.btn} ${styles.btnGold}`}
+        onClick={onAddProductClick}
+        style={{ flexShrink: 0 }}
+      >{t.newProductButton}</button>
+
       <div className={styles.tbRight}>
         {currentPromotedImg && (
           <button
@@ -78,18 +91,6 @@ export default function ManagerTopbar({
             {t.promoActiveButton}
           </button>
         )}
-
-        <button
-          className={`${styles.btn} ${styles.btnGhost}`}
-          onClick={onRefresh}
-          title={t.refreshTitle}
-        >🔄</button>
-
-        <button
-          className={`${styles.btn} ${styles.btnGold}`}
-          onClick={onAddProductClick}
-        >{t.newProductButton}</button>
-
       </div>
     </div>
   );

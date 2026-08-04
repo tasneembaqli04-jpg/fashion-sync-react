@@ -91,6 +91,15 @@ export default function CustomerBrowse({
               onChange={(e) => setSearchValue(e.target.value)}
             />
           </div>
+
+          <button
+            className={`${commonStyles.btn} ${commonStyles.btnGhost}`}
+            style={{ flex: "0 0 auto" }}
+            onClick={() => window.location.reload()}
+            title={t.refreshTitle}
+          >
+            🔄
+          </button>
         </div>
 
         <div className={browseStyles.filterRight}>

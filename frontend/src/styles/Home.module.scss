@@ -624,20 +624,49 @@
 
 .fsField input {
   width: 100%;
-  background: var(--bg);
+  background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 0.85rem 1rem;
-  color: var(--text);
+  border-radius: 9px;
+  padding: 0.72rem 1rem;
+  color: #1a1a1a;
+  caret-color: #1a1a1a;
   font-family: "Alef", sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   outline: none;
-  transition: border 0.2s, background 0.2s;
+  transition: border 0.2s;
+}
+
+:global(body.light) .fsField input {
+  background: var(--bg);
+  color: var(--text);
+  caret-color: var(--text);
 }
 
 .fsField input:focus {
   border-color: rgba(201, 168, 76, 0.48);
-  background: rgba(201, 168, 76, 0.03);
+}
+
+.fsField input:-webkit-autofill,
+.fsField input:-webkit-autofill:hover,
+.fsField input:-webkit-autofill:focus,
+.fsField input:-webkit-autofill:active {
+  -webkit-text-fill-color: #1a1a1a !important;
+  caret-color: #1a1a1a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  background-color: #ffffff !important;
+  transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
+}
+
+:global(body.light) .fsField input:-webkit-autofill,
+:global(body.light) .fsField input:-webkit-autofill:hover,
+:global(body.light) .fsField input:-webkit-autofill:focus,
+:global(body.light) .fsField input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  background-color: var(--bg) !important;
 }
 
 .fsHint {

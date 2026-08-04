@@ -66,7 +66,40 @@
   text-transform: uppercase;
   color: var(--text);
 }
+.loginInput {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  caret-color: #1a1a1a !important;
+}
 
+:global(body.light) .loginInput {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  caret-color: var(--text) !important;
+}
+
+.loginInput:-webkit-autofill,
+.loginInput:-webkit-autofill:hover,
+.loginInput:-webkit-autofill:focus,
+.loginInput:-webkit-autofill:active {
+  -webkit-text-fill-color: #1a1a1a !important;
+  caret-color: #1a1a1a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  background-color: #ffffff !important;
+  transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
+}
+
+:global(body.light) .loginInput:-webkit-autofill,
+:global(body.light) .loginInput:-webkit-autofill:hover,
+:global(body.light) .loginInput:-webkit-autofill:focus,
+:global(body.light) .loginInput:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  background-color: var(--bg) !important;
+}
 .errMsg {
   color: var(--red);
   font-size: 0.8rem;
