@@ -1,6 +1,17 @@
 .tblWrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .tblWrap {
+    background:
+      linear-gradient(to left, var(--surface2, transparent) 0%, transparent 2%),
+      linear-gradient(to right, transparent 96%, rgba(201, 168, 76, 0.15) 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
 }
 
 .table {

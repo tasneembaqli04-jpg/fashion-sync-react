@@ -66,12 +66,13 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
           color: "var(--text)",
           padding: "28px",
           borderRadius: "18px",
-          minWidth: "380px",
+          width: "100%",
           maxWidth: "520px",
           maxHeight: "85vh",
           overflowY: "auto",
           border: "1px solid var(--border-gold)",
           position: "relative",
+          boxSizing: "border-box",
         }}
       >
         <button
