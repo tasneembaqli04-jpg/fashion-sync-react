@@ -103,11 +103,17 @@
 
   .topbar {
     padding: 0.7rem 1rem;
+    flex-wrap: wrap;
   }
 
   .topbarSearch {
-    flex: 1;
+    flex: 1 1 100%;
     max-width: none;
+    order: 3;
+  }
+
+  .mobMenuBtn {
+    flex-shrink: 0;
   }
 
   .tbRight {

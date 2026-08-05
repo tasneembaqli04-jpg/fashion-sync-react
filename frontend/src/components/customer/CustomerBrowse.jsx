@@ -146,7 +146,7 @@ export default function CustomerBrowse({
           </select>
 
           <button
-            className={commonStyles.btn}
+            className={`${commonStyles.btn} ${browseStyles.desktopCartBtn}`}
             style={{ flex: "0 0 auto", minWidth: "130px" }}
             onClick={openCartOrAuth}
           >

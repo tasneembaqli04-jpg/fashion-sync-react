@@ -162,16 +162,18 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed;
+    position: fixed !important;
     inset-inline-end: 0;
     top: 0;
     bottom: 0;
+    left: auto !important;
+    width: min(var(--sidebar), 85vw) !important;
     transform: translateX(0);
     box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
   }
 
   .mobHidden {
-    transform: translateX(110%);
+    transform: translateX(110%) !important;
   }
 
   .mobOverlay {
