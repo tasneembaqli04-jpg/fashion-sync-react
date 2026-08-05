@@ -10,22 +10,21 @@ export default function CustomerTopbar({
   const t = dict.customer.sidebar;
 
   return (
-    <div className={topbarStyles.mobileTopbar} id="mobile-topbar">
+    <>
       <button
-        className={topbarStyles.hamburger}
+        className={topbarStyles.floatingMenuBtn}
         onClick={toggleSidebar}
         aria-label={t.menuAriaLabel}
       >
         ☰
       </button>
 
-      <div className={topbarStyles.mobileBrand}>FashionSync</div>
-
-      <div className={topbarStyles.mobileTopbarRight}>
-        <button className={topbarStyles.mobileCartBtn} onClick={openCartOrAuth}>
-          🛒 {cartCountMobile}
-        </button>
-      </div>
-    </div>
+      <button
+        className={topbarStyles.floatingCartBtn}
+        onClick={openCartOrAuth}
+      >
+        🛒 {cartCountMobile}
+      </button>
+    </>
   );
 }
