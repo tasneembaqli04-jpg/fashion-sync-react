@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import ProductCard from "./ProductCard";
@@ -42,28 +42,6 @@ export default function CustomerBrowse({
   const { t: dict } = useLanguage();
   const t = dict.customer.browse;
   const productsStartRef = useRef(null);
-  const [showCatalogBanners, setShowCatalogBanners] = useState(true);
-  useEffect(() => {
-    if (!show || !productsStartRef.current) return;
-
-    const marker = productsStartRef.current;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const markerIsBelowTop = entry.boundingClientRect.top > 120;
-        setShowCatalogBanners(markerIsBelowTop);
-      },
-      {
-        threshold: 0,
-      }
-    );
-
-    observer.observe(marker);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [show]);
   if (!show) return null;
 
   const seasonBannerClass =
@@ -157,7 +135,7 @@ export default function CustomerBrowse({
         <div className={browseStyles.pageHeader}>
           <div className={commonStyles.pageTitle}>{t.pageTitle}</div>
 
-          {showCatalogBanners && seasonBannerVisible && (
+          {seasonBannerVisible && (
             <div className={`${browseStyles.seasonBanner} ${seasonBannerClass}`}>
               <span className={browseStyles.seasonEmoji}>{seasonEmoji}</span>
               <span className={browseStyles.seasonText}>{seasonText}</span>
