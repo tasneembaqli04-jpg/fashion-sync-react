@@ -28,7 +28,9 @@ export async function saveCustomer(customer) {
       email,
       phone: customer.phone || "",
       street: customer.street || "",
+      streetEn: customer.streetEn || "",
       city: customer.city || "",
+      cityEn: customer.cityEn || "",
       zip: customer.zip || "",
       notes: customer.notes || "",
       updatedAt: new Date().toISOString(),
@@ -45,6 +47,18 @@ export async function updateCustomerNameTranslation(email, nameEn) {
     { nameEn: nameEn || "" },
     { merge: true }
   );
+}
+export async function updateCustomerAddressTranslation(email, { cityEn, streetEn }) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return;
+
+  const updates = {};
+  if (cityEn !== undefined) updates.cityEn = cityEn || "";
+  if (streetEn !== undefined) updates.streetEn = streetEn || "";
+
+  if (Object.keys(updates).length === 0) return;
+
+  await setDoc(doc(db, "customers", normalizedEmail), updates, { merge: true });
 }
 export async function getCustomer(email) {
   const customerRef = doc(db, "customers", normalizeEmail(email));

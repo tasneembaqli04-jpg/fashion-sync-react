@@ -129,6 +129,13 @@ export async function updateOrderItems(docId, items) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, { items });
 }
+export async function updateOrderCustomerAndItems(docId, customer, items) {
+  const orderRef = doc(db, "orders", docId);
+  const updates = {};
+  if (customer) updates.customer = customer;
+  if (items) updates.items = items;
+  await updateDoc(orderRef, updates);
+}
 export async function setPickupSchedule(docId, pickupDate, pickupTime) {
   if (!pickupDate || !pickupTime) {
     throw new Error("pickupDate and pickupTime are required");

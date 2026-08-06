@@ -79,7 +79,7 @@ export default function AnalyticsView({ orders = [], products = [], returnReques
       (order.items || []).forEach((item) => {
         if (item.isGiftCard) return;
         const product = products.find((p) => p.code === item.code);
-        const category = product?.cat || "אחר";
+        const category = product?.cat || t.otherCategory;
         const itemTotal = (Number(item.price) || 0) * (Number(item.qty) || 0);
         categoryMap[category] = (categoryMap[category] || 0) + itemTotal;
       });

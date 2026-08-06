@@ -39,7 +39,9 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
     phone: rawCustomer.phone || "",
     email: rawCustomer.email || "",
     city: rawCustomer.city || "",
+    cityEn: rawCustomer.cityEn || "",
     street: rawCustomer.street || "",
+    streetEn: rawCustomer.streetEn || "",
   };
   const fullName =
     (lang === "en" && customer.nameEn) ||
@@ -118,7 +120,10 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
             {customer.phone && <p style={{ margin: "4px 0" }}>{t.phone} {customer.phone}</p>}
             {(customer.city || customer.street) && (
               <p style={{ margin: "4px 0" }}>
-                {t.address} {[customer.street, customer.city].filter(Boolean).join(", ")}
+                {t.address} {[
+                  (lang === "en" ? customer.streetEn : customer.street) || customer.street,
+                  (lang === "en" ? customer.cityEn : customer.city) || customer.city,
+                ].filter(Boolean).join(", ")}
               </p>
             )}
           </>

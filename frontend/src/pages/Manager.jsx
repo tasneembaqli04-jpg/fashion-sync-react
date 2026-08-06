@@ -28,7 +28,7 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderStatus, updateOrderItems, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";
+import { subscribeToOrders, updateOrderStatus, updateOrderItems, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText } from "../services/translation/translationService";
@@ -38,7 +38,7 @@ import {
   updateDeliveryStatus,
   deleteDelivery,
 } from "../services/deliveries/deliveriesService";
-import { getAllCustomers, updateCustomerNameTranslation } from "../services/customer/customerFirestore";
+import { getAllCustomers, updateCustomerNameTranslation, updateCustomerAddressTranslation } from "../services/customer/customerFirestore";
 import {
   getFeaturedProduct,
   setFeaturedProduct,
@@ -358,9 +358,22 @@ export default function Manager({ onPromote }) {
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
-    const ordersNeedingUpdate = orders.filter((order) =>
-      (order.items || []).some((item) => !item.nameEn)
-    );
+    const ordersNeedingUpdate = orders.filter((order) => {
+      const itemsNeedUpdate = (order.items || []).some(
+        (item) =>
+          !item.nameEn ||
+          (item.isGiftCard && (!item.giftRecipientEn || (item.giftMessage && !item.giftMessageEn)))
+      );
+
+      const customer = order.customerEmbedded || order.customerDetails;
+      const addressNeedsUpdate =
+        customer &&
+        ((customer.city && !customer.cityEn) ||
+          (customer.street && !customer.streetEn) ||
+          (customer.name && !customer.nameEn));
+
+      return itemsNeedUpdate || addressNeedsUpdate;
+    });
 
     const messagesNeedingUpdate = contactMessages.filter(
       (m) => !m.nameEn || !m.messageEn
@@ -373,7 +386,7 @@ export default function Manager({ onPromote }) {
 
     const allCustomers = await getAllCustomers();
     const customersNeedingUpdate = allCustomers.filter(
-      (c) => c.name && !c.nameEn
+      (c) => (c.name && !c.nameEn) || (c.city && !c.cityEn) || (c.street && !c.streetEn)
     );
 
     const total =
@@ -386,18 +399,74 @@ export default function Manager({ onPromote }) {
     let done = 0;
 
     for (const order of ordersNeedingUpdate) {
-      const updatedItems = order.items.map((item) => {
-        if (item.nameEn) return item;
-        const product = products.find((p) => p.code === item.code);
-        return product?.nameEn ? { ...item, nameEn: product.nameEn } : item;
-      });
+      const updatedItems = await Promise.all(
+        (order.items || []).map(async (item) => {
+          let nextItem = item;
+
+          if (!nextItem.nameEn) {
+            const product = products.find((p) => p.code === item.code);
+            if (product?.nameEn) {
+              nextItem = { ...nextItem, nameEn: product.nameEn };
+            }
+          }
+
+          if (nextItem.isGiftCard) {
+            if (!nextItem.giftRecipientEn && nextItem.giftRecipient) {
+              const giftRecipientEn = await translateText(nextItem.giftRecipient);
+              nextItem = { ...nextItem, giftRecipientEn: giftRecipientEn || nextItem.giftRecipient };
+            }
+            if (nextItem.giftMessage && !nextItem.giftMessageEn) {
+              const giftMessageEn = await translateText(nextItem.giftMessage);
+              nextItem = { ...nextItem, giftMessageEn: giftMessageEn || nextItem.giftMessage };
+            }
+          }
+
+          return nextItem;
+        })
+      );
+
+      const existingCustomer = order.customerEmbedded || order.customerDetails || null;
+      let updatedCustomer = existingCustomer;
+
+      if (existingCustomer) {
+        const needsNameEn = existingCustomer.name && !existingCustomer.nameEn;
+        const needsCityEn = existingCustomer.city && !existingCustomer.cityEn;
+        const needsStreetEn = existingCustomer.street && !existingCustomer.streetEn;
+
+        if (needsNameEn || needsCityEn || needsStreetEn) {
+          const [nameEn, cityEn, streetEn] = await Promise.all([
+            needsNameEn ? translateText(existingCustomer.name) : Promise.resolve(existingCustomer.nameEn),
+            needsCityEn ? translateText(existingCustomer.city) : Promise.resolve(existingCustomer.cityEn),
+            needsStreetEn ? translateText(existingCustomer.street) : Promise.resolve(existingCustomer.streetEn),
+          ]);
+
+          updatedCustomer = {
+            ...existingCustomer,
+            nameEn: nameEn || existingCustomer.name,
+            cityEn: cityEn || existingCustomer.city,
+            streetEn: streetEn || existingCustomer.street,
+          };
+        }
+      }
 
       if (order.docId) {
-        await updateOrderItems(order.docId, updatedItems);
+        await updateOrderCustomerAndItems(
+          order.docId,
+          updatedCustomer !== existingCustomer ? updatedCustomer : null,
+          updatedItems
+        );
       }
 
       setOrders((prev) =>
-        prev.map((o) => (o.docId === order.docId ? { ...o, items: updatedItems } : o))
+        prev.map((o) =>
+          o.docId === order.docId
+            ? {
+                ...o,
+                items: updatedItems,
+                customerEmbedded: updatedCustomer,
+              }
+            : o
+        )
       );
 
       done += 1;
@@ -432,8 +501,22 @@ export default function Manager({ onPromote }) {
     }
 
     for (const customer of customersNeedingUpdate) {
-      const nameEn = await translateText(customer.name);
-      await updateCustomerNameTranslation(customer.email, nameEn || customer.name);
+      if (customer.name && !customer.nameEn) {
+        const nameEn = await translateText(customer.name);
+        await updateCustomerNameTranslation(customer.email, nameEn || customer.name);
+      }
+
+      if ((customer.city && !customer.cityEn) || (customer.street && !customer.streetEn)) {
+        const [cityEn, streetEn] = await Promise.all([
+          customer.city && !customer.cityEn ? translateText(customer.city) : Promise.resolve(customer.cityEn),
+          customer.street && !customer.streetEn ? translateText(customer.street) : Promise.resolve(customer.streetEn),
+        ]);
+
+        await updateCustomerAddressTranslation(customer.email, {
+          cityEn: cityEn || customer.city,
+          streetEn: streetEn || customer.street,
+        });
+      }
 
       done += 1;
       setHistoricalProgress({ done, total });

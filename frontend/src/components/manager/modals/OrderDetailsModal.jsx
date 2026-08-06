@@ -26,6 +26,48 @@ export default function OrderDetailsModal({ open, order, onClose }) {
     giftcard: t.payGiftCard,
   };
 
+  const SHIPPING_NAME_KEYS = {
+    standard: t.shippingNameStandard,
+    express: t.shippingNameExpress,
+    same_day: t.shippingNameSameDay,
+    pickup: t.shippingNamePickup,
+  };
+
+  const SHIPPING_LABEL_FALLBACK = {
+    "משלוח רגיל": t.shippingNameStandard,
+    "משלוח מהיר": t.shippingNameExpress,
+    "משלוח באותו יום": t.shippingNameSameDay,
+    "איסוף עצמי": t.shippingNamePickup,
+  };
+
+  function getShippingMethodLabel(shipping) {
+    if (!shipping) return t.unknown;
+
+    if (SHIPPING_NAME_KEYS[shipping.id]) {
+      return SHIPPING_NAME_KEYS[shipping.id];
+    }
+
+    const cleanedLabel = String(shipping.label || "")
+      .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF]/g, "")
+      .trim();
+
+    if (!cleanedLabel) return t.unknown;
+
+    if (SHIPPING_LABEL_FALLBACK[cleanedLabel]) {
+      return SHIPPING_LABEL_FALLBACK[cleanedLabel];
+    }
+
+    const partialMatchKey = Object.keys(SHIPPING_LABEL_FALLBACK).find(
+      (key) => cleanedLabel.includes(key) || key.includes(cleanedLabel),
+    );
+
+    if (partialMatchKey) {
+      return SHIPPING_LABEL_FALLBACK[partialMatchKey];
+    }
+
+    return cleanedLabel;
+  }
+
   if (!open || !order) return null;
 
   const embedded = order.customerEmbedded || {};
@@ -38,7 +80,9 @@ export default function OrderDetailsModal({ open, order, onClose }) {
     phone: profile.phone || embedded.phone || "",
     email: profile.email || embedded.email || "",
     city: profile.city || embedded.city || "",
+    cityEn: profile.cityEn || embedded.cityEn || "",
     street: profile.street || embedded.street || "",
+    streetEn: profile.streetEn || embedded.streetEn || "",
     zip: profile.zip || embedded.zip || "",
     notes: profile.notes || embedded.notes || "",
   };
@@ -119,8 +163,8 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         <p>{t.fullName} {fullName}</p>
         <p>{t.phone} {customer.phone || t.notEntered}</p>
         <p>{t.email} {order.customerEmail || customer.email || t.notEntered}</p>
-        <p>{t.city} {customer.city || t.notEntered}</p>
-        <p>{t.street} {customer.street || t.notEntered}</p>
+        <p>{t.city} {(lang === "en" ? customer.cityEn : customer.city) || customer.city || t.notEntered}</p>
+        <p>{t.street} {(lang === "en" ? customer.streetEn : customer.street) || customer.street || t.notEntered}</p>
         <p>{t.zip} {customer.zip || t.notEntered}</p>
         {customer.notes && <p>{t.notes} {customer.notes}</p>}
 
@@ -176,7 +220,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         <hr style={{ borderColor: "var(--border)", margin: "16px 0" }} />
 
         <h3 style={{ marginBottom: "8px" }}>{t.shippingPaymentTitle}</h3>
-        <p>{t.shippingMethod} {order.shipping?.label || t.unknown}</p>
+        <p>{t.shippingMethod} {getShippingMethodLabel(order.shipping)}</p>
         <p>{t.paymentMethod} {PAY_METHOD_LABELS[order.payMethod] || t.unknown}</p>
         {order.payMethod === "card" && Number(order.installments) > 1 && (
           <p>{t.installmentsCount} {order.installments}</p>
@@ -198,8 +242,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
         <p style={{ fontSize: "1.2rem", marginTop: "12px" }}>
           {t.totalToPayLabel} <strong>₪{Number(order.total || 0).toLocaleString()}</strong>
         </p>
-
-        </div>
+      </div>
     </div>
   );
 }
