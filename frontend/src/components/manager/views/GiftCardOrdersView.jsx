@@ -48,8 +48,10 @@ export default function GiftCardOrdersView({ orders = [] }) {
         .forEach((item) => {
           entries.push({
             code: item.code || item.key || "",
-            recipient: item.giftRecipient || "",
-            message: item.giftMessage || "",
+            recipient:
+              (lang === "en" && item.giftRecipientEn) || item.giftRecipient || "",
+            message:
+              (lang === "en" && item.giftMessageEn) || item.giftMessage || "",
             amount: Number(item.price) || 0,
             buyerName:
               order.customerEmbedded?.name ||

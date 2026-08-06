@@ -18,6 +18,53 @@ export default function FeedbackView() {
   const t = dict.manager.feedback;
   const locale = lang === "en" ? "en-US" : "he-IL";
   const MONTH_NAMES = dict.monthNames;
+  const pcfT = dict.customer.preCheckoutFeedback;
+
+  const TOPIC_LABELS_BY_ID = {
+    design: pcfT.topicDesign,
+    search: pcfT.topicSearch,
+    shopping: pcfT.topicShopping,
+    mobile: pcfT.topicMobile,
+    chatbot: pcfT.topicChatbot,
+    suggestion: pcfT.topicSuggestion,
+  };
+
+  const LEGACY_TOPIC_LABELS = {
+    "🎨 עיצוב": "design",
+    "🔍 חיפוש": "search",
+    "🛒 קנייה": "shopping",
+    "📱 מובייל": "mobile",
+    "💬 צ'אטבוט": "chatbot",
+    "💡 הצעה": "suggestion",
+    "🎨 Design": "design",
+    "🔍 Search": "search",
+    "🛒 Shopping": "shopping",
+    "📱 Mobile": "mobile",
+    "💬 Chatbot": "chatbot",
+    "💡 Suggestion": "suggestion",
+  };
+
+  function translateTopic(rawTopic) {
+    const cleaned = String(rawTopic || "").trim();
+
+    if (TOPIC_LABELS_BY_ID[cleaned]) {
+      return TOPIC_LABELS_BY_ID[cleaned];
+    }
+
+    if (LEGACY_TOPIC_LABELS[cleaned]) {
+      return TOPIC_LABELS_BY_ID[LEGACY_TOPIC_LABELS[cleaned]] || cleaned;
+    }
+
+    const partialMatchKey = Object.keys(LEGACY_TOPIC_LABELS).find(
+      (key) => cleaned.includes(key) || key.includes(cleaned),
+    );
+
+    if (partialMatchKey) {
+      return TOPIC_LABELS_BY_ID[LEGACY_TOPIC_LABELS[partialMatchKey]] || cleaned;
+    }
+
+    return cleaned;
+  }
 
   function fmtDate(value) {
     if (!value) return "";
@@ -180,7 +227,12 @@ export default function FeedbackView() {
 
             {!!item.topics?.length && (
               <div style={{ marginBottom: "6px", color: "var(--muted)" }}>
-                {item.topics.join(" · ")}
+                {(Array.isArray(item.topics)
+                  ? item.topics
+                  : String(item.topics).split(" · ")
+                )
+                  .map(translateTopic)
+                  .join(" · ")}
               </div>
             )}
 

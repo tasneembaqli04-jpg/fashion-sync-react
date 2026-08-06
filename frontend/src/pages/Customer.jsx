@@ -147,9 +147,25 @@ export default function Customer() {
     {
       type: "bot",
       html: dict.customer.chat.welcomeMessage,
+      isWelcome: true,
     },
   ]);
   const [isChatTyping, setIsChatTyping] = useState(false);
+
+  useEffect(() => {
+    setChatMessages((prev) => {
+      if (prev.length === 1 && prev[0].isWelcome) {
+        return [
+          {
+            type: "bot",
+            html: dict.customer.chat.welcomeMessage,
+            isWelcome: true,
+          },
+        ];
+      }
+      return prev;
+    });
+  }, [lang]);
   const [currentOutfit, setCurrentOutfit] = useState([]);
   const [currentOutfitImage, setCurrentOutfitImage] = useState("");
 

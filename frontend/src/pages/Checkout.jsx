@@ -422,7 +422,12 @@ export default function Checkout() {
         );
 
         const fullName = `${formData.firstName} ${formData.lastName}`.trim();
-        const nameEn = await translateText(fullName);
+
+        const [nameEn, cityEn, streetEn] = await Promise.all([
+          translateText(fullName),
+          formData.city ? translateText(formData.city) : Promise.resolve(""),
+          formData.street ? translateText(formData.street) : Promise.resolve(""),
+        ]);
 
         const receipt = {
           id: `RCP-${Date.now()}`,
@@ -435,7 +440,9 @@ export default function Checkout() {
             email: formData.email,
             phone: formData.phone,
             street: formData.street,
+            streetEn: streetEn || formData.street,
             city: formData.city,
+            cityEn: cityEn || formData.city,
             zip: formData.zip,
             notes: formData.notes,
           },
