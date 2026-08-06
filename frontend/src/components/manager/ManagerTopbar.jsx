@@ -9,12 +9,23 @@ export default function ManagerTopbar({
   onOpenScan,
   onCancelPromote,
   currentPromotedImg,
+  showBackButton = false,
+  onGoBack,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.topbar;
 
   return (
     <div className={styles.topbar}>
+      {showBackButton && (
+        <button
+          className={styles.backBtn}
+          onClick={onGoBack}
+          title={t.backTitle}
+          aria-label={t.backTitle}
+        >→</button>
+      )}
+
       <button className={styles.mobMenuBtn} onClick={onOpenMobileSidebar}>☰</button>
 
       <div className={styles.topbarSearch}>

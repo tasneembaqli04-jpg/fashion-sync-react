@@ -1,46 +1,88 @@
-.floatingMenuBtn,
-.floatingCartBtn {
+.topbar,
+.floatingChatBtn {
   display: none;
 }
 
 @media (max-width: 860px) {
-  .floatingMenuBtn {
+  .topbar {
     display: flex;
-    position: fixed;
-    top: 0.8rem;
-    right: 0.8rem;
-    z-index: 150;
     align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--charcoal);
-    border: 1px solid rgba(201, 168, 76, 0.3);
-    color: var(--gold);
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    justify-content: space-between;
+    gap: 0.6rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 48px;
+    z-index: 200;
+    background: var(--black);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+    padding: 0 0.8rem;
   }
 
-  .floatingCartBtn {
+  .iconBtn {
     display: flex;
-    position: fixed;
-    top: 0.8rem;
-    left: 0.8rem;
-    z-index: 150;
     align-items: center;
     justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: none;
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--gold);
+    font-size: 1.05rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .leftIcons {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    font-family: "Playfair Display", serif;
+    font-size: 1rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cartBtn {
+    display: flex;
+    align-items: center;
     gap: 0.3rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.35rem 0.65rem;
     border-radius: 999px;
-    background: var(--charcoal);
+    background: none;
     border: 1px solid rgba(201, 168, 76, 0.3);
     color: var(--gold);
     font-family: "Alef", sans-serif;
     font-weight: 700;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+  }
+
+  .floatingChatBtn {
+    display: flex;
+    position: fixed;
+    bottom: 1.2rem;
+    left: 1.2rem;
+    z-index: 150;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none;
+    color: #080808;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
   }
 }

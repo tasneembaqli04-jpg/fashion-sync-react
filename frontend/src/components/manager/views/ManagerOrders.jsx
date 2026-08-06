@@ -45,9 +45,16 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [orders]);
 
-  const pending = orders.filter((o) => !o.confirmed && !o.cancelled).length;
-  const confirmed = orders.filter((o) => o.confirmed && !o.cancelled).length;
-  const cancelled = orders.filter((o) => o.cancelled).length;
+  const monthFilteredOrders = useMemo(() => {
+    if (monthFilter === "all") return orders;
+    return orders.filter(
+      (o) => getMonthKey(o.date || o.createdAt) === monthFilter,
+    );
+  }, [orders, monthFilter]);
+
+  const pending = monthFilteredOrders.filter((o) => !o.confirmed && !o.cancelled).length;
+  const confirmed = monthFilteredOrders.filter((o) => o.confirmed && !o.cancelled).length;
+  const cancelled = monthFilteredOrders.filter((o) => o.cancelled).length;
 
   const visibleOrders = orders.filter((order) => {
     if (statusFilter === "cancelled") return Boolean(order.cancelled);
@@ -120,7 +127,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
             className={overviewStyles.statVal}
             style={{ color: "var(--blue)" }}
           >
-            {orders.length}
+            {monthFilteredOrders.length}
           </div>
           <div className={overviewStyles.statSub}>{t.ordersSuffix}</div>
         </div>

@@ -1,20 +1,30 @@
 .filterBar {
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 145;
   display: flex;
   gap: 0.75rem;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
   margin-top: -2.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   background: var(--black);
   padding: 0.6rem 1rem;
   width: calc(100% + 5rem);
   margin-right: -2.5rem;
   margin-left: -2.5rem;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.filterBar select,
+.filterBar input {
+  flex-shrink: 0;
+}
+
+.rowBreak {
+  display: none;
 }
 
 @media (max-width: 860px) {
@@ -24,7 +34,16 @@
     margin-left: -1rem;
     margin-top: 0;
     padding: 0.6rem 1rem;
-    top: 0;
+    top: 48px;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 0.5rem;
+  }
+
+  .rowBreak {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
   }
 
   .desktopCartBtn {
@@ -34,7 +53,7 @@
 
 .tabsSticky {
   position: sticky;
-  z-index: 89;
+  z-index: 144;
   background: var(--black);
   padding: 0.5rem 0 0;
   width: calc(100% + 5rem);
@@ -43,17 +62,18 @@
   padding-right: 2.5rem;
   padding-left: 2.5rem;
   margin-bottom: 1rem;
-  top: 53px;
+  top: 42px;
 }
 
 @media (max-width: 860px) {
   .tabsSticky {
-    width: calc(100% + 2rem);
-    margin-right: -1rem;
-    margin-left: -1rem;
-    padding-right: 1rem;
-    padding-left: 1rem;
-    top: 110px;
+    position: static;
+    width: auto;
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+    padding-top: 0.5rem;
   }
 }
 
@@ -67,6 +87,8 @@
   gap: 0.6rem;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .filterLeft {
@@ -82,6 +104,8 @@
   border: 1px solid var(--border);
   border-radius: 9px;
   padding: 0.7rem 1rem;
+  height: 42px;
+  box-sizing: border-box;
   color: var(--white);
   font-family: "Alef", sans-serif;
   font-size: 0.9rem;
@@ -154,30 +178,30 @@
 }
 
 @media (max-width: 600px) {
-  .filterBar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filterRight,
-  .filterLeft {
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .filterBar input,
-  .filterBar select {
-    width: 100%;
+  .filterBar select,
+  .filterBar input {
+    font-size: 0.78rem;
+    height: 38px;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
   }
 
   .searchWrap {
-    width: 100%;
-    padding: 0.4rem 0.6rem;
+    width: 190px;
+    flex-shrink: 0;
+    padding: 0.3rem 0.5rem;
+    height: 38px;
+    box-sizing: border-box;
   }
 
   .searchInput {
-    width: 100%;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
+  }
+
+  .refreshBtn {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.85rem !important;
+    min-width: 0 !important;
   }
 }
 
@@ -266,13 +290,29 @@
 }
 
 .seasonBanner {
-  border-radius: 14px;
-  padding: 0.75rem 1.3rem;
+  border-radius: 10px;
+  padding: 0.4rem 0.8rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
   margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  .seasonBanner {
+    padding: 0.2rem 0.45rem;
+    gap: 0.25rem;
+    border-radius: 6px;
+    margin-bottom: 0.35rem;
+  }
+
+  .seasonEmoji {
+    font-size: 0.7rem;
+  }
+
+  .seasonText {
+    font-size: 0.6rem;
+  }
 }
 
 .summer {
@@ -296,11 +336,11 @@
 }
 
 .seasonEmoji {
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
 
 .seasonText {
-  font-size: 0.88rem;
+  font-size: 0.78rem;
 }
 
 .pointsCard {

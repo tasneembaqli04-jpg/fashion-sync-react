@@ -10,6 +10,7 @@ export default function CheckoutPriceBox({
   total = 0,
   payMethod = "card",
   installments = 1,
+  isGiftCardOnly = false,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.checkout.priceBox;
@@ -44,10 +45,12 @@ export default function CheckoutPriceBox({
         </div>
       )}
 
-      <div className={styles.pline}>
-        <span className={styles.pl}>{t.shipping}</span>
-        <span>{shipping === 0 ? t.freeShipping : `₪${shipping.toLocaleString()}`}</span>
-      </div>
+      {!isGiftCardOnly && (
+        <div className={styles.pline}>
+          <span className={styles.pl}>{t.shipping}</span>
+          <span>{shipping === 0 ? t.freeShipping : `₪${shipping.toLocaleString()}`}</span>
+        </div>
+      )}
 
       {showInstallments && (
         <div className={styles.pline}>

@@ -88,10 +88,12 @@ export default function CheckoutStep4Success({
 
           <div className={styles.successDivider}></div>
 
-          <div className={styles.pline}>
-            <span className={styles.pl}>{priceT.shipping}</span>
-            <span>{shippingCost === 0 ? priceT.freeShipping : `₪${shippingCost}`}</span>
-          </div>
+          {!isGiftCardOnly && (
+            <div className={styles.pline}>
+              <span className={styles.pl}>{priceT.shipping}</span>
+              <span>{shippingCost === 0 ? priceT.freeShipping : `₪${shippingCost}`}</span>
+            </div>
+          )}
 
           {discount > 0 && (
             <div className={`${styles.pline} ${styles.disc}`}>
