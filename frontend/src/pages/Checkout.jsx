@@ -304,8 +304,10 @@ export default function Checkout() {
     const phoneOk = /^0\d{9}$/.test(phoneClean);
     if (!phoneOk) nextErrors.phone = true;
 
-    if (!formData.street.trim()) nextErrors.street = true;
-    if (!formData.city.trim()) nextErrors.city = true;
+    if (!isGiftCardOnly) {
+      if (!formData.street.trim()) nextErrors.street = true;
+      if (!formData.city.trim()) nextErrors.city = true;
+    }
 
     return nextErrors;
   }
@@ -548,7 +550,7 @@ export default function Checkout() {
       <ProcessingOverlay isOpen={processing} />
 
       <div className={styles.checkoutWrap}>
-        <CheckoutStepsBar currentStep={currentStep} />
+        <CheckoutStepsBar currentStep={currentStep} isGiftCardOnly={isGiftCardOnly} />
 
         {currentStep === 1 && (
           <CheckoutStep1Details
@@ -556,6 +558,7 @@ export default function Checkout() {
             errors={errors}
             onChange={handleInputChange}
             onNext={goToStep2}
+            isGiftCardOnly={isGiftCardOnly}
           />
         )}
 

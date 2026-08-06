@@ -89,15 +89,17 @@ export default function CheckoutStep3Payment({
                 </div>
               )}
 
-              <div
-                className={`${styles.payOpt} ${payMethod === "giftcard" ? styles.selected : ""}`}
-                onClick={() => setPayMethod("giftcard")}
-                role="button"
-                tabIndex={0}
-              >
-                <span className={styles.payIcon}>🎁</span>
-                {t.giftCard}
-              </div>
+              {!isGiftCardOnly && (
+                <div
+                  className={`${styles.payOpt} ${payMethod === "giftcard" ? styles.selected : ""}`}
+                  onClick={() => setPayMethod("giftcard")}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span className={styles.payIcon}>🎁</span>
+                  {t.giftCard}
+                </div>
+              )}
             </div>
 
             {payMethod === "card" && (
@@ -361,6 +363,7 @@ export default function CheckoutStep3Payment({
         total={total}
         payMethod={payMethod}
         installments={selectedInstallments}
+        isGiftCardOnly={isGiftCardOnly}
       />
 
       <div className={styles.termsWrap}>

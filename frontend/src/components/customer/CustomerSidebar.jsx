@@ -17,7 +17,7 @@ export default function CustomerSidebar({
   stockAlertsCount = 0,
   activeOrdersCount = 0,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.sidebar;
 
   function Badge({ count, color }) {
@@ -57,7 +57,7 @@ export default function CustomerSidebar({
       <aside
         className={`${sidebarStyles.sidebar} ${
           sidebarOpen ? sidebarStyles.open : ""
-        }`}
+        } ${lang === "en" ? sidebarStyles.ltrSidebar : ""}`}
         id="sidebar"
       >
         <div className={sidebarStyles.brand}>FashionSync</div>

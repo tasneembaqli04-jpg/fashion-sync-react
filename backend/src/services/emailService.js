@@ -3,6 +3,14 @@ const { isEnglish, dir } = require("./emailLangHelpers");
 
 function buildOrderEmailHtml(order, lang) {
   const en = isEnglish(lang);
+  const isGiftCardOnly =
+    Array.isArray(order.items) &&
+    order.items.length > 0 &&
+    order.items.every((item) => item.isGiftCard);
+
+  const giftCardCode = isGiftCardOnly
+    ? order.items.find((item) => item.isGiftCard)?.code || order.items[0]?.code
+    : null;
 
   const itemsHtml = (order.items || [])
     .map((item) => {
@@ -18,15 +26,29 @@ function buildOrderEmailHtml(order, lang) {
     .join("");
 
   if (en) {
-    const followUpLine = order.isPickup
-      ? "We'll update you once your order is ready for pickup, and then you can choose a pickup time."
-      : "We'll keep you updated at every step of the shipping process.";
+    const followUpLine = isGiftCardOnly
+      ? "Your gift card is ready to use — the code is shown above."
+      : order.isPickup
+        ? "We'll update you once your order is ready for pickup, and then you can choose a pickup time."
+        : "We'll keep you updated at every step of the shipping process.";
+
+    const titleLine = isGiftCardOnly
+      ? "Your gift card purchase was received! 🎁"
+      : "Your order has been received! 🛍️";
+
+    const codeBlockHtml = giftCardCode
+      ? `<p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
+           <strong>Gift card code:</strong><br />
+           <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span>
+         </p>`
+      : "";
 
     return `
       <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
-        <h2 style="color: #c9a84c;">Your order has been received! 🛍️</h2>
+        <h2 style="color: #c9a84c;">${titleLine}</h2>
         <p>Hello ${order.customerName || ""},</p>
-        <p>Your order <strong>${order.id}</strong> was received successfully, and is now awaiting confirmation from our team. We'll send you a separate email once it's confirmed.</p>
+        <p>Your order <strong>${order.id}</strong> was received successfully${isGiftCardOnly ? "" : ", and is now awaiting confirmation from our team. We'll send you a separate email once it's confirmed"}.</p>
+        ${codeBlockHtml}
 
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
           <thead>
@@ -46,15 +68,29 @@ function buildOrderEmailHtml(order, lang) {
     `;
   }
 
-  const followUpLine = order.isPickup
-    ? "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף."
-    : "נעדכן אותך בכל שלב במסלול המשלוח.";
+  const followUpLine = isGiftCardOnly
+    ? "כרטיס המתנה שלך מוכן לשימוש — הקוד מוצג למעלה."
+    : order.isPickup
+      ? "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף."
+      : "נעדכן אותך בכל שלב במסלול המשלוח.";
+
+  const titleLine = isGiftCardOnly
+    ? "רכישת כרטיס המתנה שלך התקבלה! 🎁"
+    : "ההזמנה שלך התקבלה! 🛍️";
+
+  const codeBlockHtml = giftCardCode
+    ? `<p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
+         <strong>קוד כרטיס המתנה:</strong><br />
+         <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span>
+       </p>`
+    : "";
 
   return `
     <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
-      <h2 style="color: #c9a84c;">ההזמנה שלך התקבלה! 🛍️</h2>
+      <h2 style="color: #c9a84c;">${titleLine}</h2>
       <p>שלום ${order.customerName || ""},</p>
-      <p>ההזמנה שלך <strong>${order.id}</strong> נקלטה בהצלחה, וממתינה כעת לאישור הצוות שלנו. נעדכן אותך במייל נפרד ברגע שהיא תאושר.</p>
+      <p>ההזמנה שלך <strong>${order.id}</strong> נקלטה בהצלחה${isGiftCardOnly ? "" : ", וממתינה כעת לאישור הצוות שלנו. נעדכן אותך במייל נפרד ברגע שהיא תאושר"}.</p>
+      ${codeBlockHtml}
 
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <thead>

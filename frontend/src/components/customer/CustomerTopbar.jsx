@@ -5,26 +5,53 @@ export default function CustomerTopbar({
   cartCountMobile = 0,
   toggleSidebar,
   openCartOrAuth,
+  showBackButton = false,
+  onGoBack,
+  showChatButton = false,
+  onOpenChat,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.sidebar;
 
   return (
     <>
-      <button
-        className={topbarStyles.floatingMenuBtn}
-        onClick={toggleSidebar}
-        aria-label={t.menuAriaLabel}
-      >
-        ☰
-      </button>
+      <div className={topbarStyles.topbar}>
+        <div className={topbarStyles.leftIcons}>
+          <button
+            className={topbarStyles.iconBtn}
+            onClick={toggleSidebar}
+            aria-label={t.menuAriaLabel}
+          >
+            ☰
+          </button>
 
-      <button
-        className={topbarStyles.floatingCartBtn}
-        onClick={openCartOrAuth}
-      >
-        🛒 {cartCountMobile}
-      </button>
+          {showBackButton && (
+            <button
+              className={topbarStyles.iconBtn}
+              onClick={onGoBack}
+              aria-label={t.backAriaLabel}
+            >
+              →
+            </button>
+          )}
+        </div>
+
+        <div className={topbarStyles.brand}>FashionSync</div>
+
+        <button className={topbarStyles.cartBtn} onClick={openCartOrAuth}>
+          🛒 {cartCountMobile}
+        </button>
+      </div>
+
+      {showChatButton && (
+        <button
+          className={topbarStyles.floatingChatBtn}
+          onClick={onOpenChat}
+          aria-label={t.chatAriaLabel}
+        >
+          💬
+        </button>
+      )}
     </>
   );
 }

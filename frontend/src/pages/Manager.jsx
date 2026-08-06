@@ -20,6 +20,7 @@ import CouponsView from "../components/manager/views/CouponsView";
 import SettingsView from "../components/manager/views/SettingsView";
 import styles from "../styles/Manager.module.scss";
 import ManagerOrders from "../components/manager/views/ManagerOrders";
+import GiftCardOrdersView from "../components/manager/views/GiftCardOrdersView";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
@@ -60,6 +61,36 @@ export default function Manager({ onPromote }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const contentRef = useRef(null);
   const [activeView, setActiveView] = useState("overview");
+  const isPopStateRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    window.history.replaceState({ view: "overview" }, "");
+
+    function handlePopState(event) {
+      isPopStateRef.current = true;
+      setActiveView(event.state?.view || "overview");
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+
+    window.history.pushState({ view: activeView }, "");
+  }, [activeView, isLoggedIn]);
+
+  function goBackView() {
+    window.history.back();
+  }
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
@@ -598,6 +629,8 @@ export default function Manager({ onPromote }) {
         <ManagerTopbar
           currentPromotedImg={currentPromotedImg}
           globalSearch={globalSearch}
+          showBackButton={activeView !== "overview"}
+          onGoBack={goBackView}
           onGlobalSearchChange={(val) => {
             setGlobalSearch(val);
             if (val.trim()) setActiveView("inventory");
@@ -663,6 +696,9 @@ export default function Manager({ onPromote }) {
               orders={orders}
               onConfirmOrder={handleConfirmOrder}
             />
+          )}
+          {activeView === "giftCardOrders" && (
+            <GiftCardOrdersView orders={orders} />
           )}
           {activeView === "deliveries" && (
             <ManagerDeliveries

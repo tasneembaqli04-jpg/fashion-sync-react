@@ -82,6 +82,15 @@ export default function ManagerSidebar({
           <span style={{ flex: 1 }}>{t.customerOrders}</span>
           <NavBadge count={pendingOrdersCount} />
         </button>
+        <button
+          className={`${styles.navBtn} ${
+            activeView === "giftCardOrders" ? styles.active : ""
+          }`}
+          onClick={() => onChangeView("giftCardOrders")}
+        >
+          <span className={styles.icon}>🎁</span>
+          <span style={{ flex: 1 }}>{t.giftCardOrders}</span>
+        </button>
 
         <button
           className={`${styles.navBtn} ${

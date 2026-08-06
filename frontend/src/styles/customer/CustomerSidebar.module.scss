@@ -32,11 +32,11 @@
     overflow-y: auto;
   }
 
-  .sidebar:global(:dir(ltr)) {
+  .sidebar.ltrSidebar {
     transform: translateX(-110%);
   }
 
-  .open {
+  .sidebar.open {
     transform: translateX(0);
   }
 }

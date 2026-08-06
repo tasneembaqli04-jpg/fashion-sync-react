@@ -87,6 +87,27 @@ export default function Customer() {
   const [theme, setTheme] = useState(getSavedTheme());
   const [activePanel, setActivePanel] = useState("browse");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useEffect(() => {
+    window.history.replaceState({ panel: "browse" }, "");
+
+    function handlePopState(event) {
+      const panel = event.state?.panel || "browse";
+      setActivePanel(panel);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function navigateToPanel(panelName) {
+    if (panelName === activePanel) return;
+    window.history.pushState({ panel: panelName }, "");
+    setActivePanel(panelName);
+  }
+
+  function goBackPanel() {
+    window.history.back();
+  }
 
   const [currentUser, setCurrentUser] = useState(null);
   const [isGuest, setIsGuest] = useState(false);
@@ -406,13 +427,13 @@ export default function Customer() {
   }
 
   function showPanel(panelName) {
-    setActivePanel(panelName);
+    navigateToPanel(panelName);
     closeSidebar();
   }
 
   function navProtected(panelName) {
     if (!isGuest) {
-      setActivePanel(panelName);
+      navigateToPanel(panelName);
       closeSidebar();
       return;
     }
@@ -1094,6 +1115,10 @@ export default function Customer() {
         cartCountMobile={cartCount}
         toggleSidebar={toggleSidebar}
         openCartOrAuth={openCartOrAuth}
+        showBackButton={activePanel !== "browse"}
+        onGoBack={goBackPanel}
+        showChatButton={activePanel !== "chat"}
+        onOpenChat={() => showPanel("chat")}
       />
 
       <CustomerSidebar

@@ -583,6 +583,21 @@
   border-radius: 8px;
   margin-top: 0.75rem;
   display: inline-block;
+  max-width: 100%; overflow-x: auto;
+}
+@media (max-width: 480px) {
+  .giftCardDisplay {
+    padding: 1.2rem 0.9rem;
+    max-width: 100%;
+  }
+  .giftCardLogo { font-size: 1.15rem; }
+  .giftCardAmount { font-size: 1.9rem; }
+  .giftCardCode {
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    padding: 0.4rem 0.7rem;
+    word-break: break-all;
+  }
 }
 
 .policySection {

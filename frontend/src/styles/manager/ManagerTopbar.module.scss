@@ -6,9 +6,17 @@
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  inset-inline-start: var(--sidebar, 258px);
+  inset-inline-end: 0;
   z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    inset-inline-start: 0;
+  }
 }
 
 .mobMenuBtn {
@@ -19,6 +27,21 @@
   font-size: 1.4rem;
   cursor: pointer;
   padding: 0.3rem;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
   flex-shrink: 0;
 }
 
@@ -102,17 +125,26 @@
   }
 
   .topbar {
-    padding: 0.7rem 1rem;
-    flex-wrap: wrap;
+    padding: 0.6rem 0.8rem;
+    gap: 0.4rem;
   }
 
   .topbarSearch {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    min-width: 0;
     max-width: none;
-    order: 3;
+  }
+
+  .topbarSearch input {
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
   }
 
   .mobMenuBtn {
+    flex-shrink: 0;
+  }
+
+  .backBtn {
     flex-shrink: 0;
   }
 
@@ -121,7 +153,7 @@
   }
 
   .btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.78rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.72rem;
   }
 }

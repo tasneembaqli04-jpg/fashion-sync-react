@@ -17,6 +17,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
   const t = dict.manager.loginOverlay;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
 
@@ -83,13 +84,36 @@ export default function LoginOverlay({ onLoginSuccess }) {
 
         <div className={formStyles.fg}>
           <div className={loginStyles.loginLabel}>{t.password}</div>
-          <input
-            className={`${formStyles.fi} ${loginStyles.loginInput}`}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              className={`${formStyles.fi} ${loginStyles.loginInput}`}
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              style={{ paddingInlineEnd: "2.6rem" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? t.hidePassword : t.showPassword}
+              style={{
+                position: "absolute",
+                insetInlineEnd: "0.6rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "1rem",
+                color: "var(--muted, #888)",
+                padding: "0.2rem",
+                lineHeight: 1,
+              }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
         </div>
 
         {errorVisible && (
