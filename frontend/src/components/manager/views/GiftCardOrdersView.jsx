@@ -39,17 +39,17 @@ export default function GiftCardOrdersView() {
   useEffect(() => {
     if (loading) return;
 
-    const needsTranslation = giftCards.filter(
+    const cardsNeedingTranslation = giftCards.filter(
       (card) =>
-        (card.recipientName && !card.recipientNameEn) ||
-        (card.message && !card.messageEn),
+        (card.recipientName && (!card.recipientNameEn || card.recipientNameEn.trim() === card.recipientName.trim())) ||
+        (card.message && (!card.messageEn || card.messageEn.trim() === card.message.trim())),
     );
 
-    if (needsTranslation.length === 0) return;
+    if (cardsNeedingTranslation.length === 0) return;
 
     setTranslating(true);
 
-    Promise.all(needsTranslation.map((card) => translateGiftCard(card))).then(() => {
+    Promise.all(cardsNeedingTranslation.map((card) => translateGiftCard(card))).then(() => {
       loadCards().then(() => setTranslating(false));
     });
   }, [loading]);

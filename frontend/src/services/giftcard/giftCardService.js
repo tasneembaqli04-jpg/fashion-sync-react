@@ -68,12 +68,14 @@ export async function translateGiftCard(card) {
 
   const updates = {};
 
-  if (card.recipientName && !card.recipientNameEn) {
-    updates.recipientNameEn = (await translateText(card.recipientName)) || card.recipientName;
+  if (card.recipientName && (!card.recipientNameEn || card.recipientNameEn.trim() === card.recipientName.trim())) {
+    const translated = await translateText(card.recipientName);
+    if (translated) updates.recipientNameEn = translated;
   }
 
-  if (card.message && !card.messageEn) {
-    updates.messageEn = (await translateText(card.message)) || card.message;
+  if (card.message && (!card.messageEn || card.messageEn.trim() === card.message.trim())) {
+    const translated = await translateText(card.message);
+    if (translated) updates.messageEn = translated;
   }
 
   if (Object.keys(updates).length === 0) return;

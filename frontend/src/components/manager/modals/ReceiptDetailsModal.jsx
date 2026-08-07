@@ -157,10 +157,16 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
 
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700 }}>
-                {lang === "en" && item.nameEn ? item.nameEn : item.name}
+                {lang === "en"
+                  ? item.nameEn ||
+                    (item.name === "כרטיס מתנה FashionSync" ? "FashionSync Gift Card" : item.name)
+                  : item.name}
               </div>
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
-                {[item.size, item.color].filter(Boolean).join(" · ")}
+                {[
+                  item.size === "אחיד" && lang === "en" ? "One Size" : item.size,
+                  (lang === "en" && item.colorEn) || item.color,
+                ].filter(Boolean).join(" · ")}
                 {item.size || item.color ? " · " : ""}
                 {t.qtyLabel} {item.qty}
               </div>
