@@ -97,6 +97,7 @@ export const he = {
       orderDetailsButton: "📋 פרטי הזמנה",
       cancelledLabel: "✕ בוטלה",
       cancelledSuffix: "בוטלו",
+      overdueTag: "⏰ מתעכבת",
     },
     giftCardOrders: {
       title: "🎁 הזמנות כרטיסי מתנה",
@@ -137,6 +138,7 @@ export const he = {
       selfPickupBadge: "איסוף עצמי",
       itemsCountSuffix: "פריטים בהזמנה",
       orderDetailsButton: "📋 פרטי הזמנה",
+      overdueTag: "⏰ מתעכבת",
     },
     coupons: {
       title: "🎟️ ניהול קופונים",
@@ -496,6 +498,8 @@ export const he = {
       highDemandMsg: "{name} — נרשמו {count} בקשות",
       customSizeTitle: "🔍 בקשת מידה מיוחדת",
       customSizeMsg: 'הזמנה {orderId} — {name} · מידה: "{size}" — דורש אישור ידני',
+      overdueShippingTitle: "⏰ משלוח מתעכב",
+      overdueShippingMsg: "הזמנה {orderId} עברה את זמן המשלוח המובטח — כדאי לבדוק את הסטטוס",
     },
     dialogs: {
       barcodeNotFound: '⚠️ מוצר עם הקוד "{code}" לא נמצא במלאי',

@@ -1,3 +1,26 @@
+import { SHIPPING_OPTIONS } from "../../data/shippingOptions";
+
+export function isOrderOverdue(order) {
+  if (!order || !order.confirmed || order.cancelled) return false;
+  if ((Number(order.stageIndex) || 0) >= 3) return false;
+
+  const shippingId = order.shipping?.id;
+  if (!shippingId || shippingId === "pickup") return false;
+
+  const maxDays =
+    order.shipping?.maxDays ??
+    SHIPPING_OPTIONS.find((option) => option.id === shippingId)?.maxDays;
+
+  if (!maxDays) return false;
+
+  const orderDate = new Date(order.date || order.createdAt);
+  if (Number.isNaN(orderDate.getTime())) return false;
+
+  const daysElapsed = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+
+  return daysElapsed > maxDays;
+}
+
 export function createAlerts(products, orders = [], t, lang = "he", stockNotifications = []) {
   const alerts = [];
 
@@ -70,6 +93,17 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
         createdAt: Date.now(),
       });
     });
+
+    if (isOrderOverdue(order)) {
+      alerts.push({
+        key: `overdue_${order.id}`,
+        type: "danger",
+        code: order.id,
+        title: t.overdueShippingTitle,
+        msg: t.overdueShippingMsg.replace("{orderId}", order.id),
+        createdAt: Date.now(),
+      });
+    }
   });
 
   return alerts;
