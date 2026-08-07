@@ -43,6 +43,29 @@ export default function CustomerTopbar({
         </button>
       </div>
 
+      <div className={topbarStyles.desktopTopbar}>
+        <div className={topbarStyles.desktopLeft}>
+          {showBackButton && (
+            <button
+              className={topbarStyles.desktopBackBtn}
+              onClick={onGoBack}
+              aria-label={t.backAriaLabel}
+            >
+              →
+            </button>
+          )}
+          <div className={topbarStyles.desktopBrand}>FashionSync</div>
+        </div>
+
+        <button
+          className={topbarStyles.desktopCartBtn}
+          onClick={openCartOrAuth}
+          aria-label={t.cartAriaLabel}
+        >
+          🛒 {cartCountMobile}
+        </button>
+      </div>
+
       {showChatButton && (
         <button
           className={topbarStyles.floatingChatBtn}

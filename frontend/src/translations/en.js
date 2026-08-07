@@ -119,6 +119,9 @@ export const en = {
       amountLabel: "Amount",
       dateLabel: "Purchase date",
       noMessage: "—",
+      statusActive: "✓ Active",
+      statusUsed: "✕ Fully used",
+      balanceLabel: "Current balance",
     },
     deliveries: {
       title: "Delivery Tracking",
@@ -306,6 +309,7 @@ export const en = {
       storeName: "Store Name",
       phone: "Phone",
       email: "Email",
+      address: "Address",
       addressEnLabel: "Address (English)",
       saveDetails: "💾 Save Details",
       detailsSaved: "✅ Details saved",
@@ -559,8 +563,8 @@ export const en = {
     "יוניסקס": "Unisex",
   },
 
-  orderStatusLabels: ["Confirmed", "Preparing", "Shipped", "Delivered"],
-  pickupStatusLabels: ["Confirmed", "Preparing", "Ready for Pickup", "Picked Up"],
+  orderStatusLabels: ["Received", "Preparing", "Shipped", "Delivered"],
+  pickupStatusLabels: ["Received", "Preparing", "Ready for Pickup", "Picked Up"],
 
   monthNames: [
     "January", "February", "March", "April", "May", "June",
@@ -1004,6 +1008,7 @@ export const en = {
       menuAriaLabel: "Menu",
       backAriaLabel: "Back",       
       chatAriaLabel: "Chatbot",
+      cartAriaLabel: "Shopping cart",
     },
   },
 

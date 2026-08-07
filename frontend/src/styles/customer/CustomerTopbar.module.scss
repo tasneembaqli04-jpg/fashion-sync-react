@@ -1,6 +1,89 @@
-.topbar,
-.floatingChatBtn {
+.topbar {
   display: none;
+}
+
+.desktopTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  inset-inline-start: var(--sidebar, 258px);
+  inset-inline-end: 0;
+  height: 64px;
+  z-index: 150;
+  background: var(--black);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+  padding: 0 1.5rem;
+}
+
+.desktopLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.desktopBrand {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  text-align: center;
+  pointer-events: none;
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.desktopBackBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.desktopCartBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--card-bg, #1a1a1a);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold);
+  font-family: "Alef", sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.floatingChatBtn {
+  display: flex;
+  position: fixed;
+  bottom: 1.5rem;
+  inset-inline-end: 1.5rem;
+  z-index: 150;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  color: #080808;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
 }
 
 @media (max-width: 860px) {
@@ -20,13 +103,25 @@
     padding: 0 0.8rem;
   }
 
+  .desktopTopbar {
+    display: none;
+  }
+
+  .floatingChatBtn {
+    bottom: 1.2rem;
+    inset-inline-end: 1.2rem;
+    width: 52px;
+    height: 52px;
+    font-size: 1.4rem;
+  }
+
   .iconBtn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 34px;
     height: 34px;
-    border-radius: 50%;
+    border-radius: 8px;
     background: none;
     border: 1px solid rgba(201, 168, 76, 0.3);
     color: var(--gold);
@@ -65,24 +160,5 @@
     font-size: 0.74rem;
     cursor: pointer;
     flex-shrink: 0;
-  }
-
-  .floatingChatBtn {
-    display: flex;
-    position: fixed;
-    bottom: 1.2rem;
-    left: 1.2rem;
-    z-index: 150;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    border: none;
-    color: #080808;
-    font-size: 1.4rem;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
   }
 }

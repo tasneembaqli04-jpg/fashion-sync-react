@@ -120,6 +120,9 @@ export const he = {
       amountLabel: "סכום",
       dateLabel: "תאריך רכישה",
       noMessage: "—",
+      statusActive: "✓ פעיל",
+      statusUsed: "✕ נוצל במלואו",
+      balanceLabel: "יתרה נוכחית",
     },
     deliveries: {
       title: "מעקב משלוחים",
@@ -313,6 +316,7 @@ export const he = {
       storeName: "שם החנות",
       phone: "טלפון",
       email: "אימייל",
+      address: "כתובת",
       addressEnLabel: "כתובת (אנגלית)",
       saveDetails: "💾 שמור פרטים",
       detailsSaved: "✅ פרטים נשמרו",
@@ -611,8 +615,8 @@ export const he = {
     "יוניסקס": "יוניסקס",
   },
 
-  orderStatusLabels: ["אושרה", "בהכנה", "נשלחה", "נמסרה"],
-  pickupStatusLabels: ["אושרה", "בהכנה", "מוכן לאיסוף", "נאסף"],
+  orderStatusLabels: ["התקבלה", "בהכנה", "נשלחה", "נמסרה"],
+  pickupStatusLabels: ["התקבלה", "בהכנה", "מוכן לאיסוף", "נאסף"],
 
   monthNames: [
     "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
@@ -1055,6 +1059,7 @@ export const he = {
       menuAriaLabel: "תפריט",
       backAriaLabel: "חזרה",      
       chatAriaLabel: "צ'אטבוט",
+      cartAriaLabel: "עגלת קניות",
     },
   },
 

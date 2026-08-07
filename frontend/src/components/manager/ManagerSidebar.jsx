@@ -16,7 +16,7 @@ export default function ManagerSidebar({
   unreadContactMessagesCount = 0,
   mobileOpen,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.manager.nav;
 
   function NavBadge({ count }) {
@@ -26,7 +26,9 @@ export default function ManagerSidebar({
 
   return (
     <aside
-      className={`${styles.sidebar} ${mobileOpen ? "" : styles.mobHidden}`}
+      className={`${styles.sidebar} ${mobileOpen ? "" : styles.mobHidden} ${
+        lang === "en" ? styles.ltrSidebar : ""
+      }`}
     >
       <div className={styles.sbBrand}>
         <div className={styles.sbLogo}>FashionSync</div>

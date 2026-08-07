@@ -1,11 +1,12 @@
 import { db } from "../../firebase";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
+import { translateText } from "../translation/translationService";
 
 function normalizeCode(code) {
   return String(code || "").trim().toUpperCase();
 }
 
-export async function issueGiftCard({ code, amount, buyerEmail, recipientName, message }) {
+export async function issueGiftCard({ code, amount, buyerEmail, recipientName, recipientNameEn, message, messageEn }) {
   const giftCardCode = normalizeCode(code);
   if (!giftCardCode) return;
 
@@ -15,7 +16,9 @@ export async function issueGiftCard({ code, amount, buyerEmail, recipientName, m
     balance: Number(amount) || 0,
     buyerEmail: buyerEmail || "",
     recipientName: recipientName || "",
+    recipientNameEn: recipientNameEn || recipientName || "",
     message: message || "",
+    messageEn: messageEn || message || "",
     status: "active",
     createdAt: new Date().toISOString(),
   });
@@ -53,4 +56,27 @@ export async function redeemGiftCardAmount(code, amountToDeduct) {
   });
 
   return { ok: true, deducted, remainingBalance };
+}
+export async function getAllGiftCards() {
+  const snapshot = await getDocs(collection(db, "giftCards"));
+  return snapshot.docs.map((document) => document.data());
+}
+
+export async function translateGiftCard(card) {
+  const code = normalizeCode(card.code);
+  if (!code) return;
+
+  const updates = {};
+
+  if (card.recipientName && !card.recipientNameEn) {
+    updates.recipientNameEn = (await translateText(card.recipientName)) || card.recipientName;
+  }
+
+  if (card.message && !card.messageEn) {
+    updates.messageEn = (await translateText(card.message)) || card.message;
+  }
+
+  if (Object.keys(updates).length === 0) return;
+
+  await updateDoc(doc(db, "giftCards", code), updates);
 }

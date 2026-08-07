@@ -34,6 +34,7 @@ import CheckoutStep3Payment from "../components/checkout/CheckoutStep3Payment";
 import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
 import { getCartFromFirestore } from "../services/customer/cartFirestore";
+import { getStoreDetails } from "../services/settings/storeDetailsService";
 import { useLanguage } from "../translations/LanguageProvider";
 import { useDialog } from "../components/common/DialogProvider";
 export default function Checkout() {
@@ -43,6 +44,24 @@ export default function Checkout() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [cart, setCart] = useState([]);
+  const [liveStoreAddress, setLiveStoreAddress] = useState("");
+
+  useEffect(() => {
+    getStoreDetails().then((details) => {
+      if (details?.address) setLiveStoreAddress(details.address);
+    });
+  }, []);
+
+  const dynamicShippingOptions = useMemo(() => {
+    if (!liveStoreAddress) return SHIPPING_OPTIONS;
+
+    return SHIPPING_OPTIONS.map((option) =>
+      option.id === "pickup"
+        ? { ...option, note: liveStoreAddress }
+        : option,
+    );
+  }, [liveStoreAddress]);
+
   const [selectedShipping, setSelectedShipping] = useState(
     SHIPPING_OPTIONS?.[0] || null,
   );
@@ -265,7 +284,7 @@ export default function Checkout() {
   }
 
   function handleSelectShipping(shippingId) {
-    const found = SHIPPING_OPTIONS.find((option) => option.id === shippingId);
+   const found = dynamicShippingOptions.find((option) => option.id === shippingId);
     if (found) {
       setSelectedShipping(found);
     }
@@ -571,7 +590,7 @@ export default function Checkout() {
 
         {currentStep === 2 && (
           <CheckoutStep2Shipping
-            shippingOptions={SHIPPING_OPTIONS}
+            shippingOptions={dynamicShippingOptions}
             selectedShipping={selectedShipping}
             onSelectShipping={handleSelectShipping}
             deliveryText={getDeliveryText()}
