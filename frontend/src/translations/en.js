@@ -96,6 +96,7 @@ export const en = {
       orderDetailsButton: "📋 Order details",
       cancelledLabel: "✕ Cancelled",
       cancelledSuffix: "Cancelled",
+      overdueTag: "⏰ Delayed",
     },
     giftCardOrders: {
       title: "🎁 Gift Card Orders",
@@ -136,6 +137,7 @@ export const en = {
       selfPickupBadge: "Self-Pickup",
       itemsCountSuffix: "items in order",
       orderDetailsButton: "📋 Order details",
+      overdueTag: "⏰ Delayed",
     },
     coupons: {
       title: "🎟️ Coupon Management",
@@ -488,6 +490,8 @@ export const en = {
       highDemandMsg: "{name} — {count} requests recorded",
       customSizeTitle: "🔍 Custom size request",
       customSizeMsg: 'Order {orderId} — {name} · size: "{size}" — requires manual approval',
+      overdueShippingTitle: "⏰ Shipping delayed",
+      overdueShippingMsg: "Order {orderId} has passed its promised shipping time — worth checking its status",
     },
     dialogs: {
       barcodeNotFound: '⚠️ Product with code "{code}" not found in inventory',

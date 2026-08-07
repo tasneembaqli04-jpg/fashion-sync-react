@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
+import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
@@ -12,7 +13,7 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function ManagerOrders({ orders = [], onConfirmOrder }) {
+export default function ManagerOrders({ orders = [], onConfirmOrder, loading = false }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.orders;
   const MONTH_NAMES = dict.monthNames;
@@ -249,6 +250,14 @@ export default function ManagerOrders({ orders = [], onConfirmOrder }) {
                     <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
                       🕒 {dateText}
                     </div>
+                  )}
+                  {isOrderOverdue(order) && (
+                    <span
+                      className={`${uiStyles.tag} ${uiStyles.tRed}`}
+                      style={{ marginTop: "0.3rem", display: "inline-block" }}
+                    >
+                      {t.overdueTag}
+                    </span>
                   )}
                 </div>
 

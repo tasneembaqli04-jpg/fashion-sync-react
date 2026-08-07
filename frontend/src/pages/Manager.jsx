@@ -126,6 +126,7 @@ export default function Manager({ onPromote }) {
   const [stockRequestsProductFilter, setStockRequestsProductFilter] = useState("");
 
   const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -171,6 +172,7 @@ export default function Manager({ onPromote }) {
         });
 
         setOrders(normalized);
+        setOrdersLoading(false);
       });
     }
 
@@ -819,6 +821,7 @@ export default function Manager({ onPromote }) {
             <ManagerOrders
               orders={orders}
               onConfirmOrder={handleConfirmOrder}
+              loading={ordersLoading}
             />
           )}
           {activeView === "giftCardOrders" && (
@@ -828,6 +831,7 @@ export default function Manager({ onPromote }) {
             <ManagerDeliveries
               orders={orders}
               onAdvanceStatus={handleAdvanceOrderStage}
+              loading={ordersLoading}
             />
           )}
          
