@@ -47,7 +47,7 @@ export default function ManagerTopbar({
         className={`${styles.btn} ${styles.btnGhost}`}
         onClick={onRefresh}
         title={t.refreshTitle}
-        style={{ flexShrink: 0 }}
+        style={{ flexShrink: 0, position: "relative", zIndex: 500, cursor: "pointer" }}
       >🔄</button>
 
       <button

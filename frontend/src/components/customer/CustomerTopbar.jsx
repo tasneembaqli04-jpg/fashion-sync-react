@@ -9,9 +9,12 @@ export default function CustomerTopbar({
   onGoBack,
   showChatButton = false,
   onOpenChat,
+  searchValue = "",
+  onSearchChange,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.sidebar;
+  const browseT = dict.customer.browse;
 
   return (
     <>
@@ -36,7 +39,24 @@ export default function CustomerTopbar({
           )}
         </div>
 
-        <div className={topbarStyles.brand}>FashionSync</div>
+        <div className={topbarStyles.topbarSearchWrap}>
+          <span className={topbarStyles.searchIcon}>🔍</span>
+          <input
+            type="text"
+            className={topbarStyles.topbarSearchInput}
+            placeholder={browseT.searchPlaceholder}
+            value={searchValue}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+          />
+        </div>
+
+        <button
+          className={topbarStyles.refreshBtn}
+          onClick={() => window.location.reload()}
+          aria-label={browseT.refreshTitle}
+        >
+          🔄
+        </button>
 
         <button className={topbarStyles.cartBtn} onClick={openCartOrAuth}>
           🛒 {cartCountMobile}
@@ -54,8 +74,26 @@ export default function CustomerTopbar({
               →
             </button>
           )}
-          <div className={topbarStyles.desktopBrand}>FashionSync</div>
         </div>
+
+        <div className={topbarStyles.desktopSearchWrap}>
+          <span className={topbarStyles.searchIcon}>🔍</span>
+          <input
+            type="text"
+            className={topbarStyles.desktopSearchInput}
+            placeholder={browseT.searchPlaceholder}
+            value={searchValue}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+          />
+        </div>
+
+        <button
+          className={topbarStyles.desktopRefreshBtn}
+          onClick={() => window.location.reload()}
+          aria-label={browseT.refreshTitle}
+        >
+          🔄
+        </button>
 
         <button
           className={topbarStyles.desktopCartBtn}

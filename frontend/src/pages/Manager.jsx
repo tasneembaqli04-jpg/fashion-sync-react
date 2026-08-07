@@ -49,6 +49,8 @@ import {
   saveTheme,
 } from "../functions/manager/managerStorage";
 import { sendShippingUpdateEmail, sendStockAlertEmail } from "../services/email/emailService";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 
@@ -58,15 +60,34 @@ export default function Manager({ onPromote }) {
   const { lang, t: dict } = useLanguage();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const contentRef = useRef(null);
+  const shellRef = useRef(null);
   const [activeView, setActiveView] = useState("overview");
   const isPopStateRef = useRef(false);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      }
+      setCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     if (!isLoggedIn) return;
 
-    window.history.replaceState({ view: "overview" }, "");
+    const existingView = window.history.state?.view;
+
+    if (existingView) {
+      setActiveView(existingView);
+    } else {
+      window.history.replaceState({ view: "overview" }, "");
+    }
 
     function handlePopState(event) {
       isPopStateRef.current = true;
@@ -89,7 +110,8 @@ export default function Manager({ onPromote }) {
   }, [activeView, isLoggedIn]);
 
   function goBackView() {
-    window.history.back();
+    setActiveView("overview");
+    shellRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -177,6 +199,19 @@ export default function Manager({ onPromote }) {
 
     getAllContactMessages().then(setContactMessages);
   }, [isLoggedIn, activeView, refreshKey]);
+
+  const [feedbackList, setFeedbackList] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getAllFeedback().then(setFeedbackList);
+  }, [isLoggedIn, activeView, refreshKey]);
+
+  const unreadFeedbackCount = useMemo(
+    () => feedbackList.filter((f) => !f.read).length,
+    [feedbackList],
+  );
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -670,11 +705,13 @@ export default function Manager({ onPromote }) {
     lang === "he" ? styles.appShellRtl : styles.appShellLtr
   } ${theme === "light" ? styles.light : styles.dark}`;
 
+  if (checkingAuth) return null;
+
   if (!isLoggedIn)
     return <LoginOverlay onLoginSuccess={() => setIsLoggedIn(true)} />;
 
   return (
-    <div className={shellClassName}>
+    <div className={shellClassName} ref={shellRef}>
       <ManagerSidebar
         activeView={activeView}
         alertCount={alerts.length}
@@ -683,6 +720,7 @@ export default function Manager({ onPromote }) {
         pendingStockRequestsCount={pendingStockRequestsCount}
         pendingReturnsCount={pendingReturnsCount}
         unreadContactMessagesCount={unreadContactMessagesCount}
+        unreadFeedbackCount={unreadFeedbackCount}
         onChangeView={(view) => {
           setActiveView(view);
           setMobileSidebarOpen(false);
@@ -723,7 +761,7 @@ export default function Manager({ onPromote }) {
           }}
           onRefresh={() => {
             setRefreshKey((prev) => prev + 1);
-            contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+            shellRef.current?.scrollTo({ top: 0, behavior: "smooth" });
           }}
           onAddProductClick={() => setIsAddProductOpen(true)}
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
