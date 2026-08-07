@@ -14,8 +14,8 @@ import {
 
 const ordersCollection = collection(db, "orders");
 
-const STEPS = ["אושרה", "בהכנה", "נשלחה", "נמסרה"];
-const PICKUP_STEPS = ["אושרה", "בהכנה", "מוכן לאיסוף", "נאסף"];
+const STEPS = ["התקבלה", "בהכנה", "נשלחה", "נמסרה"];
+const PICKUP_STEPS = ["התקבלה", "בהכנה", "מוכן לאיסוף", "נאסף"];
 
 function getStepLabels(isPickup) {
   return isPickup ? PICKUP_STEPS : STEPS;
@@ -71,7 +71,9 @@ export async function addOrder(receipt) {
       amount: item.price,
       buyerEmail: customerEmail,
       recipientName: item.giftRecipient || "",
+      recipientNameEn: item.giftRecipientEn || "",
       message: item.giftMessage || "",
+      messageEn: item.giftMessageEn || "",
     });
   }
 
@@ -168,5 +170,6 @@ export async function confirmOrder(docId) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, {
     confirmed: true,
+    statusLabel: "אושרה",
   });
 }

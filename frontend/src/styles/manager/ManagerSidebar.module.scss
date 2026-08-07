@@ -172,8 +172,19 @@
     box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
   }
 
+  .sidebar.ltrSidebar {
+    inset-inline-end: auto;
+    right: auto !important;
+    left: 0 !important;
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.5);
+  }
+
   .mobHidden {
     transform: translateX(110%) !important;
+  }
+
+  .ltrSidebar.mobHidden {
+    transform: translateX(-110%) !important;
   }
 
   .mobOverlay {

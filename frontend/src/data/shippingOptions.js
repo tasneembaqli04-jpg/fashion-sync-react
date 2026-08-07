@@ -27,8 +27,8 @@ export const SHIPPING_OPTIONS = [
     id: "pickup",
     icon: "🏪",
     label: "איסוף עצמי",
-    days: "מחר 10:00–20:00",
+    days: "המועד ייקבע לאחר אישור ההזמנה",
     price: 0,
-    note: "הרצל 42, ת״א",
+    note: "הכתובת תוצג בהמשך התהליך",
   },
 ];

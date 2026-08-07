@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { getAllGiftCards, translateGiftCard } from "../../../services/giftcard/giftCardService";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -10,15 +11,48 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function GiftCardOrdersView({ orders = [] }) {
+export default function GiftCardOrdersView() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.giftCardOrders;
   const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
+  const [giftCards, setGiftCards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [translating, setTranslating] = useState(false);
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
   const [amountFilter, setAmountFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+
+  function loadCards() {
+    return getAllGiftCards().then((cards) => {
+      setGiftCards(cards);
+      setLoading(false);
+      return cards;
+    });
+  }
+
+  useEffect(() => {
+    loadCards();
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const needsTranslation = giftCards.filter(
+      (card) =>
+        (card.recipientName && !card.recipientNameEn) ||
+        (card.message && !card.messageEn),
+    );
+
+    if (needsTranslation.length === 0) return;
+
+    setTranslating(true);
+
+    Promise.all(needsTranslation.map((card) => translateGiftCard(card))).then(() => {
+      loadCards().then(() => setTranslating(false));
+    });
+  }, [loading]);
 
   function fmtDate(value) {
     if (!value) return "";
@@ -37,49 +71,33 @@ export default function GiftCardOrdersView({ orders = [] }) {
     return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
   }
 
-  const giftCardEntries = useMemo(() => {
-    const entries = [];
-
-    orders.forEach((order) => {
-      const items = Array.isArray(order.items) ? order.items : [];
-
-      items
-        .filter((item) => item.isGiftCard)
-        .forEach((item) => {
-          entries.push({
-            code: item.code || item.key || "",
-            recipient:
-              (lang === "en" && item.giftRecipientEn) || item.giftRecipient || "",
-            message:
-              (lang === "en" && item.giftMessageEn) || item.giftMessage || "",
-            amount: Number(item.price) || 0,
-            buyerName:
-              order.customerEmbedded?.name ||
-              order.customerDetails?.name ||
-              order.customerEmail ||
-              "",
-            date: order.date || order.createdAt || null,
-          });
-        });
-    });
-
-    return entries;
-  }, [orders]);
+  const entries = useMemo(() => {
+    return giftCards.map((card) => ({
+      code: card.code || "",
+      recipient: (lang === "en" && card.recipientNameEn) || card.recipientName || "",
+      message: (lang === "en" && card.messageEn) || card.message || "",
+      amount: Number(card.amount) || 0,
+      balance: Number(card.balance) || 0,
+      status: card.status || "active",
+      buyerEmail: card.buyerEmail || "",
+      date: card.createdAt || null,
+    }));
+  }, [giftCards, lang]);
 
   const availableMonths = useMemo(() => {
-    const keys = new Set(giftCardEntries.map((e) => getMonthKey(e.date)));
+    const keys = new Set(entries.map((e) => getMonthKey(e.date)));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [giftCardEntries]);
+  }, [entries]);
 
   const monthFilteredEntries = useMemo(() => {
-    if (monthFilter === "all") return giftCardEntries;
-    return giftCardEntries.filter((e) => getMonthKey(e.date) === monthFilter);
-  }, [giftCardEntries, monthFilter]);
+    if (monthFilter === "all") return entries;
+    return entries.filter((e) => getMonthKey(e.date) === monthFilter);
+  }, [entries, monthFilter]);
 
-  const totalSold = giftCardEntries.length;
-  const totalValue = giftCardEntries.reduce((sum, e) => sum + e.amount, 0);
+  const totalSold = entries.length;
+  const totalValue = entries.reduce((sum, e) => sum + e.amount, 0);
   const thisMonthKey = getMonthKey(new Date());
-  const thisMonthCount = giftCardEntries.filter(
+  const thisMonthCount = entries.filter(
     (e) => getMonthKey(e.date) === thisMonthKey,
   ).length;
 
@@ -209,7 +227,30 @@ export default function GiftCardOrdersView({ orders = [] }) {
         </select>
       </div>
 
-      {!visibleEntries.length ? (
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "3rem 1rem", opacity: 0.7 }}>
+          {dict.common.loading}
+        </div>
+      ) : (
+        <>
+          {translating && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "0.6rem",
+                marginBottom: "0.8rem",
+                borderRadius: "10px",
+                background: "rgba(201,168,76,0.08)",
+                border: "1px solid var(--gold)",
+                color: "var(--gold)",
+                fontSize: "0.85rem",
+              }}
+            >
+              🌍 {lang === "en" ? "Translating older gift cards…" : "מתרגם כרטיסי מתנה ישנים…"}
+            </div>
+          )}
+
+          {!visibleEntries.length ? (
         <div style={{ textAlign: "center", padding: "3rem 1rem", opacity: 0.7 }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🎁</div>
           <div>{t.noCards}</div>
@@ -232,7 +273,7 @@ export default function GiftCardOrdersView({ orders = [] }) {
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                   <span
                     style={{
                       fontFamily: "monospace",
@@ -254,6 +295,16 @@ export default function GiftCardOrdersView({ orders = [] }) {
                   >
                     ₪{entry.amount.toLocaleString()}
                   </span>
+                  <span
+                    className={uiStyles.tag}
+                    style={
+                      entry.status === "active"
+                        ? { background: "rgba(46,204,113,0.1)", border: "1px solid var(--green)", color: "var(--green)" }
+                        : { background: "rgba(150,150,150,0.1)", border: "1px solid var(--muted)", color: "var(--muted)" }
+                    }
+                  >
+                    {entry.status === "active" ? t.statusActive : t.statusUsed}
+                  </span>
                 </div>
 
                 <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
@@ -267,7 +318,11 @@ export default function GiftCardOrdersView({ orders = [] }) {
                 )}
 
                 <div style={{ fontSize: "0.8rem", opacity: 0.6 }}>
-                  {t.buyerLabel}: {entry.buyerName || "—"}
+                  {t.buyerLabel}: {entry.buyerEmail || "—"}
+                </div>
+
+                <div style={{ fontSize: "0.8rem", opacity: 0.6 }}>
+                  {t.balanceLabel}: ₪{entry.balance.toLocaleString()}
                 </div>
               </div>
 
@@ -277,6 +332,8 @@ export default function GiftCardOrdersView({ orders = [] }) {
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
     </div>
   );

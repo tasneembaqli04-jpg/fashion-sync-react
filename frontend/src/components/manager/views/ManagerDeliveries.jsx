@@ -50,15 +50,20 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pickupOnly, setPickupOnly] = useState(false);
 
+  const confirmedOrders = useMemo(
+    () => orders.filter((order) => order.confirmed && !order.cancelled),
+    [orders],
+  );
+
   const availableMonths = useMemo(() => {
-    const keys = new Set(orders.map((o) => getMonthKey(o.createdAt)));
+    const keys = new Set(confirmedOrders.map((o) => getMonthKey(o.createdAt)));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [orders]);
+  }, [confirmedOrders]);
 
   const monthFilteredOrders = useMemo(() => {
-    if (monthFilter === "all") return orders;
-    return orders.filter((order) => getMonthKey(order.createdAt) === monthFilter);
-  }, [orders, monthFilter]);
+    if (monthFilter === "all") return confirmedOrders;
+    return confirmedOrders.filter((order) => getMonthKey(order.createdAt) === monthFilter);
+  }, [confirmedOrders, monthFilter]);
 
   const sortedOrders = useMemo(() => {
     return [...monthFilteredOrders].sort((a, b) => {

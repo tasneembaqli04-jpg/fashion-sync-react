@@ -121,14 +121,6 @@ export default function CustomerBrowse({
             <option value="300-500">{t.price300to500}</option>
             <option value="500-9999">{t.priceOver500}</option>
           </select>
-
-          <button
-            className={`${commonStyles.btn} ${browseStyles.desktopCartBtn}`}
-            style={{ flex: "0 0 auto", minWidth: "130px" }}
-            onClick={openCartOrAuth}
-          >
-            🛒 {t.cart} ({cartCount})
-          </button>
         </div>
 
       <div className={browseStyles.tabsSticky}>

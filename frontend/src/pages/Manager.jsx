@@ -219,13 +219,16 @@ export default function Manager({ onPromote }) {
   );
 
   const pendingOrdersCount = useMemo(
-    () => orders.filter((o) => !o.confirmed).length,
+    () => orders.filter((o) => !o.confirmed && !o.cancelled).length,
     [orders],
   );
 
   const pendingDeliveriesCount = useMemo(
-    () => deliveries.filter((d) => (Number(d.status) || 0) < 3).length,
-    [deliveries],
+    () =>
+      orders.filter(
+        (o) => o.confirmed && !o.cancelled && (Number(o.stageIndex) || 0) < 3,
+      ).length,
+    [orders],
   );
 
   const pendingReturnsCount = useMemo(
@@ -781,7 +784,7 @@ export default function Manager({ onPromote }) {
             />
           )}
           {activeView === "giftCardOrders" && (
-            <GiftCardOrdersView orders={orders} />
+            <GiftCardOrdersView />
           )}
           {activeView === "deliveries" && (
             <ManagerDeliveries
