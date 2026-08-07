@@ -14,6 +14,7 @@ export default function ManagerSidebar({
   pendingStockRequestsCount = 0,
   pendingReturnsCount = 0,
   unreadContactMessagesCount = 0,
+  unreadFeedbackCount = 0,
   mobileOpen,
 }) {
   const { t: dict, lang } = useLanguage();
@@ -70,7 +71,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>🔔</span>
           <span style={{ flex: 1 }}>{t.alerts}</span>
-          {alertCount > 0 && <div className={styles.navDot} />}
+          <NavBadge count={alertCount} />
         </button>
 
         <div className={styles.sbSec}>{t.sectionSales}</div>
@@ -133,6 +134,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>💬</span>
           <span style={{ flex: 1 }}>{t.customerFeedback}</span>
+          <NavBadge count={unreadFeedbackCount} />
         </button>
 
         <button

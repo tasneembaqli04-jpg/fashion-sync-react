@@ -88,7 +88,13 @@ export default function Customer() {
   const [activePanel, setActivePanel] = useState("browse");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
-    window.history.replaceState({ panel: "browse" }, "");
+    const existingPanel = window.history.state?.panel;
+
+    if (existingPanel) {
+      setActivePanel(existingPanel);
+    } else {
+      window.history.replaceState({ panel: "browse" }, "");
+    }
 
     function handlePopState(event) {
       const panel = event.state?.panel || "browse";
@@ -105,8 +111,12 @@ export default function Customer() {
     setActivePanel(panelName);
   }
 
+  const mainContentRef = useRef(null);
+
   function goBackPanel() {
-    window.history.back();
+    navigateToPanel("browse");
+    mainContentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -1135,6 +1145,13 @@ export default function Customer() {
         onGoBack={goBackPanel}
         showChatButton={activePanel !== "chat"}
         onOpenChat={() => showPanel("chat")}
+        searchValue={searchValue}
+        onSearchChange={(value) => {
+          setSearchValue(value);
+          if (activePanel !== "browse") {
+            navigateToPanel("browse");
+          }
+        }}
       />
 
       <CustomerSidebar
@@ -1154,7 +1171,7 @@ export default function Customer() {
         activeOrdersCount={activeOrdersCount + unseenReturnUpdates.length}
       />
 
-      <main className={styles.main}>
+      <main className={styles.main} ref={mainContentRef}>
         {stockAlerts.length > 0 && (
           <div
             style={{

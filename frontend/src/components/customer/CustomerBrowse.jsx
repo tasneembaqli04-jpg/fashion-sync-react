@@ -58,27 +58,6 @@ export default function CustomerBrowse({
   return (
     <div>
       <div className={browseStyles.filterBar}>
-        <div className={browseStyles.searchWrap}>
-          <span className={browseStyles.searchIcon}>🔍</span>
-          <input
-            type="text"
-            className={browseStyles.searchInput}
-            placeholder={t.searchPlaceholder}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
-        </div>
-
-        <button
-          className={`${commonStyles.btn} ${commonStyles.btnGhost} ${browseStyles.refreshBtn}`}
-          style={{ flex: "0 0 auto" }}
-          onClick={() => window.location.reload()}
-          title={t.refreshTitle}
-        >
-          🔄
-        </button>
-
-          <div className={browseStyles.rowBreak} />
 
           <select
             value={genderValue}

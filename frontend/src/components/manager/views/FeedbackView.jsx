@@ -206,8 +206,8 @@ export default function FeedbackView() {
               color: "var(--text)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.6rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                 <strong>{item.user}</strong>
                 {!item.read && (
                   <span className={`${uiStyles.tag} ${uiStyles.tGold}`}>
@@ -215,7 +215,7 @@ export default function FeedbackView() {
                   </span>
                 )}
               </div>
-              <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+              <span style={{ color: "var(--muted)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
                 {fmtDate(item.createdAt)}
               </span>
             </div>
