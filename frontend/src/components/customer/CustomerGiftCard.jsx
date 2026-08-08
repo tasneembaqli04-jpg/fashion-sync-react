@@ -198,7 +198,14 @@ export default function CustomerGiftCard({
           >
             <div>{t.currentBalance} <strong>₪{giftCheckResult.balance}</strong> {t.outOf} ₪{giftCheckResult.amount}</div>
             <div style={{ opacity: 0.7, fontSize: "0.85rem", marginTop: "0.3rem" }}>
-              {t.statusLabel} {giftCheckResult.status === "used" ? t.statusUsed : t.statusActive}
+              {t.statusLabel}{" "}
+              {giftCheckResult.status === "used"
+                ? t.statusUsed
+                : giftCheckResult.status === "pending"
+                  ? t.statusPending
+                  : giftCheckResult.status === "rejected"
+                    ? t.statusRejected
+                    : t.statusActive}
             </div>
           </div>
         )}

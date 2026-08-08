@@ -16,6 +16,15 @@ const {
   shippingUpdateEmailController,
 } = require("./controllers/shippingUpdateEmailController");
 const {
+  giftCardActivatedEmailController,
+} = require("./controllers/giftCardActivatedEmailController");
+const {
+  orderRejectedEmailController,
+} = require("./controllers/orderRejectedEmailController");
+const {
+  giftCardRejectedEmailController,
+} = require("./controllers/giftCardRejectedEmailController");
+const {
   returnStatusEmailController,
 } = require("./controllers/returnStatusEmailController");
 const {
@@ -90,6 +99,29 @@ const sendShippingUpdateEmail = onRequest(
   },
   shippingUpdateEmailController,
 );
+const sendGiftCardActivatedEmail = onRequest(
+  {
+    cors: true,
+    secrets: [gmailUser, gmailAppPassword],
+  },
+  giftCardActivatedEmailController,
+);
+
+const sendOrderRejectedEmail = onRequest(
+  {
+    cors: true,
+    secrets: [gmailUser, gmailAppPassword],
+  },
+  orderRejectedEmailController,
+);
+
+const sendGiftCardRejectedEmail = onRequest(
+  {
+    cors: true,
+    secrets: [gmailUser, gmailAppPassword],
+  },
+  giftCardRejectedEmailController,
+);
 
 const sendReturnStatusEmail = onRequest(
   {
@@ -154,6 +186,9 @@ module.exports = {
   sendOrderEmail,
   sendStockAlertEmail,
   sendShippingUpdateEmail,
+  sendGiftCardActivatedEmail,
+  sendOrderRejectedEmail,
+  sendGiftCardRejectedEmail,
   sendReturnStatusEmail,
   sendOrderCancellationEmail,
   sendPickupScheduledEmail,

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useDialog } from "../../common/DialogProvider";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
@@ -13,8 +14,9 @@ function getMonthKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function ManagerOrders({ orders = [], onConfirmOrder, loading = false }) {
+export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrder, loading = false }) {
   const { lang, t: dict } = useLanguage();
+  const { confirmDialog } = useDialog();
   const t = dict.manager.orders;
   const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
@@ -53,13 +55,15 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
     );
   }, [orders, monthFilter]);
 
-  const pending = monthFilteredOrders.filter((o) => !o.confirmed && !o.cancelled).length;
-  const confirmed = monthFilteredOrders.filter((o) => o.confirmed && !o.cancelled).length;
+  const pending = monthFilteredOrders.filter((o) => !o.confirmed && !o.cancelled && !o.rejected).length;
+  const confirmed = monthFilteredOrders.filter((o) => o.confirmed && !o.cancelled && !o.rejected).length;
   const cancelled = monthFilteredOrders.filter((o) => o.cancelled).length;
+  const rejected = monthFilteredOrders.filter((o) => o.rejected).length;
 
   const visibleOrders = orders.filter((order) => {
     if (statusFilter === "cancelled") return Boolean(order.cancelled);
-    if (order.cancelled) return false;
+    if (statusFilter === "rejected") return Boolean(order.rejected);
+    if (order.cancelled || order.rejected) return false;
     if (statusFilter === "ready" && !order.confirmed) return false;
     if (statusFilter === "pending" && order.confirmed) return false;
 
@@ -99,7 +103,6 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
 
       <div
         className={overviewStyles.statsGrid}
-        style={{ gridTemplateColumns: "repeat(4, 1fr)" }}
       >
         <div
           className={`${overviewStyles.stat} ${overviewStyles.gold}`}
@@ -176,6 +179,30 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
             {cancelled}
           </div>
           <div className={overviewStyles.statSub}>{t.cancelledSuffix}</div>
+        </div>
+
+        <div
+          className={overviewStyles.stat}
+          style={{
+            ...cardStyle(statusFilter === "rejected"),
+            borderColor: statusFilter === "rejected" ? "var(--red)" : undefined,
+          }}
+          onClick={() => setStatusFilter("rejected")}
+        >
+          <div className={overviewStyles.statIcon}>🚫</div>
+          <div
+            className={overviewStyles.statLabel}
+            style={{ color: "var(--red)" }}
+          >
+            {t.rejectedLabel}
+          </div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: "var(--red)" }}
+          >
+            {rejected}
+          </div>
+          <div className={overviewStyles.statSub}>{t.rejectedSuffix}</div>
         </div>
       </div>
 
@@ -264,7 +291,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
                 <div>
                   <span
                     className={`${uiStyles.tag} ${
-                      order.cancelled
+                      order.cancelled || order.rejected
                         ? uiStyles.tRed
                         : order.confirmed
                         ? uiStyles.tGreen
@@ -273,6 +300,8 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
                   >
                     {order.cancelled
                       ? t.cancelledLabel
+                      : order.rejected
+                      ? t.rejectedLabel
                       : order.confirmed
                       ? t.statusConfirmed
                       : t.statusPending}
@@ -308,14 +337,38 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, loading = f
                   {t.orderDetailsButton}
                 </button>
 
-                {!order.confirmed && !order.cancelled && (
-                  <button
-                    type="button"
-                    className={ordersStyles.orderPrepareBtn}
-                    onClick={() => onConfirmOrder?.(order.docId)}
-                  >
-                    {t.confirmOrderButton}
-                  </button>
+                {!order.confirmed && !order.cancelled && !order.rejected && (
+                  <>
+                    <button
+                      type="button"
+                      className={ordersStyles.orderPrepareBtn}
+                      onClick={() => onConfirmOrder?.(order.docId)}
+                    >
+                      {t.confirmOrderButton}
+                    </button>
+
+                    <button
+                      type="button"
+                      className={ordersStyles.orderPrepareBtn}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid var(--red)",
+                        color: "var(--red)",
+                      }}
+                      onClick={async () => {
+                        const confirmed = await confirmDialog(t.confirmRejectPrompt);
+                        if (!confirmed) return;
+
+                        try {
+                          await onRejectOrder?.(order.docId);
+                        } catch (err) {
+                          console.error("Reject order failed:", err);
+                        }
+                      }}
+                    >
+                      {t.rejectOrderButton}
+                    </button>
+                  </>
                 )}
               </div>
             </div>

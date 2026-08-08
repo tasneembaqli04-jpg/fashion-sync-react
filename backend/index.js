@@ -6,6 +6,9 @@ const {
   sendOrderEmail,
   sendStockAlertEmail,
   sendShippingUpdateEmail,
+  sendGiftCardActivatedEmail,
+  sendOrderRejectedEmail,
+  sendGiftCardRejectedEmail,
   sendReturnStatusEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -22,6 +25,9 @@ exports.chat = chat;
 exports.sendOrderEmail = sendOrderEmail;
 exports.sendStockAlertEmail = sendStockAlertEmail;
 exports.sendShippingUpdateEmail = sendShippingUpdateEmail;
+exports.sendGiftCardActivatedEmail = sendGiftCardActivatedEmail;
+exports.sendOrderRejectedEmail = sendOrderRejectedEmail;
+exports.sendGiftCardRejectedEmail = sendGiftCardRejectedEmail;
 exports.sendReturnStatusEmail = sendReturnStatusEmail;
 exports.sendVerificationEmail = sendVerificationEmail;
 exports.sendWelcomeEmail = sendWelcomeEmail;

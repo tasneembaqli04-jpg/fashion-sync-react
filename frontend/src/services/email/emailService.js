@@ -264,3 +264,84 @@ export async function sendVerificationCodeEmail({ toEmail, code, lang }) {
     return null;
   }
 }
+const GIFT_CARD_ACTIVATED_EMAIL_URL =
+  import.meta.env.VITE_GIFT_CARD_ACTIVATED_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendGiftCardActivatedEmail";
+
+export async function sendGiftCardActivatedEmail({ toEmail, giftCardCode, amount, lang }) {
+  if (!toEmail || !giftCardCode) return null;
+
+  try {
+    const response = await fetch(GIFT_CARD_ACTIVATED_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, giftCardCode, amount, lang }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Gift card activated email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Gift card activated email request failed:", err);
+    return null;
+  }
+}
+const ORDER_REJECTED_EMAIL_URL =
+  import.meta.env.VITE_ORDER_REJECTED_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendOrderRejectedEmail";
+
+export async function sendOrderRejectedEmail({ toEmail, orderId, reason, lang }) {
+  if (!toEmail || !orderId) return null;
+
+  try {
+    const response = await fetch(ORDER_REJECTED_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, orderId, reason, lang }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Order rejected email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Order rejected email request failed:", err);
+    return null;
+  }
+}
+const GIFT_CARD_REJECTED_EMAIL_URL =
+  import.meta.env.VITE_GIFT_CARD_REJECTED_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendGiftCardRejectedEmail";
+
+export async function sendGiftCardRejectedEmail({ toEmail, lang }) {
+  if (!toEmail) return null;
+
+  try {
+    const response = await fetch(GIFT_CARD_REJECTED_EMAIL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toEmail, lang }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.success) {
+      console.error("Gift card rejected email failed:", data?.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Gift card rejected email request failed:", err);
+    return null;
+  }
+}
