@@ -94,9 +94,13 @@ export const he = {
       statusPending: "⏳ ממתינה לאישור",
       customSizeTag: "⚠️ מידה מיוחדת",
       confirmOrderButton: "✅ אשר הזמנה",
+      rejectOrderButton: "✕ דחה הזמנה",
+      confirmRejectPrompt: "האם את בטוחה שברצונך לדחות את ההזמנה? הלקוח יקבל מייל על כך.",
       orderDetailsButton: "📋 פרטי הזמנה",
       cancelledLabel: "✕ בוטלה",
       cancelledSuffix: "בוטלו",
+      rejectedLabel: "🚫 נדחתה",
+      rejectedSuffix: "נדחו",
       overdueTag: "⏰ מתעכבת",
     },
     giftCardOrders: {
@@ -123,6 +127,8 @@ export const he = {
       noMessage: "—",
       statusActive: "✓ פעיל",
       statusUsed: "✕ נוצל במלואו",
+      statusPending: "⏳ ממתין לאישור",
+      statusRejected: "🚫 נדחה",
       balanceLabel: "יתרה נוכחית",
     },
     deliveries: {
@@ -947,6 +953,8 @@ export const he = {
       statusLabel: "סטטוס:",
       statusUsed: "נוצל במלואו",
       statusActive: "פעיל",
+      statusPending: "ממתין לאישור",
+      statusRejected: "נדחה",
     },
 
     dialogs: {

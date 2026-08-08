@@ -6,7 +6,7 @@ function normalizeCode(code) {
   return String(code || "").trim().toUpperCase();
 }
 
-export async function issueGiftCard({ code, amount, buyerEmail, recipientName, recipientNameEn, message, messageEn }) {
+export async function issueGiftCard({ code, amount, buyerEmail, recipientName, recipientNameEn, message, messageEn, status = "active" }) {
   const giftCardCode = normalizeCode(code);
   if (!giftCardCode) return;
 
@@ -19,8 +19,28 @@ export async function issueGiftCard({ code, amount, buyerEmail, recipientName, r
     recipientNameEn: recipientNameEn || recipientName || "",
     message: message || "",
     messageEn: messageEn || message || "",
-    status: "active",
+    status,
     createdAt: new Date().toISOString(),
+  });
+}
+
+export async function activateGiftCard(code) {
+  const giftCardCode = normalizeCode(code);
+  if (!giftCardCode) return;
+
+  await updateDoc(doc(db, "giftCards", giftCardCode), {
+    status: "active",
+    activatedAt: new Date().toISOString(),
+  });
+}
+
+export async function rejectGiftCard(code) {
+  const giftCardCode = normalizeCode(code);
+  if (!giftCardCode) return;
+
+  await updateDoc(doc(db, "giftCards", giftCardCode), {
+    status: "rejected",
+    rejectedAt: new Date().toISOString(),
   });
 }
 

@@ -300,10 +300,20 @@ export default function GiftCardOrdersView() {
                     style={
                       entry.status === "active"
                         ? { background: "rgba(46,204,113,0.1)", border: "1px solid var(--green)", color: "var(--green)" }
-                        : { background: "rgba(150,150,150,0.1)", border: "1px solid var(--muted)", color: "var(--muted)" }
+                        : entry.status === "pending"
+                          ? { background: "rgba(230,126,34,0.1)", border: "1px solid #e67e22", color: "#e67e22" }
+                          : entry.status === "rejected"
+                            ? { background: "rgba(231,76,60,0.1)", border: "1px solid var(--red)", color: "var(--red)" }
+                            : { background: "rgba(150,150,150,0.1)", border: "1px solid var(--muted)", color: "var(--muted)" }
                     }
                   >
-                    {entry.status === "active" ? t.statusActive : t.statusUsed}
+                    {entry.status === "active"
+                      ? t.statusActive
+                      : entry.status === "pending"
+                        ? t.statusPending
+                        : entry.status === "rejected"
+                          ? t.statusRejected
+                          : t.statusUsed}
                   </span>
                 </div>
 

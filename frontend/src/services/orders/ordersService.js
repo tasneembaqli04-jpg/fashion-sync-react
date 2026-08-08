@@ -74,6 +74,7 @@ export async function addOrder(receipt) {
       recipientNameEn: item.giftRecipientEn || "",
       message: item.giftMessage || "",
       messageEn: item.giftMessageEn || "",
+      status: "pending",
     });
   }
 
@@ -171,5 +172,13 @@ export async function confirmOrder(docId) {
   await updateDoc(orderRef, {
     confirmed: true,
     statusLabel: "אושרה",
+  });
+}
+export async function rejectOrder(docId) {
+  const orderRef = doc(db, "orders", docId);
+  await updateDoc(orderRef, {
+    rejected: true,
+    rejectedAt: new Date().toISOString(),
+    statusLabel: "נדחתה",
   });
 }

@@ -93,9 +93,13 @@ export const en = {
       statusPending: "⏳ Pending confirmation",
       customSizeTag: "⚠️ Custom size",
       confirmOrderButton: "✅ Confirm order",
+      rejectOrderButton: "✕ Reject order",
+      confirmRejectPrompt: "Are you sure you want to reject this order? The customer will receive an email.",
       orderDetailsButton: "📋 Order details",
       cancelledLabel: "✕ Cancelled",
       cancelledSuffix: "Cancelled",
+      rejectedLabel: "🚫 Rejected",
+      rejectedSuffix: "Rejected",
       overdueTag: "⏰ Delayed",
     },
     giftCardOrders: {
@@ -122,6 +126,8 @@ export const en = {
       noMessage: "—",
       statusActive: "✓ Active",
       statusUsed: "✕ Fully used",
+      statusPending: "⏳ Pending approval",
+      statusRejected: "🚫 Rejected",
       balanceLabel: "Current balance",
     },
     deliveries: {

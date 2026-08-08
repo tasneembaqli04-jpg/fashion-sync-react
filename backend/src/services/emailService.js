@@ -27,7 +27,7 @@ function buildOrderEmailHtml(order, lang) {
 
   if (en) {
     const followUpLine = isGiftCardOnly
-      ? "Your gift card is ready to use — the code is shown above."
+      ? "Your gift card is pending approval from our team. We'll send you a separate email with the code once it's activated."
       : order.isPickup
         ? "We'll update you once your order is ready for pickup, and then you can choose a pickup time."
         : "We'll keep you updated at every step of the shipping process.";
@@ -36,18 +36,13 @@ function buildOrderEmailHtml(order, lang) {
       ? "Your gift card purchase was received! 🎁"
       : "Your order has been received! 🛍️";
 
-    const codeBlockHtml = giftCardCode
-      ? `<p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
-           <strong>Gift card code:</strong><br />
-           <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span>
-         </p>`
-      : "";
+    const codeBlockHtml = "";
 
     return `
       <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
         <h2 style="color: #c9a84c;">${titleLine}</h2>
         <p>Hello ${order.customerName || ""},</p>
-        <p>Your order <strong>${order.id}</strong> was received successfully${isGiftCardOnly ? "" : ", and is now awaiting confirmation from our team. We'll send you a separate email once it's confirmed"}.</p>
+        <p>Your order <strong>${order.id}</strong> was received successfully, and is now awaiting confirmation from our team. We'll send you a separate email once it's confirmed.</p>
         ${codeBlockHtml}
 
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
@@ -69,7 +64,7 @@ function buildOrderEmailHtml(order, lang) {
   }
 
   const followUpLine = isGiftCardOnly
-    ? "כרטיס המתנה שלך מוכן לשימוש — הקוד מוצג למעלה."
+    ? "כרטיס המתנה שלך ממתין לאישור הצוות שלנו. נשלח לך מייל נפרד עם הקוד ברגע שהוא יופעל."
     : order.isPickup
       ? "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף."
       : "נעדכן אותך בכל שלב במסלול המשלוח.";
@@ -78,18 +73,13 @@ function buildOrderEmailHtml(order, lang) {
     ? "רכישת כרטיס המתנה שלך התקבלה! 🎁"
     : "ההזמנה שלך התקבלה! 🛍️";
 
-  const codeBlockHtml = giftCardCode
-    ? `<p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
-         <strong>קוד כרטיס המתנה:</strong><br />
-         <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span>
-       </p>`
-    : "";
+  const codeBlockHtml = "";
 
   return `
     <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
       <h2 style="color: #c9a84c;">${titleLine}</h2>
       <p>שלום ${order.customerName || ""},</p>
-      <p>ההזמנה שלך <strong>${order.id}</strong> נקלטה בהצלחה${isGiftCardOnly ? "" : ", וממתינה כעת לאישור הצוות שלנו. נעדכן אותך במייל נפרד ברגע שהיא תאושר"}.</p>
+      <p>ההזמנה שלך <strong>${order.id}</strong> נקלטה בהצלחה, וממתינה כעת לאישור הצוות שלנו. נעדכן אותך במייל נפרד ברגע שהיא תאושר.</p>
       ${codeBlockHtml}
 
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
@@ -247,8 +237,158 @@ async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup,
   });
 }
 
+function buildGiftCardActivatedEmailHtml({ giftCardCode, amount, lang }) {
+  const en = isEnglish(lang);
+
+  if (en) {
+    return `
+      <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+        <h2 style="color: #c9a84c;">Your gift card is ready! 🎁</h2>
+        <p>Great news — your gift card purchase has been approved and is now active.</p>
+        <p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
+          <strong>Gift card code:</strong><br />
+          <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span><br />
+          <span>Value: ₪${amount}</span>
+        </p>
+        <p>The code is ready to use now, at checkout or in the gift card balance check page.</p>
+        <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync — thank you for shopping with us</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+      <h2 style="color: #c9a84c;">כרטיס המתנה שלך מוכן! 🎁</h2>
+      <p>חדשות טובות — רכישת כרטיס המתנה שלך אושרה והכרטיס פעיל עכשיו.</p>
+      <p style="font-size: 1.2em; text-align: center; background: #faf6ea; border: 1px dashed #c9a84c; border-radius: 8px; padding: 12px; margin: 16px 0;">
+        <strong>קוד כרטיס המתנה:</strong><br />
+        <span style="letter-spacing: 2px; font-size: 1.3em; color: #c9a84c;">${giftCardCode}</span><br />
+        <span>שווי: ₪${amount}</span>
+      </p>
+      <p>הקוד מוכן לשימוש עכשיו, בקופה או בדף בדיקת יתרת כרטיס מתנה.</p>
+      <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync — תודה שקנית אצלנו</p>
+    </div>
+  `;
+}
+
+async function sendGiftCardActivatedEmail({ toEmail, giftCardCode, amount, lang }) {
+  if (!toEmail || typeof toEmail !== "string") {
+    throw new Error("Recipient email is required");
+  }
+
+  if (!giftCardCode) {
+    throw new Error("Gift card code is required");
+  }
+
+  const en = isEnglish(lang);
+  const subject = en
+    ? `Your gift card is ready - FashionSync`
+    : `כרטיס המתנה שלך מוכן - FashionSync`;
+
+  return await sendMail({
+    to: toEmail,
+    subject,
+    html: buildGiftCardActivatedEmailHtml({ giftCardCode, amount, lang }),
+  });
+}
+
+function buildOrderRejectedEmailHtml({ orderId, reason, lang }) {
+  const en = isEnglish(lang);
+
+  if (en) {
+    return `
+      <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+        <h2 style="color: #e74c3c;">Order update</h2>
+        <p>Hello,</p>
+        <p>Unfortunately, order <strong>${orderId}</strong> could not be processed and has been declined.</p>
+        ${reason ? `<p>Reason: ${reason}</p>` : ""}
+        <p>If you were charged, the amount will be refunded. For questions, please contact us.</p>
+        <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+      <h2 style="color: #e74c3c;">עדכון לגבי ההזמנה שלך</h2>
+      <p>שלום,</p>
+      <p>לצערנו, ההזמנה <strong>${orderId}</strong> לא הצלחנו לטפל בה ונדחתה.</p>
+      ${reason ? `<p>סיבה: ${reason}</p>` : ""}
+      <p>אם חויבת, הסכום יוחזר. לשאלות, אנא צרי איתנו קשר.</p>
+      <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
+    </div>
+  `;
+}
+
+async function sendOrderRejectedEmail({ toEmail, orderId, reason, lang }) {
+  if (!toEmail || typeof toEmail !== "string") {
+    throw new Error("Recipient email is required");
+  }
+
+  if (!orderId) {
+    throw new Error("Order id is required");
+  }
+
+  const en = isEnglish(lang);
+  const subject = en
+    ? `Order #${orderId} - Declined - FashionSync`
+    : `הזמנה #${orderId} - נדחתה - FashionSync`;
+
+  return await sendMail({
+    to: toEmail,
+    subject,
+    html: buildOrderRejectedEmailHtml({ orderId, reason, lang }),
+  });
+}
+
+function buildGiftCardRejectedEmailHtml({ lang }) {
+  const en = isEnglish(lang);
+
+  if (en) {
+    return `
+      <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+        <h2 style="color: #e74c3c;">Gift card update</h2>
+        <p>Hello,</p>
+        <p>Unfortunately, your gift card purchase could not be approved and has been declined.</p>
+        <p>If you were charged, the amount will be refunded. For questions, please contact us.</p>
+        <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
+      <h2 style="color: #e74c3c;">עדכון לגבי כרטיס המתנה שלך</h2>
+      <p>שלום,</p>
+      <p>לצערנו, רכישת כרטיס המתנה לא אושרה ונדחתה.</p>
+      <p>אם חויבת, הסכום יוחזר. לשאלות, אנא צרי איתנו קשר.</p>
+      <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
+    </div>
+  `;
+}
+
+async function sendGiftCardRejectedEmail({ toEmail, lang }) {
+  if (!toEmail || typeof toEmail !== "string") {
+    throw new Error("Recipient email is required");
+  }
+
+  const en = isEnglish(lang);
+  const subject = en
+    ? `Your gift card request was declined - FashionSync`
+    : `בקשת כרטיס המתנה שלך נדחתה - FashionSync`;
+
+  return await sendMail({
+    to: toEmail,
+    subject,
+    html: buildGiftCardRejectedEmailHtml({ lang }),
+  });
+}
+
 module.exports = {
   sendOrderConfirmationEmail,
   sendStockAlertEmail,
   sendShippingUpdateEmail,
+  sendGiftCardActivatedEmail,
+  sendOrderRejectedEmail,
+  sendGiftCardRejectedEmail,
 };

@@ -28,10 +28,11 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderStatus, updateOrderItems, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder } from "../services/orders/ordersService";
+import { subscribeToOrders, updateOrderStatus, updateOrderItems, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText } from "../services/translation/translationService";
+import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
 import {
   getAllDeliveries,
   addDelivery,
@@ -48,7 +49,7 @@ import {
   loadTheme,
   saveTheme,
 } from "../functions/manager/managerStorage";
-import { sendShippingUpdateEmail, sendStockAlertEmail } from "../services/email/emailService";
+import { sendShippingUpdateEmail, sendStockAlertEmail, sendGiftCardActivatedEmail, sendOrderRejectedEmail, sendGiftCardRejectedEmail } from "../services/email/emailService";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useDialog } from "../components/common/DialogProvider";
@@ -172,6 +173,8 @@ export default function Manager({ onPromote }) {
           payMethod: order.payMethod || "",
           shipping: order.shipping || null,
           cancelled: Boolean(order.cancelled),
+          rejected: Boolean(order.rejected),
+          rejectedAt: order.rejectedAt || null,
           deliveredAt: order.deliveredAt || null,
           pickupDate: order.pickupDate || "",
           pickupTime: order.pickupTime || "",
@@ -805,11 +808,66 @@ export default function Manager({ onPromote }) {
     );
 
     const order = orders.find((o) => o.docId === orderDocId);
+    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
+
+    if (giftCardItems.length > 0) {
+      giftCardItems.forEach((item) => {
+        activateGiftCard(item.code);
+      });
+
+      if (order?.customerEmail) {
+        sendGiftCardActivatedEmail({
+          toEmail: order.customerEmail,
+          giftCardCode: giftCardItems[0].code,
+          amount: giftCardItems[0].price,
+          lang,
+        });
+      }
+
+      return;
+    }
+
     if (order?.customerEmail) {
       sendShippingUpdateEmail({
         toEmail: order.customerEmail,
         orderId: order.id,
         stageIndex: 0,
+        lang,
+      });
+    }
+  }
+
+  function handleRejectOrder(orderDocId) {
+    rejectOrder(orderDocId);
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.docId === orderDocId ? { ...order, rejected: true } : order
+      )
+    );
+
+    const order = orders.find((o) => o.docId === orderDocId);
+    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
+
+    if (giftCardItems.length > 0) {
+      giftCardItems.forEach((item) => {
+        rejectGiftCard(item.code);
+      });
+
+      if (order?.customerEmail) {
+        sendGiftCardRejectedEmail({
+          toEmail: order.customerEmail,
+          lang,
+        });
+      }
+
+      return;
+    }
+
+    if (order?.customerEmail) {
+      sendOrderRejectedEmail({
+        toEmail: order.customerEmail,
+        orderId: order.id,
         lang,
       });
     }
@@ -955,6 +1013,7 @@ export default function Manager({ onPromote }) {
             <ManagerOrders
               orders={orders}
               onConfirmOrder={handleConfirmOrder}
+              onRejectOrder={handleRejectOrder}
               loading={ordersLoading}
             />
           )}
