@@ -23,6 +23,7 @@ export default function SettingsView({
   onTranslateHistorical,
   translatingHistorical,
   historicalProgress,
+  failedTranslationsCount = 0,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.settings;
@@ -801,6 +802,48 @@ export default function SettingsView({
                 style={{ marginTop: ".75rem" }}
               >
                 {t.settingsSaved}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={uiStyles.card}>
+          <div className={uiStyles.cardHd}>
+            <div className={uiStyles.cardTitle}>{t.historicalTranslationTitle}</div>
+          </div>
+
+          <div className={uiStyles.cardBody}>
+            <p style={{ color: "var(--muted)", marginBottom: "0.9rem" }}>
+              {t.historicalTranslationDesc}
+            </p>
+
+            {failedTranslationsCount > 0 && (
+              <div
+                className={`${uiStyles.alert} ${uiStyles.aDanger}`}
+                style={{ marginBottom: "0.9rem" }}
+              >
+                {t.failedTranslationsFound.replace("{count}", failedTranslationsCount)}
+              </div>
+            )}
+
+            <button
+              className={`${uiStyles.btn} ${uiStyles.btnGold}`}
+              onClick={onTranslateHistorical}
+              disabled={translatingHistorical}
+            >
+              {translatingHistorical
+                ? t.historicalTranslationRunning
+                    .replace("{done}", historicalProgress?.done ?? 0)
+                    .replace("{total}", historicalProgress?.total ?? 0)
+                : t.historicalTranslationButton}
+            </button>
+
+            {!translatingHistorical && historicalProgress?.total > 0 && (
+              <div
+                className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
+                style={{ marginTop: ".75rem" }}
+              >
+                {t.historicalTranslationDone}
               </div>
             )}
           </div>

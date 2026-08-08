@@ -219,6 +219,14 @@ export default function Manager({ onPromote }) {
     [feedbackList],
   );
 
+  const [customersList, setCustomersList] = useState([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getAllCustomers().then(setCustomersList);
+  }, [isLoggedIn, activeView, refreshKey]);
+
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -405,6 +413,52 @@ export default function Manager({ onPromote }) {
     return translated.trim() === original.trim();
   }
 
+  const failedTranslationsCount = useMemo(() => {
+    let count = 0;
+
+    orders.forEach((order) => {
+      (order.items || []).forEach((item) => {
+        if (needsTranslation(item.name, item.nameEn)) count += 1;
+        if (item.isGiftCard) {
+          if (needsTranslation(item.giftRecipient, item.giftRecipientEn)) count += 1;
+          if (needsTranslation(item.giftMessage, item.giftMessageEn)) count += 1;
+        }
+      });
+
+      const customer = order.customerEmbedded || order.customerDetails;
+      if (customer) {
+        if (needsTranslation(customer.name, customer.nameEn)) count += 1;
+        if (needsTranslation(customer.city, customer.cityEn)) count += 1;
+        if (needsTranslation(customer.street, customer.streetEn)) count += 1;
+      }
+    });
+
+    contactMessages.forEach((m) => {
+      if (needsTranslation(m.name, m.nameEn)) count += 1;
+      if (needsTranslation(m.message, m.messageEn)) count += 1;
+    });
+
+    feedbackList.forEach((f) => {
+      if (needsTranslation(f.text, f.textEn)) count += 1;
+    });
+
+    customersList.forEach((c) => {
+      if (needsTranslation(c.name, c.nameEn)) count += 1;
+      if (needsTranslation(c.city, c.cityEn)) count += 1;
+      if (needsTranslation(c.street, c.streetEn)) count += 1;
+    });
+
+    products.forEach((p) => {
+      if (needsTranslation(p.name, p.nameEn)) count += 1;
+      if (needsTranslation(p.desc, p.descEn)) count += 1;
+      (p.variants || []).forEach((v) => {
+        if (needsTranslation(v.colorName, v.colorNameEn)) count += 1;
+      });
+    });
+
+    return count;
+  }, [orders, contactMessages, feedbackList, customersList, products]);
+
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
@@ -444,11 +498,21 @@ export default function Manager({ onPromote }) {
         needsTranslation(c.street, c.streetEn)
     );
 
+    const productsNeedingUpdate = products.filter((p) => {
+      const nameNeedsUpdate = needsTranslation(p.name, p.nameEn);
+      const descNeedsUpdate = needsTranslation(p.desc, p.descEn);
+      const colorsNeedUpdate = (p.variants || []).some((v) =>
+        needsTranslation(v.colorName, v.colorNameEn),
+      );
+      return nameNeedsUpdate || descNeedsUpdate || colorsNeedUpdate;
+    });
+
     const total =
       ordersNeedingUpdate.length +
       messagesNeedingUpdate.length +
       feedbackNeedingUpdate.length +
-      customersNeedingUpdate.length;
+      customersNeedingUpdate.length +
+      productsNeedingUpdate.length;
 
     setHistoricalProgress({ done: 0, total });
     let done = 0;
@@ -583,6 +647,48 @@ export default function Manager({ onPromote }) {
           cityEn: cityEn || customer.cityEn || customer.city,
           streetEn: streetEn || customer.streetEn || customer.street,
         });
+      }
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    for (const product of productsNeedingUpdate) {
+      let nextProduct = product;
+
+      if (needsTranslation(product.name, product.nameEn)) {
+        const nameEn = await translateText(product.name);
+        if (nameEn) nextProduct = { ...nextProduct, nameEn };
+      }
+
+      if (needsTranslation(product.desc, product.descEn)) {
+        const descEn = await translateText(product.desc);
+        if (descEn) nextProduct = { ...nextProduct, descEn };
+      }
+
+      if (nextProduct.variants?.length) {
+        const updatedVariants = await Promise.all(
+          nextProduct.variants.map(async (variant) => {
+            if (!needsTranslation(variant.colorName, variant.colorNameEn)) {
+              return variant;
+            }
+            const colorNameEn = await translateProductFields({
+              name: "",
+              desc: "",
+              colorNames: [variant.colorName],
+            });
+            const translated = colorNameEn.colorNamesEn?.[0];
+            return translated ? { ...variant, colorNameEn: translated } : variant;
+          }),
+        );
+        nextProduct = { ...nextProduct, variants: updatedVariants };
+      }
+
+      if (nextProduct !== product) {
+        await updateProduct(nextProduct);
+        setProducts((prev) =>
+          prev.map((p) => (p.code === product.code ? nextProduct : p)),
+        );
       }
 
       done += 1;
@@ -750,6 +856,7 @@ export default function Manager({ onPromote }) {
         pendingReturnsCount={pendingReturnsCount}
         unreadContactMessagesCount={unreadContactMessagesCount}
         unreadFeedbackCount={unreadFeedbackCount}
+        failedTranslationsCount={failedTranslationsCount}
         onChangeView={(view) => {
           setActiveView(view);
           setMobileSidebarOpen(false);
@@ -882,6 +989,7 @@ export default function Manager({ onPromote }) {
               onTranslateHistorical={handleTranslateHistoricalData}
               translatingHistorical={translatingHistorical}
               historicalProgress={historicalProgress}
+              failedTranslationsCount={failedTranslationsCount}
             />
           )}
         </div>

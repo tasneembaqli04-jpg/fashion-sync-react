@@ -85,6 +85,7 @@ export default function DetailsModal({
   const [nameEn, setNameEn] = useState("");
   const [descEn, setDescEn] = useState("");
   const [retranslating, setRetranslating] = useState(false);
+  const [sizeLabelsEn, setSizeLabelsEn] = useState({});
 
   useEffect(() => {
     if (!product) return;
@@ -115,6 +116,7 @@ export default function DetailsModal({
     setName(product.name || "");
     setNameEn(product.nameEn || "");
     setDescEn(product.descEn || "");
+    setSizeLabelsEn(product.sizeLabelsEn || {});
     setImage(product.img || "");
   }, [product]);
 
@@ -270,6 +272,7 @@ export default function DetailsModal({
       descEn: finalDescEn.trim() || desc.trim(),
       variants: finalVariants,
       stock: cleanedUsesVariants ? cleanedTotal : Number(simpleStock),
+      sizeLabelsEn,
     });
   };
 
@@ -574,6 +577,21 @@ export default function DetailsModal({
             {t.editByColorSize}
           </span>
         </div>
+
+        {product.cat === "אביזרים" && (
+          <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
+            <div className={formStyles.fl}>{t.sizeNameEnLabel || "Size name (English)"}</div>
+            <input
+              className={formStyles.fi}
+              placeholder="One Size"
+              value={sizeLabelsEn["אחיד"] || ""}
+              onChange={(e) =>
+                setSizeLabelsEn((prev) => ({ ...prev, "אחיד": e.target.value }))
+              }
+              style={{ width: "100%" }}
+            />
+          </div>
+        )}
 
         <div className={modalStyles.detailsVariantsWrap}>
           {variantsDraft.map((variant, variantIndex) => {

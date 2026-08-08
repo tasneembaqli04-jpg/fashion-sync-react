@@ -338,6 +338,7 @@ export const he = {
       historicalTranslationButton: "עדכן נתונים היסטוריים",
       historicalTranslationRunning: "מתרגם... ({done}/{total})",
       historicalTranslationDone: "✅ הושלם! כל הנתונים עודכנו.",
+      failedTranslationsFound: "⚠️ נמצאו {count} פריטים שהתרגום שלהם לאנגלית נכשל או חסר",
     },
     orderDetailsModal: {
       unknown: "לא ידוע",
@@ -473,6 +474,7 @@ export const he = {
       variantTotal: 'סה״כ: {total} יח׳',
       colorNamePlaceholder: "שם הצבע",
       colorNameEnPlaceholder: "שם הצבע (אנגלית)",
+      sizeNameEnLabel: "שם המידה באנגלית (למוצרי אביזרים במידה אחידה)",
       addColorBreakdown: "➕ הוסף פילוח לפי צבע",
       saveButton: "שמירה 💾",
     },
