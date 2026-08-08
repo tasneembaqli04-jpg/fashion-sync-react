@@ -331,6 +331,7 @@ export const en = {
       historicalTranslationButton: "Update Historical Data",
       historicalTranslationRunning: "Translating... ({done}/{total})",
       historicalTranslationDone: "✅ Done! All data updated.",
+      failedTranslationsFound: "⚠️ Found {count} items with missing or failed English translation",
     },
     orderDetailsModal: {
       unknown: "Unknown",
@@ -465,6 +466,7 @@ export const en = {
       variantTotal: "Total: {total} units",
       colorNamePlaceholder: "Color name",
       colorNameEnPlaceholder: "Color name (English)",
+      sizeNameEnLabel: "Size name in English (for uniform-size accessories)",
       addColorBreakdown: "➕ Add Color Breakdown",
       saveButton: "Save 💾",
     },

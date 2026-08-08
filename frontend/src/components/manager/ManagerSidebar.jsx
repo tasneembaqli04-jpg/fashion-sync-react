@@ -15,6 +15,7 @@ export default function ManagerSidebar({
   pendingReturnsCount = 0,
   unreadContactMessagesCount = 0,
   unreadFeedbackCount = 0,
+  failedTranslationsCount = 0,
   mobileOpen,
 }) {
   const { t: dict, lang } = useLanguage();
@@ -189,6 +190,7 @@ export default function ManagerSidebar({
         >
           <span className={styles.icon}>⚙️</span>
           <span style={{ flex: 1 }}>{t.settings}</span>
+          <NavBadge count={failedTranslationsCount} />
         </button>
       </nav>
 
