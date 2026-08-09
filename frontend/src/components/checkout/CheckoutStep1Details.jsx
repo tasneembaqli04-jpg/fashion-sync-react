@@ -55,6 +55,8 @@ export default function CheckoutStep1Details({
             type="email"
             value={form.email}
             onChange={onChange}
+            readOnly
+            style={{ opacity: 0.75, cursor: "not-allowed" }}
             className={errors.email ? styles.invalid : ""}
           />
           {errors.email && (

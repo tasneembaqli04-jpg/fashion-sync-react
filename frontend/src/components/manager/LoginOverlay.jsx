@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import FloatingItems from "../home/FloatingItems";
-import { signInAsManager } from "../../services/auth/firebaseAuth";
+import { signIn } from "../../services/auth/firebaseAuth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -28,8 +28,20 @@ export default function LoginOverlay({ onLoginSuccess }) {
   const handleLogin = async () => {
     if (username.trim() === "manager" && password === "admin123") {
       setErrorVisible(false);
-      await signInAsManager();
-      onLoginSuccess();
+
+      const result = await signIn(
+        "manager@fashionsync-internal.com",
+        "manager1234567890admin",
+        {},
+      );
+
+      if (result.user) {
+        onLoginSuccess();
+      } else {
+        setErrorVisible(true);
+        setTimeout(() => setErrorVisible(false), 2000);
+      }
+
       return;
     }
 

@@ -5,6 +5,7 @@ import {
   getDocs,
   orderBy,
   query,
+  where,
   doc,
   updateDoc,
   onSnapshot,
@@ -83,7 +84,11 @@ export function subscribeToReturnRequestsByUser(email, callback) {
     return () => {};
   }
 
-  const q = query(returnsCollection, orderBy("createdAt", "desc"));
+  const q = query(
+    returnsCollection,
+    where("customerEmail", "==", normalized),
+    orderBy("createdAt", "desc"),
+  );
 
   return onSnapshot(q, (snapshot) => {
     const all = snapshot.docs.map((document) => ({
@@ -91,10 +96,6 @@ export function subscribeToReturnRequestsByUser(email, callback) {
       ...document.data(),
     }));
 
-    const filtered = all.filter(
-      (r) => (r.customerEmail || "").toLowerCase() === normalized
-    );
-
-    callback(filtered);
+    callback(all);
   });
 }
