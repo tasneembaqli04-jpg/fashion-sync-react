@@ -46,12 +46,12 @@ export const he = {
     },
     topbar: {
       searchPlaceholder: "חיפוש לפי שם/ברקוד",
-      refreshTitle: "🔄 רענן",
       backTitle: "חזרה",
       scanTitle: "סריקה",
+      menuTitle: "תפריט",
       cancelPromoTitle: "בטל פרסום פעיל",
       promoActiveButton: "📢 פרסום פעיל — בטל",
-      refreshTitle: "רענן",
+      refreshTitle: "🔄רענן",
       newProductButton: "+ מוצר חדש",
     },
     overview: {

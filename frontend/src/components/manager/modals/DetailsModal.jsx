@@ -5,6 +5,7 @@ import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { translateProductFields } from "../../../services/translation/translationService";
+import { useEscapeKey } from "../../../hooks/useEscapeKey";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -128,6 +129,7 @@ export default function DetailsModal({
   const usesVariants = variantsDraft.length > 0;
   const displayedStock = usesVariants ? totalStock : simpleStock;
 
+  useEscapeKey(isOpen, onClose);
   if (!isOpen || !product) return null;
 
   const seasonStyle = SEASON_COLORS[season] || {};

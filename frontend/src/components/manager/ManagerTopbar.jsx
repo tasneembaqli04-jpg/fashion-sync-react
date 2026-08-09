@@ -26,7 +26,7 @@ export default function ManagerTopbar({
         >→</button>
       )}
 
-      <button className={styles.mobMenuBtn} onClick={onOpenMobileSidebar}>☰</button>
+      <button className={styles.mobMenuBtn} onClick={onOpenMobileSidebar} aria-label={t.menuTitle}>☰</button>
 
       <div className={styles.topbarSearch}>
         <span style={{ color: "var(--muted)" }}>🔍</span>
@@ -40,6 +40,7 @@ export default function ManagerTopbar({
           onClick={onOpenScan}
           style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", fontSize: "1rem", padding: "0 0.2rem", lineHeight: 1, flexShrink: 0 }}
           title={t.scanTitle}
+          aria-label={t.scanTitle}
         >📷</button>
       </div>
 
@@ -47,6 +48,7 @@ export default function ManagerTopbar({
         className={`${styles.btn} ${styles.btnGhost}`}
         onClick={onRefresh}
         title={t.refreshTitle}
+        aria-label={t.refreshTitle}
         style={{ flexShrink: 0, position: "relative", zIndex: 500, cursor: "pointer" }}
       >🔄</button>
 

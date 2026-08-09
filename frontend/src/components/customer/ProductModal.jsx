@@ -1,6 +1,7 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -34,6 +35,7 @@ export default function ProductModal({
 }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.customer.productModal;
+  useEscapeKey(open, closeProductModal);
   if (!product) return null;
 
   const isOnSale =

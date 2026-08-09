@@ -158,6 +158,15 @@ export default function ProductCard({
     <div
       className={cardStyles.productCard}
       onClick={() => openProductModal(product.code)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openProductModal(product.code);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={product.name}
     >
       <div className={cardStyles.productImgWrap}>
         <img src={product.img} alt={product.name} loading="lazy" />

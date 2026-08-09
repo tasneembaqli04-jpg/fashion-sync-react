@@ -47,9 +47,10 @@ export const en = {
     topbar: {
       searchPlaceholder: "Search by name/barcode",
       scanTitle: "Scan",
+      menuTitle: "Menu",
       cancelPromoTitle: "Cancel active promotion",
       promoActiveButton: "📢 Promotion active — Cancel",
-      refreshTitle: "Refresh",
+      refreshTitle: "Refresh🔄",
       backTitle: "Back",
       newProductButton: "+ New Product",
     },
@@ -901,6 +902,8 @@ export const en = {
       statusLabel: "Status:",
       statusUsed: "Fully used",
       statusActive: "Active",
+      statusPending: "Pending approval",
+      statusRejected: "Rejected",
       checkCodePlaceholder: "Gift/credit code (GC-... or RTN-...)",
     },
 

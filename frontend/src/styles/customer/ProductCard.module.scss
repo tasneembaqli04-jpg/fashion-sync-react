@@ -12,6 +12,10 @@
   min-width: 230px;
   max-width: 230px;
 }
+.productCard:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
 
 @media (max-width: 750px) {
   .productCard {

@@ -1,6 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
-
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 export default function CartDrawer({
   open = false,
   cart = [],
@@ -23,6 +23,7 @@ export default function CartDrawer({
   pointsDiscountAmount = 0,
 }) {
   const { t: dict } = useLanguage();
+  useEscapeKey(open, closeCart);
   const t = dict.customer.cart;
 
   return (
