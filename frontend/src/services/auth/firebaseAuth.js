@@ -2,9 +2,7 @@ import { auth } from "../../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInAnonymously,
   signOut,
-  onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
 
@@ -49,20 +47,4 @@ export async function signIn(email, password, t) {
 
 export async function logOut() {
   await signOut(auth);
-}
-
-export function watchAuthState(callback) {
-  return onAuthStateChanged(auth, (firebaseUser) => {
-    if (!firebaseUser) {
-      callback(null);
-      return;
-    }
-    callback({
-      email: firebaseUser.email,
-      name: firebaseUser.displayName || firebaseUser.email.split("@")[0],
-    });
-  });
-}
-export async function signInAsManager() {
-  await signInAnonymously(auth);
 }
