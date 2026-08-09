@@ -60,12 +60,6 @@ export async function getAllReturnRequests() {
   }));
 }
 
-export async function getReturnRequestsByUser(email) {
-  const all = await getAllReturnRequests();
-  const normalized = String(email || "").trim().toLowerCase();
-  return all.filter((r) => (r.customerEmail || "").toLowerCase() === normalized);
-}
-
 export async function updateReturnStatus(id, status) {
   await updateDoc(doc(db, "returnRequests", id), {
     status,

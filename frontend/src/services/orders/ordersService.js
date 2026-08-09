@@ -97,17 +97,6 @@ export async function getOrdersByUser(email) {
     ...document.data(),
   }));
 }
-
-export async function getAllOrders() {
-  const snapshot = await getDocs(ordersCollection);
-
-  const orders = snapshot.docs.map((document) => ({
-    docId: document.id,
-    ...document.data(),
-  }));
-
-  return orders.sort((a, b) => new Date(a.date) - new Date(b.date));
-}
 export function subscribeToOrders(onUpdate) {
   return onSnapshot(ordersCollection, (snapshot) => {
     const orders = snapshot.docs.map((document) => ({

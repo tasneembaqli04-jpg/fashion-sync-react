@@ -73,20 +73,6 @@ export async function logCouponUsage({ code, email, orderId, discountAmount }) {
     usedAt: new Date().toISOString(),
   });
 }
-
-export async function getCouponUsage(code) {
-  const normalizedCode = normalizeCode(code);
-  if (!normalizedCode) return [];
-
-  const q = query(couponUsageCollection, where("code", "==", normalizedCode));
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((document) => ({
-    id: document.id,
-    ...document.data(),
-  }));
-}
-
 export async function getAllCouponUsage() {
   const snapshot = await getDocs(couponUsageCollection);
   return snapshot.docs.map((document) => ({

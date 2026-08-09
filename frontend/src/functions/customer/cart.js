@@ -9,11 +9,6 @@ export async function loadCartFromBackend(email) {
   return await getCartFromFirestore(email);
 }
 
-export async function saveCart(email, cart) {
-  await saveCartToFirestore(email, cart);
-  return cart;
-}
-
 export function loadCart() {
   return [];
 }
@@ -108,8 +103,4 @@ export async function removeItem(cart, key, email) {
   const nextCart = cart.filter((item) => item.key !== key);
   await saveCartToFirestore(email, nextCart);
   return nextCart;
-}
-
-export async function clearCart(email) {
-  await clearCartFromFirestore(email);
 }

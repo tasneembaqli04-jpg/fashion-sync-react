@@ -1,26 +1,21 @@
-const admin = require("firebase-admin");
 const { sendMail } = require("./gmailMailer");
 const { isEnglish, dir } = require("./emailLangHelpers");
 
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-
-function buildPasswordResetEmailHtml(resetLink, lang) {
+function buildOrderCancellationEmailHtml({ orderId, total, lang }) {
   const en = isEnglish(lang);
 
   if (en) {
     return `
       <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
-        <h2 style="color: #c9a84c;">Password reset 🔑</h2>
+        <h2 style="color: #c9a84c;">Order cancelled</h2>
         <p>Hello,</p>
-        <p>We received a request to reset the password for your FashionSync account. If this was you, click the button below to choose a new password:</p>
-        <div style="text-align: center; margin: 24px 0;">
-          <a href="${resetLink}" style="background: linear-gradient(135deg,#c9a84c,#e8c97a); color:#080808; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 900; display: inline-block;">
-            Reset password
-          </a>
-        </div>
-        <p style="color: #888; font-size: 0.85em;">If you didn't request a password reset, you can safely ignore this email — your password will not change.</p>
+        <p>Your order <strong>${orderId}</strong> has been cancelled, as requested.</p>
+        ${
+          total
+            ? `<p>If you were charged, an amount of <strong>₪${total}</strong> will be refunded to your original payment method.</p>`
+            : ""
+        }
+        <p>If you didn't request this cancellation, please contact us right away.</p>
         <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
       </div>
     `;
@@ -28,38 +23,41 @@ function buildPasswordResetEmailHtml(resetLink, lang) {
 
   return `
     <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
-      <h2 style="color: #c9a84c;">איפוס סיסמה 🔑</h2>
+      <h2 style="color: #c9a84c;">ההזמנה בוטלה</h2>
       <p>שלום,</p>
-      <p>קיבלנו בקשה לאיפוס הסיסמה לחשבון שלך ב-FashionSync. אם זו את, לחצי על הכפתור למטה כדי לבחור סיסמה חדשה:</p>
-      <div style="text-align: center; margin: 24px 0;">
-        <a href="${resetLink}" style="background: linear-gradient(135deg,#c9a84c,#e8c97a); color:#080808; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 900; display: inline-block;">
-          איפוס סיסמה
-        </a>
-      </div>
-      <p style="color: #888; font-size: 0.85em;">אם לא ביקשת איפוס סיסמה, אפשר להתעלם מהמייל הזה בבטחה — הסיסמה שלך לא תשתנה.</p>
+      <p>ההזמנה שלך <strong>${orderId}</strong> בוטלה, כפי שביקשת.</p>
+      ${
+        total
+          ? `<p>אם חויבת, סכום של <strong>₪${total}</strong> יוחזר לאמצעי התשלום המקורי.</p>`
+          : ""
+      }
+      <p>אם לא ביקשת את הביטול הזה, אנא צרי איתנו קשר בהקדם.</p>
       <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
     </div>
   `;
 }
 
-async function sendPasswordResetEmail({ toEmail, lang }) {
+async function sendOrderCancellationEmail({ toEmail, orderId, total, lang }) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
 
-  const resetLink = await admin.auth().generatePasswordResetLink(toEmail);
+  if (!orderId) {
+    throw new Error("Order id is required");
+  }
 
-  const subject = isEnglish(lang)
-    ? "Password reset - FashionSync"
-    : "איפוס סיסמה - FashionSync";
+  const en = isEnglish(lang);
+  const subject = en
+    ? `Order #${orderId} - Cancelled - FashionSync`
+    : `הזמנה #${orderId} - בוטלה - FashionSync`;
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildPasswordResetEmailHtml(resetLink, lang),
+    html: buildOrderCancellationEmailHtml({ orderId, total, lang }),
   });
 }
 
 module.exports = {
-  sendPasswordResetEmail,
+  sendOrderCancellationEmail,
 };
