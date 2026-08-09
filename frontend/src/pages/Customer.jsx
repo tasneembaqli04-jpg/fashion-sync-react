@@ -36,6 +36,7 @@ import {
   guestPrompt as guestPromptFn,
 } from "../functions/customer/auth";
 import { openDB } from "../functions/customer/storage";
+import { isVariantAvailable } from "../functions/customer/stockPolicy";
 import {
   loadProducts,
   filterProducts,
@@ -692,12 +693,7 @@ export default function Customer() {
       Array.isArray(product.variants) && product.variants.length > 0;
 
     if (fromModal && hasVariants && selectedSize !== "אחר") {
-      const matchingVariant = product.variants.find(
-        (v) => v.colorName === variant.color,
-      );
-      const availableQty = Number(matchingVariant?.sizes?.[variant.size]) || 0;
-
-      if (availableQty <= 0) {
+      if (!isVariantAvailable(product, variant)) {
         alertDialog(dict.customer.dialogs.outOfStockSelection);
         return;
       }
