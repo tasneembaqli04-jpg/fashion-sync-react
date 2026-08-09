@@ -3,6 +3,7 @@ import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 import { getBusinessHours } from "../../services/settings/businessHoursService";
+import { canCancelOrder, canRequestReturn } from "../../functions/customer/orderPolicy";
 import { setPickupSchedule } from "../../services/orders/ordersService";
 import { sendPickupScheduledEmail } from "../../services/email/emailService";
 
@@ -486,10 +487,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                 </div>
               )}
 
-              {!order.cancelled &&
-                status !== 3 &&
-                Date.now() - new Date(order.createdAt || order.date).getTime() < 
-                  24 * 60 * 60 * 1000 && (
+              {canCancelOrder(order) && (
                   <div style={{ padding: "0.4rem 0" }}>
                     <button
                       type="button"
@@ -526,9 +524,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                 const deliveredTimestamp = new Date(
                   order.deliveredAt || order.createdAt || order.date
                 ).getTime();
-                const withinReturnWindow =
-                  !Number.isNaN(deliveredTimestamp) &&
-                  Date.now() - deliveredTimestamp < 7 * 24 * 60 * 60 * 1000;
+                const withinReturnWindow = canRequestReturn(order);
 
                 return (
                   <div
