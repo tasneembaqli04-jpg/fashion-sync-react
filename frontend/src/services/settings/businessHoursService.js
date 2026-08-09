@@ -57,7 +57,14 @@ export const DEFAULT_DAYS = [
 ];
 
 export async function getBusinessHours() {
-  const snapshot = await getDoc(HOURS_DOC);
+  let snapshot;
+
+  try {
+    snapshot = await getDoc(HOURS_DOC);
+  } catch (err) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    snapshot = await getDoc(HOURS_DOC);
+  }
 
   if (!snapshot.exists()) {
     return {

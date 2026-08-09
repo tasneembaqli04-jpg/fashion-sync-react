@@ -8,6 +8,7 @@ import {
   deleteDoc,
   orderBy,
   query,
+  where,
 } from "firebase/firestore";
 import { omitEmpty } from "../translation/omitEmpty";
 
@@ -68,13 +69,13 @@ export async function getMyStockAlerts(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   if (!normalizedEmail) return [];
 
-  const snapshot = await getDocs(notificationsCollection);
+  const q = query(notificationsCollection, where("email", "==", normalizedEmail));
+  const snapshot = await getDocs(q);
 
   return snapshot.docs
     .map((d) => ({ id: d.id, ...d.data() }))
     .filter(
       (item) =>
-        item.email?.trim().toLowerCase() === normalizedEmail &&
         item.notified &&
         !item.seenByCustomer
     );

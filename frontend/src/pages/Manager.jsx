@@ -52,6 +52,7 @@ import {
 import { sendShippingUpdateEmail, sendStockAlertEmail, sendGiftCardActivatedEmail, sendOrderRejectedEmail, sendGiftCardRejectedEmail } from "../services/email/emailService";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { logOut } from "../services/auth/firebaseAuth";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 
@@ -70,7 +71,7 @@ export default function Manager({ onPromote }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
+      if (user && user.email === "manager@fashionsync-internal.com") {
         setIsLoggedIn(true);
       }
       setCheckingAuth(false);
@@ -922,6 +923,7 @@ export default function Manager({ onPromote }) {
         onLogout={async () => {
           const confirmed = await confirmDialog(dict.manager.dialogs.confirmLogout);
           if (!confirmed) return;
+          await logOut();
           setIsLoggedIn(false);
           setActiveView("overview");
           navigate("/");
