@@ -35,6 +35,7 @@ import CheckoutStep4Success from "../components/checkout/CheckoutStep4Success";
 import ProcessingOverlay from "../components/checkout/ProcessingOverlay";
 import { getCartFromFirestore } from "../services/customer/cartFirestore";
 import { getStoreDetails } from "../services/settings/storeDetailsService";
+import { auth } from "../firebase";
 import { useLanguage } from "../translations/LanguageProvider";
 import { useDialog } from "../components/common/DialogProvider";
 export default function Checkout() {
@@ -407,7 +408,9 @@ export default function Checkout() {
 
     setTimeout(async () => {
       try {
-        const orderItems = await getCartFromFirestore(formData.email);
+        const realAuthEmail = (auth.currentUser?.email || formData.email || "").trim().toLowerCase();
+
+        const orderItems = await getCartFromFirestore(realAuthEmail);
 
         if (orderItems.length === 0) {
           throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
@@ -456,7 +459,7 @@ export default function Checkout() {
             lastName: formData.lastName,
             name: fullName,
             nameEn: nameEn || fullName,
-            email: formData.email,
+            email: realAuthEmail,
             phone: formData.phone,
             street: formData.street,
             streetEn: streetEn || formData.street,
@@ -506,7 +509,7 @@ export default function Checkout() {
         }
 
         if (orderPointsRedeemed > 0) {
-          await redeemLoyaltyPoints(formData.email, orderPointsRedeemed);
+          await redeemLoyaltyPoints(realAuthEmail, orderPointsRedeemed);
         }
 
         if (orderGiftCardCode && orderGiftCardDiscount > 0) {

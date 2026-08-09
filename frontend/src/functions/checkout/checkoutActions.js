@@ -11,8 +11,8 @@ export async function saveReceiptAndOrder(receipt) {
   return receipt;
 }
 
-export async function clearCheckoutCart() {
-  const email = getCurrentUser()?.email;
+export async function clearCheckoutCart(emailOverride) {
+  const email = emailOverride || getCurrentUser()?.email;
 
   localStorage.removeItem(LS_KEYS.PENDING_CART);
   localStorage.removeItem(LS_KEYS.CART);
