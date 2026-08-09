@@ -702,7 +702,7 @@ export default function Customer() {
     }
 
     const nextCart = await addToCartFn({
-      email: currentUser.email,
+      email: currentUser.email.trim().toLowerCase(),
       cart,
       product,
       variant,
@@ -971,7 +971,6 @@ export default function Customer() {
       setTryOnResult(result);
     } catch (error) {
       if (error?.name === "AbortError") {
-        console.log("Try On request cancelled");
         return;
       }
 

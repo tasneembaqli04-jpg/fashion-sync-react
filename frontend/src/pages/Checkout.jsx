@@ -26,7 +26,7 @@ import {
   getSubtotal,
   getTotal,
 } from "../functions/checkout/checkoutPricing";
-import CheckoutTopbar from "../components/checkout/checkoutTopbar";
+import CheckoutTopbar from "../components/checkout/CheckoutTopbar";
 import CheckoutStepsBar from "../components/checkout/CheckoutStepsBar";
 import CheckoutStep1Details from "../components/checkout/CheckoutStep1Details";
 import CheckoutStep2Shipping from "../components/checkout/CheckoutStep2Shipping";
@@ -410,7 +410,12 @@ export default function Checkout() {
       try {
         const realAuthEmail = (auth.currentUser?.email || formData.email || "").trim().toLowerCase();
 
-        const orderItems = await getCartFromFirestore(realAuthEmail);
+        let orderItems = await getCartFromFirestore(realAuthEmail);
+
+        if (orderItems.length === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 700));
+          orderItems = await getCartFromFirestore(realAuthEmail);
+        }
 
         if (orderItems.length === 0) {
           throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
@@ -522,7 +527,7 @@ export default function Checkout() {
           await redeemGiftCardAmount(checkoutGiftCardCode, checkoutGiftCardDiscount);
         }
 
-        await clearCheckoutCart();
+        await clearCheckoutCart(realAuthEmail);
 
         setProcessing(false);
 

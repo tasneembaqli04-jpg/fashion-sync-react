@@ -35,16 +35,6 @@ export function requestSmartTryOn({
 }) {
   const useV2 = shouldUseVirtualTryOn(product);
 
-  console.log("Smart Try-On routing:", {
-    code: product?.code,
-    name: product?.name,
-    category:
-      product?.cat ||
-      product?.category ||
-      product?.type,
-    selectedMechanism: useV2 ? "tryOnV2" : "tryOn",
-  });
-
   if (useV2) {
     return requestTryOnV2({
       product,
