@@ -1,5 +1,6 @@
 import styles from "../../styles/checkout/CheckoutTopbar.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+
 export default function CheckoutTopbar() {
   const { t: dict } = useLanguage();
   const t = dict.customer.checkout;

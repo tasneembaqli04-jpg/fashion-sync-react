@@ -26,7 +26,7 @@ import {
   getSubtotal,
   getTotal,
 } from "../functions/checkout/checkoutPricing";
-import CheckoutTopbar from "../components/checkout/CheckoutTopbar";
+import CheckoutTopbar from "../components/checkout/checkoutTopbar";
 import CheckoutStepsBar from "../components/checkout/CheckoutStepsBar";
 import CheckoutStep1Details from "../components/checkout/CheckoutStep1Details";
 import CheckoutStep2Shipping from "../components/checkout/CheckoutStep2Shipping";
