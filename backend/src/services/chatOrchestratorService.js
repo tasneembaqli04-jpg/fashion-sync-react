@@ -1,3 +1,12 @@
+/**
+ * קובץ זה הוא "המתאם" (Orchestrator) המרכזי של הצ'אטבוט — הוא מחבר יחד
+ * את כל שלבי צינור העיבוד: זיהוי כוונה, שליפת נתונים חיים מ-Firestore
+ * (שעות פעילות, מדיניות), חיפוש וסינון מוצרים, ולבסוף — בהתאם לסוג
+ * הבקשה — מענה טקסטואלי רגיל, או בניית לוק והדמיה חזותית (Try-On).
+ *
+ * הפונקציה המרכזית handleChatMessage היא נקודת הכניסה היחידה שממנה
+ * מופעל כל התהליך עבור כל הודעה שמתקבלת מהלקוחה.
+ */
 const { INTENTS, detectChatIntent } = require("./chatIntentService");
 
 const { getBusinessHours } = require("./chatBusinessHoursService");
@@ -21,6 +30,15 @@ const PRODUCT_INTENTS = new Set([
   INTENTS.OUTFIT_MODIFICATION,
 ]);
 
+/**
+ * קובץ זה הוא "המתאם" (Orchestrator) המרכזי של הצ'אטבוט — הוא מחבר יחד
+ * את כל שלבי צינור העיבוד: זיהוי כוונה, שליפת נתונים חיים מ-Firestore
+ * (שעות פעילות, מדיניות), חיפוש וסינון מוצרים, ולבסוף — בהתאם לסוג
+ * הבקשה — מענה טקסטואלי רגיל, או בניית לוק והדמיה חזותית (Try-On).
+ *
+ * הפונקציה המרכזית handleChatMessage היא נקודת הכניסה היחידה שממנה
+ * מופעל כל התהליך עבור כל הודעה שמתקבלת מהלקוחה.
+ */
 function buildProductSearchOptions(intent) {
   return {
     searchText: intent.productName || "",
@@ -40,6 +58,15 @@ function buildProductSearchOptions(intent) {
   };
 }
 
+/**
+ * בונה עבור המודל הקשר טקסטואלי מדויק על שעות הפעילות של החנות, בהתבסס
+ * אך ורק על הנתונים החיים מ-Firestore (לא נתונים מקובעים בקוד). כולל
+ * הנחיה מפורשת למודל שלא "להמציא" שעות שאינן קיימות במסמך.
+ *
+ * @param {object|null} businessHours - מסמך שעות הפעילות מ-Firestore, או null אם לא נמצא.
+ * @param {string} lang - שפת התשובה ("he" או "en").
+ * @return {string} טקסט ההנחיה שיוזרק להודעה הנשלחת למודל.
+ */
 function buildBusinessHoursContext(businessHours, lang) {
   const isEnglish = lang === "en";
 
@@ -90,6 +117,17 @@ ${JSON.stringify(todayData, null, 2)}
 `.trim();
 }
 
+/**
+ * בונה עבור המודל הקשר טקסטואלי על מדיניות החנות ופרטי הקשר שלה
+ * (החזרות, ביטולים, משלוחים, כתובת), בהתבסס אך ורק על הנתונים החיים
+ * מ-Firestore. כמו בפונקציית שעות הפעילות, מונע מהמודל "להמציא" מידע
+ * שאינו קיים בפועל בהגדרות שהמנהלת קבעה.
+ *
+ * @param {object|null} policyContent - תוכן המדיניות מ-Firestore.
+ * @param {object|null} storeDetails - פרטי החנות מ-Firestore.
+ * @param {string} lang - שפת התשובה ("he" או "en").
+ * @return {string} טקסט ההנחיה שיוזרק להודעה הנשלחת למודל.
+ */
 function buildPolicyContext(policyContent, storeDetails, lang) {
   const isEnglish = lang === "en";
   if (!policyContent && !storeDetails) {
@@ -119,6 +157,18 @@ ${JSON.stringify(storeDetails, null, 2)}
 `.trim();
 }
 
+/**
+ * ממירה אובייקט מוצר גולמי מהקטלוג למבנה נתונים אחיד המיועד לשימוש
+ * המודל (הן להסבר טקסטואלי והן להדמיה חזותית) — כולל איחוד רשימת
+ * הצבעים מהוריאנטים ומהשדה הישן, ותיוג הפעולה הרצויה (שמירה/החלפה)
+ * כאשר מדובר בעדכון לוק קיים.
+ *
+ * @param {object} product - מוצר גולמי מהקטלוג.
+ * @param {object} [options] - אפשרויות נוספות.
+ * @param {string} [options.selectedColor] - הצבע שנבחר עבור המוצר בלוק.
+ * @param {string} [options.action] - "KEEP" לשמירת פריט קיים בלוק, או "REPLACE" להחלפתו.
+ * @return {object} מבנה מוצר אחיד עבור המודל.
+ */
 function buildProductForAi(product, options = {}) {
   const variants = Array.isArray(product?.variants) ? product.variants : [];
 
@@ -159,6 +209,17 @@ function buildProductForAi(product, options = {}) {
   };
 }
 
+/**
+ * בונה עבור המודל הקשר טקסטואלי על תוצאות חיפוש המוצרים בפועל.
+ *
+ * זהו החלק הקריטי ביותר במניעת "הזיות" (Hallucinations) של המודל:
+ * הפונקציה מזינה למודל אך ורק מוצרים שנמצאו בפועל בקטלוג ובמלאי, ומורה
+ * לו במפורש שלא להמציא מוצרים, מחירים או זמינות שאינם מופיעים ברשימה.
+ *
+ * @param {object} intent - הכוונה המנורמלת של הלקוחה.
+ * @param {Array<object>} products - המוצרים שנמצאו בפועל בחיפוש.
+ * @return {string} טקסט ההקשר שיוזרק להודעה הנשלחת למודל.
+ */
 function buildProductContext(intent, products) {
   if (!products.length && intent.productCode) {
     return `
@@ -218,6 +279,15 @@ ${JSON.stringify(productsForAi, null, 2)}
 `.trim();
 }
 
+/**
+ * בונה הנחיה נוספת למודל כאשר ההודעה הנוכחית היא חלק מהתאמה למוצר
+ * קודם (RELATED_SEARCH) — למשל "איזה נעליים יתאימו לשמלה הזאת?".
+ * מנחה את המודל להשתמש בהיסטוריית השיחה ולא להעתיק אוטומטית צבע/מידה
+ * מהמוצר הקודם, אלא אם התבקש הדבר במפורש.
+ *
+ * @param {object} intent - הכוונה המנורמלת של הלקוחה.
+ * @return {string} טקסט הנחיה נוסף, או מחרוזת ריקה אם אינו רלוונטי.
+ */
 function buildConversationInstruction(intent) {
   if (intent.conversationAction === "RELATED_SEARCH") {
     return `
@@ -240,6 +310,13 @@ function buildConversationInstruction(intent) {
   return "";
 }
 
+/**
+ * בודקת האם הבקשה הנוכחית דורשת יצירת תמונה (הדמיית לוק), בהתבסס על
+ * responseMode שקבע שלב זיהוי הכוונה.
+ *
+ * @param {object} intent - הכוונה המנורמלת של הלקוחה.
+ * @return {boolean} true אם יש ליצור הדמיה חזותית של הלוק.
+ */
 function isImageResponseRequested(intent) {
   return (
     intent?.responseMode === "IMAGE" &&
@@ -248,6 +325,31 @@ function isImageResponseRequested(intent) {
   );
 }
 
+/**
+ * נקודת הכניסה המרכזית של הצ'אטבוט — מפעילה את כל צינור העיבוד עבור
+ * הודעה בודדת מהלקוחה, מתחילתו ועד סופו:
+ *
+ * 1. שליפת נתונים חיים מ-Firestore (שעות פעילות, מדיניות, פרטי חנות)
+ * 2. זיהוי כוונת הלקוחה (Intent Detection)
+ * 3. במקרה של שאלת הבהרה נדרשת — מחזירה אותה מיד ועוצרת
+ * 4. ניתוב לפי סוג הכוונה: שעות פעילות / מידע כללי / חיפוש מוצרים / שיחה כללית
+ * 5. עבור בקשות מוצר — חיפוש וסינון מוצרים לפי זמינות בפועל
+ * 6. עבור בקשות ללוק חזותי — הפעלת מתכנן הלוקים (planOutfit) והדמיה
+ *    חזותית (generateOutfitVisualization), עם טיפול בשגיאות בכל שלב
+ * 7. עבור בקשות טקסט רגילות — הזרקת הקשר המוצרים האמיתי ומענה בסטרימינג
+ *
+ * הפונקציה בנויה כך שבכל שלב שבו חסר מידע או מתרחשת שגיאה, מוחזרת
+ * ללקוחה תשובה ברורה במקום קריסה או המצאת מידע.
+ *
+ * @param {object} options - פרמטרי הבקשה.
+ * @param {string} options.message - הודעת הלקוחה הנוכחית.
+ * @param {Array} [options.history] - היסטוריית השיחה הקודמת.
+ * @param {Array<object>} [options.currentOutfit] - הלוק הנוכחי המוצג ללקוחה (לצורך עדכון/החלפה).
+ * @param {string} [options.currentOutfitImage] - תמונת הלקוחה הנוכחית (base64), לצורך Try-On.
+ * @param {string} options.lang - שפת התשובה ("he" או "en").
+ * @param {Function} options.onChunk - קולבק לשליחת חלקי תשובה בסטרימינג ללקוחה.
+ * @return {Promise<object>} תוצאת השיחה — טקסט, מוצרים רלוונטיים, ו/או תמונת לוק שנוצרה.
+ */
 async function handleChatMessage({
   message,
   history = [],
