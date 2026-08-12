@@ -12,9 +12,7 @@ function normalizeCategory(product) {
 
   if (
     rawCategory.includes("dress") ||
-    rawCategory.includes("שמלה") ||
-    rawCategory.includes("فساتين") ||
-    rawCategory.includes("فستان")
+    rawCategory.includes("שמלה") 
   ) {
     return "dress";
   }
@@ -23,9 +21,7 @@ function normalizeCategory(product) {
     rawCategory.includes("shirt") ||
     rawCategory.includes("top") ||
     rawCategory.includes("blouse") ||
-    rawCategory.includes("חולצה") ||
-    rawCategory.includes("قميص") ||
-    rawCategory.includes("بلوزة")
+    rawCategory.includes("חולצה") 
   ) {
     return "shirt";
   }
@@ -34,17 +30,14 @@ function normalizeCategory(product) {
     rawCategory.includes("pants") ||
     rawCategory.includes("trousers") ||
     rawCategory.includes("jeans") ||
-    rawCategory.includes("מכנס") ||
-    rawCategory.includes("بنطال") ||
-    rawCategory.includes("جينز")
+    rawCategory.includes("מכנס") 
   ) {
     return "pants";
   }
 
   if (
     rawCategory.includes("skirt") ||
-    rawCategory.includes("חצאית") ||
-    rawCategory.includes("تنورة")
+    rawCategory.includes("חצאית") 
   ) {
     return "skirt";
   }
@@ -54,9 +47,7 @@ function normalizeCategory(product) {
     rawCategory.includes("coat") ||
     rawCategory.includes("blazer") ||
     rawCategory.includes("ז'קט") ||
-    rawCategory.includes("מעיל") ||
-    rawCategory.includes("جاكيت") ||
-    rawCategory.includes("معطف")
+    rawCategory.includes("מעיל") 
   ) {
     return "jacket";
   }
