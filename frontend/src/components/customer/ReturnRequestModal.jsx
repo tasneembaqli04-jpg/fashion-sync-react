@@ -110,7 +110,6 @@ export default function ReturnRequestModal({
               >
                 {availableItems.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {/* שם הפריט לפי שפת הממשק */}
                     {getItemName(item, lang)} ×{item.qty}
                   </option>
                 ))}
@@ -138,7 +137,6 @@ export default function ReturnRequestModal({
                     borderRadius: "8px",
                   }}
                 />
-                {/* שם הפריט לפי שפת הממשק */}
                 <div style={{ fontWeight: 700 }}>
                   {getItemName(selectedItem, lang)}
                 </div>

@@ -196,7 +196,6 @@ export default function OrderDetailsModal({ open, order, onClose }) {
               }}
             />
             <div>
-              {/* שם ומידה נבחרים לפי שפת הממשק */}
               <div>
                 {getItemName(item, lang)}
               </div>

@@ -510,7 +510,7 @@ export default function Manager({ onPromote }) {
             if (product?.nameEn && product.nameEn.trim() !== nextItem.name.trim()) {
               nextItem = { ...nextItem, nameEn: product.nameEn };
             } else {
-              // שם פריט הוא שם מוצר, ולכן עובר דרך מילון האופנה
+              // An item name is a product name, so it goes through the fashion dictionary
               const nameEn = await translateProductName(nextItem.name);
               if (nameEn) nextItem = { ...nextItem, nameEn };
             }
@@ -641,7 +641,7 @@ export default function Manager({ onPromote }) {
       let nextProduct = product;
 
       if (needsTranslation(product.name, product.nameEn)) {
-        // שם מוצר עובר דרך מילון האופנה, לא דרך התרגום הגנרי
+        // Product names use the fashion dictionary, not the generic translator
         const nameEn = await translateProductName(product.name);
         if (nameEn) nextProduct = { ...nextProduct, nameEn };
       }

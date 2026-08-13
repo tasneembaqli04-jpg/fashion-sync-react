@@ -34,8 +34,8 @@ export default function OutfitProductsCatalog({
               ₪{product.price}
             </div>
 
-            {/* הכפתור של המוצר הבודד חייב להיות כאן,
-                בתוך ה-map ובתוך הכרטיס */}
+            {/* This button must stay inside the map and inside the card,
+                so each product gets its own button */}
             <button
               type="button"
               className={styles.addToCartBtn}

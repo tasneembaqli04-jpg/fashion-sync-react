@@ -98,7 +98,6 @@ export async function setBusinessHours({
         key: day.key,
         open: Boolean(day.open),
 
-        // שומר את השעות שהמנהל בחר.
         openTime:
           day.openTime || "09:00",
 
