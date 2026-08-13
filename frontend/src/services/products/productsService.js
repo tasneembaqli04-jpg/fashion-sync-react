@@ -69,8 +69,13 @@ export async function decrementProductsStock(cartItems = []) {
     const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
     if (hasVariants) {
+      // שכפול הווריאנטים תוך שמירה על כל השדות הקיימים.
+      // בעבר נבנה כאן אובייקט חדש עם colorName ו-sizes בלבד, ולכן כל
+      // שדה אחר (למשל colorNameEn) נמחק בכתיבה חזרה ל-Firestore.
+      // ה-spread על sizes נשאר, כדי שהעדכון למטה לא ישנה את נתוני
+      // ה-snapshot המקוריים.
       const variants = data.variants.map((variant) => ({
-        colorName: variant.colorName,
+        ...variant,
         sizes: { ...(variant.sizes || {}) },
       }));
 
@@ -141,8 +146,11 @@ export async function restockReturnedItem({ code, qty, color, size }) {
   const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
   if (hasVariants) {
+    // שכפול הווריאנטים תוך שמירה על כל השדות הקיימים.
+    // אותו באג שהיה ב-decrementProductsStock: בנייה מחדש עם שני שדות
+    // בלבד מחקה שדות כמו colorNameEn בכל החזרת פריט למלאי.
     const variants = data.variants.map((variant) => ({
-      colorName: variant.colorName,
+      ...variant,
       sizes: { ...(variant.sizes || {}) },
     }));
 
