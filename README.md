@@ -32,6 +32,8 @@ Small fashion stores selling through social networks struggle to keep stock accu
 - AI assistance grounded in the live catalogue, not in generic answers
 - Management reporting from live data
 
+In numbers: 7 customer panels and 14 management screens, built from 57 React components, over 15 Firestore collections and 17 cloud functions.
+
 ## Architecture
 
 ```
@@ -228,7 +230,7 @@ Firestore Security Rules are role based.
 
 ### Manager credentials
 
-There are no passwords in the source code. The login screen takes a username and password from the form and passes them to Firebase Authentication. The manager account's email appears as a constant, which is not a secret — an email address on its own grants no access. The login error message is deliberately generic and never reveals which field was wrong.
+There are no passwords in the source code. The login screen takes a username and password from the form and passes them to Firebase Authentication. The manager account's email appears as a constant, which is not a secret — an email address on its own grants no access.
 
 ### Field and operation limits
 
@@ -236,7 +238,7 @@ Beyond the role split, the rules restrict which operations and which fields each
 
 | Collection | Restriction |
 |---|---|
-| `orders` | A customer may update four fields only — cancellation and pickup scheduling. Total and status are not writable. Deletion is manager only |
+| `orders` | A customer may update `cancelled`, `cancelledAt`, `pickupDate` and `pickupTime` — nothing else. Total and status are not writable. Deletion is manager only |
 | `giftCards`, `customers` | Reading one document (`get`) is separated from scanning the collection (`list`), so a customer can validate her own gift card but cannot enumerate all cards or all customers |
 | `emailVerifications` | Owner only |
 | `products` | Customers may write `stock`, `variants` and `salesLastMonth` during a purchase, but not price, name or description |
@@ -253,11 +255,6 @@ These are known, measured, and scoped. Each was identified during a security and
 | **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the first candidate, being the smallest and the easiest to demonstrate |
 | **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
-| **Loyalty discount read from `localStorage`** | The redeemed amount is taken from browser storage and is not checked against the stored balance | Resolved by the same `createOrder` function, which would read the balance server-side |
-| **No VAT handling** | Prices are stored and displayed inclusive, with no tax line in the receipt | A business decision rather than a defect. Adding a VAT breakdown requires deciding whether stored prices are gross or net first |
-| **Single 1.65 MB bundle** | No code splitting, so first load ships the manager interface to customers too | Route-level `import()` splitting, starting with the manager routes |
-
-Two further items are lower priority but recorded: email verification currently generates and checks its code in the browser, which Firebase's built-in `sendEmailVerification` would replace entirely; and the manager is identified by email rather than by a custom claim, which would make the role independent of the account address.
 
 ## Working with Git
 

@@ -27,6 +27,7 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 | **Track** | Follow the order from "My Orders". A confirmation email arrives on purchase |
 | **Cancel** | Available on your own from "My Orders", within 24 hours of ordering and before it ships |
 | **Return** | Available once the order shows "Delivered", within 7 days. Select the items and submit; after the manager approves, a credit is issued as a gift card with an `RTN-` code |
+| **Get in touch** | The store policy page carries a contact form. Submitting it stores the message for the manager and emails her a notification |
 
 Gift cards and return credits are checked from the "Gift Card" page, using codes beginning with `GC-` or `RTN-`.
 
