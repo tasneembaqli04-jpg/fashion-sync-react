@@ -1,218 +1,99 @@
 # User Guide — FashionSync
 
-## About This Guide
+How to use FashionSync, as a customer and as the store manager. For architecture and setup, see [`README.md`](./README.md).
 
-This guide explains how to use FashionSync, both as a customer and as the store manager, and walks through the main actions available in each interface.
+Every page has a language button (Hebrew/English) and a theme button (light/dark). Both choices are saved for your next visit, and switching to Hebrew also switches the layout to right-to-left.
 
 ## Table of Contents
 
-- [Customer Guide](#customer-guide)
+- [Customer Journey](#customer-journey)
 - [The SYNC Chatbot](#the-sync-chatbot)
 - [Virtual Try-On](#virtual-try-on)
-- [Placing an Order — Step by Step](#placing-an-order--step-by-step)
-- [Requesting a Return — Step by Step](#requesting-a-return--step-by-step)
 - [Manager Guide](#manager-guide)
-- [Barcode Scanning](#barcode-scanning)
-- [Handling an Order — Step by Step (Manager)](#handling-an-order--step-by-step-manager)
-- [General Settings (Language and Theme)](#general-settings-language-and-theme)
-- [Frequently Asked Questions](#frequently-asked-questions)
+- [Handling an Order](#handling-an-order)
 
 ---
 
-## Customer Guide
+## Customer Journey
 
-### Registration and Login
-You start from the home page and can either register with an email and password, or browse as a guest. Note that as a guest you cannot add products to the cart or place an order — both require an account.
+| Step | What you do |
+|---|---|
+| **Register** | Sign up with an email and password from the home page. Guests can browse the catalogue but cannot add to the cart or order |
+| **Browse** | Search by product name or product code, and filter by gender, category, season and price. Tab moves between products, Enter opens one, Escape closes it |
+| **Save** | Mark products to a personal wishlist for later |
+| **Add to cart** | Choose a colour and size, then add. Out-of-stock combinations cannot be added, but you can request an email alert when they return |
+| **Check out** | Delivery details are pre-filled from your account. Choose standard, express, same-day or store pickup, then a payment method |
+| **Pay** | Apply a coupon, redeem loyalty points, or pay with a gift card. Points accrue at one point per ₪1 spent |
+| **Track** | Follow the order from "My Orders". A confirmation email arrives on purchase |
+| **Cancel** | Available on your own from "My Orders", within 24 hours of ordering and before it ships |
+| **Return** | Available once the order shows "Delivered", within 7 days. Select the items and submit; after the manager approves, a credit is issued as a gift card with an `RTN-` code |
 
-### Catalogue, Search and Filtering
-On the catalogue page you can search for a product by name or by its product code — the same number encoded in the product's barcode — and filter by gender, category, season and price. The catalogue is fully keyboard navigable: Tab moves between products, Enter opens a product, and Escape closes the dialog.
-
-### Wishlist
-You can mark products you like and save them to a personal list for quick access later.
-
-### Loyalty, Coupons and Gift Cards
-The "Points and Coupons" page shows your accumulated points balance — one point for every ₪1 spent — along with the coupons available to you. The "Gift Card" page lets you check the balance of a gift card or a return credit (codes beginning with `GC-` and `RTN-`).
-
-### Back-in-Stock Alerts
-When a product is out of stock in the colour or size you want, you can sign up to be notified by email as soon as it becomes available again.
+Gift cards and return credits are checked from the "Gift Card" page, using codes beginning with `GC-` or `RTN-`.
 
 ---
 
 ## The SYNC Chatbot
 
-SYNC is a smart assistant available from the customer interface. It answers questions about products, prices, promotions, store policy (returns, cancellations, shipping), business hours and the store address.
+SYNC answers using the settings currently configured in the system. When the manager changes business hours or policy text, the next answer already reflects it.
 
-**Its answers reflect the settings currently configured in the system.** When the manager changes business hours or policy text, the chatbot uses the new values immediately — there is no separate step to update it.
-
-### What you can ask
-
-| Type of question | Example |
+| Ask about | Example |
 |---|---|
 | Product search | "Show me summer dresses under ₪300" |
-| Stock check | "Do you have this dress in M?" |
+| Stock | "Do you have this dress in M?" |
 | Price | "How much is FS-001?" |
 | Promotions | "What's on sale?" |
 | Store policy | "What's your return policy?" |
 | Business hours | "What time do you close today?" |
-| Outfit recommendation | "I need a look for an evening wedding" |
+| Outfit advice | "I need a look for an evening wedding" |
 
-### Product recommendations
+Matching products appear as cards beneath the answer and can be added to the cart from there. **Only products currently in stock are recommended** — a sold-out item still appears in the catalogue but will not be suggested. When nothing matches, SYNC says so and offers to adjust the colour, size, category or budget.
 
-When your question is about products, matching items appear as cards beneath the answer, and you can add them to the cart directly from there.
-
-**The chatbot only ever recommends products that are genuinely in stock.** If nothing matches, it says so and offers to adjust the colour, size, category or budget, rather than inventing a product.
-
-### Outfit recommendations and visualization
-
-You can ask for a complete look, for example "build me an outfit for a wedding". The assistant picks a matching combination from the catalogue and generates an image showing the outfit together on a generic AI-created figure.
-
-If the request is for a full look and it is not clear who it is for, the assistant will ask whether the outfit is for a woman or a man before continuing.
-
-You can also ask to change part of an existing look — "swap the shoes", "show me another option" — and only that item will be replaced.
-
-### Chatting in English
-
-The chatbot answers in the language of the interface. Switching the site to English switches the chatbot too.
+Asking for a complete look produces a combination chosen from the catalogue, together with a generated image of the outfit on an AI-created figure. If it is not clear who the outfit is for, SYNC asks whether it is for a woman or a man first. You can also change one part of an existing look — "swap the shoes", "show me another option" — and only that item is replaced.
 
 ---
 
 ## Virtual Try-On
 
-Try-On lets you see a product on yourself before buying it.
+Try-On renders a selected product on a photo of you.
 
 1. Open a product from the catalogue
 2. Choose Try-On
 3. Upload a photo of yourself
-4. Press the activation button and wait for the image to be generated
+4. Press the activation button and wait for the image
 
-The generated image is a simulation for guidance only, and is not a photograph of the actual product on you.
+The result is a simulation for guidance, not a photograph of the product on you.
 
-**How is this different from the chatbot's outfit image?** Try-On uses **your own photo**. The chatbot's outfit visualization uses a generic figure created by the AI, and is intended to show how several items look together.
-
----
-
-## Placing an Order — Step by Step
-
-1. Choose a product from the catalogue
-2. Choose a colour and size
-3. Press "Add to cart"
-4. Open the shopping cart
-5. Continue to checkout
-6. Fill in the delivery details (fields are pre-filled from your account)
-7. Choose a delivery method — standard, express, same day, or store pickup
-8. Choose a payment method
-9. Confirm the order
-10. You receive a confirmation email, and can follow the order from the "My Orders" page
-
----
-
-## Requesting a Return — Step by Step
-
-1. Go to the "My Orders" page
-2. Choose the relevant order — it must be in "Delivered" status, within 7 days of delivery
-3. Press "Return request"
-4. Select the items to return
-5. Submit the request
-6. The manager reviews and approves or rejects it
-7. Once approved, a credit is created automatically as a gift card with an `RTN-` code
-
-**Cancelling an order** before it ships can be done on your own, directly from the "My Orders" page, within 24 hours of placing it.
+**Try-On uses your own photo. The chatbot's outfit image uses a generated figure** and is meant to show how several items look together.
 
 ---
 
 ## Manager Guide
 
-### Signing In to the Management Interface
-The management interface is at the `/manager` address. Sign in with the manager username and the password configured for the manager account in Firebase Authentication. The password is not stored anywhere in the site's code and must be typed at each login.
+Sign in at the `/manager` address with the manager username and the password configured for the manager account in Firebase Authentication. The password is not stored in the site's code and must be typed at each login.
 
-### Inventory Management
-Add and edit products, including variants by colour and size, images and prices. The product name and description are translated into English automatically when you save.
+| Screen | What it does |
+|---|---|
+| **Inventory** | Add and edit products, including variants by colour and size, images and prices. Name and description are translated to English automatically on save |
+| **Orders** | All orders, searchable by order number or phone. Orders past the promised delivery time are flagged "⏰ Delayed" |
+| **Deliveries** | Advance the status: Approved → In preparation → Shipped / Ready for pickup → Delivered / Collected |
+| **Receipts** | Full breakdown of every transaction |
+| **Returns** | Approve or reject return requests. Approving issues the credit automatically |
+| **Enquiries and Feedback** | Contact messages and customer feedback from the policy page |
+| **Coupons** | Create and manage discount codes |
+| **Gift cards** | Approve or reject gift card orders |
+| **Stock alerts** | Customers waiting for a product to return |
+| **Store settings** | Policy text, business hours, and store details. Changes reach the chatbot immediately |
+| **Analytics** | Sales trends and performance from live data |
 
-### Orders
-A list of all orders, searchable by order number or phone number. Orders that exceed the promised delivery time are automatically flagged with a "⏰ Delayed" tag.
-
-### Deliveries
-Update the order status along the delivery process: Approved → In preparation → Shipped / Ready for pickup → Delivered / Collected.
-
-### Sales Receipts
-A full breakdown of every transaction made in the store.
-
-### Return Requests
-Approve or reject return requests submitted by customers. Approving one creates the credit automatically.
-
-### Enquiries and Feedback
-Manage contact messages and customer feedback received through the policy page on the site.
-
-### Coupons
-Create and manage discount codes.
-
-### Store Settings
-Edit policy content (shipping, returns, cancellations, privacy), business hours, and store details (address, phone). Any change here takes effect on the chatbot **immediately**, with no further action needed.
-
-### Reports and Analytics
-View sales trends and performance figures based on live system data.
+**Barcode scanning** is available when adding a product, where it fills in the product code, and as a standalone scanner for finding an existing product. It reads from the device camera and requires camera permission.
 
 ---
 
-## Barcode Scanning
+## Handling an Order
 
-The management interface can read barcodes and QR codes directly from the device camera. It is available in two places:
-
-- **When adding a product** — scanning fills in the product code automatically instead of typing it
-- **As a standalone scanner** — for quickly locating an existing product in the catalogue
-
-On devices with more than one camera you can switch between them from inside the scanner window. Scanning requires granting the browser camera permission.
-
----
-
-## Handling an Order — Step by Step (Manager)
-
-1. Sign in to the management interface
-2. Open "Customer orders"
-3. Select the relevant order
-4. Review the customer details and the items
-5. Approve the order, or reject it
-6. Move to "Delivery tracking"
-7. Update the delivery status according to the actual stage reached
-
----
-
-## General Settings (Language and Theme)
-
-Every page has a language button for switching between Hebrew and English, and a theme button for switching between light and dark mode. Both choices are saved automatically for your next visit.
-
-Switching to Hebrew also switches the page layout to right-to-left, and back to left-to-right for English.
-
----
-
-## Frequently Asked Questions
-
-**Can I place an order without registering?**
-No. Guest browsing lets you view the catalogue only. Adding to the cart and placing an order require a registered account.
-
-**How do I cancel an order?**
-From the "My Orders" page, within 24 hours of placing the order and before it has shipped.
-
-**How do I request a return?**
-From the "My Orders" page, up to 7 days after the order was actually delivered.
-
-**How do I switch between Hebrew and English?**
-Press the language button, available on every page of the site.
-
-**Why is a particular product unavailable to order?**
-Because there is no stock in the selected colour or size. You can sign up to be notified when it returns.
-
-**I forgot my password — what now?**
-The login page has a password reset option that sends a link to your registered email address.
-
-**Why doesn't the chatbot show me a product I saw in the catalogue?**
-The chatbot only recommends products that are currently in stock. A product that has sold out still appears in the catalogue, but will not be suggested by the assistant.
-
-**Does the chatbot know about a change I just made in the settings?**
-Yes. It reads business hours, policy and store details live, so a change made in the management interface applies to the very next question.
-
----
-
-## Further Documentation
-
-- [`README.md`](./README.md) — technical documentation: architecture, installation, deployment, and working with Git
+1. Open "Customer orders"
+2. Select the order
+3. Review the customer details and items
+4. Approve or reject it
+5. Move to "Delivery tracking"
+6. Advance the status as the order progresses
