@@ -908,10 +908,6 @@ export default function Customer() {
     );
   }
 
-  function openTryOnModal() {
-    setTryOnOpen(true);
-  }
-
   function closeTryOnModal() {
     tryOnAbortRef.current?.abort();
     tryOnAbortRef.current = null;
@@ -1311,7 +1307,6 @@ export default function Customer() {
             setCategoryValue={setCategoryValue}
             setPriceValue={setPriceValue}
             setSaleValue={setSaleValue}
-            openTryOnModal={openTryOnModal}
             goLogin={goLogin}
             filterSaleOnly={() => setCurrentListMode("sale")}
             setSeasonTab={setCurrentSeasonTab}
