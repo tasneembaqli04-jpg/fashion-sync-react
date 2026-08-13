@@ -29,12 +29,30 @@ service cloud.firestore {
                      (isSignedIn() && resource.data.customerEmail == request.auth.token.email.lower());
       allow create: if isSignedIn() &&
                        request.resource.data.customerEmail == request.auth.token.email.lower();
-      allow update, delete: if isManager() ||
-                                (isSignedIn() && resource.data.customerEmail == request.auth.token.email.lower());
+      // לקוחה מעדכנת הזמנה בשני מקומות בלבד:
+      // cancelOrder כותב cancelled ו-cancelledAt,
+      // setPickupSchedule כותב pickupDate ו-pickupTime.
+      // הגבלה לארבעת השדות האלה חוסמת שינוי של total או status.
+      allow update: if isManager() ||
+                       (isSignedIn() &&
+                        resource.data.customerEmail == request.auth.token.email.lower() &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["cancelled", "cancelledAt", "pickupDate", "pickupTime"]));
+
+      // אין בקוד שום מסלול שבו לקוחה מוחקת הזמנה.
+      allow delete: if isManager();
     }
 
     match /customers/{customerEmail} {
-      allow read, write: if isManager() || isOwner(customerEmail);
+      // get = המסמך של הלקוחה עצמה. getCustomer ו-getLoyaltyPoints.
+      // list = סריקת כל הלקוחות. getAllCustomers נקרא רק מ-Manager.jsx.
+      allow get: if isManager() || isOwner(customerEmail);
+      allow list: if isManager();
+
+      // הכתיבה נשארת פתוחה בכוונה — addLoyaltyPoints ו-redeemLoyaltyPoints
+      // רצים בדפדפן בזרימת הצ'קאאוט. הידוק כאן ישבור את הצ'קאאוט,
+      // ולכן הוא ממתין לפונקציית הענן.
+      allow write: if isManager() || isOwner(customerEmail);
     }
 
     match /carts/{customerEmail} {
@@ -55,7 +73,15 @@ service cloud.firestore {
     }
 
     match /giftCards/{code} {
-      allow read: if isSignedIn();
+      // get = שליפת כרטיס בודד לפי קוד. getGiftCard בצ'קאאוט זקוק לזה.
+      // list = סריקת האוסף כולו. getAllGiftCards נקרא רק ממסך המנהלת,
+      // ולכן ההגבלה חוסמת מניית קודים ויתרות של כל הכרטיסים.
+      allow get: if isSignedIn();
+      allow list: if isManager();
+
+      // הכתיבה נשארת פתוחה בכוונה — issueGiftCard ו-redeemGiftCardAmount
+      // רצים בדפדפן בזרימת הצ'קאאוט. הידוק כאן ישבור קנייה ותשלום
+      // בכרטיס מתנה, ולכן הוא ממתין לפונקציית הענן.
       allow create, update: if isManager() || isSignedIn();
       allow delete: if isManager();
     }
@@ -94,8 +120,14 @@ service cloud.firestore {
       allow read, update, delete: if isManager();
     }
 
+    // האימות רץ אחרי signUp, ולכן המשתמשת כבר מחוברת בשלוש הנקודות
+    // שנוגעות באוסף: יצירת הקוד, שליחה חוזרת, ואימות.
+    // ההגבלה לבעלים סוגרת את החשיפה של כתובות מייל וקודים לכל האינטרנט.
+    // הערה: זו הגבלת גישה בלבד. הקוד עדיין נוצר ונבדק בדפדפן,
+    // ולכן משתמשת עדיין יכולה לאמת את עצמה. התיקון המלא דורש
+    // העברת ייצור הקוד ובדיקתו לצד שרת.
     match /emailVerifications/{email} {
-      allow read, write: if true;
+      allow read, write: if isOwner(email);
     }
   }
 }
