@@ -22,8 +22,8 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 | **Browse** | Search by product name or product code, and filter by gender, category, season and price. Tab moves between products, Enter opens one, Escape closes it |
 | **Save** | Mark products to a personal wishlist for later |
 | **Add to cart** | Choose a colour and size, then add. Out-of-stock combinations cannot be added, but you can request an email alert when they return |
-| **Check out** | Delivery details are pre-filled from your account. Choose standard, express, same-day or store pickup, then a payment method |
-| **Pay** | Apply a coupon, redeem loyalty points, or pay with a gift card. Points accrue at one point per ₪1 spent |
+| **Check out** | Delivery details are pre-filled from your account. Choose standard, express, same-day or store pickup, then a payment method. Standard delivery is free from ₪200, measured on the order total **before** any coupon or points discount |
+| **Pay** | Apply a coupon, redeem loyalty points, or pay with a gift card. You earn one point per ₪1 spent, and 20 points are worth ₪1 off — so points return about 5% of what you spend |
 | **Track** | Follow the order from "My Orders". A confirmation email arrives on purchase |
 | **Cancel** | Available on your own from "My Orders", within 24 hours of ordering and before it ships |
 | **Return** | Available once the order shows "Delivered", within 7 days. Select the items and submit; after the manager approves, a credit is issued as a gift card with an `RTN-` code |
