@@ -11,6 +11,19 @@ import HomeNavbar from "../home/HomeNavbar";
 import { loadFeaturedImage } from "../../functions/home/featuredProduct.js";
 import HomeHero from "../home/HomeHero";
 
+// שם המשתמש שמוקלד בטופס. אינו כתובת מייל, אלא כינוי נוח לכניסה.
+const MANAGER_USERNAME = "manager";
+
+// כתובת המייל של חשבון המנהלת ב-Firebase Auth.
+//
+// הכתובת אינה סוד ולכן מותר שתישאר בקוד: כתובת מייל לבדה אינה מעניקה
+// גישה לשום דבר, והיא מופיעה ממילא גם ב-firestore.rules וב-Manager.jsx.
+//
+// מה שכן סוד הוא הסיסמה — והיא איננה בקובץ הזה. בעבר היא הייתה כתובה
+// כאן, ולכן נשלחה בקוד המקור לכל מי שטען את האתר. כעת המנהלת מקלידה
+// אותה בטופס, והיא לעולם לא נכללת בחבילת הבנייה.
+const MANAGER_EMAIL = "manager@fashionsync-internal.com";
+
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
   const { t: dict } = useLanguage();
@@ -26,27 +39,33 @@ export default function LoginOverlay({ onLoginSuccess }) {
   }, []);
 
   const handleLogin = async () => {
-    if (username.trim() === "manager" && password === "admin123") {
-      setErrorVisible(false);
+    // הודעת שגיאה אחת לכל סוגי הכשל, כדי לא לרמוז אם שם המשתמש נכון
+    // והסיסמה שגויה או להפך.
+    const showError = () => {
+      setErrorVisible(true);
+      setTimeout(() => setErrorVisible(false), 2000);
+    };
 
-      const result = await signIn(
-        "manager@fashionsync-internal.com",
-        "manager1234567890admin",
-        {},
-      );
+    const isManagerUsername =
+      username.trim().toLowerCase() === MANAGER_USERNAME;
 
-      if (result.user) {
-        onLoginSuccess();
-      } else {
-        setErrorVisible(true);
-        setTimeout(() => setErrorVisible(false), 2000);
-      }
-
+    if (!isManagerUsername || !password) {
+      showError();
       return;
     }
 
-    setErrorVisible(true);
-    setTimeout(() => setErrorVisible(false), 2000);
+    setErrorVisible(false);
+
+    // הסיסמה מגיעה מהשדה שהמנהלת הקלידה, ולא מהקוד.
+    // Firebase הוא זה שמאמת אותה, ולא השוואת מחרוזות בדפדפן.
+    const result = await signIn(MANAGER_EMAIL, password, {});
+
+    if (result.user) {
+      onLoginSuccess();
+      return;
+    }
+
+    showError();
   };
 
   return (
