@@ -57,6 +57,13 @@ const KNOWN_PRODUCT_TRANSLATIONS = {
   // Full-length trousers, not shorts
   "מכנסי דנים כהים": "Dark Denim Pants",
   "מכנסי עור מדומה": "Faux Leather Pants",
+  "מכנסי קארגו": "Cargo Pants",
+
+  // The Hebrew name contains a typo: "פסטנים" for "פסים" (stripes). The
+  // product photo shows a black and white striped shirt, and the description
+  // repeats the same typo. Mapped to the correct English term here; if the
+  // Hebrew name is ever corrected, this key must be updated to match.
+  "חולצת פסטנים קלאסית": "Classic Striped Shirt",
 
   // The automatic Female -> Women's replacement would produce the wrong word
   // order here ("Thermal Women's Tee"), so the name is set explicitly.

@@ -1,0 +1,26 @@
+# Line ending policy for the repository.
+#
+# Text files are stored with LF in Git and checked out with LF on every
+# platform, including Windows. This keeps the working tree consistent with the
+# repository, and satisfies the linebreak-style rule in ESLint, which expects
+# unix line endings.
+#
+# These settings take precedence over the local core.autocrlf configuration,
+# so every collaborator gets the same result regardless of their Git setup.
+
+* text=auto eol=lf
+
+# Files that must never be treated as text or have their bytes rewritten.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.mp4   binary
+*.zip   binary
