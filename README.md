@@ -1,176 +1,220 @@
 # FashionSync 👗
 
-🔗 **האתר החי:** [fashionsync-dc79f.web.app](https://fashionsync-dc79f.web.app)
+🔗 **Live site:** [fashionsync-dc79f.web.app](https://fashionsync-dc79f.web.app)
 
-**FashionSync היא מערכת מידע לניהול חנות אופנה מקוונת, הכוללת ממשק לקוחות לרכישה וניהול הזמנות וממשק ניהול לניהול מלאי, הזמנות, משלוחים, לקוחות והגדרות המערכת.**
+**FashionSync is an information system for running an online fashion store. It provides a customer interface for browsing, buying and tracking orders, and a management interface for inventory, orders, deliveries, customers and system settings.**
 
-## תוכן עניינים
+## Table of Contents
 
-- [צוות הפיתוח](#צוות-הפיתוח)
-- [מטרת הפרויקט](#מטרת-הפרויקט)
-- [הבעיה שהמערכת פותרת](#הבעיה-שהמערכת-פותרת)
-- [תכונות עיקריות](#תכונות-עיקריות)
-- [יכולות בינה מלאכותית](#יכולות-בינה-מלאכותית)
-- [סוגי משתמשים והרשאות](#סוגי-משתמשים-והרשאות)
-- [ארכיטקטורת המערכת](#ארכיטקטורת-המערכת)
-- [טכנולוגיות](#טכנולוגיות)
-- [שפות ונגישות](#שפות-ונגישות)
-- [אבטחה](#אבטחה)
-- [בדיקות (Testing)](#בדיקות-testing)
-- [מבנה הפרויקט](#מבנה-הפרויקט)
-- [דרישות מוקדמות](#דרישות-מוקדמות)
-- [התקנה והרצה מקומית](#התקנה-והרצה-מקומית)
-- [משתני סביבה](#משתני-סביבה)
-- [פריסה (Deployment)](#פריסה-deployment)
-- [תיעוד נוסף](#תיעוד-נוסף)
+- [Development Team](#development-team)
+- [Project Goals](#project-goals)
+- [The Problem It Solves](#the-problem-it-solves)
+- [Key Features](#key-features)
+- [AI Capabilities](#ai-capabilities)
+- [Barcode Scanning](#barcode-scanning)
+- [User Roles and Permissions](#user-roles-and-permissions)
+- [System Architecture](#system-architecture)
+- [Technologies](#technologies)
+- [Languages and Accessibility](#languages-and-accessibility)
+- [Security](#security)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Local Installation and Development](#local-installation-and-development)
+- [Environment Variables](#environment-variables)
+- [Deployment](#deployment)
+- [Working with Git](#working-with-git)
+- [Further Documentation](#further-documentation)
 
-## צוות הפיתוח
+## Development Team
 
-- ראדיה מוסא 212793954
-- תסנים בקלי 325488716
+- Radia Musa 212793954
+- Tasnim Bakli 325488716
 
-## מטרת הפרויקט
+## Project Goals
 
-- ניהול מלאי בזמן אמת, כולל וריאנטים לפי צבע ומידה
-- הפחתת טעויות ידניות במלאי ובמעקב אחר הזמנות
-- ריכוז תהליכי המכירה, המשלוח והשירות במערכת אחת
-- שיפור חוויית הרכישה של הלקוחה באמצעות המלצות אישיות וצ'אטבוט חכם
-- אוטומציה של תהליכי תקשורת (מיילי אישור, עדכוני משלוח, התראות מלאי)
-- מתן כלי ניהול, מעקב ודוחות למנהלת החנות
+- Real-time inventory management, including variants by colour and size
+- Fewer manual errors in stock levels and order tracking
+- One system for the whole sales, delivery and service process
+- A better shopping experience through personal recommendations and a smart chatbot
+- Automated customer communication (order confirmations, delivery updates, stock alerts)
+- Management, tracking and reporting tools for the store manager
 
-## הבעיה שהמערכת פותרת
+## The Problem It Solves
 
-חנויות אופנה קטנות המנהלות מכירות דרך רשתות חברתיות וערוצים מבוזרים מתקשות בניהול מלאי בזמן אמת, במעקב אחר הזמנות ובמתן חוויית רכישה עקבית ומקצועית ללקוחה. FashionSync מרכזת את כל התהליכים האלה במערכת מידע אחת: קטלוג חי, ניהול הזמנות ומשלוחים, ותקשורת אוטומטית עם הלקוחה — לצד ממשק ניהול מקיף למנהלת החנות.
+Small fashion stores that sell through social networks and scattered channels struggle to keep stock accurate in real time, to track orders, and to give customers a consistent, professional buying experience. FashionSync brings all of it into a single system: a live catalogue, order and delivery management, and automated customer communication — alongside a full management interface for the store manager.
 
-## תכונות עיקריות
+## Key Features
 
-### צד לקוחות
-- קטלוג מוצרים עם סינון וחיפוש (כולל חיפוש לפי מספר ברקוד), תמיכה בשתי שפות (עברית/אנגלית) ובמצב כהה/בהיר
-- עגלת קניות, Checkout, מעקב הזמנות ומשלוחים
-- תוכנית נאמנות, קופונים וכרטיסי מתנה
-- בקשות החזרה וביטול הזמנה עצמאיות
-- סריקת ברקוד ישירות מהמצלמה (בצד הניהול)
+### Customer Side
+- Product catalogue with filtering and search, by product name or by product code (the value encoded in the product barcode)
+- Two languages (Hebrew/English) and light/dark themes
+- Shopping cart, checkout, order and delivery tracking
+- Loyalty programme, coupons and gift cards
+- Self-service return requests and order cancellation
+- Wishlist
+- "Notify me when back in stock" alerts
 
-### צד ניהול
-- ניהול מלאי מוצרים (כולל וריאנטים לפי צבע/מידה)
-- מעקב הזמנות, משלוחים וקבלות מכירה, כולל סימון הזמנות שחורגות מזמן המשלוח המובטח
-- טיפול בבקשות החזרה, הודעות יצירת קשר ומשוב לקוחות
-- ניהול קופונים, הגדרות מדיניות, שעות פעילות ופרטי חנות
-- דוחות ואנליטיקה מבוססי נתונים חיים
+### Management Side
+- Product and inventory management, including variants by colour and size
+- Barcode scanning from the device camera, for adding and locating products
+- Order, delivery and receipt tracking, including flagging orders that exceed the promised delivery time
+- Handling return requests, contact messages and customer feedback
+- Coupon management, policy settings, business hours and store details
+- Reports and analytics driven by live data
+- Automatic Hebrew-to-English translation of product names and descriptions on save
 
-## יכולות בינה מלאכותית
+## AI Capabilities
 
-FashionSync משלבת יכולות AI (Google Gemini) במספר אזורים:
+FashionSync uses Google Gemini in several places. The common design principle across all of them is that **the model never invents catalogue data**: every answer is grounded in what actually exists in Firestore.
 
-- **SYNC** — צ'אטבוט חכם שעונה על שאלות לגבי מוצרים, מחירים, מבצעים ומדיניות (החזרות, ביטול, משלוחים, שעות פעילות, כתובת) — לפי הנתונים העדכניים ביותר שהוגדרו במערכת בזמן אמת, לא תשובות סטטיות
-- **התאמת לוקים** — המלצת שילובי בגדים אישיים מתוך הקטלוג הקיים, בהתאם לבקשת הלקוחה
-- **הדמיה חזותית (Try-On)** — יצירת תמונה של הלוק המומלץ
+### SYNC — the chatbot
 
-## סוגי משתמשים והרשאות
+SYNC answers questions about products, prices, promotions and store policy (returns, cancellations, shipping, business hours, address) using the values configured in the system at that moment, not static replies.
 
-**לקוחה**
-- הרשמה והתחברות (או גלישה כאורחת, עם הרשאות מוגבלות)
-- גלישה בקטלוג וחיפוש
-- רכישה, מעקב הזמנות, החזרות וביטולים
-- רשימת משאלות, נקודות נאמנות, קופונים וכרטיסי מתנה
+The chatbot runs as a multi-stage pipeline rather than a single model call:
 
-**מנהלת**
-- ניהול מוצרים ומלאי
-- ניהול הזמנות ומשלוחים
-- ניהול בקשות החזרה ופניות לקוחות
-- ניהול קופונים והגדרות חנות
-- צפייה בדוחות ואנליטיקה
+| Stage | What happens |
+|---|---|
+| **1. Intent detection** | The message and conversation history go to Gemini with a strict JSON schema. The result describes what the customer wants: category, gender, size, colour, price range, occasion, style and season |
+| **2. Live data** | Business hours, policy and store details are read from Firestore |
+| **3. Product search** | The catalogue is filtered by the hard constraints from the intent. Out-of-stock products are excluded, so the chatbot never recommends something that cannot be bought |
+| **4. Relevance scoring** | Occasion, style and season are used to rank results. Scoring only reorders — it never rejects a product, so a search can never come back empty because of the occasion |
+| **5. Answer** | The real search results are injected into the prompt with an explicit instruction not to invent products, prices or availability. The reply is streamed back to the browser |
 
-## ארכיטקטורת המערכת
+The search also handles Hebrew word forms: a query is split into words that may appear in any order, and construct-state forms are matched against each other, so "שמלה ערב" finds "שמלת ערב אלגנטית".
+
+### Outfit recommendation and visualization
+
+When a customer asks for a complete look, the outfit planner picks a matching combination from the products found in the previous stage, and an image model generates a visualization of that outfit on a generic AI figure. If no suitable products are found, or image generation fails, the customer receives a clear message rather than an error.
+
+### Virtual Try-On
+
+A customer can upload a photo of herself and see a selected product rendered on her, using the Vertex AI Virtual Try-On model. This is separate from the outfit visualization: Try-On uses the customer's own photo, while the outfit visualization uses a generated figure.
+
+### Models in use
+
+| Purpose | Model |
+|---|---|
+| Intent detection, chat replies, outfit planning | `gemini-3-flash-preview` |
+| Outfit visualization | `gemini-3.1-flash-image` |
+| Try-On (single product on a customer photo) | `gemini-2.5-flash-image` |
+| Virtual Try-On (Vertex AI) | `virtual-try-on-001` |
+
+## Barcode Scanning
+
+The management interface can read barcodes and QR codes directly from the device camera, using `@zxing/library`. It is available in two places: when adding a product, to fill in the product code automatically, and as a standalone scanner for locating an existing product.
+
+The scanner supports switching between cameras on devices that have more than one. It was tested against real barcodes generated with the QRHyper app.
+
+## User Roles and Permissions
+
+**Customer**
+- Registration and login, or guest browsing with limited permissions
+- Catalogue browsing and search
+- Purchasing, order tracking, returns and cancellations
+- Wishlist, loyalty points, coupons and gift cards
+
+**Manager**
+- Product and inventory management
+- Order and delivery management
+- Return requests and customer enquiries
+- Coupons and store settings
+- Reports and analytics
+
+## System Architecture
 
 ```
                     ┌──────────────────┐
-                    │     לקוחה /      │
-                    │     מנהלת        │
+                    │    Customer /    │
+                    │     Manager      │
                     │  (React Web App) │
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
-                    │     Firebase      │
-                    │ Auth / Firestore  │
-                    │     / Storage     │
+                    │     Firebase     │
+                    │ Auth / Firestore │
+                    │    / Storage     │
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
-                    │ Cloud Functions   │
-                    │  (Node.js 22)     │
-                    └───────┬─┬─────────┘
+                    │  Cloud Functions │
+                    │   (Node.js 22)   │
+                    └───────┬─┬────────┘
                             │ │
                  ┌──────────┘ └──────────┐
                  ▼                       ▼
           ┌─────────────┐         ┌─────────────┐
           │  Gemini AI  │         │  Gmail API  │
-          │ (Vertex AI) │         │  (מיילים)   │
+          │ (Vertex AI) │         │   (email)   │
           └─────────────┘         └─────────────┘
 ```
 
-הפרונטאנד (React) מתקשר ישירות מול Firebase Auth ו-Firestore לרוב הפעולות, ומול Cloud Functions לפעולות שדורשות לוגיקת שרת (שליחת מיילים, קריאה ל-AI, יצירת תמונות).
+The React frontend talks directly to Firebase Auth and Firestore for most operations, and to Cloud Functions for anything that needs server-side logic: sending email, calling the AI models, and generating images.
 
-## טכנולוגיות
+## Technologies
 
 **Frontend:**
-- React 19 + Vite
+- React 19 + Vite 8
 - SCSS Modules
 - Firebase SDK (Auth, Firestore, Storage)
+- `@zxing/library` for barcode scanning
 
 **Backend:**
 - Firebase Cloud Functions (Node.js 22)
-- Google Gemini AI (צ'אטבוט חכם + הדמיית לוקים)
-- Gmail API (שליחת מיילים אוטומטיים)
-- Secret Manager (אבטחת מפתחות API)
+- Google Gemini AI (chatbot, outfit planning, image generation)
+- Vertex AI Virtual Try-On
+- Gmail API (automated email)
+- Secret Manager (API key storage)
 
-**מסד נתונים:** Cloud Firestore (בזמן אמת, ללא צורך ברענון ידני)
+**Database:** Cloud Firestore, real time, with no manual refresh needed
 
-**בדיקות:** Vitest
+**Testing:** Vitest
 
-## שפות ונגישות
+## Languages and Accessibility
 
-- תמיכה מלאה בעברית ואנגלית, כולל מעבר דינמי בין כיווני תצוגה RTL ו-LTR
-- מצבי תצוגה בהיר וכהה
-- כרטיסי מוצר בקטלוג נגישים לניווט מלא במקלדת (Tab למעבר, Enter/Space להפעלה, מסגרת מיקוד ברורה)
-- חלונות מרכזיים (פרטי מוצר, עגלה) נסגרים במקש Escape
+- Full Hebrew and English support, including dynamic switching between RTL and LTR layouts
+- Light and dark themes
+- Product cards are fully keyboard navigable (Tab to move, Enter/Space to activate, clear focus outline)
+- Key dialogs (product details, cart) close with the Escape key
+- Product names, colours and sizes are stored in both languages at purchase time, so an order always renders correctly in either language even if the catalogue changes later
 
-## אבטחה
+## Security
 
-הרשאות הגישה למסד הנתונים (Firestore Security Rules) מבוססות תפקיד:
+Firestore Security Rules are role based:
 
-- **מנהלת** — מתחברת עם חשבון Firebase קבוע ומאומת (לא אנונימי), ומזוהה לפי אימייל מדויק. רק היא יכולה לערוך מוצרים, הגדרות מערכת וקופונים.
-- **לקוחה** — מתחברת עם חשבון Firebase אמיתי (אימייל+סיסמה), ורואה/כותבת רק את הנתונים שהיא הבעלים שלהם (הזמנות, עגלה, בקשות החזרה) — מאומת לפי אימייל תואם, לא רק "מחוברת כלשהי".
-- לקוחות יכולות לעדכן מוצרים רק בשדה המלאי (בעת רכישה), לא במחיר/שם/תיאור.
+- **Manager** — signs in with a fixed, authenticated Firebase account (not anonymous) and is identified by an exact email address. Only the manager can edit products, system settings and coupons.
+- **Customer** — signs in with a real Firebase account (email and password) and can read or write only the data she owns (orders, cart, return requests), matched by email rather than by "signed in at all".
+- Customers may update the stock field of a product during a purchase, but not its price, name or description.
 
-### פרטי ההתחברות של המנהלת
+### Manager credentials
 
-**אין בקוד המקור סיסמאות.** מסך הכניסה לממשק הניהול מקבל שם משתמש וסיסמה מהטופס, ומעביר אותם ל-Firebase Authentication לאימות. כתובת המייל של חשבון המנהלת מופיעה בקוד כקבוע — היא אינה סוד, שכן כתובת מייל לבדה אינה מעניקה גישה לדבר.
+**There are no passwords in the source code.** The management login screen takes a username and password from the form and passes them to Firebase Authentication for verification. The manager account's email address appears in the code as a constant — it is not a secret, since an email address on its own grants no access.
 
-הודעת השגיאה בכניסה כללית במכוון ("שם משתמש או סיסמה שגויים") ואינה מרמזת איזה מהשדות שגוי.
+The login error message is deliberately generic ("incorrect username or password") and never hints which field was wrong.
 
-### הידוק הרשאות ברמת האוסף
+### Collection-level hardening
 
-מעבר לחלוקה לפי תפקיד, החוקים מגבילים גם **אילו פעולות** ו**אילו שדות** מותרים:
+Beyond the role split, the rules also restrict **which operations** and **which fields** are allowed:
 
-- **הזמנות** — לקוחה יכולה לעדכן ארבעה שדות בלבד (ביטול ותיאום איסוף), ואינה יכולה לשנות סכום או סטטוס. מחיקת הזמנה שמורה למנהלת.
-- **כרטיסי מתנה ולקוחות** — הפרדה בין קריאת מסמך בודד (`get`) לבין סריקת האוסף כולו (`list`). לקוחה יכולה לאמת קוד כרטיס מתנה שברשותה, אך לא למנות את כל הכרטיסים או את כל הלקוחות.
-- **אימותי מייל** — האוסף נגיש רק לבעלת הכתובת.
+- **Orders** — a customer may update four fields only (cancellation and pickup scheduling), and cannot change the total or the status. Deleting an order is manager only.
+- **Gift cards and customers** — reading a single document (`get`) is separated from scanning the whole collection (`list`). A customer can validate a gift card code she holds, but cannot enumerate all cards or all customers.
+- **Email verifications** — accessible only to the owner of the address.
 
-**הערה לפיתוח עתידי:** חישובי המחיר וניכוי המלאי מתבצעים כיום בצד הלקוח. הצעד הבא המומלץ הוא העברתם לפונקציית ענן, כדי שהשרת יאמת את סכום ההזמנה ולא יסתמך על הדפדפן.
+**Note for future work:** price calculations and stock decrementing currently run on the client. The recommended next step is moving them into a cloud function, so the server validates the order total instead of trusting the browser.
 
-## בדיקות (Testing)
+## Testing
 
 ### Unit Tests
-123 בדיקות אוטומטיות (Vitest) בחמישה קבצים, המכסות את הלוגיקה העסקית הקריטית ביותר:
+123 automated tests (Vitest) across five files, covering the most critical business logic:
 
-| קובץ | בדיקות | מה נבדק |
+| File | Tests | What it covers |
 |---|---|---|
-| `checkoutPricing.test.js` | 20 | חישובי מחיר בקופה — סכום ביניים, הנחות, משלוח, סה"כ |
-| `orderPolicy.test.js` | 15 | חלון ביטול הזמנה (24 שעות) וחלון בקשת החזרה (7 ימים) |
-| `stockPolicy.test.js` | 10 | זמינות מלאי לפי מוצר/וריאנט (צבע ומידה) |
-| `itemDisplay.test.js` | 26 | בחירת שם/צבע/מידה של פריט לפי שפת הממשק |
-| `translationService.test.js` | 52 | מילון מונחי האופנה, תיקוני תרגום, והגנה על תרגום הצבעים |
+| `checkoutPricing.test.js` | 20 | Checkout maths — subtotal, discounts, shipping, total |
+| `orderPolicy.test.js` | 15 | The 24-hour cancellation window and the 7-day return window |
+| `stockPolicy.test.js` | 10 | Stock availability per product/variant (colour and size) |
+| `itemDisplay.test.js` | 26 | Choosing an item's name, colour and size by interface language |
+| `translationService.test.js` | 52 | The fashion term dictionary, translation fixes, and a guard on colour translation |
 
 ```bash
 cd frontend
@@ -178,120 +222,180 @@ npm test
 ```
 
 ### Manual Testing
-נבדקו ידנית תהליכי הליבה של המערכת: הרשמה והתחברות, רכישה מלאה (עגלה → תשלום → אישור), ביטול והחזרת הזמנה, ניהול הזמנות ומלאי אצל המנהלת, והרשאות גישה בין מנהלת ללקוחה. סריקת הברקוד (בצד הניהול) נבדקה מול ברקודים אמיתיים שנוצרו באמצעות אפליקציית QRHyper.
+The core flows were tested by hand: registration and login, a full purchase (cart → payment → confirmation), order cancellation and return, order and inventory management on the manager side, and access permissions between manager and customer. Barcode scanning was tested against real barcodes generated with the QRHyper app.
 
 ### Build Verification
 ```bash
 npm run build
 ```
 
-## מבנה הפרויקט
+## Project Structure
 
 ```
 fashion-sync-react/
-├── frontend/                 # אפליקציית React (צד לקוחות + צד ניהול)
+├── frontend/                 # React application (customer + management)
 │   └── src/
-│       ├── components/       # רכיבי ממשק (customer/, manager/, checkout/, home/, common/)
-│       ├── pages/            # דפי האתר (Customer, Manager, Checkout, Home)
-│       ├── services/         # גישה ישירה ל-Firestore (שכבת "מסד נתונים")
-│       ├── functions/        # לוגיקה עסקית לפי אזור — משתמשת ב-services/ (שכבת "לוגיקה")
-│       ├── hooks/            # React hooks משותפים (למשל useEscapeKey)
-│       ├── translations/     # תרגומים (עברית/אנגלית)
-│       └── styles/           # עיצוב (SCSS Modules)
+│       ├── components/       # UI components (customer/, manager/, checkout/, home/, common/)
+│       ├── pages/            # Pages (Customer, Manager, Checkout, Home)
+│       ├── services/         # Direct Firestore access (the "database" layer)
+│       ├── functions/        # Business logic by area, built on services/ (the "logic" layer)
+│       ├── hooks/            # Shared React hooks (for example useEscapeKey)
+│       ├── translations/     # Hebrew/English translations
+│       └── styles/           # SCSS Modules
 ├── backend/                  # Firebase Cloud Functions
 │   └── src/
-│       ├── config/           # אתחול חיבורים חיצוניים (Firebase Admin, Gemini, Vertex AI)
-│       ├── controllers/      # נקודות כניסה ל-API — מקבלות בקשה, קוראות ל-services
-│       │   ├── chat/         # הצ'אטבוט
-│       │   ├── email/        # 13 סוגי מיילים
+│       ├── config/           # External connections (Firebase Admin, Gemini, Vertex AI)
+│       ├── controllers/      # API entry points — receive a request, call a service
+│       │   ├── chat/         # Chatbot
+│       │   ├── email/        # 13 email types
 │       │   └── tryOn/        # Virtual Try-On
-│       └── services/         # לוגיקת שרת, מאורגנת באותה חלוקה
-│           ├── chat/         # זיהוי כוונה, תזמור, תכנון לוק, הדמיה
-│           ├── email/        # בניית תבניות ושליחה דרך Gmail
+│       └── services/         # Server logic, split the same way
+│           ├── chat/         # Intent detection, orchestration, outfit planning, visualization
+│           ├── email/        # Template building and sending through Gmail
 │           └── tryOn/        # Vertex AI Virtual Try-On
-└── scripts/                  # סקריפטים חד-פעמיים (מחוץ לבנייה של Vite)
+└── scripts/                  # One-off maintenance scripts (outside the Vite build)
 ```
 
-**ארגון הבקאנד:** `controllers/` ו-`services/` מחולקים לשלושה תחומים זהים — `chat/`, `email/`, `tryOn/`. כל קונטרולר הוא נקודת כניסה דקה שמקבלת בקשת HTTP וקוראת לשירות המתאים באותו תחום.
+**An important distinction in the frontend:** `services/` performs direct database access — queries, reads and writes. `functions/` holds the business logic that builds on `services/` (for example `functions/customer/cart.js` calls `services/customer/cartFirestore.js`). This separation is what keeps the logic layer pure and testable, which is why the unit tests target `functions/`.
 
-**הבחנה חשובה בפרונטאנד:** `services/` מבצע גישה ישירה למסד הנתונים (Firestore) — שאילתות, כתיבה, קריאה. `functions/` מכיל את הלוגיקה העסקית שמשתמשת ב-`services/` (לדוגמה, `functions/customer/cart.js` קורא ל-`services/customer/cartFirestore.js`). ההפרדה הזו שומרת על קוד נקי ונבדק.
+**Backend organisation:** `controllers/` and `services/` are split into the same three domains — `chat/`, `email/`, `tryOn/`. Each controller is a thin entry point that receives an HTTP request and calls the matching service in its domain.
 
-## דרישות מוקדמות
+## Prerequisites
 
-- Node.js 22 ומעלה
+- Node.js 22 or higher
 - npm
 - Firebase CLI (`npm install -g firebase-tools`)
+- Java 11 or higher, only if you want to run the Firebase emulator
 
-## התקנה והרצה מקומית
+## Local Installation and Development
 
 ```bash
-# פרונט
+# Frontend
 cd frontend
 npm install
 npm run dev
 
-# בק־אנד (במידת הצורך)
+# Backend (when needed)
 cd backend
 npm install
 ```
 
-### עבודה מול האמולטור המקומי
+### Working against the local emulator
 
-כברירת מחדל הפרונטאנד פונה לפונקציות הענן. כדי לפתח מול Firebase Emulator מקומי:
+By default the frontend calls the deployed cloud functions. To develop against a local Firebase emulator:
 
 ```bash
-# חלון ראשון — הפעלת האמולטור
+# First terminal — start the emulator
 firebase emulators:start --only functions
 
-# חלון שני — הפרונטאנד במצב emulator
+# Second terminal — frontend in emulator mode
 cd frontend
 npm run dev:emulator
 ```
 
-`npm run dev:emulator` מריץ את Vite עם `--mode emulator`, וטוען את `frontend/.env.emulator` שדורס את כתובות הענן בכתובות `127.0.0.1:5001`. `npm run dev` הרגיל ממשיך לפנות לענן, ו-`npm run build` אינו מושפע כלל.
+`npm run dev:emulator` runs Vite with `--mode emulator`, which loads `frontend/.env.emulator` and overrides the cloud URLs with `127.0.0.1:5001`. Plain `npm run dev` still points at the cloud, and `npm run build` is unaffected.
 
-**שימו לב:** אם מריצים `dev:emulator` בלי שהאמולטור פועל, הקריאות ייכשלו והצ'אט יעבור אוטומטית למנוע תשובות מקומי — התשובות ייראו תקינות אך לא יגיעו מהשרת.
+**Note:** if you run `dev:emulator` without the emulator running, the calls fail and the chat silently falls back to a local reply engine — the answers look reasonable but do not come from the server.
 
-## משתני סביבה
+## Environment Variables
 
-הפרויקט משתמש במשתני סביבה עבור כתובות פונקציות הענן (צ'אט, Try-On, ו-13 סוגי מיילים). שני קבצים בתיקיית `frontend/`:
+The project uses environment variables for the cloud function URLs (chat, Try-On, and 13 email types). Two files live in `frontend/`:
 
-| קובץ | נטען מתי | תוכן |
+| File | Loaded when | Contents |
 |---|---|---|
-| `.env` | תמיד | כתובות הענן (`cloudfunctions.net`) |
-| `.env.emulator` | רק ב-`npm run dev:emulator` | אותם משתנים, מכוונים ל-`127.0.0.1:5001` |
+| `.env` | Always | Cloud URLs (`cloudfunctions.net`) |
+| `.env.emulator` | Only with `npm run dev:emulator` | The same variables, pointing at `127.0.0.1:5001` |
 
-Vite טוען את `.env` תמיד, ומעליו את `.env.<mode>` שדורס משתנים בעלי אותו שם. שני הקבצים מכוסים ב-`.gitignore` ואינם נשמרים בגיט.
+Vite always loads `.env`, then loads `.env.<mode>` on top of it, overriding variables of the same name. Both files are covered by `.gitignore` and are not stored in Git.
 
-**אין להעלות ל-GitHub:**
-- מפתחות API של שירותים חיצוניים
-- Credentials וסיסמאות
-- קובצי service account
+**Never commit to GitHub:**
+- API keys for external services
+- Credentials and passwords
+- Service account files
 
-**הערה:** מפתח ה-Web של Firebase (`apiKey` ב-`firebase.js`) הוא ציבורי בתכנון ואינו סוד — ההגנה על הנתונים מתבצעת ב-Firestore Security Rules, לא בהסתרת המפתח.
+**Note:** the Firebase Web key (`apiKey` in `firebase.js`) is public by design and is not a secret — data is protected by Firestore Security Rules, not by hiding the key.
 
-## פריסה (Deployment)
+## Deployment
 
-לפרויקט שלושה רכיבים נפרסים בנפרד:
+The project has three separately deployable parts:
 
 ```bash
-# 1. פונקציות ענן — הכול, או פונקציה בודדת
+# 1. Cloud functions — all of them, or a single function
 cd backend
 npx firebase-tools deploy --only functions
-npx firebase-tools deploy --only functions:<שם הפונקציה>
+npx firebase-tools deploy --only functions:<function name>
 
-# 2. האתר עצמו (Hosting) — לאחר בנייה
+# 2. The site itself (Hosting) — after building
 cd frontend
 npm run build
 cd ..
 firebase deploy --only hosting
 
-# 3. חוקי האבטחה של Firestore
+# 3. Firestore security rules
 firebase deploy --only firestore:rules
 ```
 
-**חשוב:** שינוי ב-`firestore.rules` אינו משפיע על הפרודקשן עד שמריצים את הפריסה בסעיף 3. מומלץ לבדוק חוקים חדשים ב-Rules Playground בקונסולת Firebase לפני הפריסה.
+**Important:** a change to `firestore.rules` has no effect on production until step 3 is run. Test new rules in the Rules Playground in the Firebase console before deploying.
 
-## תיעוד נוסף
+## Working with Git
 
-- [`USER_GUIDE.md`](./USER_GUIDE.md) — מדריך שימוש מלא ללקוחה ולמנהלת, כולל עבודה עם Git
+The project is managed with Git — a version control system that keeps the history of every change and allows work on separate features in branches, without touching the stable version.
+
+### Core concepts
+
+| Concept | Meaning |
+|---|---|
+| **Repository (repo)** | The whole project folder, with its full stored history |
+| **Commit** | A saved snapshot of the code, with a message explaining what changed |
+| **Branch** | A separate line of work — lets you build a feature without touching the main version |
+| **Push** | Uploading saved commits to the remote server (GitHub) |
+| **Pull** | Downloading the latest changes from the remote server to your machine |
+
+### Useful commands
+
+**Create a new branch and switch to it:**
+```bash
+git checkout -b feature/feature-name
+```
+
+**See which files changed:**
+```bash
+git status
+```
+
+**Save your changes:**
+```bash
+git add .
+git commit -m "Short, clear description of what changed"
+```
+
+**Push the branch to the remote repository:**
+```bash
+git push origin feature/feature-name
+```
+
+**Switch between existing branches:**
+```bash
+git checkout branch-name
+```
+
+**Pull updates from the remote repository:**
+```bash
+git pull
+```
+
+**Delete a local branch you no longer need:**
+```bash
+git branch -D branch-name
+```
+
+### Recommended workflow
+
+1. Before starting a new feature or fix, create a **new branch** (`git checkout -b ...`) rather than working directly on the main branch.
+2. After each meaningful change, check that the project still **builds** (`npm run build`) before committing.
+3. Commit with a **clear message** describing exactly what was fixed or added.
+4. Push the branch to the remote repository at the end of each work session.
+
+## Further Documentation
+
+- [`USER_GUIDE.md`](./USER_GUIDE.md) — full usage guide for both the customer and the manager
