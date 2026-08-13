@@ -4,7 +4,7 @@ const {
 
 async function giftCardRejectedEmailController(request, response) {
   try {
-    const { toEmail, lang } = request.body || {};
+    const {toEmail, lang} = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({

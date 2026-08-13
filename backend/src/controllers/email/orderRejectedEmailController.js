@@ -4,7 +4,7 @@ const {
 
 async function orderRejectedEmailController(request, response) {
   try {
-    const { toEmail, orderId, reason, lang } = request.body || {};
+    const {toEmail, orderId, reason, lang} = request.body || {};
 
     if (!toEmail || !orderId) {
       return response.status(400).json({

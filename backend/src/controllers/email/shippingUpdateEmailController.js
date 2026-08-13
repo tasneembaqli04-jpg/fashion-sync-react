@@ -4,7 +4,7 @@ const {
 
 async function shippingUpdateEmailController(request, response) {
   try {
-    const { toEmail, orderId, stageIndex, isPickup, lang } = request.body || {};
+    const {toEmail, orderId, stageIndex, isPickup, lang} = request.body || {};
 
     if (!toEmail || !orderId) {
       return response.status(400).json({

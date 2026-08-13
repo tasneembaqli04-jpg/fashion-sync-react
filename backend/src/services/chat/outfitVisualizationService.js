@@ -1,4 +1,4 @@
-const { getGeminiClient } = require("../../config/gemini");
+const {getGeminiClient} = require("../../config/gemini");
 
 const IMAGE_MODEL_NAME = "gemini-3.1-flash-image";
 const MAX_REFERENCE_IMAGES = 6;
@@ -13,9 +13,9 @@ const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
  */
 function buildProductDescription(product, index) {
   const colors =
-    Array.isArray(product.colors) && product.colors.length
-      ? product.colors.join(", ")
-      : "לא צוינו";
+    Array.isArray(product.colors) && product.colors.length ?
+      product.colors.join(", ") :
+      "לא צוינו";
 
   return `
 פריט ${index + 1}:
@@ -71,13 +71,13 @@ function buildVisualizationDecisionSummary({
   currentOutfit = [],
   products = [],
 }) {
-  const previousProducts = Array.isArray(currentOutfit)
-    ? currentOutfit.map(buildOutfitProductSummary)
-    : [];
+  const previousProducts = Array.isArray(currentOutfit) ?
+    currentOutfit.map(buildOutfitProductSummary) :
+    [];
 
-  const selectedProducts = Array.isArray(products)
-    ? products.map(buildOutfitProductSummary)
-    : [];
+  const selectedProducts = Array.isArray(products) ?
+    products.map(buildOutfitProductSummary) :
+    [];
 
   const requestedCategory = intent.category || intent.productCategory || "";
 
@@ -154,13 +154,13 @@ function buildVisualizationContext({
 }) {
   const recentHistory = Array.isArray(history) ? history.slice(-6) : [];
 
-  const previousOutfit = Array.isArray(currentOutfit)
-    ? currentOutfit.map(buildOutfitProductSummary)
-    : [];
+  const previousOutfit = Array.isArray(currentOutfit) ?
+    currentOutfit.map(buildOutfitProductSummary) :
+    [];
 
-  const selectedProducts = Array.isArray(products)
-    ? products.map(buildOutfitProductSummary)
-    : [];
+  const selectedProducts = Array.isArray(products) ?
+    products.map(buildOutfitProductSummary) :
+    [];
 
   const visualizationDecisions = buildVisualizationDecisionSummary({
     originalMessage,
@@ -185,13 +185,13 @@ ${JSON.stringify(intent, null, 2)}
 
 החלטת מתכנן הלוק:
 ${JSON.stringify(
-  {
-    explanation: outfitPlan?.explanation || "",
-    selectedProducts,
-  },
-  null,
-  2,
-)}
+      {
+        explanation: outfitPlan?.explanation || "",
+        selectedProducts,
+      },
+      null,
+      2,
+  )}
 
 הלוק הקודם:
 ${JSON.stringify(previousOutfit, null, 2)}
@@ -210,10 +210,10 @@ ${JSON.stringify(selectedProducts, null, 2)}
  * @param {object[]} options.products Selected products.
  * @return {string} Image prompt.
  */
-function buildVisualizationPrompt({ visualizationContext, intent, products }) {
+function buildVisualizationPrompt({visualizationContext, intent, products}) {
   const productDescriptions = products
-    .map(buildProductDescription)
-    .join("\n\n");
+      .map(buildProductDescription)
+      .join("\n\n");
 
   return `
 צור תמונת אופנה ריאליסטית ואיכותית של דמות אנושית גנרית שנוצרה באמצעות AI.
@@ -290,9 +290,9 @@ ${productDescriptions}
  */
 function normalizeImageMimeType(mimeType, imageUrl) {
   const normalizedMimeType = String(mimeType || "")
-    .split(";")[0]
-    .trim()
-    .toLowerCase();
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
 
   if (
     normalizedMimeType === "image/jpeg" ||
@@ -383,8 +383,8 @@ async function downloadImageAsInlineData(imageUrl) {
   }
 
   const mimeType = normalizeImageMimeType(
-    response.headers.get("content-type"),
-    imageUrl,
+      response.headers.get("content-type"),
+      imageUrl,
   );
 
   return {
@@ -403,16 +403,16 @@ async function downloadImageAsInlineData(imageUrl) {
  */
 async function buildReferenceImageParts(products) {
   const productsWithImages = products
-    .filter((product) => Boolean(product?.imageUrl))
-    .slice(0, MAX_REFERENCE_IMAGES);
+      .filter((product) => Boolean(product?.imageUrl))
+      .slice(0, MAX_REFERENCE_IMAGES);
 
   const settledResults = await Promise.allSettled(
-    productsWithImages.map(async (product, index) => {
-      const imagePart = await downloadImageAsInlineData(product.imageUrl);
+      productsWithImages.map(async (product, index) => {
+        const imagePart = await downloadImageAsInlineData(product.imageUrl);
 
-      return [
-        {
-          text: `
+        return [
+          {
+            text: `
 תמונת ייחוס לפריט ${index + 1}:
 ${product.name || "מוצר ללא שם"}
 קוד מוצר: ${product.code || "לא ידוע"}
@@ -424,10 +424,10 @@ ${product.name || "מוצר ללא שם"}
 אם צוין צבע מחייב, יש לשנות רק את צבע המוצר לצבע זה,
 גם כאשר תמונת הייחוס מציגה צבע אחר.
 `.trim(),
-        },
-        imagePart,
-      ];
-    }),
+          },
+          imagePart,
+        ];
+      }),
   );
 
   const parts = [];
@@ -473,7 +473,7 @@ async function generateOutfitVisualization({
 }) {
   if (!Array.isArray(products) || products.length === 0) {
     throw new Error(
-      "At least one product is required for outfit visualization",
+        "At least one product is required for outfit visualization",
     );
   }
 
@@ -499,8 +499,8 @@ async function generateOutfitVisualization({
 
   console.log("OUTFIT VISUALIZATION CONTEXT:", visualizationContext);
 
-  const baseImageInstruction = baseOutfitImagePart
-    ? `
+  const baseImageInstruction = baseOutfitImagePart ?
+    `
 מצורפת תחילה תמונת הלוק הקודם.
 
 זוהי תמונת הבסיס המחייבת לעריכה:
@@ -509,30 +509,30 @@ async function generateOutfitVisualization({
 - יש לשנות רק את הפריט שהלקוחה ביקשה לשנות.
 - יש להשאיר את יתר פריטי הלוק כפי שהם מופיעים בתמונת הבסיס.
 - תמונות המוצרים שמצורפות לאחר מכן הן תמונות ייחוס לפריטים החדשים או המעודכנים.
-`
-    : "";
+` :
+    "";
 
   const prompt = `
 ${baseImageInstruction}
 
 ${buildVisualizationPrompt({
-  visualizationContext,
-  intent,
-  products,
-})}
+    visualizationContext,
+    intent,
+    products,
+  })}
 `.trim();
 
   const referenceImageParts = await buildReferenceImageParts(products);
 
   if (!referenceImageParts.length) {
     console.warn(
-      "No product reference images were downloaded; generating from text only",
+        "No product reference images were downloaded; generating from text only",
     );
   }
 
   console.log(
-    "OUTFIT REFERENCE IMAGES:",
-    referenceImageParts.filter((part) => part?.inlineData).length,
+      "OUTFIT REFERENCE IMAGES:",
+      referenceImageParts.filter((part) => part?.inlineData).length,
   );
 
   const response = await ai.models.generateContent({
@@ -546,17 +546,17 @@ ${buildVisualizationPrompt({
             text: prompt,
           },
 
-          ...(baseOutfitImagePart
-            ? [
-                {
-                  text: `
+          ...(baseOutfitImagePart ?
+            [
+              {
+                text: `
  זוהי תמונת הלוק הקודם.
   יש לערוך אותה בלבד.
   `.trim(),
-                },
-                baseOutfitImagePart,
-              ]
-            : []),
+              },
+              baseOutfitImagePart,
+            ] :
+            []),
 
           ...referenceImageParts,
         ],

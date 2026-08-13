@@ -4,7 +4,7 @@ const {
 
 async function returnStatusEmailController(request, response) {
   try {
-    const { toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang } = request.body || {};
+    const {toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang} = request.body || {};
 
     if (!toEmail || !status) {
       return response.status(400).json({

@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const { sendMail } = require("./gmailMailer");
+const {sendMail} = require("./gmailMailer");
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -22,7 +22,7 @@ function buildPasswordResetEmailHtml(resetLink) {
   `;
 }
 
-async function sendPasswordResetEmail({ toEmail }) {
+async function sendPasswordResetEmail({toEmail}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }

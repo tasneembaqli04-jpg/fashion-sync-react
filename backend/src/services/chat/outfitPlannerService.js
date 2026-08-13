@@ -90,10 +90,10 @@ const PLANNER_INSTRUCTION = `
  */
 function normalizeText(value) {
   return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[׳’]/g, "'")
-    .replace(/\s+/g, " ");
+      .trim()
+      .toLowerCase()
+      .replace(/[׳’]/g, "'")
+      .replace(/\s+/g, " ");
 }
 
 /**
@@ -160,7 +160,7 @@ function isAvailableProduct(product) {
         !Array.isArray(sizes)
       ) {
         return Object.values(sizes).some(
-          (quantity) => Number(quantity) > 0
+            (quantity) => Number(quantity) > 0,
         );
       }
 
@@ -197,7 +197,7 @@ function matchesGender(product, requestedGender) {
   }
 
   return productGender.includes(
-    normalizeText(requestedGender)
+      normalizeText(requestedGender),
   );
 }
 
@@ -263,9 +263,9 @@ function serializeProduct(product) {
       product?.season || null,
 
     price:
-      Number.isFinite(Number(product?.price))
-        ? Number(product.price)
-        : null,
+      Number.isFinite(Number(product?.price)) ?
+        Number(product.price) :
+        null,
 
     colors:
       extractColors(product),
@@ -337,7 +337,7 @@ function filterEligibleProducts(products, intent) {
   return products.filter((product) =>
     isAvailableProduct(product) &&
     matchesGender(product, intent?.gender) &&
-    matchesPrice(product, intent)
+    matchesPrice(product, intent),
   );
 }
 
@@ -349,9 +349,9 @@ function filterEligibleProducts(products, intent) {
  */
 function parsePlannerResponse(rawText) {
   const cleanedText = String(rawText || "")
-    .replace(/```json/gi, "")
-    .replace(/```/g, "")
-    .trim();
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
 
   const firstBrace = cleanedText.indexOf("{");
   const lastBrace = cleanedText.lastIndexOf("}");
@@ -362,12 +362,12 @@ function parsePlannerResponse(rawText) {
     lastBrace < firstBrace
   ) {
     throw new Error(
-      "No JSON object found in outfit planner response"
+        "No JSON object found in outfit planner response",
     );
   }
 
   return JSON.parse(
-    cleanedText.slice(firstBrace, lastBrace + 1)
+      cleanedText.slice(firstBrace, lastBrace + 1),
   );
 }
 
@@ -381,24 +381,24 @@ function parsePlannerResponse(rawText) {
  * @return {object[]} Verified selected products.
  */
 function resolveSelectedProducts(
-  result,
-  eligibleProducts,
-  currentOutfit = []
+    result,
+    eligibleProducts,
+    currentOutfit = [],
 ) {
   const allAllowedProducts = [
-    ...(Array.isArray(eligibleProducts)
-      ? eligibleProducts
-      : []),
-    ...(Array.isArray(currentOutfit)
-      ? currentOutfit
-      : []),
+    ...(Array.isArray(eligibleProducts) ?
+      eligibleProducts :
+      []),
+    ...(Array.isArray(currentOutfit) ?
+      currentOutfit :
+      []),
   ];
 
   const productMap = new Map();
 
   allAllowedProducts.forEach((product) => {
     const code = normalizeText(
-      getProductCode(product)
+        getProductCode(product),
     );
 
     if (!code || productMap.has(code)) {
@@ -409,30 +409,30 @@ function resolveSelectedProducts(
   });
 
   const selectedCodes = Array.isArray(
-    result?.selectedProductCodes
-  )
-    ? result.selectedProductCodes
-    : [];
+      result?.selectedProductCodes,
+  ) ?
+    result.selectedProductCodes :
+    [];
 
   const seenCodes = new Set();
 
   return selectedCodes
-    .map((code) => {
-      const normalizedCode = normalizeText(code);
+      .map((code) => {
+        const normalizedCode = normalizeText(code);
 
-      if (
-        !normalizedCode ||
+        if (
+          !normalizedCode ||
         seenCodes.has(normalizedCode)
-      ) {
-        return null;
-      }
+        ) {
+          return null;
+        }
 
-      seenCodes.add(normalizedCode);
+        seenCodes.add(normalizedCode);
 
-      return productMap.get(normalizedCode) || null;
-    })
-    .filter(Boolean)
-    .slice(0, 5);
+        return productMap.get(normalizedCode) || null;
+      })
+      .filter(Boolean)
+      .slice(0, 5);
 }
 
 /**
@@ -455,18 +455,18 @@ async function planOutfit({
     products :
     [];
   console.log(
-    "PLANNER CURRENT OUTFIT:",
-    currentOutfit.map((product) => product?.code)
+      "PLANNER CURRENT OUTFIT:",
+      currentOutfit.map((product) => product?.code),
   );
 
   console.log(
-    "PLANNER HISTORY LENGTH:",
-    history.length
+      "PLANNER HISTORY LENGTH:",
+      history.length,
   );
 
   const eligibleProducts = filterEligibleProducts(
-    safeProducts,
-    intent || {}
+      safeProducts,
+      intent || {},
   );
 
   if (!eligibleProducts.length) {
@@ -481,21 +481,21 @@ async function planOutfit({
   }
 
   const catalogForPlanner = eligibleProducts.map(
-    serializeProduct
+      serializeProduct,
   );
 
-  const safeCurrentOutfit = Array.isArray(currentOutfit)
-    ? currentOutfit.filter(
+  const safeCurrentOutfit = Array.isArray(currentOutfit) ?
+    currentOutfit.filter(
         (product) =>
           product &&
           typeof product === "object" &&
-          getProductCode(product)
-      )
-    : [];
+          getProductCode(product),
+    ) :
+    [];
 
-  const safeHistory = Array.isArray(history)
-    ? history.slice(-8)
-    : [];
+  const safeHistory = Array.isArray(history) ?
+    history.slice(-8) :
+    [];
 
   const plannerRequest = {
     customerMessage: message || null,
@@ -517,18 +517,18 @@ async function planOutfit({
     },
 
     currentOutfit: safeCurrentOutfit.map(
-      serializeProduct
+        serializeProduct,
     ),
 
     conversationHistory: safeHistory.map(
-      (item) => ({
-        role: item?.role || null,
-        content:
+        (item) => ({
+          role: item?.role || null,
+          content:
           item?.content ||
           item?.text ||
           item?.message ||
           null,
-      })
+        }),
     ),
 
     products: catalogForPlanner,
@@ -566,26 +566,26 @@ async function planOutfit({
   const rawText =
     result?.text ||
     result?.candidates?.[0]?.content
-      ?.parts?.[0]?.text ||
+        ?.parts?.[0]?.text ||
     "";
 
   if (!rawText.trim()) {
     throw new Error(
-      "Empty response from outfit planner"
+        "Empty response from outfit planner",
     );
   }
 
   const parsedResult = parsePlannerResponse(rawText);
 
   const selectedProducts = resolveSelectedProducts(
-    parsedResult,
-    eligibleProducts,
-    safeCurrentOutfit
+      parsedResult,
+      eligibleProducts,
+      safeCurrentOutfit,
   );
 
   if (!selectedProducts.length) {
     throw new Error(
-      "Outfit planner did not select valid products"
+        "Outfit planner did not select valid products",
     );
   }
 

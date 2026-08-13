@@ -4,7 +4,7 @@ const {
 
 async function emailController(request, response) {
   try {
-    const { toEmail, order, lang } = request.body || {};
+    const {toEmail, order, lang} = request.body || {};
 
     if (!toEmail || !order) {
       return response.status(400).json({
@@ -13,7 +13,7 @@ async function emailController(request, response) {
       });
     }
 
-    const result = await sendOrderConfirmationEmail({ toEmail, order, lang });
+    const result = await sendOrderConfirmationEmail({toEmail, order, lang});
 
     return response.status(200).json({
       success: true,

@@ -55,127 +55,127 @@ const backendHealthCheck = onRequest((request, response) => {
 });
 
 const tryOn = onRequest(
-  {
-    cors: true,
-  },
-  tryOnController,
+    {
+      cors: true,
+    },
+    tryOnController,
 );
 
 const tryOnV2 = onRequest(
-  {
-    cors: true,
-  },
-  tryOnV2Controller,
+    {
+      cors: true,
+    },
+    tryOnV2Controller,
 );
 
 const chat = onRequest(
-  {
-    cors: true,
-    secrets: [geminiApiKey],
-  },
-  chatController,
+    {
+      cors: true,
+      secrets: [geminiApiKey],
+    },
+    chatController,
 );
 
 const sendOrderEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  emailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    emailController,
 );
 
 const sendStockAlertEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  stockAlertEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    stockAlertEmailController,
 );
 
 const sendShippingUpdateEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  shippingUpdateEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    shippingUpdateEmailController,
 );
 const sendGiftCardActivatedEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  giftCardActivatedEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    giftCardActivatedEmailController,
 );
 
 const sendOrderRejectedEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  orderRejectedEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    orderRejectedEmailController,
 );
 
 const sendGiftCardRejectedEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  giftCardRejectedEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    giftCardRejectedEmailController,
 );
 
 const sendReturnStatusEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  returnStatusEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    returnStatusEmailController,
 );
 
 const sendOrderCancellationEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  orderCancellationEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    orderCancellationEmailController,
 );
 const sendPickupScheduledEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  pickupScheduledEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    pickupScheduledEmailController,
 );
 
 const sendVerificationEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  verificationEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    verificationEmailController,
 );
 
 const sendWelcomeEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  welcomeEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    welcomeEmailController,
 );
 
 const sendContactNotificationEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  contactNotificationEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    contactNotificationEmailController,
 );
 
 const sendPasswordResetEmail = onRequest(
-  {
-    cors: true,
-    secrets: [gmailUser, gmailAppPassword],
-  },
-  passwordResetEmailController,
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    passwordResetEmailController,
 );
 
 module.exports = {

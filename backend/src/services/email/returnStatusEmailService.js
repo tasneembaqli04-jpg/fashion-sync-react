@@ -1,7 +1,7 @@
-const { sendMail } = require("./gmailMailer");
-const { isEnglish, dir } = require("./emailLangHelpers");
+const {sendMail} = require("./gmailMailer");
+const {isEnglish, dir} = require("./emailLangHelpers");
 
-function buildReturnStatusEmailHtml({ itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang }) {
+function buildReturnStatusEmailHtml({itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang}) {
   const en = isEnglish(lang);
   const approved = status === "approved";
   const name = en ? (itemNameEn || itemName || "the item") : (itemName || "הפריט");
@@ -9,12 +9,12 @@ function buildReturnStatusEmailHtml({ itemName, itemNameEn, status, giftCardCode
   if (en) {
     const title = approved ? "Your return request was approved! ✅" : "Update on your return request";
     const creditLine =
-      approved && giftCardCode
-        ? `<p>You received a gift card credit of <strong>₪${giftCardAmount}</strong> with the code: <strong style="letter-spacing:2px;">${giftCardCode}</strong> — you can use it on your next purchase.</p>`
-        : "";
-    const body = approved
-      ? `Your return request for <strong>${name}</strong> has been approved.`
-      : `Your return request for <strong>${name}</strong> was not approved this time. If you have any questions, feel free to reach out to us anytime.`;
+      approved && giftCardCode ?
+        `<p>You received a gift card credit of <strong>₪${giftCardAmount}</strong> with the code: <strong style="letter-spacing:2px;">${giftCardCode}</strong> — you can use it on your next purchase.</p>` :
+        "";
+    const body = approved ?
+      `Your return request for <strong>${name}</strong> has been approved.` :
+      `Your return request for <strong>${name}</strong> was not approved this time. If you have any questions, feel free to reach out to us anytime.`;
 
     return `
       <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
@@ -27,18 +27,18 @@ function buildReturnStatusEmailHtml({ itemName, itemNameEn, status, giftCardCode
     `;
   }
 
-  const title = approved
-    ? "בקשת ההחזרה שלך אושרה! ✅"
-    : "עדכון לגבי בקשת ההחזרה שלך";
+  const title = approved ?
+    "בקשת ההחזרה שלך אושרה! ✅" :
+    "עדכון לגבי בקשת ההחזרה שלך";
 
   const creditLine =
-    approved && giftCardCode
-      ? `<p>לזיכוי בסך <strong>₪${giftCardAmount}</strong> קיבלת כרטיס מתנה עם הקוד: <strong style="letter-spacing:2px;">${giftCardCode}</strong> — אפשר להשתמש בו בקנייה הבאה.</p>`
-      : "";
+    approved && giftCardCode ?
+      `<p>לזיכוי בסך <strong>₪${giftCardAmount}</strong> קיבלת כרטיס מתנה עם הקוד: <strong style="letter-spacing:2px;">${giftCardCode}</strong> — אפשר להשתמש בו בקנייה הבאה.</p>` :
+      "";
 
-  const body = approved
-    ? `בקשת ההחזרה עבור <strong>${name}</strong> אושרה.`
-    : `בקשת ההחזרה עבור <strong>${name}</strong> לא אושרה הפעם. אם יש לך שאלות, אפשר לפנות אלינו בכל עת.`;
+  const body = approved ?
+    `בקשת ההחזרה עבור <strong>${name}</strong> אושרה.` :
+    `בקשת ההחזרה עבור <strong>${name}</strong> לא אושרה הפעם. אם יש לך שאלות, אפשר לפנות אלינו בכל עת.`;
 
   return `
     <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
@@ -51,7 +51,7 @@ function buildReturnStatusEmailHtml({ itemName, itemNameEn, status, giftCardCode
   `;
 }
 
-async function sendReturnStatusEmail({ toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang }) {
+async function sendReturnStatusEmail({toEmail, itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -61,14 +61,14 @@ async function sendReturnStatusEmail({ toEmail, itemName, itemNameEn, status, gi
   }
 
   const en = isEnglish(lang);
-  const subject = en
-    ? (status === "approved" ? "Your return request was approved - FashionSync" : "Update on your return request - FashionSync")
-    : (status === "approved" ? "בקשת ההחזרה שלך אושרה - FashionSync" : "עדכון לגבי בקשת ההחזרה - FashionSync");
+  const subject = en ?
+    (status === "approved" ? "Your return request was approved - FashionSync" : "Update on your return request - FashionSync") :
+    (status === "approved" ? "בקשת ההחזרה שלך אושרה - FashionSync" : "עדכון לגבי בקשת ההחזרה - FashionSync");
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildReturnStatusEmailHtml({ itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang }),
+    html: buildReturnStatusEmailHtml({itemName, itemNameEn, status, giftCardCode, giftCardAmount, lang}),
   });
 }
 

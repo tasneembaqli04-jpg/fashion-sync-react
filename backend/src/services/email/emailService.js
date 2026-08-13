@@ -1,5 +1,5 @@
-const { sendMail } = require("./gmailMailer");
-const { isEnglish, dir } = require("./emailLangHelpers");
+const {sendMail} = require("./gmailMailer");
+const {isEnglish, dir} = require("./emailLangHelpers");
 
 function buildOrderEmailHtml(order, lang) {
   const en = isEnglish(lang);
@@ -8,33 +8,33 @@ function buildOrderEmailHtml(order, lang) {
     order.items.length > 0 &&
     order.items.every((item) => item.isGiftCard);
 
-  const giftCardCode = isGiftCardOnly
-    ? order.items.find((item) => item.isGiftCard)?.code || order.items[0]?.code
-    : null;
+  const giftCardCode = isGiftCardOnly ?
+    order.items.find((item) => item.isGiftCard)?.code || order.items[0]?.code :
+    null;
 
   const itemsHtml = (order.items || [])
-    .map((item) => {
-      const name = en && item.nameEn ? item.nameEn : item.name;
-      const sizeLabel = item.size ? (en ? ` (size ${item.size})` : ` (מידה ${item.size})`) : "";
+      .map((item) => {
+        const name = en && item.nameEn ? item.nameEn : item.name;
+        const sizeLabel = item.size ? (en ? ` (size ${item.size})` : ` (מידה ${item.size})`) : "";
 
-      return `<tr>
+        return `<tr>
           <td style="padding:8px 0;">${name}${sizeLabel}</td>
           <td style="padding:8px 0; text-align:center;">${item.qty}</td>
           <td style="padding:8px 0; text-align:${en ? "right" : "left"};">₪${item.price}</td>
         </tr>`;
-    })
-    .join("");
+      })
+      .join("");
 
   if (en) {
-    const followUpLine = isGiftCardOnly
-      ? "Your gift card is pending approval from our team. We'll send you a separate email with the code once it's activated."
-      : order.isPickup
-        ? "We'll update you once your order is ready for pickup, and then you can choose a pickup time."
-        : "We'll keep you updated at every step of the shipping process.";
+    const followUpLine = isGiftCardOnly ?
+      "Your gift card is pending approval from our team. We'll send you a separate email with the code once it's activated." :
+      order.isPickup ?
+        "We'll update you once your order is ready for pickup, and then you can choose a pickup time." :
+        "We'll keep you updated at every step of the shipping process.";
 
-    const titleLine = isGiftCardOnly
-      ? "Your gift card purchase was received! 🎁"
-      : "Your order has been received! 🛍️";
+    const titleLine = isGiftCardOnly ?
+      "Your gift card purchase was received! 🎁" :
+      "Your order has been received! 🛍️";
 
     const codeBlockHtml = "";
 
@@ -63,15 +63,15 @@ function buildOrderEmailHtml(order, lang) {
     `;
   }
 
-  const followUpLine = isGiftCardOnly
-    ? "כרטיס המתנה שלך ממתין לאישור הצוות שלנו. נשלח לך מייל נפרד עם הקוד ברגע שהוא יופעל."
-    : order.isPickup
-      ? "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף."
-      : "נעדכן אותך בכל שלב במסלול המשלוח.";
+  const followUpLine = isGiftCardOnly ?
+    "כרטיס המתנה שלך ממתין לאישור הצוות שלנו. נשלח לך מייל נפרד עם הקוד ברגע שהוא יופעל." :
+    order.isPickup ?
+      "נעדכן אותך כשההזמנה תהיה מוכנה לאיסוף, ואז תוכל/י לבחור מועד איסוף." :
+      "נעדכן אותך בכל שלב במסלול המשלוח.";
 
-  const titleLine = isGiftCardOnly
-    ? "רכישת כרטיס המתנה שלך התקבלה! 🎁"
-    : "ההזמנה שלך התקבלה! 🛍️";
+  const titleLine = isGiftCardOnly ?
+    "רכישת כרטיס המתנה שלך התקבלה! 🎁" :
+    "ההזמנה שלך התקבלה! 🛍️";
 
   const codeBlockHtml = "";
 
@@ -100,7 +100,7 @@ function buildOrderEmailHtml(order, lang) {
   `;
 }
 
-async function sendOrderConfirmationEmail({ toEmail, order, lang }) {
+async function sendOrderConfirmationEmail({toEmail, order, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -109,9 +109,9 @@ async function sendOrderConfirmationEmail({ toEmail, order, lang }) {
     throw new Error("Order details are required");
   }
 
-  const subject = isEnglish(lang)
-    ? `Order placed #${order.id} - FashionSync`
-    : `הזמנה בוצעה #${order.id} - FashionSync`;
+  const subject = isEnglish(lang) ?
+    `Order placed #${order.id} - FashionSync` :
+    `הזמנה בוצעה #${order.id} - FashionSync`;
 
   return await sendMail({
     to: toEmail,
@@ -147,7 +147,7 @@ function buildStockAlertEmailHtml(productName, productNameEn, lang) {
   `;
 }
 
-async function sendStockAlertEmail({ toEmail, productName, productNameEn, lang }) {
+async function sendStockAlertEmail({toEmail, productName, productNameEn, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -155,9 +155,9 @@ async function sendStockAlertEmail({ toEmail, productName, productNameEn, lang }
   const en = isEnglish(lang);
   const displayName = en ? (productNameEn || productName || "Product") : (productName || "מוצר");
 
-  const subject = en
-    ? `${displayName} is back in stock! - FashionSync`
-    : `${displayName} חזר למלאי! - FashionSync`;
+  const subject = en ?
+    `${displayName} is back in stock! - FashionSync` :
+    `${displayName} חזר למלאי! - FashionSync`;
 
   return await sendMail({
     to: toEmail,
@@ -171,16 +171,16 @@ const PICKUP_STATUS_LABELS = ["אושרה", "בהכנה", "מוכן לאיסוף
 const STATUS_LABELS_EN = ["Confirmed", "Being prepared", "Shipped", "Delivered"];
 const PICKUP_STATUS_LABELS_EN = ["Confirmed", "Being prepared", "Ready for pickup", "Picked up"];
 
-function buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup, lang }) {
+function buildShippingUpdateEmailHtml({orderId, stageIndex, isPickup, lang}) {
   const en = isEnglish(lang);
 
   if (en) {
     const labels = isPickup ? PICKUP_STATUS_LABELS_EN : STATUS_LABELS_EN;
     const stageName = labels[stageIndex] || "Updated";
     const pickupNote =
-      isPickup && stageIndex === 2
-        ? `<p>Go to "My Orders" on the site to choose a pickup time.</p>`
-        : "";
+      isPickup && stageIndex === 2 ?
+        `<p>Go to "My Orders" on the site to choose a pickup time.</p>` :
+        "";
 
     return `
       <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
@@ -196,9 +196,9 @@ function buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup, lang }) {
   const labels = isPickup ? PICKUP_STATUS_LABELS : STATUS_LABELS;
   const stageName = labels[stageIndex] || "עודכן";
   const pickupNote =
-    isPickup && stageIndex === 2
-      ? `<p>היכנסי ל"ההזמנות שלי" באתר כדי לבחור מועד לאיסוף.</p>`
-      : "";
+    isPickup && stageIndex === 2 ?
+      `<p>היכנסי ל"ההזמנות שלי" באתר כדי לבחור מועד לאיסוף.</p>` :
+      "";
 
   return `
     <div dir="${dir(lang)}" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
@@ -211,7 +211,7 @@ function buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup, lang }) {
   `;
 }
 
-async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup, lang }) {
+async function sendShippingUpdateEmail({toEmail, orderId, stageIndex, isPickup, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -221,23 +221,23 @@ async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, isPickup,
   }
 
   const en = isEnglish(lang);
-  const labels = isPickup
-    ? (en ? PICKUP_STATUS_LABELS_EN : PICKUP_STATUS_LABELS)
-    : (en ? STATUS_LABELS_EN : STATUS_LABELS);
+  const labels = isPickup ?
+    (en ? PICKUP_STATUS_LABELS_EN : PICKUP_STATUS_LABELS) :
+    (en ? STATUS_LABELS_EN : STATUS_LABELS);
   const stageName = labels[stageIndex] || (en ? "Updated" : "עודכן");
 
-  const subject = en
-    ? `Order #${orderId} - ${stageName} - FashionSync`
-    : `הזמנה #${orderId} - ${stageName} - FashionSync`;
+  const subject = en ?
+    `Order #${orderId} - ${stageName} - FashionSync` :
+    `הזמנה #${orderId} - ${stageName} - FashionSync`;
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildShippingUpdateEmailHtml({ orderId, stageIndex, isPickup, lang }),
+    html: buildShippingUpdateEmailHtml({orderId, stageIndex, isPickup, lang}),
   });
 }
 
-function buildGiftCardActivatedEmailHtml({ giftCardCode, amount, lang }) {
+function buildGiftCardActivatedEmailHtml({giftCardCode, amount, lang}) {
   const en = isEnglish(lang);
 
   if (en) {
@@ -271,7 +271,7 @@ function buildGiftCardActivatedEmailHtml({ giftCardCode, amount, lang }) {
   `;
 }
 
-async function sendGiftCardActivatedEmail({ toEmail, giftCardCode, amount, lang }) {
+async function sendGiftCardActivatedEmail({toEmail, giftCardCode, amount, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -281,18 +281,18 @@ async function sendGiftCardActivatedEmail({ toEmail, giftCardCode, amount, lang 
   }
 
   const en = isEnglish(lang);
-  const subject = en
-    ? `Your gift card is ready - FashionSync`
-    : `כרטיס המתנה שלך מוכן - FashionSync`;
+  const subject = en ?
+    `Your gift card is ready - FashionSync` :
+    `כרטיס המתנה שלך מוכן - FashionSync`;
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildGiftCardActivatedEmailHtml({ giftCardCode, amount, lang }),
+    html: buildGiftCardActivatedEmailHtml({giftCardCode, amount, lang}),
   });
 }
 
-function buildOrderRejectedEmailHtml({ orderId, reason, lang }) {
+function buildOrderRejectedEmailHtml({orderId, reason, lang}) {
   const en = isEnglish(lang);
 
   if (en) {
@@ -320,7 +320,7 @@ function buildOrderRejectedEmailHtml({ orderId, reason, lang }) {
   `;
 }
 
-async function sendOrderRejectedEmail({ toEmail, orderId, reason, lang }) {
+async function sendOrderRejectedEmail({toEmail, orderId, reason, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -330,18 +330,18 @@ async function sendOrderRejectedEmail({ toEmail, orderId, reason, lang }) {
   }
 
   const en = isEnglish(lang);
-  const subject = en
-    ? `Order #${orderId} - Declined - FashionSync`
-    : `הזמנה #${orderId} - נדחתה - FashionSync`;
+  const subject = en ?
+    `Order #${orderId} - Declined - FashionSync` :
+    `הזמנה #${orderId} - נדחתה - FashionSync`;
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildOrderRejectedEmailHtml({ orderId, reason, lang }),
+    html: buildOrderRejectedEmailHtml({orderId, reason, lang}),
   });
 }
 
-function buildGiftCardRejectedEmailHtml({ lang }) {
+function buildGiftCardRejectedEmailHtml({lang}) {
   const en = isEnglish(lang);
 
   if (en) {
@@ -367,20 +367,20 @@ function buildGiftCardRejectedEmailHtml({ lang }) {
   `;
 }
 
-async function sendGiftCardRejectedEmail({ toEmail, lang }) {
+async function sendGiftCardRejectedEmail({toEmail, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
 
   const en = isEnglish(lang);
-  const subject = en
-    ? `Your gift card request was declined - FashionSync`
-    : `בקשת כרטיס המתנה שלך נדחתה - FashionSync`;
+  const subject = en ?
+    `Your gift card request was declined - FashionSync` :
+    `בקשת כרטיס המתנה שלך נדחתה - FashionSync`;
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildGiftCardRejectedEmailHtml({ lang }),
+    html: buildGiftCardRejectedEmailHtml({lang}),
   });
 }
 

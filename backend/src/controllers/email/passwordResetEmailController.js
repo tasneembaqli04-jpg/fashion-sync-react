@@ -4,7 +4,7 @@ const {
 
 async function passwordResetEmailController(request, response) {
   try {
-    const { toEmail, lang } = request.body || {};
+    const {toEmail, lang} = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -14,7 +14,7 @@ async function passwordResetEmailController(request, response) {
     }
 
     try {
-      await sendPasswordResetEmail({ toEmail, lang });
+      await sendPasswordResetEmail({toEmail, lang});
     } catch (innerError) {
       if (innerError.code !== "auth/user-not-found") {
         console.error("Password reset email inner error:", innerError);
