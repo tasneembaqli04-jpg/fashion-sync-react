@@ -32,6 +32,7 @@ import { subscribeToOrders, updateOrderStatus, updateOrderItems, updateOrderCust
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText } from "../services/translation/translationService";
+import { translateProductName } from "../services/translation/translationService";
 import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
 import {
   getAllDeliveries,
@@ -531,7 +532,8 @@ export default function Manager({ onPromote }) {
             if (product?.nameEn && product.nameEn.trim() !== nextItem.name.trim()) {
               nextItem = { ...nextItem, nameEn: product.nameEn };
             } else {
-              const nameEn = await translateText(nextItem.name);
+              // שם פריט הוא שם מוצר, ולכן עובר דרך מילון האופנה
+              const nameEn = await translateProductName(nextItem.name);
               if (nameEn) nextItem = { ...nextItem, nameEn };
             }
           }
@@ -661,7 +663,8 @@ export default function Manager({ onPromote }) {
       let nextProduct = product;
 
       if (needsTranslation(product.name, product.nameEn)) {
-        const nameEn = await translateText(product.name);
+        // שם מוצר עובר דרך מילון האופנה, לא דרך התרגום הגנרי
+        const nameEn = await translateProductName(product.name);
         if (nameEn) nextProduct = { ...nextProduct, nameEn };
       }
 
