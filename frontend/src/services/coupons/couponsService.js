@@ -7,8 +7,6 @@ import {
   getDocs,
   deleteDoc,
   addDoc,
-  query,
-  where,
 } from "firebase/firestore";
 
 const couponsCollection = collection(db, "coupons");
