@@ -4,6 +4,7 @@ import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 import { getBusinessHours } from "../../services/settings/businessHoursService";
 import { canCancelOrder, canRequestReturn } from "../../functions/customer/orderPolicy";
+import { getItemName } from "../../functions/customer/itemDisplay";
 import { setPickupSchedule } from "../../services/orders/ordersService";
 import { sendPickupScheduledEmail } from "../../services/email/emailService";
 
@@ -388,7 +389,8 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               <div className={modalStyles.orderItems}>
                 {order.items.map((item, index) => (
                   <span key={index}>
-                    {lang === "en" && item.nameEn ? item.nameEn : item.name} ×{item.qty}
+                    {/* שם הפריט לפי שפת הממשק */}
+                    {getItemName(item, lang)} ×{item.qty}
                     {index < order.items.length - 1 ? ", " : ""}
                   </span>
                 ))}

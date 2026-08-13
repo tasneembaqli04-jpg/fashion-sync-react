@@ -1,5 +1,10 @@
 import styles from "../../styles/checkout/CheckoutSuccess.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import {
+  getItemName,
+  getItemColor,
+  getItemSize,
+} from "../../functions/customer/itemDisplay";
 
 export default function CheckoutStep4Success({
   isCash = false,
@@ -13,7 +18,7 @@ export default function CheckoutStep4Success({
   onBackToStore,
   onPrint,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.checkout.step4;
   const priceT = dict.customer.checkout.priceBox;
 
@@ -54,12 +59,18 @@ export default function CheckoutStep4Success({
           <div>
             {items.map((item) => (
               <div key={`${item.code}-${item.size}-${item.color}`} className={styles.successItemRow}>
-                <img src={item.img} alt={item.name} />
+                {/* טקסט חלופי לקוראי מסך, בשפת הממשק */}
+                <img src={item.img} alt={getItemName(item, lang)} />
 
                 <div className={styles.successItemInfo}>
-                  <div className={styles.successItemName}>{item.name}</div>
+                  {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
+                  <div className={styles.successItemName}>
+                    {getItemName(item, lang)}
+                  </div>
                   <div className={styles.successItemMeta}>
-                    {[item.size, item.color].filter(Boolean).join(" · ")} × {item.qty}
+                    {[getItemSize(item, lang), getItemColor(item, lang)]
+                      .filter(Boolean)
+                      .join(" · ")} × {item.qty}
                   </div>
                   {item.isGiftCard && (
                     <div

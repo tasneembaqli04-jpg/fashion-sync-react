@@ -1,4 +1,9 @@
 import { useLanguage } from "../../../translations/LanguageProvider";
+import {
+  getItemName,
+  getItemColor,
+  getItemSize,
+} from "../../../functions/customer/itemDisplay";
 
 export default function ReceiptDetailsModal({ open, receipt, onClose }) {
   const { lang, t: dict } = useLanguage();
@@ -145,7 +150,7 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
           >
             <img
               src={item.img}
-              alt={item.name}
+              alt={getItemName(item, lang)}
               style={{
                 width: "48px",
                 height: "48px",
@@ -156,16 +161,14 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
             />
 
             <div style={{ flex: 1 }}>
+              {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
               <div style={{ fontWeight: 700 }}>
-                {lang === "en"
-                  ? item.nameEn ||
-                    (item.name === "כרטיס מתנה FashionSync" ? "FashionSync Gift Card" : item.name)
-                  : item.name}
+                {getItemName(item, lang)}
               </div>
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
                 {[
-                  item.size === "אחיד" && lang === "en" ? "One Size" : item.size,
-                  (lang === "en" && item.colorEn) || item.color,
+                  getItemSize(item, lang),
+                  getItemColor(item, lang),
                 ].filter(Boolean).join(" · ")}
                 {item.size || item.color ? " · " : ""}
                 {t.qtyLabel} {item.qty}

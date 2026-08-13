@@ -1,6 +1,11 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 import { useEscapeKey } from "../../hooks/useEscapeKey";
+import {
+  getItemName,
+  getItemColor,
+  getItemSize,
+} from "../../functions/customer/itemDisplay";
 export default function CartDrawer({
   open = false,
   cart = [],
@@ -22,7 +27,7 @@ export default function CartDrawer({
   appliedPointsRedeemed = 0,
   pointsDiscountAmount = 0,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   useEscapeKey(open, closeCart);
   const t = dict.customer.cart;
 
@@ -54,13 +59,21 @@ export default function CartDrawer({
               return (
                 <div className={modalStyles.cartItem} key={item.key}>
                   <div className={modalStyles.cartLeft}>
-                    <img src={item.img} alt={item.name} />
+                    {/* טקסט חלופי לקוראי מסך, בשפת הממשק */}
+                    <img src={item.img} alt={getItemName(item, lang)} />
                     <div style={{ minWidth: 0 }}>
-                      <div className={modalStyles.cartName}>{item.name}</div>
+                      {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
+                      <div className={modalStyles.cartName}>
+                        {getItemName(item, lang)}
+                      </div>
                       <div className={modalStyles.cartMeta}>
                         {item.code}
-                        {item.size ? ` · ${item.size}` : ""}
-                        {item.color ? ` · ${item.color}` : ""}
+                        {getItemSize(item, lang)
+                          ? ` · ${getItemSize(item, lang)}`
+                          : ""}
+                        {getItemColor(item, lang)
+                          ? ` · ${getItemColor(item, lang)}`
+                          : ""}
                       </div>
                     </div>
                   </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { getItemName } from "../../functions/customer/itemDisplay";
 
 export default function ReturnRequestModal({
   open,
@@ -10,7 +11,7 @@ export default function ReturnRequestModal({
   onClose,
   onSubmit,
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.customer.returns;
 
   const REASONS = [
@@ -109,7 +110,8 @@ export default function ReturnRequestModal({
               >
                 {availableItems.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.name} ×{item.qty}
+                    {/* שם הפריט לפי שפת הממשק */}
+                    {getItemName(item, lang)} ×{item.qty}
                   </option>
                 ))}
               </select>
@@ -128,7 +130,7 @@ export default function ReturnRequestModal({
               >
                 <img
                   src={selectedItem.img}
-                  alt={selectedItem.name}
+                  alt={getItemName(selectedItem, lang)}
                   style={{
                     width: "48px",
                     height: "48px",
@@ -136,7 +138,10 @@ export default function ReturnRequestModal({
                     borderRadius: "8px",
                   }}
                 />
-                <div style={{ fontWeight: 700 }}>{selectedItem.name}</div>
+                {/* שם הפריט לפי שפת הממשק */}
+                <div style={{ fontWeight: 700 }}>
+                  {getItemName(selectedItem, lang)}
+                </div>
               </div>
             )}
 
