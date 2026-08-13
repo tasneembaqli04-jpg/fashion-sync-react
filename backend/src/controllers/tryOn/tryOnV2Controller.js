@@ -1,6 +1,6 @@
 const {
   generateVirtualTryOn,
-} = require("../services/virtualTryOnService");
+} = require("../../services/tryOn/virtualTryOnService");
 
 async function tryOnV2Controller(request, response) {
   try {

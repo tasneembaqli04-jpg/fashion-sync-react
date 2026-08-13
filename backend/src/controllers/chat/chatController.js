@@ -1,4 +1,6 @@
-const { handleChatMessage } = require("../services/chatOrchestratorService");
+const {
+  handleChatMessage,
+} = require("../../services/chat/chatOrchestratorService");
 
 async function chatController(request, response) {
   try {

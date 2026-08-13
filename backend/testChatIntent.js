@@ -1,6 +1,6 @@
 const {
   detectChatIntent,
-} = require("./src/services/chatIntentService");
+} = require("./src/services/chat/chatIntentService");
 
 async function run() {
   const examples = [

@@ -1,4 +1,6 @@
-const { sendReturnStatusEmail } = require("../services/returnStatusEmailService");
+const {
+  sendReturnStatusEmail,
+} = require("../../services/email/returnStatusEmailService");
 
 async function returnStatusEmailController(request, response) {
   try {

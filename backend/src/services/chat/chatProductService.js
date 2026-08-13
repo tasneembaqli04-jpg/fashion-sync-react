@@ -1,4 +1,4 @@
-const {db} = require("../config/firebaseAdmin");
+const {db} = require("../../config/firebaseAdmin");
 
 const PRODUCTS_COLLECTION = "products";
 const DEFAULT_LIMIT = 5;

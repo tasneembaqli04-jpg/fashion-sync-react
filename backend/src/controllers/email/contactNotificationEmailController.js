@@ -1,6 +1,6 @@
 const {
   sendContactNotificationEmail,
-} = require("../services/contactNotificationEmailService");
+} = require("../../services/email/contactNotificationEmailService");
 
 async function contactNotificationEmailController(request, response) {
   try {

@@ -1,4 +1,6 @@
-const { sendVerificationCodeEmail } = require("../services/verificationEmailService");
+const {
+  sendVerificationCodeEmail,
+} = require("../../services/email/verificationEmailService");
 
 async function verificationEmailController(request, response) {
   try {

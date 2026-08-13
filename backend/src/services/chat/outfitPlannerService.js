@@ -1,4 +1,4 @@
-const {getGeminiClient} = require("../config/gemini");
+const {getGeminiClient} = require("../../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
 

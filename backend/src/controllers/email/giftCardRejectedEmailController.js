@@ -1,8 +1,10 @@
-const { sendWelcomeEmail } = require("../services/verificationEmailService");
+const {
+  sendGiftCardRejectedEmail,
+} = require("../../services/email/emailService");
 
-async function welcomeEmailController(request, response) {
+async function giftCardRejectedEmailController(request, response) {
   try {
-    const { toEmail, name, lang } = request.body || {};
+    const { toEmail, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,14 +13,17 @@ async function welcomeEmailController(request, response) {
       });
     }
 
-    const result = await sendWelcomeEmail({ toEmail, name, lang });
+    const result = await sendGiftCardRejectedEmail({
+      toEmail,
+      lang,
+    });
 
     return response.status(200).json({
       success: true,
       emailId: result.emailId,
     });
   } catch (error) {
-    console.error("Welcome email controller error:", error);
+    console.error("Gift card rejected email controller error:", error);
 
     return response.status(500).json({
       success: false,
@@ -28,5 +33,5 @@ async function welcomeEmailController(request, response) {
 }
 
 module.exports = {
-  welcomeEmailController,
+  giftCardRejectedEmailController,
 };
