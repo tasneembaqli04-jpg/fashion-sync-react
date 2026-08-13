@@ -34,7 +34,12 @@ import {
   goHome as goHomeFn,
   goLogin,
   guestPrompt as guestPromptFn,
+  isGuestMode,
+  syncAuthCache,
+  clearAuthCache,
 } from "../functions/customer/auth";
+import { auth as firebaseAuth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { openDB } from "../functions/customer/storage";
 import { isVariantAvailable } from "../functions/customer/stockPolicy";
 import {
@@ -278,6 +283,37 @@ export default function Customer() {
 
     return () => unsubscribe();
   }, [currentUser]);
+
+  // Firebase Auth is the source of truth for identity. initAuth() below only
+  // reads a localStorage cache so the page can render straight away; this
+  // listener confirms or overrides it once Firebase restores the session.
+  //
+  // Without it the two can drift apart: a cleared Firebase session leaves the
+  // cache in place, the interface shows a signed-in customer, and every
+  // Firestore call fails with permission-denied and no visible error.
+  //
+  // Guests are skipped on purpose — guest mode has no Firebase session by
+  // design, so an absent user is expected rather than stale.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
+      if (isGuestMode()) {
+        return;
+      }
+
+      if (!firebaseUser) {
+        clearAuthCache();
+        setCurrentUser(null);
+        setIsGuest(false);
+        navigate("/");
+        return;
+      }
+
+      setCurrentUser(syncAuthCache(firebaseUser));
+      setIsGuest(false);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     async function init() {
