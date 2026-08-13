@@ -7,6 +7,19 @@ const MAX_LIMIT = 100;
 // ערך העונה שמסמן מוצר שמתאים לכל השנה.
 const ALL_SEASONS_VALUE = "כל העונות";
 
+// המרת אותיות סופיות לצורתן הרגילה, לצורך השוואת מילים בחיפוש.
+const FINAL_LETTER_FORMS = Object.freeze({
+  "ך": "כ",
+  "ם": "מ",
+  "ן": "נ",
+  "ף": "פ",
+  "ץ": "צ",
+});
+
+// אורך הבסיס המינימלי שמותר להתאים לפיו תחילית של מילה.
+// בסיס קצר מזה מחייב התאמה מדויקת, כדי למנוע תוצאות רועשות.
+const MIN_STEM_PREFIX_LENGTH = 3;
+
 // מפת מילות מפתח לאירועים.
 // המפתח הוא מילת טריגר שמחפשים בתוך טקסט האירוע החופשי שמגיע מהמודל,
 // והערך הוא מילות המפתח שמחפשים בשם ובתיאור של המוצר.
@@ -74,7 +87,77 @@ function normalizeProduct(documentSnapshot) {
 }
 
 /**
+ * מנרמלת מילה עברית לצורת השוואה.
+ *
+ * שני צעדים בלבד, שניהם כתיביים ולא סמנטיים:
+ *
+ * 1. אותיות סופיות מומרות לצורתן הרגילה (ך ם ן ף ץ). כך "אדום"
+ *    ו-"אדומה" מגיעות לאותו בסיס.
+ * 2. ה' או ת' בסוף מילה בת ארבעה תווים לפחות נחתכת. זו נטיית
+ *    הסמיכות בעברית: "שמלה" מול "שמלת", "חולצה" מול "חולצת".
+ *
+ * המגבלה של ארבעה תווים שומרת על בסיס באורך שלושה תווים לפחות,
+ * כדי שמילים קצרות לא יתקצרו לכדי רעש.
+ *
+ * @param {string} word המילה לנרמול.
+ * @return {string} בסיס ההשוואה.
+ */
+function toHebrewStem(word) {
+  const withoutFinals = word.replace(
+      /[ךםןףץ]/g,
+      (letter) => FINAL_LETTER_FORMS[letter],
+  );
+
+  if (withoutFinals.length >= 4 && /[הת]$/.test(withoutFinals)) {
+    return withoutFinals.slice(0, -1);
+  }
+
+  return withoutFinals;
+}
+
+/**
+ * בודקת אם מילת חיפוש אחת מתאימה לאחת ממילות המוצר.
+ *
+ * ההשוואה היא על תחילית של מילה שלמה, ולא על רצף תווים כלשהו בתוך
+ * הטקסט. כך "ערב" מתאימה למילה "ערב" אך לא לתוך "מעורב".
+ *
+ * @param {string} queryWord מילה מתוך טקסט החיפוש.
+ * @param {string[]} productWords מילות המוצר.
+ * @return {boolean} האם נמצאה התאמה.
+ */
+function wordMatchesProductWords(queryWord, productWords) {
+  const queryStem = toHebrewStem(queryWord);
+
+  return productWords.some((productWord) => {
+    const productStem = toHebrewStem(productWord);
+
+    if (productStem === queryStem) {
+      return true;
+    }
+
+    // התאמת תחילית מותרת רק לבסיס ארוך דיו, כדי לא לגרור רעש.
+    if (queryStem.length < MIN_STEM_PREFIX_LENGTH) {
+      return false;
+    }
+
+    return (
+      productStem.startsWith(queryStem) ||
+      queryStem.startsWith(productStem)
+    );
+  });
+}
+
+/**
  * Checks whether a product matches free-text search.
+ *
+ * החיפוש מפוצל למילים: כל מילה בבקשה חייבת להימצא איפשהו בטקסט
+ * המוצר, ללא תלות בסדר או ברציפות. כך "שמלה ערב" מוצא גם
+ * "שמלת ערב אלגנטית".
+ *
+ * כל מילה נבדקת בשתי דרכים, ומספיק שאחת מהן תתקיים:
+ * 1. הופעה כרצף תווים בטקסט המוצר — בדיוק ההתנהגות הקודמת,
+ *    כדי שאף תוצאה שעבדה עד היום לא תיעלם.
+ * 2. התאמה לבסיס של מילה שלמה, שמטפלת בנטיות כמו שמלה/שמלת.
  *
  * @param {object} product Product to inspect.
  * @param {string} searchText Requested search text.
@@ -87,6 +170,10 @@ function productMatchesText(product, searchText) {
 
   const normalizedSearch = normalizeText(searchText);
 
+  if (!normalizedSearch) {
+    return true;
+  }
+
   const searchableText = normalizeText(
     [
       product.code,
@@ -97,7 +184,18 @@ function productMatchesText(product, searchText) {
     ].join(" ")
   );
 
-  return searchableText.includes(normalizedSearch);
+  // כל מילה בבקשה נדרשת, גם מילים קצרות. אין השמטת מילים:
+  // בעברית מילה בת שתי אותיות כמו "בד" היא שם עצם משמעותי,
+  // והשמטתה הייתה הופכת "נעלי בד" לכל הנעליים בקטלוג.
+  const queryWords = normalizedSearch.split(" ").filter(Boolean);
+
+  const productWords = searchableText.split(" ").filter(Boolean);
+
+  return queryWords.every(
+      (queryWord) =>
+        searchableText.includes(queryWord) ||
+        wordMatchesProductWords(queryWord, productWords),
+  );
 }
 
 /**
