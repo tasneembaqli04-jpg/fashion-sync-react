@@ -208,8 +208,8 @@ export default function Customer() {
   const [pcfText, setPcfText] = useState("");
   const [pcfTopics, setPcfTopics] = useState([]);
 
-  const [visualOpen, setVisualOpen] = useState(false);
-  const [tryonSelfie, setTryonSelfie] = useState("");
+  const [tryOnOpen, setTryOnOpen] = useState(false);
+  const [tryOnSelfie, setTryOnSelfie] = useState("");
   const [tryOnLoading, setTryOnLoading] = useState(false);
   const [tryOnResult, setTryOnResult] = useState(null);
   const [tryOnError, setTryOnError] = useState("");
@@ -908,17 +908,13 @@ export default function Customer() {
     );
   }
 
-  function openVisualModal() {
-    setVisualOpen(true);
-  }
-
-  function closeVisualModal() {
+  function closeTryOnModal() {
     tryOnAbortRef.current?.abort();
     tryOnAbortRef.current = null;
 
     setTryOnLoading(false);
     setTryOnError("");
-    setVisualOpen(false);
+    setTryOnOpen(false);
   }
 
   function tryOnSelfieUpload(event) {
@@ -927,16 +923,16 @@ export default function Customer() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setTryonSelfie(e.target.result);
+      setTryOnSelfie(e.target.result);
     };
     reader.readAsDataURL(file);
   }
 
-  function clearTryonSelfie() {
-    setTryonSelfie("");
+  function clearTryOnSelfie() {
+    setTryOnSelfie("");
   }
   async function handleTryOnRequest() {
-    if (!tryonSelfie) {
+    if (!tryOnSelfie) {
       setTryOnError(dict.customer.dialogs.tryOnErrorUploadImage);
       return;
     }
@@ -962,7 +958,7 @@ export default function Customer() {
     try {
       const result = await requestSmartTryOn({
         product: productForTryOn,
-        imageUrl: tryonSelfie,
+        imageUrl: tryOnSelfie,
         signal: controller.signal,
       });
 
@@ -987,7 +983,7 @@ export default function Customer() {
 
   function openTryOnFromProduct(code) {
     setSelectedProductCode(code);
-    setVisualOpen(true);
+    setTryOnOpen(true);
     setTryOnResult(null);
     setTryOnError("");
   }
@@ -1311,7 +1307,6 @@ export default function Customer() {
             setCategoryValue={setCategoryValue}
             setPriceValue={setPriceValue}
             setSaleValue={setSaleValue}
-            openVisualModal={openVisualModal}
             goLogin={goLogin}
             filterSaleOnly={() => setCurrentListMode("sale")}
             setSeasonTab={setCurrentSeasonTab}
@@ -1457,14 +1452,14 @@ export default function Customer() {
       />
 
       <TryOnModal
-        open={visualOpen}
-        tryonSelfie={tryonSelfie}
+        open={tryOnOpen}
+        tryOnSelfie={tryOnSelfie}
         tryOnResult={tryOnResult}
         tryOnLoading={tryOnLoading}
         tryOnError={tryOnError}
-        closeVisualModal={closeVisualModal}
+        closeTryOnModal={closeTryOnModal}
         tryOnSelfieUpload={tryOnSelfieUpload}
-        clearTryonSelfie={clearTryonSelfie}
+        clearTryOnSelfie={clearTryOnSelfie}
         onTryOn={handleTryOnRequest}
       />
 

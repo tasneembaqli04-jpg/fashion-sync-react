@@ -454,15 +454,6 @@ async function planOutfit({
   const safeProducts = Array.isArray(products) ?
     products :
     [];
-  console.log(
-      "PLANNER CURRENT OUTFIT:",
-      currentOutfit.map((product) => product?.code),
-  );
-
-  console.log(
-      "PLANNER HISTORY LENGTH:",
-      history.length,
-  );
 
   const eligibleProducts = filterEligibleProducts(
       safeProducts,
@@ -591,20 +582,6 @@ async function planOutfit({
 
   const explanation =
     String(parsedResult?.explanation || "").trim();
-
-  console.log("OUTFIT PLANNER RESULT:", {
-    candidates: safeProducts.length,
-    eligible: eligibleProducts.length,
-    selected: selectedProducts.map((product) => ({
-      code: getProductCode(product),
-      name: product?.name || null,
-      category:
-        product?.cat ||
-        product?.category ||
-        null,
-    })),
-    explanation,
-  });
 
   return {
     success: true,

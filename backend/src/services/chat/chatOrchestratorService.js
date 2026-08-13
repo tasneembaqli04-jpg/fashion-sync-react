@@ -402,13 +402,6 @@ async function handleChatMessage({
     message,
     history,
   });
-  console.log("DETECTED CHAT INTENT:", intent);
-  console.log(
-      "CURRENT OUTFIT:",
-    Array.isArray(currentOutfit) ?
-      currentOutfit.map((product) => product?.code) :
-      [],
-  );
 
   if (intent.needsClarification && intent.clarificationQuestion) {
     const clarificationText = intent.clarificationQuestion;
@@ -612,41 +605,8 @@ ${policyContext}
           );
         },
     );
-    console.log("OUTFIT VISUALIZATION INPUT:", {
-      originalMessage: message,
-      intent: {
-        intent: intent.intent,
-        category: intent.category,
-        color: intent.color,
-        style: intent.style,
-        occasion: intent.occasion,
-      },
-      plannerExplanation: outfitPlan.explanation || "",
-      currentOutfit: Array.isArray(currentOutfit) ?
-        currentOutfit.map((product) => product?.code) :
-        [],
-      selectedProducts: productsForVisualization.map((product) => ({
-        code: product.code,
-        name: product.name,
-        category: product.category,
-        colors: product.colors,
-        selectedColor: product.selectedColor,
-        action: product.action,
-      })),
-    });
 
     try {
-      console.log("CURRENT OUTFIT IMAGE RECEIVED:", {
-        exists:
-          typeof currentOutfitImage === "string" &&
-          currentOutfitImage.length > 0,
-
-        length:
-          typeof currentOutfitImage === "string" ?
-            currentOutfitImage.length :
-            0,
-      });
-
       const visualization = await generateOutfitVisualization({
         originalMessage: message,
         history,
