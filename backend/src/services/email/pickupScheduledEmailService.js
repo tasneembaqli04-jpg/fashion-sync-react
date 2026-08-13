@@ -1,7 +1,7 @@
-const { sendMail } = require("./gmailMailer");
-const { isEnglish, dir } = require("./emailLangHelpers");
+const {sendMail} = require("./gmailMailer");
+const {isEnglish, dir} = require("./emailLangHelpers");
 
-function buildPickupScheduledEmailHtml({ orderId, pickupDate, pickupTime, lang }) {
+function buildPickupScheduledEmailHtml({orderId, pickupDate, pickupTime, lang}) {
   const en = isEnglish(lang);
 
   if (en) {
@@ -29,19 +29,19 @@ function buildPickupScheduledEmailHtml({ orderId, pickupDate, pickupTime, lang }
   `;
 }
 
-async function sendPickupScheduledEmail({ toEmail, orderId, pickupDate, pickupTime, lang }) {
+async function sendPickupScheduledEmail({toEmail, orderId, pickupDate, pickupTime, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
 
-  const subject = isEnglish(lang)
-    ? "Your pickup time is set - FashionSync"
-    : "מועד האיסוף שלך נקבע - FashionSync";
+  const subject = isEnglish(lang) ?
+    "Your pickup time is set - FashionSync" :
+    "מועד האיסוף שלך נקבע - FashionSync";
 
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildPickupScheduledEmailHtml({ orderId, pickupDate, pickupTime, lang }),
+    html: buildPickupScheduledEmailHtml({orderId, pickupDate, pickupTime, lang}),
   });
 }
 

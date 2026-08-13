@@ -4,7 +4,7 @@ const {
 
 async function giftCardActivatedEmailController(request, response) {
   try {
-    const { toEmail, giftCardCode, amount, lang } = request.body || {};
+    const {toEmail, giftCardCode, amount, lang} = request.body || {};
 
     if (!toEmail || !giftCardCode) {
       return response.status(400).json({

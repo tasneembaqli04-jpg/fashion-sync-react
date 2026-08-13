@@ -1,5 +1,5 @@
-const { sendMail } = require("./gmailMailer");
-const { isEnglish, dir } = require("./emailLangHelpers");
+const {sendMail} = require("./gmailMailer");
+const {isEnglish, dir} = require("./emailLangHelpers");
 
 function buildVerificationEmailHtml(code, lang) {
   const en = isEnglish(lang);
@@ -33,7 +33,7 @@ function buildVerificationEmailHtml(code, lang) {
   `;
 }
 
-async function sendVerificationCodeEmail({ toEmail, code, lang }) {
+async function sendVerificationCodeEmail({toEmail, code, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -42,9 +42,9 @@ async function sendVerificationCodeEmail({ toEmail, code, lang }) {
     throw new Error("Verification code is required");
   }
 
-  const subject = isEnglish(lang)
-    ? `${code} is your verification code - FashionSync`
-    : `${code} הוא קוד האימות שלך - FashionSync`;
+  const subject = isEnglish(lang) ?
+    `${code} is your verification code - FashionSync` :
+    `${code} הוא קוד האימות שלך - FashionSync`;
 
   return await sendMail({
     to: toEmail,
@@ -79,14 +79,14 @@ function buildWelcomeEmailHtml(name, lang) {
   `;
 }
 
-async function sendWelcomeEmail({ toEmail, name, lang }) {
+async function sendWelcomeEmail({toEmail, name, lang}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
 
-  const subject = isEnglish(lang)
-    ? "Welcome to FashionSync! 🎉"
-    : "ברוכה הבאה ל-FashionSync! 🎉";
+  const subject = isEnglish(lang) ?
+    "Welcome to FashionSync! 🎉" :
+    "ברוכה הבאה ל-FashionSync! 🎉";
 
   return await sendMail({
     to: toEmail,

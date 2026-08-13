@@ -51,11 +51,11 @@ const OCCASION_KEYWORDS = Object.freeze({
  */
 function normalizeText(value) {
   return String(value || "")
-    .toLowerCase()
-    .replace(/[׳’‘`]/g, "'")
-    .replace(/[״“”]/g, "\"")
-    .replace(/\s+/g, " ")
-    .trim();
+      .toLowerCase()
+      .replace(/[׳’‘`]/g, "'")
+      .replace(/[״“”]/g, "\"")
+      .replace(/\s+/g, " ")
+      .trim();
 }
 
 /**
@@ -175,13 +175,13 @@ function productMatchesText(product, searchText) {
   }
 
   const searchableText = normalizeText(
-    [
-      product.code,
-      product.name,
-      product.category,
-      product.gender,
-      product.desc,
-    ].join(" ")
+      [
+        product.code,
+        product.name,
+        product.category,
+        product.gender,
+        product.desc,
+      ].join(" "),
   );
 
   // Every query word is required, including short ones. No stop-word list:
@@ -257,10 +257,10 @@ function productHasSize(product, requestedSize) {
 
     if (sizes && typeof sizes === "object") {
       return Object.entries(sizes).some(
-        ([sizeName, quantity]) =>
-          String(sizeName).toUpperCase() ===
+          ([sizeName, quantity]) =>
+            String(sizeName).toUpperCase() ===
             normalizedRequestedSize &&
-          Number(quantity) > 0
+          Number(quantity) > 0,
       );
     }
 
@@ -320,10 +320,10 @@ function isProductOnSale(product) {
 
   if (typeof product.sale === "object") {
     return Boolean(
-      product.sale.active ||
+        product.sale.active ||
       product.sale.enabled ||
       Number(product.sale.discount) > 0 ||
-      Number(product.sale.percent) > 0
+      Number(product.sale.percent) > 0,
     );
   }
 
@@ -340,57 +340,57 @@ function isProductOnSale(product) {
  */
 function getProductAvailableStock(product) {
   const variantStock = product.variants.reduce(
-    (total, variant) => {
-      const sizes = variant?.sizes;
+      (total, variant) => {
+        const sizes = variant?.sizes;
 
-      if (Array.isArray(sizes)) {
-        const sizesStock = sizes.reduce(
-          (sizeTotal, size) => {
-            if (typeof size === "number") {
-              return sizeTotal + Math.max(size, 0);
-            }
+        if (Array.isArray(sizes)) {
+          const sizesStock = sizes.reduce(
+              (sizeTotal, size) => {
+                if (typeof size === "number") {
+                  return sizeTotal + Math.max(size, 0);
+                }
 
-            if (size && typeof size === "object") {
-              const quantity = Number(
-                size.quantity ??
+                if (size && typeof size === "object") {
+                  const quantity = Number(
+                      size.quantity ??
                 size.stock ??
                 size.qty ??
-                0
-              );
+                0,
+                  );
 
-              return (
-                sizeTotal +
+                  return (
+                    sizeTotal +
                 Math.max(quantity || 0, 0)
-              );
-            }
+                  );
+                }
 
-            return sizeTotal;
-          },
-          0
-        );
+                return sizeTotal;
+              },
+              0,
+          );
 
-        return total + sizesStock;
-      }
+          return total + sizesStock;
+        }
 
-      if (sizes && typeof sizes === "object") {
-        const sizesStock = Object.values(sizes).reduce(
-          (sizeTotal, quantity) =>
-            sizeTotal +
+        if (sizes && typeof sizes === "object") {
+          const sizesStock = Object.values(sizes).reduce(
+              (sizeTotal, quantity) =>
+                sizeTotal +
             Math.max(Number(quantity) || 0, 0),
-          0
-        );
+              0,
+          );
 
-        return total + sizesStock;
-      }
+          return total + sizesStock;
+        }
 
-      return total;
-    },
-    0
+        return total;
+      },
+      0,
   );
 
   return Math.max(
-    Number(product.stock) || 0,
-    variantStock
+      Number(product.stock) || 0,
+      variantStock,
   );
 }
 
@@ -492,19 +492,19 @@ async function getProductByCode(code) {
     String(code).trim().toUpperCase();
 
   const directDocument = await db
-    .collection(PRODUCTS_COLLECTION)
-    .doc(normalizedCode)
-    .get();
+      .collection(PRODUCTS_COLLECTION)
+      .doc(normalizedCode)
+      .get();
 
   if (directDocument.exists) {
     return normalizeProduct(directDocument);
   }
 
   const querySnapshot = await db
-    .collection(PRODUCTS_COLLECTION)
-    .where("code", "==", normalizedCode)
-    .limit(1)
-    .get();
+      .collection(PRODUCTS_COLLECTION)
+      .where("code", "==", normalizedCode)
+      .limit(1)
+      .get();
 
   if (querySnapshot.empty) {
     return null;
@@ -548,14 +548,14 @@ async function searchProducts({
   limit = DEFAULT_LIMIT,
 } = {}) {
   const safeLimit = Math.min(
-    Math.max(Number(limit) || DEFAULT_LIMIT, 1),
-    MAX_LIMIT
+      Math.max(Number(limit) || DEFAULT_LIMIT, 1),
+      MAX_LIMIT,
   );
 
   const snapshot = await db
-    .collection(PRODUCTS_COLLECTION)
-    .limit(200)
-    .get();
+      .collection(PRODUCTS_COLLECTION)
+      .limit(200)
+      .get();
 
   let products = snapshot.docs.map(normalizeProduct);
 

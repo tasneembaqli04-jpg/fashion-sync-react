@@ -3,16 +3,16 @@ const MODEL_NAME = "gemini-2.5-flash-image";
 
 function normalizeCategory(product) {
   const rawCategory = String(
-    product.category ||
+      product.category ||
       product.cat ||
       product.type ||
       product.name ||
-      ""
+      "",
   ).toLowerCase();
 
   if (
     rawCategory.includes("dress") ||
-    rawCategory.includes("שמלה") 
+    rawCategory.includes("שמלה")
   ) {
     return "dress";
   }
@@ -21,7 +21,7 @@ function normalizeCategory(product) {
     rawCategory.includes("shirt") ||
     rawCategory.includes("top") ||
     rawCategory.includes("blouse") ||
-    rawCategory.includes("חולצה") 
+    rawCategory.includes("חולצה")
   ) {
     return "shirt";
   }
@@ -30,14 +30,14 @@ function normalizeCategory(product) {
     rawCategory.includes("pants") ||
     rawCategory.includes("trousers") ||
     rawCategory.includes("jeans") ||
-    rawCategory.includes("מכנס") 
+    rawCategory.includes("מכנס")
   ) {
     return "pants";
   }
 
   if (
     rawCategory.includes("skirt") ||
-    rawCategory.includes("חצאית") 
+    rawCategory.includes("חצאית")
   ) {
     return "skirt";
   }
@@ -47,7 +47,7 @@ function normalizeCategory(product) {
     rawCategory.includes("coat") ||
     rawCategory.includes("blazer") ||
     rawCategory.includes("ז'קט") ||
-    rawCategory.includes("מעיל") 
+    rawCategory.includes("מעיל")
   ) {
     return "jacket";
   }
@@ -118,7 +118,7 @@ Mandatory dressing instructions:
 - Do not transform the jacket into a shirt, dress, or unrelated garment.
 `;
     case "jewelry":
-  return `
+      return `
 This product is a jewelry item.
 
 Mandatory placement instructions:
@@ -170,8 +170,8 @@ Product information:
 - Detected garment type: ${category}
 - Original category: ${product.category || product.cat || "unknown"}
 - Requested color: ${
-    product.color || "use the exact visible color from Image 2"
-  }
+  product.color || "use the exact visible color from Image 2"
+}
 
 ${categoryInstructions}
 
@@ -227,7 +227,7 @@ async function downloadProductImage(productImageUrl) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to download product image: ${response.status} ${response.statusText}`
+        `Failed to download product image: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -311,16 +311,16 @@ async function generateTryOn(product, imageUrl) {
   const parts = result.candidates?.[0]?.content?.parts || [];
 
   const imagePart = parts.find(
-    (part) =>
-      part.inlineData?.data &&
-      part.inlineData?.mimeType?.startsWith("image/")
+      (part) =>
+        part.inlineData?.data &&
+      part.inlineData?.mimeType?.startsWith("image/"),
   );
 
   if (!imagePart) {
     const modelText = parts
-      .filter((part) => part.text)
-      .map((part) => part.text)
-      .join("\n");
+        .filter((part) => part.text)
+        .map((part) => part.text)
+        .join("\n");
 
     console.error("Gemini did not return an image:", modelText);
 

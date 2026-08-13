@@ -1,10 +1,10 @@
-const { getFirestore } = require("firebase-admin/firestore");
+const {getFirestore} = require("firebase-admin/firestore");
 
 async function getBusinessHours() {
   const snapshot = await getFirestore()
-    .collection("settings")
-    .doc("businessHours")
-    .get();
+      .collection("settings")
+      .doc("businessHours")
+      .get();
 
   if (!snapshot.exists) {
     return null;

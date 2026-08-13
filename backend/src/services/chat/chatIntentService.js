@@ -690,9 +690,9 @@ function normalizeNullableNumber(value) {
  */
 function extractJsonText(rawText) {
   const cleanedText = String(rawText || "")
-    .replace(/```json/gi, "")
-    .replace(/```/g, "")
-    .trim();
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
 
   const firstBraceIndex = cleanedText.indexOf("{");
   const lastBraceIndex = cleanedText.lastIndexOf("}");
@@ -706,8 +706,8 @@ function extractJsonText(rawText) {
   }
 
   return cleanedText.slice(
-    firstBraceIndex,
-    lastBraceIndex + 1
+      firstBraceIndex,
+      lastBraceIndex + 1,
   );
 }
 
@@ -797,77 +797,77 @@ function normalizeIntent(parsed) {
     intent: normalizedIntent,
     conversationAction:
       normalizeEnumValue(
-      parsed?.conversationAction,
-      CONVERSATION_ACTION_VALUES
-    ) || "RESET",
+          parsed?.conversationAction,
+          CONVERSATION_ACTION_VALUES,
+      ) || "RESET",
 
     needsClarification:
       parsed?.needsClarification === true,
 
     clarificationQuestion:
-      parsed?.needsClarification === true
-        ? normalizeNullableString(
-        parsed?.clarificationQuestion
-      )
-      : null,
+      parsed?.needsClarification === true ?
+        normalizeNullableString(
+            parsed?.clarificationQuestion,
+        ) :
+      null,
 
     responseMode:
       normalizeEnumValue(
-      parsed?.responseMode,
-      RESPONSE_MODE_VALUES
-    ) || "TEXT",
+          parsed?.responseMode,
+          RESPONSE_MODE_VALUES,
+      ) || "TEXT",
 
     category: normalizeEnumValue(
-      parsed?.category,
-      CATEGORY_VALUES
+        parsed?.category,
+        CATEGORY_VALUES,
     ),
 
     productCode: normalizeProductCode(
-      parsed?.productCode
+        parsed?.productCode,
     ),
 
     productName: normalizeNullableString(
-      parsed?.productName
+        parsed?.productName,
     ),
 
     gender: normalizeEnumValue(
-      parsed?.gender,
-      GENDER_VALUES
+        parsed?.gender,
+        GENDER_VALUES,
     ),
 
     size: normalizeSize(parsed?.size),
 
     color: normalizeNullableString(
-      parsed?.color
+        parsed?.color,
     ),
 
     minPrice: normalizeNullableNumber(
-      parsed?.minPrice
+        parsed?.minPrice,
     ),
 
     maxPrice: normalizeNullableNumber(
-      parsed?.maxPrice
+        parsed?.maxPrice,
     ),
 
     occasion: normalizeNullableString(
-      parsed?.occasion
+        parsed?.occasion,
     ),
 
     eventTime: normalizeNullableString(
-      parsed?.eventTime
+        parsed?.eventTime,
     ),
 
     season: normalizeNullableString(
-      parsed?.season
+        parsed?.season,
     ),
 
     style: normalizeNullableString(
-      parsed?.style
+        parsed?.style,
     ),
 
     outfitType: normalizeEnumValue(
-      parsed?.outfitType,
-      OUTFIT_TYPE_VALUES
+        parsed?.outfitType,
+        OUTFIT_TYPE_VALUES,
     ),
 
     saleOnly: Boolean(parsed?.saleOnly),
@@ -891,12 +891,12 @@ function normalizeIntent(parsed) {
 function buildContents(history, message) {
   const safeHistory = Array.isArray(history) ?
     history
-      .filter((turn) =>
-        turn &&
+        .filter((turn) =>
+          turn &&
         typeof turn.text === "string" &&
-        turn.text.trim()
-      )
-      .slice(-8) :
+        turn.text.trim(),
+        )
+        .slice(-8) :
     [];
 
   return [
@@ -990,12 +990,12 @@ async function detectChatIntent({
   } catch (error) {
     console.error("Invalid intent JSON:", rawText);
     console.error(
-      "Intent parsing error:",
-      error?.message || error
+        "Intent parsing error:",
+        error?.message || error,
     );
 
     throw new Error(
-      "Invalid intent response from Gemini"
+        "Invalid intent response from Gemini",
     );
   }
 

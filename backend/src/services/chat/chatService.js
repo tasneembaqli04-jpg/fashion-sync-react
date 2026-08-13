@@ -10,9 +10,9 @@ function buildSystemInstruction({
 } = {}) {
   const isEnglish = lang === "en";
 
-  const languageLine = isEnglish
-    ? "Always answer in English, briefly and in a friendly tone (2-4 sentences max), like a real customer service rep."
-    : "ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.";
+  const languageLine = isEnglish ?
+    "Always answer in English, briefly and in a friendly tone (2-4 sentences max), like a real customer service rep." :
+    "ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.";
 
   const liveDataBlock = `
 נתונים חיים מ-Firestore (settings/businessHours, settings/policyContent, settings/storeDetails):
@@ -138,9 +138,9 @@ async function streamChatReply({message, history = [], onChunk, lang, businessHo
         }),
         new Promise((_, reject) =>
           setTimeout(
-            () => reject(new Error("Gemini request timed out")),
-            ATTEMPT_TIMEOUT_MS
-          )
+              () => reject(new Error("Gemini request timed out")),
+              ATTEMPT_TIMEOUT_MS,
+          ),
         ),
       ]);
 
@@ -170,12 +170,12 @@ async function streamChatReply({message, history = [], onChunk, lang, businessHo
         err?.status === 503 ||
         err?.status === 429 ||
         /UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/.test(
-          String(err?.message || "")
+            String(err?.message || ""),
         );
 
       console.error(
-        `streamChatReply attempt ${attempt} failed:`,
-        err?.message || err
+          `streamChatReply attempt ${attempt} failed:`,
+          err?.message || err,
       );
 
       if (!isRetryable || attempt === MAX_ATTEMPTS) {

@@ -4,7 +4,7 @@ const {
 
 async function contactNotificationEmailController(request, response) {
   try {
-    const { name, email, message } = request.body || {};
+    const {name, email, message} = request.body || {};
 
     if (!message) {
       return response.status(400).json({
@@ -13,7 +13,7 @@ async function contactNotificationEmailController(request, response) {
       });
     }
 
-    const result = await sendContactNotificationEmail({ name, email, message });
+    const result = await sendContactNotificationEmail({name, email, message});
 
     return response.status(200).json({
       success: true,

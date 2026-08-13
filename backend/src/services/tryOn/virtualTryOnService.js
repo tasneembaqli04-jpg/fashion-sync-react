@@ -14,12 +14,12 @@ const MODEL_ID = "virtual-try-on-001";
  */
 function parseDataUrl(dataUrl) {
   const match = String(dataUrl || "").match(
-    /^data:(image\/(?:png|jpeg|jpg));base64,(.+)$/,
+      /^data:(image\/(?:png|jpeg|jpg));base64,(.+)$/,
   );
 
   if (!match) {
     throw new Error(
-      "Customer image must be a valid PNG or JPEG Data URL.",
+        "Customer image must be a valid PNG or JPEG Data URL.",
     );
   }
 
@@ -50,7 +50,7 @@ async function downloadImageAsBase64(imageUrl) {
 
   if (!imageResponse.ok) {
     throw new Error(
-      `Failed to download product image: ${imageResponse.status}`,
+        `Failed to download product image: ${imageResponse.status}`,
     );
   }
 
@@ -69,9 +69,9 @@ async function downloadImageAsBase64(imageUrl) {
   }
 
   let mimeType = contentType
-    .split(";")[0]
-    .trim()
-    .toLowerCase();
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
 
   if (mimeType === "image/jpg") {
     mimeType = "image/jpeg";
@@ -82,17 +82,17 @@ async function downloadImageAsBase64(imageUrl) {
   if (!["image/png", "image/jpeg"].includes(mimeType)) {
     try {
       buffer = await sharp(buffer)
-        .jpeg({
-          quality: 92,
-        })
-        .toBuffer();
+          .jpeg({
+            quality: 92,
+          })
+          .toBuffer();
 
       mimeType = "image/jpeg";
     } catch (error) {
       console.error("Product image conversion failed:", error);
 
       throw new Error(
-        "Product image could not be converted to PNG or JPEG.",
+          "Product image could not be converted to PNG or JPEG.",
       );
     }
   }
@@ -175,7 +175,7 @@ async function generateVirtualTryOn({
   const vertexResponse = await fetch(endpoint, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(requestBody),
@@ -185,8 +185,8 @@ async function generateVirtualTryOn({
 
   if (!vertexResponse.ok) {
     console.error(
-      "Virtual Try-On Vertex response:",
-      JSON.stringify(responseData, null, 2),
+        "Virtual Try-On Vertex response:",
+        JSON.stringify(responseData, null, 2),
     );
 
     const vertexMessage =
@@ -201,8 +201,8 @@ async function generateVirtualTryOn({
 
   if (!generatedBase64) {
     console.error(
-      "Virtual Try-On missing image response:",
-      JSON.stringify(responseData, null, 2),
+        "Virtual Try-On missing image response:",
+        JSON.stringify(responseData, null, 2),
     );
 
     throw new Error("Virtual Try-On returned no generated image.");

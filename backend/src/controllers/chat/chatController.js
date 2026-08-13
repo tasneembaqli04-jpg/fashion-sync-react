@@ -4,7 +4,7 @@ const {
 
 async function chatController(request, response) {
   try {
-    const { message, history, currentOutfit, currentOutfitImage, lang } =
+    const {message, history, currentOutfit, currentOutfitImage, lang} =
       request.body || {};
 
     if (!message || typeof message !== "string" || !message.trim()) {
@@ -42,9 +42,9 @@ async function chatController(request, response) {
       currentOutfit: Array.isArray(currentOutfit) ? currentOutfit : [],
 
       currentOutfitImage:
-        typeof currentOutfitImage === "string"
-          ? currentOutfitImage
-          : "",
+        typeof currentOutfitImage === "string" ?
+          currentOutfitImage :
+          "",
 
       lang: lang === "en" ? "en" : "he",
 

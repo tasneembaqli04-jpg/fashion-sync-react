@@ -1,6 +1,6 @@
-const { sendMail } = require("./gmailMailer");
+const {sendMail} = require("./gmailMailer");
 
-function buildContactNotificationHtml({ name, email, message }) {
+function buildContactNotificationHtml({name, email, message}) {
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #222;">
       <h2 style="color: #c9a84c;">הודעת יצירת קשר חדשה מהאתר 📩</h2>
@@ -13,7 +13,7 @@ function buildContactNotificationHtml({ name, email, message }) {
   `;
 }
 
-async function sendContactNotificationEmail({ name, email, message }) {
+async function sendContactNotificationEmail({name, email, message}) {
   if (!message) {
     throw new Error("Message is required");
   }
@@ -21,7 +21,7 @@ async function sendContactNotificationEmail({ name, email, message }) {
   return await sendMail({
     to: process.env.GMAIL_USER,
     subject: `הודעה חדשה מהאתר מ-${name || "לקוח/ה"}`,
-    html: buildContactNotificationHtml({ name, email, message }),
+    html: buildContactNotificationHtml({name, email, message}),
   });
 }
 

@@ -15,7 +15,7 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendMail({ to, subject, html }) {
+async function sendMail({to, subject, html}) {
   const info = await getTransporter().sendMail({
     from: `FashionSync <${process.env.GMAIL_USER}>`,
     to,
@@ -23,7 +23,7 @@ async function sendMail({ to, subject, html }) {
     html,
   });
 
-  return { emailId: info.messageId };
+  return {emailId: info.messageId};
 }
 
 module.exports = {
