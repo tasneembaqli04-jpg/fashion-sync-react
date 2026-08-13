@@ -48,8 +48,20 @@ function buildProductSearchOptions(intent) {
     color: intent.color,
     minPrice: intent.minPrice,
     maxPrice: intent.maxPrice,
-    inStockOnly: intent.inStockOnly,
+    // הצ'אטבוט לעולם אינו ממליץ על מוצרים שאזלו מהמלאי.
+    // הערך נכפה כאן ואינו מסתמך על intent.inStockOnly, מכיוון שהמודל
+    // מחזיר אותו כ-true רק בשאלות מלאי מפורשות ("יש שמלה במידה M?").
+    // ההשפעה מוגבלת לצ'אט בלבד: הקטלוג הרגיל בפרונטאנד נשלף ישירות
+    // מ-Firestore ואינו עובר דרך הפונקציה הזו, ולכן מנגנון
+    // "הודע לי כשיחזור למלאי" ממשיך לעבוד כרגיל.
+    // שאלה על קוד מוצר ספציפי עוקפת חיפוש זה דרך getProductByCode,
+    // כך שעדיין אפשר לשאול על מוצר שאזל ולקבל תשובה עליו.
+    inStockOnly: true,
     saleOnly: intent.saleOnly || intent.intent === INTENTS.SALE_SEARCH,
+    // שדות הקשר רך. משמשים לניקוד רלוונטיות בלבד ואינם פוסלים מוצרים.
+    occasion: intent.occasion,
+    style: intent.style,
+    season: intent.season,
     limit:
       intent.intent === INTENTS.OUTFIT_RECOMMENDATION ||
       intent.intent === INTENTS.OUTFIT_MODIFICATION

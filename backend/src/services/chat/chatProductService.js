@@ -4,6 +4,32 @@ const PRODUCTS_COLLECTION = "products";
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 100;
 
+// ערך העונה שמסמן מוצר שמתאים לכל השנה.
+const ALL_SEASONS_VALUE = "כל העונות";
+
+// מפת מילות מפתח לאירועים.
+// המפתח הוא מילת טריגר שמחפשים בתוך טקסט האירוע החופשי שמגיע מהמודל,
+// והערך הוא מילות המפתח שמחפשים בשם ובתיאור של המוצר.
+// המוצרים עצמם אינם מכילים שדה אירוע, ולכן ההתאמה היא טקסטואלית.
+//
+// חשוב: כל מילה כאן חייבת להיות באורך שלושה תווים לפחות, אחרת היא
+// עלולה להתאים בטעות בתוך מילים אחרות בעברית.
+const OCCASION_KEYWORDS = Object.freeze({
+  "חתונה": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  "אירוע": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  "חגיגה": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  "ערב": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  "עבודה": ["משרד", "קלאסי", "מכופתר"],
+  "ראיון": ["משרד", "קלאסי", "מכופתר"],
+  "משרד": ["משרד", "קלאסי", "מכופתר"],
+  "דייט": ["קוקטייל", "מיני", "ערב"],
+  "מסיבה": ["קוקטייל", "מיני", "ערב"],
+  "חופשה": ["קיץ", "פרחוני", "מקסי", "קליל"],
+  "טיול": ["קיץ", "פרחוני", "מקסי", "קליל"],
+  "לימודים": ["יומיומי", "כותנה", "סריג", "בסיסי"],
+  "יומיום": ["יומיומי", "כותנה", "סריג", "בסיסי"],
+});
+
 /**
  * Normalizes text for safe comparisons.
  *
@@ -35,6 +61,7 @@ function normalizeProduct(documentSnapshot) {
     name: data.name || "",
     category: data.cat || data.category || "",
     gender: data.gender || "",
+    season: data.season || "",
     price: Number(data.price) || 0,
     stock: Number(data.stock) || 0,
     img: data.img || "",
@@ -270,6 +297,88 @@ function getProductAvailableStock(product) {
 }
 
 /**
+ * מחזירה את מילות המפתח שמתאימות לטקסט האירוע שהתקבל מהמודל.
+ *
+ * ההתאמה היא includes ולא שוויון מדויק, מכיוון שהמודל מחזיר טקסט חופשי
+ * כמו "חתונה של חברה" ולא ערך מתוך רשימה סגורה.
+ *
+ * כאשר טקסט האירוע מכיל כמה טריגרים (למשל "מסיבת חתונה"), מאוחדות
+ * מילות המפתח של כולם.
+ *
+ * @param {string|null} occasion טקסט האירוע מתוך ה-intent.
+ * @return {string[]} מילות המפתח לחיפוש בשם ובתיאור המוצר.
+ */
+function getOccasionKeywords(occasion) {
+  const normalizedOccasion = normalizeText(occasion);
+
+  if (!normalizedOccasion) {
+    return [];
+  }
+
+  const keywords = new Set();
+  const entries = Object.entries(OCCASION_KEYWORDS);
+
+  for (const [trigger, triggerKeywords] of entries) {
+    if (normalizedOccasion.includes(trigger)) {
+      triggerKeywords.forEach((keyword) => keywords.add(keyword));
+    }
+  }
+
+  return Array.from(keywords);
+}
+
+/**
+ * מחשבת ציון רלוונטיות למוצר ביחס לאירוע, לסגנון ולעונה שהתבקשו.
+ *
+ * הציון משמש למיון בלבד ולעולם אינו פוסל מוצר: מוצר שאינו מתאים מקבל
+ * ציון 0 ויורד לתחתית הרשימה, אך נשאר בתוצאות. כך מובטח שהחיפוש לא
+ * יחזיר רשימה ריקה בגלל האירוע.
+ *
+ * @param {object} product המוצר המנורמל.
+ * @param {string[]} occasionKeywords מילות המפתח של האירוע.
+ * @param {string|null} style הסגנון המבוקש.
+ * @param {string|null} season העונה המבוקשת.
+ * @return {number} ציון הרלוונטיות.
+ */
+function getProductRelevanceScore(product, occasionKeywords, style, season) {
+  let score = 0;
+
+  const productText = [product.name, product.desc].join(" ");
+  const searchableText = normalizeText(productText);
+
+  const matchesOccasion = occasionKeywords.some(
+      (keyword) => searchableText.includes(keyword),
+  );
+
+  if (matchesOccasion) {
+    score += 3;
+  }
+
+  const normalizedStyle = normalizeText(style);
+
+  if (
+    normalizedStyle &&
+    searchableText.includes(normalizedStyle)
+  ) {
+    score += 2;
+  }
+
+  const normalizedSeason = normalizeText(season);
+  const normalizedProductSeason = normalizeText(product.season);
+
+  if (
+    normalizedSeason &&
+    normalizedProductSeason &&
+    (normalizedProductSeason === normalizedSeason ||
+      normalizedProductSeason === ALL_SEASONS_VALUE)
+  ) {
+    score += 1;
+  }
+
+  return score;
+}
+
+/**
  * Finds a product by its code.
  *
  * @param {string} code Product code.
@@ -318,6 +427,9 @@ async function getProductByCode(code) {
  * @param {number|null} options.minPrice Minimum price.
  * @param {boolean} options.inStockOnly Whether to require stock.
  * @param {boolean} options.saleOnly Whether to require a sale.
+ * @param {string|null} options.occasion האירוע המבוקש. משמש לניקוד בלבד.
+ * @param {string|null} options.style הסגנון המבוקש. משמש לניקוד בלבד.
+ * @param {string|null} options.season העונה המבוקשת. משמשת לניקוד בלבד.
  * @param {number} options.limit Maximum number of results.
  * @return {Promise<object[]>} Matching products.
  */
@@ -331,6 +443,9 @@ async function searchProducts({
   minPrice = null,
   inStockOnly = false,
   saleOnly = false,
+  occasion = null,
+  style = null,
+  season = null,
   limit = DEFAULT_LIMIT,
 } = {}) {
   const safeLimit = Math.min(
@@ -402,6 +517,19 @@ async function searchProducts({
     return true;
   });
 
+  // ניקוד רלוונטיות. משפיע על סדר התוצאות בלבד ולא פוסל אף מוצר.
+  const occasionKeywords = getOccasionKeywords(occasion);
+
+  products = products.map((product) => ({
+    ...product,
+    relevanceScore: getProductRelevanceScore(
+        product,
+        occasionKeywords,
+        style,
+        season,
+    ),
+  }));
+
   products.sort((firstProduct, secondProduct) => {
     const firstStock =
       getProductAvailableStock(firstProduct);
@@ -415,6 +543,17 @@ async function searchProducts({
 
     if (firstStock <= 0 && secondStock > 0) {
       return 1;
+    }
+
+    // ציון גבוה יותר קודם.
+    if (
+      secondProduct.relevanceScore !==
+      firstProduct.relevanceScore
+    ) {
+      return (
+        secondProduct.relevanceScore -
+        firstProduct.relevanceScore
+      );
     }
 
     return firstProduct.price - secondProduct.price;
