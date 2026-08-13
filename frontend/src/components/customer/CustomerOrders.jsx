@@ -389,7 +389,6 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               <div className={modalStyles.orderItems}>
                 {order.items.map((item, index) => (
                   <span key={index}>
-                    {/* שם הפריט לפי שפת הממשק */}
                     {getItemName(item, lang)} ×{item.qty}
                     {index < order.items.length - 1 ? ", " : ""}
                   </span>

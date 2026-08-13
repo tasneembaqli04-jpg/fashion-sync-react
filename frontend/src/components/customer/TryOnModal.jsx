@@ -3,7 +3,7 @@ import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useDialog } from "../common/DialogProvider";
 import { useLanguage } from "../../translations/LanguageProvider";
 
-export default function VisualSearchModal({
+export default function TryOnModal({
   open = false,
   tryonSelfie = "",
   tryOnResult = null,

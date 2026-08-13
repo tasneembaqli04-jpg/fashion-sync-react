@@ -6,8 +6,8 @@ import {
   translateProductFields,
 } from "./translationService";
 
-// כל 20 הצבעים שמוגדרים ב-KNOWN_COLOR_TRANSLATIONS.
-// אם מישהו ימחק או ישנה ערך במילון, הבדיקות כאן ייכשלו.
+// All 20 colours defined in KNOWN_COLOR_TRANSLATIONS.
+// If anyone deletes or changes a value in the dictionary, these tests fail.
 const EXPECTED_COLORS = [
   ["שחור", "Black"],
   ["לבן", "White"],
@@ -32,8 +32,8 @@ const EXPECTED_COLORS = [
 ];
 
 /**
- * מחליפה את fetch בפונקציה שסופרת קריאות ונכשלת אם הופעלה.
- * משמשת להוכחה שצבעים ידועים אינם פונים ל-API כלל.
+ * Replaces fetch with a spy, so a test can prove that known colours never
+ * reach the API at all.
  */
 function installFetchSpy() {
   const spy = vi.fn(() =>
@@ -207,11 +207,11 @@ describe("translateProductName", () => {
 });
 
 // ===========================================================================
-// הגנה על מסלול תרגום הצבעים.
+// Guard for the colour translation path.
 //
-// הצבעים נפתרים דרך KNOWN_COLOR_TRANSLATIONS ואינם עוברים דרך
-// translateProductName או דרך תיקוני שם המוצר. הבדיקות כאן נועדו
-// להיכשל אם מישהו יחבר בטעות את מסלול הצבעים לתיקוני המוצרים.
+// Colours resolve through KNOWN_COLOR_TRANSLATIONS and never pass through
+// translateProductName or the product name fixes. These tests exist to fail
+// if anyone accidentally wires the colour path into the product corrections.
 // ===========================================================================
 describe("color translation — protected path", () => {
   it.each(EXPECTED_COLORS)(
@@ -226,7 +226,7 @@ describe("color translation — protected path", () => {
       });
 
       expect(result.colorNamesEn).toEqual([english]);
-      // הצבע נפתר מהמילון, ולכן אין קריאת רשת כלל
+      // The colour resolves from the dictionary, so no network call happens
       expect(spy).not.toHaveBeenCalled();
     }
   );
@@ -253,7 +253,7 @@ describe("color translation — protected path", () => {
       colorNames: ["תכלת"],
     });
 
-    // "Light Blue" מגיע מהמילון כמו שהוא, בלי מעבר דרך תיקוני המוצר
+    // "Light Blue" comes from the dictionary as-is, without product fixes
     expect(result.colorNamesEn).toEqual(["Light Blue"]);
     expect(spy).not.toHaveBeenCalled();
   });
@@ -261,8 +261,8 @@ describe("color translation — protected path", () => {
   it("does not apply product-name fixes to colours", async () => {
     const spy = installFetchSpy();
 
-    // "אחיד" מתורגם ל-"One Size". אילו הצבעים היו עוברים דרך
-    // stripGibberishPrefix, המילה "One" הייתה עלולה להיחתך.
+    // "אחיד" maps to "One Size". Had colours gone through
+    // stripGibberishPrefix, the word "One" could have been cut off.
     const result = await translateProductFields({
       name: "",
       desc: "",

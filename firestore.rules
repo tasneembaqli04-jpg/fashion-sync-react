@@ -29,29 +29,28 @@ service cloud.firestore {
                      (isSignedIn() && resource.data.customerEmail == request.auth.token.email.lower());
       allow create: if isSignedIn() &&
                        request.resource.data.customerEmail == request.auth.token.email.lower();
-      // לקוחה מעדכנת הזמנה בשני מקומות בלבד:
-      // cancelOrder כותב cancelled ו-cancelledAt,
-      // setPickupSchedule כותב pickupDate ו-pickupTime.
-      // הגבלה לארבעת השדות האלה חוסמת שינוי של total או status.
+      // Customers update orders through exactly two flows in ordersService:
+      // cancelOrder writes cancelled/cancelledAt, setPickupSchedule writes
+      // pickupDate/pickupTime. Limiting to these four blocks total/status edits.
       allow update: if isManager() ||
                        (isSignedIn() &&
                         resource.data.customerEmail == request.auth.token.email.lower() &&
                         request.resource.data.diff(resource.data).affectedKeys()
                           .hasOnly(["cancelled", "cancelledAt", "pickupDate", "pickupTime"]));
 
-      // אין בקוד שום מסלול שבו לקוחה מוחקת הזמנה.
+      // No code path lets a customer delete an order.
       allow delete: if isManager();
     }
 
     match /customers/{customerEmail} {
-      // get = המסמך של הלקוחה עצמה. getCustomer ו-getLoyaltyPoints.
-      // list = סריקת כל הלקוחות. getAllCustomers נקרא רק מ-Manager.jsx.
+      // get = own document (getCustomer, getLoyaltyPoints).
+      // list = whole collection; only Manager.jsx calls getAllCustomers.
       allow get: if isManager() || isOwner(customerEmail);
       allow list: if isManager();
 
-      // הכתיבה נשארת פתוחה בכוונה — addLoyaltyPoints ו-redeemLoyaltyPoints
-      // רצים בדפדפן בזרימת הצ'קאאוט. הידוק כאן ישבור את הצ'קאאוט,
-      // ולכן הוא ממתין לפונקציית הענן.
+      // INTENTIONALLY OPEN — do not tighten without a server-side replacement.
+      // addLoyaltyPoints and redeemLoyaltyPoints still run in the browser
+      // during checkout; restricting writes here breaks checkout immediately.
       allow write: if isManager() || isOwner(customerEmail);
     }
 
@@ -73,15 +72,15 @@ service cloud.firestore {
     }
 
     match /giftCards/{code} {
-      // get = שליפת כרטיס בודד לפי קוד. getGiftCard בצ'קאאוט זקוק לזה.
-      // list = סריקת האוסף כולו. getAllGiftCards נקרא רק ממסך המנהלת,
-      // ולכן ההגבלה חוסמת מניית קודים ויתרות של כל הכרטיסים.
+      // get = single card by code, needed by getGiftCard at checkout.
+      // list = whole collection; manager only, so codes and balances
+      // cannot be enumerated.
       allow get: if isSignedIn();
       allow list: if isManager();
 
-      // הכתיבה נשארת פתוחה בכוונה — issueGiftCard ו-redeemGiftCardAmount
-      // רצים בדפדפן בזרימת הצ'קאאוט. הידוק כאן ישבור קנייה ותשלום
-      // בכרטיס מתנה, ולכן הוא ממתין לפונקציית הענן.
+      // INTENTIONALLY OPEN — do not tighten without a server-side replacement.
+      // issueGiftCard and redeemGiftCardAmount still run in the browser during
+      // checkout; restricting writes here breaks buying and paying with a card.
       allow create, update: if isManager() || isSignedIn();
       allow delete: if isManager();
     }
@@ -120,12 +119,10 @@ service cloud.firestore {
       allow read, update, delete: if isManager();
     }
 
-    // האימות רץ אחרי signUp, ולכן המשתמשת כבר מחוברת בשלוש הנקודות
-    // שנוגעות באוסף: יצירת הקוד, שליחה חוזרת, ואימות.
-    // ההגבלה לבעלים סוגרת את החשיפה של כתובות מייל וקודים לכל האינטרנט.
-    // הערה: זו הגבלת גישה בלבד. הקוד עדיין נוצר ונבדק בדפדפן,
-    // ולכן משתמשת עדיין יכולה לאמת את עצמה. התיקון המלא דורש
-    // העברת ייצור הקוד ובדיקתו לצד שרת.
+    // Verification runs after signUp, so the user is already authenticated at
+    // all three touch points (create code, resend, verify). Owner-only access
+    // closes the public exposure; the code is still generated and checked in
+    // the browser, so a full fix requires moving both to the server.
     match /emailVerifications/{email} {
       allow read, write: if isOwner(email);
     }

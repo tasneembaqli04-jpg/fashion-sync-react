@@ -23,76 +23,78 @@ const KNOWN_COLOR_TRANSLATIONS = {
 };
 
 /**
- * שכבה 1 — מילון שמות מוצרים מלאים.
+ * Layer 1 — full product name dictionary.
  *
- * MyMemory הוא זיכרון תרגום ולא מתרגם נוירוני: הוא מחזיר את ההתאמה
- * הקרובה ביותר מתוך מאגר שנתרם על ידי משתמשים. לכן מונחי אופנה
- * מקבלים תעתיק שגוי ("פיט" -> "Pit") או ג'יבריש מוזרק ("PL Sweat Pants").
+ * MyMemory is a translation memory, not a neural translator: it returns the
+ * closest match from a user-contributed corpus. That is why fashion terms come
+ * back transliterated ("פיט" -> "Pit") or with injected gibberish
+ * ("PL Sweat Pants").
  *
- * שם שמופיע כאן לא נשלח ל-API בכלל — תרגום מדויק, מיידי, וללא
- * צריכה ממכסת הבקשות היומית.
+ * A name listed here never reaches the API — the translation is exact,
+ * instant, and costs nothing against the daily request quota.
  */
 const KNOWN_PRODUCT_TRANSLATIONS = {
-  // תעתיק במקום תרגום
+  // Transliterated instead of translated
   "ג'ינס סלים פיט": "Slim Fit Jeans",
   "חולצת קרופ": "Crop Top",
   "חולצת פפלום פרחונית": "Floral Peplum Top",
   "עליונית פוטר חמה": "Warm Fleece Top",
 
-  // ג'יבריש שהוזרק מקטעים לא קשורים במאגר
+  // Gibberish injected from unrelated corpus segments
   "מכנסי טרנינג": "Sweatpants",
   "מכנסי מותן גבוה": "High Waist Pants",
 
-  // הומונים — המילה הנכונה במשמעות הלא נכונה
+  // Homonyms — the right word in the wrong sense
   "חולצת שרוולים תפוחים": "Puff Sleeve Top",
   "חולצת רקמה עדינה": "Fine Embroidered Top",
 
-  // מונחי אופנה שגויים
+  // Wrong fashion terms
   "ג'קט טרנינג": "Track Jacket",
   "כפכפי ים": "Flip Flops",
   "כפכפי קיץ נוחים": "Comfortable Summer Flip Flops",
   "מעיל פוך": "Puffer Coat",
 
-  // מכנסיים ארוכים, לא קצרים
+  // Full-length trousers, not shorts
   "מכנסי דנים כהים": "Dark Denim Pants",
   "מכנסי עור מדומה": "Faux Leather Pants",
 
-  // כאן ההחלפה האוטומטית Female -> Women's הייתה נותנת סדר מילים
-  // שגוי ("Thermal Women's Tee"), ולכן השם נקבע במפורש.
+  // The automatic Female -> Women's replacement would produce the wrong word
+  // order here ("Thermal Women's Tee"), so the name is set explicitly.
   "חולצת תרמית נשית": "Women's Thermal Top",
 };
 
 /**
- * שכבה 3 — תיקונים על תוצאת ה-API.
+ * Layer 3 — corrections applied to the API result.
  *
- * מיועד למוצרים חדשים שאינם במילון שלמעלה, אך מכילים מונח שכבר
- * ידוע לנו כמתורגם שגוי.
+ * For new products that are not in the dictionary above but contain a term
+ * already known to translate badly.
  */
 const POST_TRANSLATION_FIXES = [
-  // תעתיקים
+  // Transliterations
   [/\bPit\b/g, "Fit"],
   [/\bKrupp\b/g, "Crop"],
   [/\bPapple\b/g, "Peplum"],
   [/\bFooter\b/g, "Fleece"],
 
-  // הומונים
+  // Homonyms
   [/\bApple Sleeve\b/g, "Puff Sleeve"],
   [/\bTissue\b/g, "Embroidered"],
 
-  // אחידות ניסוח
+  // Wording consistency
   [/\bFemale\b/g, "Women's"],
   [/\bSunglass\b/g, "Sunglasses"],
 ];
 
-// קידומות ג'יבריש ידועות שה-API מזריק לתחילת התרגום.
+// Known gibberish prefixes the API injects at the start of a translation.
 const GIBBERISH_PREFIXES = ["PL", "T7"];
 
 /**
- * מנרמלת שם לצורך חיפוש במילון: מאחדת סוגי גרש, מכווצת רווחים כפולים
- * ומורידה רווחים מהקצוות. כך שם עם רווח כפול עדיין נמצא במילון.
+ * Normalizes a name for dictionary lookup: unifies apostrophe variants,
+ * collapses repeated spaces and trims the edges, so a name with a double
+ * space is still found in the dictionary.
  *
- * @param {string} text - השם המקורי.
- * @returns {string} מפתח חיפוש מנורמל.
+ * @param {string} text - The original name.
+ * @returns {string} Normalized lookup key.
  */
 function normalizeLookupKey(text) {
   return String(text || "")
@@ -101,20 +103,20 @@ function normalizeLookupKey(text) {
     .trim();
 }
 
-// מילות קישור שנשארות באות קטנה ב-Title Case, אלא אם הן המילה הראשונה.
+// Minor words that stay lowercase in Title Case unless they come first.
 const TITLE_CASE_MINOR_WORDS = new Set([
   "a", "an", "and", "at", "for", "in", "of", "on", "or", "the", "to", "with",
 ]);
 
 /**
- * ממירה טקסט ל-Title Case.
+ * Converts text to Title Case.
  *
- * מאותתת אות ראשונה בכל מילה וגם אחרי מקף ("V-neck" -> "V-Neck"),
- * אך לא אחרי גרש, כדי ש-"Women's" לא יהפוך ל-"Women'S".
- * מילות קישור נשארות קטנות ("Knit Top with Collar").
+ * Capitalises the first letter of each word and after a hyphen
+ * ("V-neck" -> "V-Neck"), but not after an apostrophe, so "Women's" does not
+ * become "Women'S". Minor words stay lowercase ("Knit Top with Collar").
  *
- * @param {string} text - הטקסט להמרה.
- * @returns {string} הטקסט ב-Title Case.
+ * @param {string} text - Text to convert.
+ * @returns {string} The text in Title Case.
  */
 function toTitleCase(text) {
   return String(text || "")
@@ -134,13 +136,13 @@ function toTitleCase(text) {
 }
 
 /**
- * מנקה קידומת ג'יבריש מתחילת תרגום.
+ * Strips a gibberish prefix from the start of a translation.
  *
- * מסירה רק אסימונים שאנחנו בטוחים לגביהם: רשימה שחורה ידועה, או
- * אסימון קצר שמכיל ספרה. כך קידומת לגיטימית כמו "UV" נשמרת.
+ * Only removes tokens we are confident about: a known blacklist, or a short
+ * token containing a digit. A legitimate prefix such as "UV" is preserved.
  *
- * @param {string} text - התרגום מה-API.
- * @returns {string} התרגום ללא הקידומת.
+ * @param {string} text - The translation from the API.
+ * @returns {string} The translation without the prefix.
  */
 function stripGibberishPrefix(text) {
   const match = String(text || "").match(/^([A-Za-z0-9]{1,3})\s+(.+)$/);
@@ -157,12 +159,12 @@ function stripGibberishPrefix(text) {
 }
 
 /**
- * מחילה את כל תיקוני שכבה 3 על תרגום שהתקבל מה-API.
+ * Applies every layer 3 correction to a translation returned by the API.
  *
- * מיוצאת גם לשימוש הסקריפט החד-פעמי שמתקן שמות קיימים ב-Firestore.
+ * Also exported for the one-off script that fixes existing names in Firestore.
  *
- * @param {string} text - התרגום הגולמי.
- * @returns {string} התרגום המתוקן ב-Title Case.
+ * @param {string} text - The raw translation.
+ * @returns {string} The corrected translation in Title Case.
  */
 export function applyProductNameFixes(text) {
   const withoutPrefix = stripGibberishPrefix(String(text || "").trim());
@@ -176,25 +178,27 @@ export function applyProductNameFixes(text) {
 }
 
 /**
- * מחזירה תרגום ידוע לשם מוצר, אם קיים במילון.
+ * Returns the known translation for a product name, if the dictionary has one.
  *
- * מיוצאת גם לשימוש הסקריפט החד-פעמי.
+ * Also exported for the one-off script.
  *
- * @param {string} name - שם המוצר בעברית.
- * @returns {string|null} התרגום הידוע, או null אם השם אינו במילון.
+ * @param {string} name - Product name in Hebrew.
+ * @returns {string|null} The known translation, or null if not in the dictionary.
  */
 export function getKnownProductTranslation(name) {
   return KNOWN_PRODUCT_TRANSLATIONS[normalizeLookupKey(name)] || null;
 }
 
 /**
- * מתרגמת שם מוצר: קודם מהמילון, ורק אם אין — דרך ה-API עם תיקונים.
+ * Translates a product name: dictionary first, and only otherwise through the
+ * API with corrections applied.
  *
- * הפונקציה הזו מיועדת לשמות מוצרים בלבד. שמות לקוחות, כתובות והודעות
- * ממשיכים להשתמש ב-translateText הגנרי, שאסור להחיל עליו מונחי אופנה.
+ * This function is for product names only. Customer names, addresses and
+ * messages keep using the generic translateText, which must never have fashion
+ * terms applied to it.
  *
- * @param {string} name - שם המוצר בעברית.
- * @returns {Promise<string>} שם המוצר באנגלית.
+ * @param {string} name - Product name in Hebrew.
+ * @returns {Promise<string>} The product name in English.
  */
 export async function translateProductName(name) {
   const known = getKnownProductTranslation(name);
@@ -253,7 +257,8 @@ async function translateColorName(colorName) {
 
 export async function translateProductFields({ name, desc, colorNames = [] }) {
   const [nameEn, descEn, ...colorTranslations] = await Promise.all([
-    // שם המוצר עובר דרך המילון והתיקונים. התיאור נשאר תרגום חופשי.
+    // The product name goes through the dictionary and fixes.
+    // The description stays a free translation.
     translateProductName(name),
     translateText(desc),
     ...colorNames.map((color) => translateColorName(color)),

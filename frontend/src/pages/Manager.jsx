@@ -28,18 +28,12 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderStatus, updateOrderItems, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
+import { subscribeToOrders, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText } from "../services/translation/translationService";
 import { translateProductName } from "../services/translation/translationService";
 import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
-import {
-  getAllDeliveries,
-  addDelivery,
-  updateDeliveryStatus,
-  deleteDelivery,
-} from "../services/deliveries/deliveriesService";
 import { getAllCustomers, updateCustomerNameTranslation, updateCustomerAddressTranslation } from "../services/customer/customerFirestore";
 import {
   getFeaturedProduct,
@@ -192,7 +186,6 @@ export default function Manager({ onPromote }) {
     };
    }, [isLoggedIn, refreshKey]);
 
-  const [deliveries, setDeliveries] = useState([]);
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
   const [stockNotifications, setStockNotifications] = useState([]);
   const [returnRequests, setReturnRequests] = useState([]);
@@ -241,21 +234,6 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn, activeView, refreshKey]);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    let cancelled = false;
-
-    getAllDeliveries().then((firestoreDeliveries) => {
-      if (!cancelled) {
-        setDeliveries(firestoreDeliveries);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isLoggedIn]);
 
   const [currentPromotedCode, setCurrentPromotedCode] = useState(null);
 
@@ -532,7 +510,7 @@ export default function Manager({ onPromote }) {
             if (product?.nameEn && product.nameEn.trim() !== nextItem.name.trim()) {
               nextItem = { ...nextItem, nameEn: product.nameEn };
             } else {
-              // שם פריט הוא שם מוצר, ולכן עובר דרך מילון האופנה
+              // An item name is a product name, so it goes through the fashion dictionary
               const nameEn = await translateProductName(nextItem.name);
               if (nameEn) nextItem = { ...nextItem, nameEn };
             }
@@ -663,7 +641,7 @@ export default function Manager({ onPromote }) {
       let nextProduct = product;
 
       if (needsTranslation(product.name, product.nameEn)) {
-        // שם מוצר עובר דרך מילון האופנה, לא דרך התרגום הגנרי
+        // Product names use the fashion dictionary, not the generic translator
         const nameEn = await translateProductName(product.name);
         if (nameEn) nextProduct = { ...nextProduct, nameEn };
       }
@@ -706,102 +684,6 @@ export default function Manager({ onPromote }) {
     setRefreshKey((k) => k + 1);
   }
 
-  function handleToggleOrderReady(orderId) {
-    setOrders((prevOrders) => {
-      const updatedOrders = prevOrders.map((order) => {
-        if (order.id !== orderId) return order;
-
-        const newStatus = order.status === "ready" ? "pending" : "ready";
-
-        if (order.docId) {
-          updateOrderStatus(order.docId, newStatus === "ready");
-        }
-
-        return { ...order, status: newStatus };
-      });
-
-      const changedOrder = updatedOrders.find((order) => order.id === orderId);
-
-      setDeliveries((prevDeliveries) => {
-        let updatedDeliveries = [...prevDeliveries];
-
-        if (changedOrder && changedOrder.status === "ready") {
-          const alreadyExists = updatedDeliveries.some(
-            (delivery) => delivery.orderId === changedOrder.id,
-          );
-
-          if (!alreadyExists) {
-            const delivery = {
-              id: `DEL-${Date.now()}`,
-              orderId: changedOrder.id,
-              orderDocId: changedOrder.docId || null,
-              customer:
-                changedOrder.customerDetails?.name ||
-                changedOrder.customerDetails?.email ||
-                changedOrder.customerEmail ||
-                "לקוח",
-              customerEmail: changedOrder.customerEmail || null,
-              items: changedOrder.items || [],
-              status: 1,
-              createdAt: Date.now(),
-            };
-
-            addDelivery(delivery);
-            updatedDeliveries = [delivery, ...updatedDeliveries];
-          }
-        } else {
-          const removedDelivery = updatedDeliveries.find(
-            (delivery) => delivery.orderId === orderId,
-          );
-
-          if (removedDelivery) {
-            deleteDelivery(removedDelivery.id);
-          }
-
-          updatedDeliveries = updatedDeliveries.filter(
-            (delivery) => delivery.orderId !== orderId,
-          );
-        }
-
-        return updatedDeliveries;
-      });
-      return updatedOrders;
-    });
-  }
-  function handleMarkAllPicked() {
-    setDeliveries((prevDeliveries) => {
-      const updatedDeliveries = prevDeliveries.map((delivery) => {
-        if (delivery.status < 3) {
-          const nextIndex = delivery.status + 1;
-          updateDeliveryStatus(delivery.id, nextIndex);
-          if (delivery.orderDocId) {
-            advanceOrderStatus(delivery.orderDocId, nextIndex);
-          }
-          return { ...delivery, status: nextIndex };
-        }
-        return delivery;
-      });
-
-      return updatedDeliveries;
-    });
-  }
-  function handleUpdateDeliveryStatus(deliveryId, nextIndex) {
-    updateDeliveryStatus(deliveryId, nextIndex);
-
-    setDeliveries((prevDeliveries) => {
-      const updatedDeliveries = prevDeliveries.map((delivery) => {
-        if (delivery.id !== deliveryId) return delivery;
-
-        if (delivery.orderDocId) {
-          advanceOrderStatus(delivery.orderDocId, nextIndex);
-        }
-
-        return { ...delivery, status: nextIndex };
-      });
-
-      return updatedDeliveries;
-    });
-  }
   function handleConfirmOrder(orderDocId) {
     confirmOrder(orderDocId);
 

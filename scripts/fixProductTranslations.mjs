@@ -1,19 +1,19 @@
 /**
- * סקריפט חד-פעמי לתיקון שדה nameEn של מוצרים ב-Firestore.
+ * One-off script that repairs the nameEn field of products in Firestore.
  *
- * הסקריפט אינו חלק מקוד הפרודקשן — הוא יושב מחוץ ל-frontend/src
- * ולכן לא נכלל בבנייה של Vite.
+ * This is not production code: it lives outside frontend/src, so Vite never
+ * includes it in the build.
  *
- * מקור האמת הוא translationService.js עצמו: הסקריפט מייבא ממנו את
- * המילון ואת פונקציות התיקון, כדי שלא תיווצר כפילות בין הסקריפט
- * לבין ההתנהגות באפליקציה.
+ * translationService.js is the single source of truth — this script imports
+ * the dictionary and the correction helpers from it, so the script and the
+ * application can never drift apart.
  *
- * הרצה:
- *   node scripts/fixProductTranslations.mjs            → תצוגה בלבד
- *   node scripts/fixProductTranslations.mjs --apply    → כתיבה בפועל
+ * Usage:
+ *   node scripts/fixProductTranslations.mjs            dry run, prints only
+ *   node scripts/fixProductTranslations.mjs --apply    writes to Firestore
  *
- * לכתיבה נדרשות הרשאות מנהלת, שמועברות במשתני סביבה:
- *   FS_MANAGER_EMAIL, FS_MANAGER_PASSWORD
+ * Writing requires manager permissions, supplied through environment
+ * variables: FS_MANAGER_EMAIL and FS_MANAGER_PASSWORD.
  */
 import {
   getKnownProductTranslation,
@@ -30,10 +30,10 @@ const FIRESTORE_BASE =
   `/databases/(default)/documents`;
 
 /**
- * ממירה ערך בפורמט Firestore REST לערך JS רגיל.
+ * Converts a Firestore REST value into a plain JS value.
  *
- * @param {object} value - הערך בפורמט REST.
- * @returns {*} הערך המפוענח.
+ * @param {object} value - Value in REST format.
+ * @returns {*} The decoded value.
  */
 function decode(value) {
   if (!value || typeof value !== "object") return value;
@@ -54,9 +54,9 @@ function decode(value) {
 }
 
 /**
- * שולפת את כל המוצרים מ-Firestore.
+ * Fetches every product from Firestore.
  *
- * @returns {Promise<object[]>} רשימת המוצרים.
+ * @returns {Promise<object[]>} The products.
  */
 async function fetchProducts() {
   const products = [];
@@ -90,11 +90,11 @@ async function fetchProducts() {
 }
 
 /**
- * מתחברת כמנהלת ומחזירה טוקן זיהוי.
+ * Signs in as the manager and returns an ID token.
  *
- * עדכון nameEn מחייב הרשאות מנהלת לפי firestore.rules.
+ * Updating nameEn requires manager permissions per firestore.rules.
  *
- * @returns {Promise<string>} טוקן הזיהוי.
+ * @returns {Promise<string>} The ID token.
  */
 async function signInAsManager() {
   const email = process.env.FS_MANAGER_EMAIL;
@@ -125,13 +125,14 @@ async function signInAsManager() {
 }
 
 /**
- * מעדכנת שדה nameEn של מוצר בודד.
+ * Updates the nameEn field of a single product.
  *
- * updateMask מבטיח שרק nameEn ייכתב — שום שדה אחר לא נוגע.
+ * updateMask guarantees that only nameEn is written — no other field is
+ * touched, even at the API level.
  *
- * @param {string} docId - מזהה המסמך.
- * @param {string} nameEn - השם החדש באנגלית.
- * @param {string} idToken - טוקן המנהלת.
+ * @param {string} docId - Firestore document id.
+ * @param {string} nameEn - The new English name.
+ * @param {string} idToken - Manager ID token.
  * @returns {Promise<void>}
  */
 async function updateNameEn(docId, nameEn, idToken) {
@@ -156,15 +157,16 @@ async function updateNameEn(docId, nameEn, idToken) {
 }
 
 /**
- * מחשבת את השם המתוקן עבור מוצר.
+ * Computes the corrected name for a product.
  *
- * שכבה 1 — התאמה מדויקת במילון.
- * שכבה 3 — תיקוני ניסוח ו-Title Case על התרגום הקיים.
+ * Layer 1 — exact dictionary match.
+ * Layer 3 — wording fixes and Title Case applied to the stored translation.
  *
- * הסקריפט לא פונה ל-API של התרגום: הוא עובד על מה שכבר שמור.
+ * The script never calls the translation API: it only reworks what is already
+ * stored, so a run cannot consume quota or introduce new surprises.
  *
- * @param {object} product - המוצר מ-Firestore.
- * @returns {{nextName: string, source: string}} השם המוצע ומקורו.
+ * @param {object} product - The product from Firestore.
+ * @returns {{nextName: string, source: string}} Proposed name and its source.
  */
 function computeFixedName(product) {
   const known = getKnownProductTranslation(product.name);
@@ -180,7 +182,7 @@ function computeFixedName(product) {
 }
 
 /**
- * מריצה את התהליך.
+ * Runs the process.
  */
 async function run() {
   console.log(

@@ -59,10 +59,8 @@ export default function CartDrawer({
               return (
                 <div className={modalStyles.cartItem} key={item.key}>
                   <div className={modalStyles.cartLeft}>
-                    {/* טקסט חלופי לקוראי מסך, בשפת הממשק */}
                     <img src={item.img} alt={getItemName(item, lang)} />
                     <div style={{ minWidth: 0 }}>
-                      {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
                       <div className={modalStyles.cartName}>
                         {getItemName(item, lang)}
                       </div>

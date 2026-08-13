@@ -1,20 +1,21 @@
 /**
- * בודקת האם וריאנט מוצר ספציפי (צבע + מידה) ניתן להוספה לעגלה,
- * לפי נתוני המלאי החיים.
+ * Checks whether a specific product variant (colour + size) can be added to
+ * the cart, based on live stock data.
  *
- * כללים:
- * - מוצר ללא וריאנטים (ספירת מלאי פשוטה) זמין אם stock > 0.
- * - מוצר עם וריאנטים זמין רק אם לצירוף הצבע+מידה הספציפי יש כמות חיובית.
- * - מידה מותאמת אישית ("אחר") תמיד נחשבת זמינה, כי היא מטופלת
- *   מחוץ למערכת המלאי הרגילה ודורשת בדיקה ידנית.
+ * Rules:
+ * - A product without variants (simple stock count) is available if stock > 0.
+ * - A product with variants is available only if that exact colour+size
+ *   combination has a positive quantity.
+ * - A custom size ("אחר") is always treated as available, because it is
+ *   handled outside the regular stock system and needs a manual check.
  *
- * @param {object} product - המוצר שנבדק.
- * @param {Array<object>} [product.variants] - רשימת וריאנטים, כל אחד עם colorName ומפת sizes.
- * @param {number} [product.stock] - ספירת מלאי פשוטה, בשימוש כשאין וריאנטים.
- * @param {object} selection - הצבע/מידה שנבחרו.
- * @param {string} selection.color - שם הצבע שנבחר.
- * @param {string} selection.size - המידה שנבחרה.
- * @returns {boolean} true אם ניתן להוסיף את הפריט לעגלה.
+ * @param {object} product - The product being checked.
+ * @param {Array<object>} [product.variants] - Variants, each with colorName and a sizes map.
+ * @param {number} [product.stock] - Simple stock count, used when there are no variants.
+ * @param {object} selection - The selected colour/size.
+ * @param {string} selection.color - Selected colour name.
+ * @param {string} selection.size - Selected size.
+ * @returns {boolean} true when the item can be added to the cart.
  */
 export function isVariantAvailable(product, selection) {
   if (!product) return false;

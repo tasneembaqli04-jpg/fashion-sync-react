@@ -78,7 +78,7 @@ import ProductModal from "../components/customer/ProductModal";
 import ShareModal from "../components/customer/ShareModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
-import VisualSearchModal from "../components/customer/VisualSearchModal";
+import TryOnModal from "../components/customer/TryOnModal";
 
 export default function Customer() {
   const navigate = useNavigate();
@@ -1456,7 +1456,7 @@ export default function Customer() {
         skipToCheckout={skipToCheckout}
       />
 
-      <VisualSearchModal
+      <TryOnModal
         open={visualOpen}
         tryonSelfie={tryonSelfie}
         tryOnResult={tryOnResult}

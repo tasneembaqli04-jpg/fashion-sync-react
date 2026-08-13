@@ -110,6 +110,15 @@ export default function CustomerChat({
           <button className={chatStyles.sendBtn} onClick={sendMsg}>
             ➤
           </button>
+          {/*
+            Image attachment is hidden until the upload flow is implemented.
+            The button was visible but its handler (onChatImageChange in
+            Customer.jsx) is an empty function, so the picked file was
+            silently discarded.
+
+            To restore: delete this comment wrapper and pass a real handler
+            for onChatImageChange. Nothing else needs to change.
+
           <label className={chatStyles.attachBtn} title={t.attachImageTitle}>
             📎
             <input
@@ -119,6 +128,7 @@ export default function CustomerChat({
               onChange={onChatImageChange}
             />
           </label>
+          */}
           <textarea
             className={chatStyles.chatIn}
             placeholder={t.messagePlaceholder}

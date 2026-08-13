@@ -10,6 +10,33 @@ export function buildGiftCardPreview({ amount, customAmount, name, message }) {
   };
 }
 
+/**
+ * Validates a gift card purchase and adds it to the cart as a regular item.
+ *
+ * A gift card is not created in Firestore here. It is added to the cart as an
+ * item flagged with isGiftCard, and the giftCards document is only written
+ * during checkout (issueGiftCard, called from addOrder) once the purchase is
+ * actually completed. This avoids leaving orphaned cards behind when a
+ * customer abandons the cart.
+ *
+ * The flag also changes checkout behaviour downstream: gift card items are
+ * skipped by stock decrementing, earn no loyalty points, and require no
+ * shipping.
+ *
+ * The code is generated client-side from Math.random, which is fine for
+ * uniqueness at this scale but is not unguessable — the card is only usable
+ * once its status is set to active by the manager.
+ *
+ * @param {object} options
+ * @param {string|number} options.amount - Selected preset amount, or "other".
+ * @param {string|number} options.customAmount - Amount used when "other" is selected.
+ * @param {string} options.name - Recipient name. Required.
+ * @param {string} options.message - Optional greeting message.
+ * @param {string} options.email - Buyer email. Required, so the cart can be saved.
+ * @param {Array} options.cart - Current cart.
+ * @returns {Promise<{ok: boolean, error?: string, code?: string, nextCart?: Array}>}
+ * Failure carries a ready-to-display Hebrew message; success carries the new code and cart.
+ */
 export async function buyGiftCard({ amount, customAmount, name, message, email, cart }) {
   const finalAmount = amount === "other" ? Number(customAmount) : Number(amount);
 

@@ -59,11 +59,9 @@ export default function CheckoutStep4Success({
           <div>
             {items.map((item) => (
               <div key={`${item.code}-${item.size}-${item.color}`} className={styles.successItemRow}>
-                {/* טקסט חלופי לקוראי מסך, בשפת הממשק */}
                 <img src={item.img} alt={getItemName(item, lang)} />
 
                 <div className={styles.successItemInfo}>
-                  {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
                   <div className={styles.successItemName}>
                     {getItemName(item, lang)}
                   </div>

@@ -11,17 +11,18 @@ import HomeNavbar from "../home/HomeNavbar";
 import { loadFeaturedImage } from "../../functions/home/featuredProduct.js";
 import HomeHero from "../home/HomeHero";
 
-// שם המשתמש שמוקלד בטופס. אינו כתובת מייל, אלא כינוי נוח לכניסה.
+// Username typed into the form. Not an email address, just a convenient alias.
 const MANAGER_USERNAME = "manager";
 
-// כתובת המייל של חשבון המנהלת ב-Firebase Auth.
+// Email address of the manager account in Firebase Auth.
 //
-// הכתובת אינה סוד ולכן מותר שתישאר בקוד: כתובת מייל לבדה אינה מעניקה
-// גישה לשום דבר, והיא מופיעה ממילא גם ב-firestore.rules וב-Manager.jsx.
+// The address is not a secret and may stay in the source: an email address on
+// its own grants nothing, and it already appears in firestore.rules and in
+// Manager.jsx.
 //
-// מה שכן סוד הוא הסיסמה — והיא איננה בקובץ הזה. בעבר היא הייתה כתובה
-// כאן, ולכן נשלחה בקוד המקור לכל מי שטען את האתר. כעת המנהלת מקלידה
-// אותה בטופס, והיא לעולם לא נכללת בחבילת הבנייה.
+// The password is the secret, and it is deliberately not in this file. It used
+// to be hard-coded here, which shipped it in the bundle to every visitor. The
+// manager now types it into the form, so it never reaches the build output.
 const MANAGER_EMAIL = "manager@fashionsync-internal.com";
 
 export default function LoginOverlay({ onLoginSuccess }) {
@@ -39,8 +40,8 @@ export default function LoginOverlay({ onLoginSuccess }) {
   }, []);
 
   const handleLogin = async () => {
-    // הודעת שגיאה אחת לכל סוגי הכשל, כדי לא לרמוז אם שם המשתמש נכון
-    // והסיסמה שגויה או להפך.
+    // A single error message for every failure mode, so it never hints
+    // whether the username was right and only the password was wrong.
     const showError = () => {
       setErrorVisible(true);
       setTimeout(() => setErrorVisible(false), 2000);
@@ -56,8 +57,8 @@ export default function LoginOverlay({ onLoginSuccess }) {
 
     setErrorVisible(false);
 
-    // הסיסמה מגיעה מהשדה שהמנהלת הקלידה, ולא מהקוד.
-    // Firebase הוא זה שמאמת אותה, ולא השוואת מחרוזות בדפדפן.
+    // The password comes from the field the manager typed, not from code.
+    // Firebase verifies it — not a string comparison in the browser.
     const result = await signIn(MANAGER_EMAIL, password, {});
 
     if (result.user) {

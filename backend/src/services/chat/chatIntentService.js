@@ -1,12 +1,15 @@
 /**
- * קובץ זה אחראי על השלב הראשון בצינור העיבוד (Pipeline) של הצ'אטבוט:
- * זיהוי כוונה (Intent Detection). הוא שולח את הודעת הלקוחה (יחד עם היסטוריית
- * השיחה) למודל Gemini, ומקבל בחזרה מבנה נתונים קשיח (JSON מובנה לפי סכמה)
- * המתאר מה בדיוק הלקוחה מבקשת — קטגוריה, מגדר, טווח מחיר, אירוע ועוד.
+ * First stage of the chatbot pipeline: intent detection.
  *
- * הפלט של הקובץ הזה משמש כקלט לשלבים הבאים בצינור: סינון מוצרים לפי
- * זמינות בפועל, ולבסוף בחירת לוק/מוצר על ידי מנוע ה-AI — כך שהמלצות
- * הצ'אטבוט תמיד מבוססות על נתונים אמיתיים, לא על ניחוש חופשי של המודל.
+ * Sends the customer message, together with the conversation history, to the
+ * Gemini model and receives a strict structure back (JSON constrained by a
+ * schema) describing exactly what the customer is asking for — category,
+ * gender, price range, occasion and more.
+ *
+ * The output feeds the later pipeline stages: filtering products by real
+ * availability, and finally letting the AI pick an outfit or product. This is
+ * what keeps the chatbot's recommendations grounded in real catalogue data
+ * rather than free-form guessing by the model.
  */
 const {getGeminiClient} = require("../../config/gemini");
 
@@ -647,10 +650,10 @@ outfitType="COMPLETE_OUTFIT"
 `.trim();
 
 /**
- * ממירה ערך שעשוי להיות ריק/undefined למחרוזת בטוחה.
+ * Converts a possibly empty/undefined value into a safe string.
  *
- * @param {*} value - הערך לנרמול.
- * @return {string|null} מחרוזת מנורמלת, או null אם הערך ריק.
+ * @param {*} value - Value to normalize.
+ * @return {string|null} Normalized string, or null when the value is empty.
  */
 function normalizeNullableString(value) {
   if (value === null || value === undefined) {
@@ -663,10 +666,10 @@ function normalizeNullableString(value) {
 }
 
 /**
- * ממירה ערך שעשוי להיות ריק/undefined למספר תקין.
+ * Converts a possibly empty/undefined value into a valid number.
  *
- * @param {*} value - הערך לנרמול.
- * @return {number|null} מספר מנורמל, או null אם הערך אינו מספר תקין.
+ * @param {*} value - Value to normalize.
+ * @return {number|null} Normalized number, or null when not a valid number.
  */
 function normalizeNullableNumber(value) {
   if (value === null || value === undefined || value === "") {
@@ -679,11 +682,11 @@ function normalizeNullableNumber(value) {
 }
 
 /**
- * שולפת את אובייקט ה-JSON מתוך תשובת המודל (מגמיני), ומנקה עטיפות
- * מיותרות כמו סימוני קוד (```json).
+ * Extracts the JSON object from the model response and strips wrappers such
+ * as code fences (```json).
  *
- * @param {string} rawText - התשובה הגולמית שהתקבלה מגמיני.
- * @return {string} טקסט ה-JSON שחולץ.
+ * @param {string} rawText - The raw response received from Gemini.
+ * @return {string} The extracted JSON text.
  */
 function extractJsonText(rawText) {
   const cleanedText = String(rawText || "")
@@ -709,12 +712,12 @@ function extractJsonText(rawText) {
 }
 
 /**
- * מוודאת שערך שהוחזר מגמיני נמצא ברשימת הערכים המותרים בלבד —
- * מגן מפני מקרה שהמודל "המציא" ערך שלא קיים בסכמה שלנו.
+ * Ensures a value returned by Gemini is one of the allowed values, guarding
+ * against the model inventing a value that is not in our schema.
  *
- * @param {*} value - הערך שהוחזר מגמיני.
- * @param {string[]} allowedValues - רשימת הערכים המותרים.
- * @return {string|null} הערך התקין, או null אם אינו ברשימה.
+ * @param {*} value - The value returned by Gemini.
+ * @param {string[]} allowedValues - The list of allowed values.
+ * @return {string|null} The valid value, or null when it is not in the list.
  */
 function normalizeEnumValue(value, allowedValues) {
   const normalizedValue = normalizeNullableString(value);
@@ -730,10 +733,10 @@ function normalizeEnumValue(value, allowedValues) {
 }
 
 /**
- * מנרמלת מידת בגד לאותיות גדולות (למשל "m" -> "M").
+ * Normalizes a garment size to upper case (for example "m" -> "M").
  *
- * @param {*} value - המידה שהוחזרה מגמיני.
- * @return {string|null} המידה המנורמלת.
+ * @param {*} value - The size returned by Gemini.
+ * @return {string|null} The normalized size.
  */
 function normalizeSize(value) {
   const normalizedValue = normalizeNullableString(value);
@@ -746,13 +749,14 @@ function normalizeSize(value) {
 }
 
 /**
- * מאמתת ומנרמלת את הכוונה (intent) המלאה שהוחזרה מגמיני, שדה-שדה, מול
- * הסכמה הקשיחה שלנו. זהו שכבת ההגנה המרכזית מפני תשובה לא תקינה של
- * המודל — כל שדה שאינו עומד בכללים מוחלף בברירת מחדל בטוחה, כדי
- * שהשלבים הבאים בצינור תמיד יקבלו מבנה נתונים צפוי ותקין.
+ * Normalizes a product code to the catalogue format (FS-000).
  *
- * @param {object} parsed - הפלט הגולמי שפוענח מתשובת גמיני.
- * @return {object} אובייקט כוונה בטוח ומנורמל.
+ * Extracts the first run of digits and pads it to three places, so "fs7",
+ * "FS 7" and "7" all resolve to "FS-007". A value without digits is returned
+ * upper-cased and otherwise unchanged.
+ *
+ * @param {*} value - The product code returned by Gemini.
+ * @return {string|null} The normalized code, or null when empty.
  */
 function normalizeProductCode(value) {
   const normalizedValue = normalizeNullableString(value);
@@ -772,13 +776,14 @@ function normalizeProductCode(value) {
 }
 
 /**
- * מאמתת ומנרמלת את הכוונה (intent) המלאה שהוחזרה מגמיני, שדה-שדה, מול
- * הסכמה הקשיחה שלנו. זהו שכבת ההגנה המרכזית מפני תשובה לא תקינה של
- * המודל — כל שדה שאינו עומד בכללים מוחלף בברירת מחדל בטוחה, כדי
- * שהשלבים הבאים בצינור תמיד יקבלו מבנה נתונים צפוי ותקין.
+ * Validates and normalizes the full intent returned by Gemini, field by
+ * field, against our strict schema. This is the main line of defence against
+ * a malformed model response — any field that breaks the rules is replaced
+ * with a safe default, so later pipeline stages always receive a predictable
+ * structure.
  *
- * @param {object} parsed - הפלט הגולמי שפוענח מתשובת גמיני.
- * @return {object} אובייקט כוונה בטוח ומנורמל.
+ * @param {object} parsed - The raw payload parsed from the Gemini response.
+ * @return {object} A safe, normalized intent object.
  */
 function normalizeIntent(parsed) {
   const normalizedIntent =
@@ -876,12 +881,12 @@ function normalizeIntent(parsed) {
 }
 
 /**
- * בונה את מבנה ה-contents שגמיני מצפה לו מתוך היסטוריית השיחה
- * (מוגבלת ל-8 התורות האחרונות) וההודעה הנוכחית.
+ * Builds the contents structure Gemini expects, from the conversation
+ * history (capped at the last 8 turns) and the current message.
  *
- * @param {Array} history - תורות השיחה הקודמות.
- * @param {string} message - הודעת הלקוחה הנוכחית.
- * @return {Array} מבנה ה-contents בפורמט שגמיני מצפה לו.
+ * @param {Array} history - Previous conversation turns.
+ * @param {string} message - The current customer message.
+ * @return {Array} The contents structure in the format Gemini expects.
  */
 function buildContents(history, message) {
   const safeHistory = Array.isArray(history) ?
@@ -921,20 +926,20 @@ function buildContents(history, message) {
 }
 
 /**
- * הפונקציה המרכזית של שלב זיהוי הכוונה: שולחת את הודעת הלקוחה לגמיני
- * יחד עם הנחיית מערכת מפורטת (INTENT_INSTRUCTION) וסכמת JSON קשיחה,
- * ומחזירה כוונה מובנית ומאומתת.
+ * Main entry point of the intent detection stage: sends the customer message
+ * to Gemini together with a detailed system instruction (INTENT_INSTRUCTION)
+ * and a strict JSON schema, and returns a structured, validated intent.
  *
- * חשוב: הפונקציה הזו לא "מנחשת" מוצרים או ממליצה על משהו בעצמה —
- * תפקידה היחיד הוא להבין *מה* הלקוחה מבקשת, כדי שהשלבים הבאים בצינור
- * (חיפוש מוצרים, סינון לפי מלאי, בחירת לוק) יוכלו לפעול על בסיס נתון
- * ברור ומדויק.
+ * Note: this function never guesses products or recommends anything itself.
+ * Its only job is to understand *what* the customer is asking for, so that the
+ * later stages (product search, stock filtering, outfit selection) can work
+ * from a clear and precise input.
  *
- * @param {object} options - פרמטרי הבקשה.
- * @param {string} options.message - הודעת הלקוחה הנוכחית.
- * @param {Array} [options.history] - תורות השיחה הקודמות (לצורך שמירת הקשר).
- * @return {Promise<object>} כוונה מובנית של הלקוחה (intent, קטגוריה, מגדר, טווח מחיר וכו').
- * @throws {Error} אם ההודעה ריקה, אם גמיני מחזיר תשובה ריקה, או אם התשובה אינה JSON תקין.
+ * @param {object} options - Request parameters.
+ * @param {string} options.message - The current customer message.
+ * @param {Array} [options.history] - Previous conversation turns, for context.
+ * @return {Promise<object>} Structured customer intent (intent, category, gender, price range and so on).
+ * @throws {Error} When the message is empty, Gemini returns an empty response, or the response is not valid JSON.
  */
 async function detectChatIntent({
   message,

@@ -161,7 +161,6 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
             />
 
             <div style={{ flex: 1 }}>
-              {/* שם, מידה וצבע נבחרים לפי שפת הממשק */}
               <div style={{ fontWeight: 700 }}>
                 {getItemName(item, lang)}
               </div>
