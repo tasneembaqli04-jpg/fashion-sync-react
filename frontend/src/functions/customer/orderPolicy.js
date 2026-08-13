@@ -3,20 +3,20 @@ const CANCEL_WINDOW_MS = 24 * ONE_HOUR_MS;
 const RETURN_WINDOW_MS = 7 * 24 * ONE_HOUR_MS;
 
 /**
- * בודקת האם לקוחה עדיין רשאית לבטל הזמנה.
+ * Checks whether a customer may still cancel an order.
  *
- * ניתן לבטל הזמנה רק אם:
- * - היא עוד לא בוטלה קודם
- * - היא עוד לא הגיעה לשלב האחרון של המשלוח (סטטוס 3)
- * - עברו פחות מ-24 שעות מרגע ביצוע ההזמנה
+ * An order can be cancelled only if:
+ * - it has not already been cancelled
+ * - it has not reached the final delivery stage (status 3)
+ * - less than 24 hours have passed since the order was placed
  *
- * @param {object} order - אובייקט ההזמנה.
- * @param {boolean} order.cancelled - האם ההזמנה כבר בוטלה.
- * @param {number} order.status - שלב המשלוח הנוכחי (0-3).
- * @param {string} order.createdAt - תאריך יצירת ההזמנה (ISO).
- * @param {string} [order.date] - תאריך גיבוי אם createdAt חסר.
- * @param {number} [now] - זמן נוכחי במילישניות (ברירת מחדל Date.now(), ניתן להזרקה לצורך בדיקות).
- * @returns {boolean} true אם עדיין ניתן לבטל את ההזמנה.
+ * @param {object} order - The order object.
+ * @param {boolean} order.cancelled - Whether the order was already cancelled.
+ * @param {number} order.status - Current delivery stage (0-3).
+ * @param {string} order.createdAt - Order creation date (ISO).
+ * @param {string} [order.date] - Fallback date when createdAt is missing.
+ * @param {number} [now] - Current time in ms. Defaults to Date.now(); injectable for tests.
+ * @returns {boolean} true while the order can still be cancelled.
  */
 export function canCancelOrder(order, now = Date.now()) {
   if (!order) return false;
@@ -30,20 +30,21 @@ export function canCancelOrder(order, now = Date.now()) {
 }
 
 /**
- * בודקת האם לקוחה עדיין נמצאת בחלון הזמן להגשת בקשת החזרה עבור הזמנה שנמסרה.
+ * Checks whether a customer is still within the return request window for a
+ * delivered order.
  *
- * ניתן להגיש בקשת החזרה רק אם:
- * - ההזמנה הגיעה לשלב האחרון של המשלוח (סטטוס 3)
- * - עברו פחות מ-7 ימים ממועד המסירה
- *   (במקרה ש-deliveredAt חסר, נופלים חזרה ל-createdAt/date)
+ * A return can be requested only if:
+ * - the order reached the final delivery stage (status 3)
+ * - less than 7 days have passed since delivery
+ *   (when deliveredAt is missing, falls back to createdAt/date)
  *
- * @param {object} order - אובייקט ההזמנה.
- * @param {number} order.status - שלב המשלוח הנוכחי (0-3).
- * @param {string} [order.deliveredAt] - תאריך המסירה (ISO).
- * @param {string} [order.createdAt] - תאריך גיבוי.
- * @param {string} [order.date] - תאריך גיבוי נוסף.
- * @param {number} [now] - זמן נוכחי במילישניות (ברירת מחדל Date.now(), ניתן להזרקה לצורך בדיקות).
- * @returns {boolean} true אם עדיין ניתן להגיש בקשת החזרה.
+ * @param {object} order - The order object.
+ * @param {number} order.status - Current delivery stage (0-3).
+ * @param {string} [order.deliveredAt] - Delivery date (ISO).
+ * @param {string} [order.createdAt] - Fallback date.
+ * @param {string} [order.date] - Secondary fallback date.
+ * @param {number} [now] - Current time in ms. Defaults to Date.now(); injectable for tests.
+ * @returns {boolean} true while a return can still be requested.
  */
 export function canRequestReturn(order, now = Date.now()) {
   if (!order) return false;

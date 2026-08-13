@@ -69,11 +69,11 @@ export async function decrementProductsStock(cartItems = []) {
     const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
     if (hasVariants) {
-      // שכפול הווריאנטים תוך שמירה על כל השדות הקיימים.
-      // בעבר נבנה כאן אובייקט חדש עם colorName ו-sizes בלבד, ולכן כל
-      // שדה אחר (למשל colorNameEn) נמחק בכתיבה חזרה ל-Firestore.
-      // ה-spread על sizes נשאר, כדי שהעדכון למטה לא ישנה את נתוני
-      // ה-snapshot המקוריים.
+      // Clone variants while preserving every existing field.
+      // This previously rebuilt each variant with only colorName and sizes,
+      // which silently dropped other fields (such as colorNameEn) on every
+      // write back to Firestore. The spread on sizes stays, so the update
+      // below does not mutate the original snapshot data.
       const variants = data.variants.map((variant) => ({
         ...variant,
         sizes: { ...(variant.sizes || {}) },
@@ -146,9 +146,9 @@ export async function restockReturnedItem({ code, qty, color, size }) {
   const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
   if (hasVariants) {
-    // שכפול הווריאנטים תוך שמירה על כל השדות הקיימים.
-    // אותו באג שהיה ב-decrementProductsStock: בנייה מחדש עם שני שדות
-    // בלבד מחקה שדות כמו colorNameEn בכל החזרת פריט למלאי.
+    // Clone variants while preserving every existing field.
+    // Same bug as in decrementProductsStock: rebuilding with only two fields
+    // erased fields such as colorNameEn on every restock.
     const variants = data.variants.map((variant) => ({
       ...variant,
       sizes: { ...(variant.sizes || {}) },

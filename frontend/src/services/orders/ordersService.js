@@ -27,6 +27,28 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+/**
+ * Writes a completed order to Firestore and runs the side effects that go
+ * with it.
+ *
+ * Beyond creating the order document this also saves the customer profile,
+ * awards loyalty points, and issues a giftCards document for every gift card
+ * in the basket. The steps run in sequence and are not wrapped in a
+ * transaction, so a failure part way through can leave an order without its
+ * points or gift cards. Moving the whole flow to a cloud function is the
+ * planned fix.
+ *
+ * Loyalty points are awarded only when the order contains something other than
+ * gift cards, so buying a gift card cannot earn points that are then spent on
+ * the same purchase.
+ *
+ * Order items are stored as a snapshot of the cart at purchase time, including
+ * the English name and colour, so the order can be rendered in either language
+ * later even if the catalogue changes.
+ *
+ * @param {object} receipt - The completed checkout receipt.
+ * @returns {Promise<void>}
+ */
 export async function addOrder(receipt) {
   await saveCustomer(receipt.customer);
 
@@ -81,6 +103,16 @@ export async function addOrder(receipt) {
   return order;
 }
 
+/**
+ * Loads every order belonging to one customer.
+ *
+ * The query filters on customerEmail, which is exactly what the Firestore
+ * rules require for a customer to list orders at all. A broader query is
+ * rejected outright rather than silently filtered.
+ *
+ * @param {string} email - Customer email.
+ * @returns {Promise<Array<object>>} The orders, each carrying its docId.
+ */
 export async function getOrdersByUser(email) {
   const customerEmail = normalizeEmail(email);
   if (!customerEmail) return [];
@@ -128,6 +160,19 @@ export async function updateOrderCustomerAndItems(docId, customer, items) {
   if (items) updates.items = items;
   await updateDoc(orderRef, updates);
 }
+/**
+ * Stores the pickup date and time chosen by the customer.
+ *
+ * This is one of only two writes a customer is allowed to make on an order;
+ * see the orders rule in firestore.rules. Both values are required, so a
+ * half-filled schedule is never written.
+ *
+ * @param {string} docId - Firestore document id of the order.
+ * @param {string} pickupDate - Chosen pickup date.
+ * @param {string} pickupTime - Chosen pickup time.
+ * @returns {Promise<void>}
+ * @throws {Error} When either value is missing.
+ */
 export async function setPickupSchedule(docId, pickupDate, pickupTime) {
   if (!pickupDate || !pickupTime) {
     throw new Error("pickupDate and pickupTime are required");
@@ -135,6 +180,19 @@ export async function setPickupSchedule(docId, pickupDate, pickupTime) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, { pickupDate, pickupTime });
 }
+/**
+ * Marks an order as cancelled.
+ *
+ * Cancelling never deletes the document: the order is kept with a cancelled
+ * flag so it stays visible in the order history and in manager reports.
+ * Whether cancelling is still permitted is decided earlier by canCancelOrder
+ * (the 24 hour window); this function only records the outcome.
+ *
+ * Restocking the items is a separate step performed by the caller.
+ *
+ * @param {string} docId - Firestore document id of the order.
+ * @returns {Promise<void>}
+ */
 export async function cancelOrder(docId) {
   const orderRef = doc(db, "orders", docId);
   await updateDoc(orderRef, {
@@ -143,6 +201,19 @@ export async function cancelOrder(docId) {
   });
 }
 
+/**
+ * Moves an order to a given delivery stage.
+ *
+ * The human-readable label depends on whether the order is delivered or
+ * collected in store, so the two flows show different wording for the same
+ * stage index. Reaching the final stage also stamps deliveredAt, which is what
+ * starts the 7 day return window measured by canRequestReturn.
+ *
+ * @param {string} docId - Firestore document id of the order.
+ * @param {number} statusIndex - Target stage (0-3).
+ * @param {boolean} [isPickup=false] - Whether the order is collected in store.
+ * @returns {Promise<void>}
+ */
 export async function advanceOrderStatus(docId, statusIndex, isPickup = false) {
   const orderRef = doc(db, "orders", docId);
   const payload = {

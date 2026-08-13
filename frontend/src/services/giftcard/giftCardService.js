@@ -67,9 +67,10 @@ export async function redeemGiftCardAmount(code, amountToDeduct) {
     return { ok: false, error: "כרטיס המתנה כבר נוצל במלואו" };
   }
 
-  // Math.max(0, ...) מונע סכום ניכוי שלילי.
-  // בלעדיו, amountToDeduct שלילי היה מחזיר deducted שלילי, והחיסור
-  // למטה היה מגדיל את יתרת הכרטיס במקום להקטין אותה.
+  // Math.max(0, ...) guards against a negative deduction.
+  // Without it, a negative amountToDeduct produced a negative "deducted",
+  // and the subtraction below increased the card balance instead of
+  // reducing it.
   const deducted = Math.max(
     0,
     Math.min(Number(data.balance), Number(amountToDeduct) || 0)

@@ -11,6 +11,22 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+/**
+ * Creates or updates a customer profile document.
+ *
+ * Fields are written from an explicit whitelist rather than by spreading the
+ * incoming object. That matters because the same document also holds
+ * loyaltyPoints: spreading a caller-supplied object here would let a checkout
+ * payload overwrite a points balance. Only profile and address fields can be
+ * touched through this function.
+ *
+ * The document id is the normalized email, which is what the Firestore owner
+ * check in the rules compares against.
+ *
+ * @param {object} customer - Customer profile, must include an email.
+ * @returns {Promise<void>}
+ * @throws {Error} When the email is missing.
+ */
 export async function saveCustomer(customer) {
   const email = normalizeEmail(customer?.email);
 
@@ -75,6 +91,22 @@ export async function getLoyaltyPoints(email) {
   return Number(customer?.loyaltyPoints) || 0;
 }
 
+/**
+ * Awards loyalty points for a completed order.
+ *
+ * The rate is one point per shekel of the order total, rounded to a whole
+ * number. Points are read and then written back, without a transaction, so two
+ * orders completing at the same moment can lose one of the awards. This is
+ * acceptable at the current scale and is one of the reasons the checkout flow
+ * is planned to move server-side.
+ *
+ * The caller decides whether an order earns points at all — gift card only
+ * orders are excluded by addOrder.
+ *
+ * @param {string} email - Customer email.
+ * @param {number} orderTotal - Order total in shekels.
+ * @returns {Promise<void>}
+ */
 export async function addLoyaltyPoints(email, orderTotal) {
   const customerEmail = normalizeEmail(email);
   if (!customerEmail) return;
@@ -90,6 +122,19 @@ export async function addLoyaltyPoints(email, orderTotal) {
   );
 }
 
+/**
+ * Deducts redeemed loyalty points from a customer balance.
+ *
+ * The new balance is clamped at zero, so redeeming more points than the
+ * customer holds empties the balance instead of going negative. Note that the
+ * amount actually discounted at checkout is currently read from localStorage
+ * and is not validated against this balance — server-side validation is the
+ * planned fix.
+ *
+ * @param {string} email - Customer email.
+ * @param {number} pointsToDeduct - Points the customer redeemed.
+ * @returns {Promise<void>}
+ */
 export async function redeemLoyaltyPoints(email, pointsToDeduct) {
   const customerEmail = normalizeEmail(email);
   if (!customerEmail) return;
