@@ -1,5 +1,7 @@
 # FashionSync 👗
 
+[![CI](https://github.com/tasneembaqli04-jpg/fashion-sync-react/actions/workflows/ci.yml/badge.svg)](https://github.com/tasneembaqli04-jpg/fashion-sync-react/actions/workflows/ci.yml)
+
 🔗 **Live site:** [fashionsync-dc79f.web.app](https://fashionsync-dc79f.web.app)
 
 An information system for running an online fashion store: a customer interface for browsing and buying, and a management interface for inventory, orders, deliveries and settings.
@@ -133,6 +135,7 @@ The rule compares the document key against the email in the caller's auth token.
 
 ```
 fashion-sync-react/
+├── .github/workflows/        # CI — runs tests and build on push and pull request
 ├── frontend/                 # React application
 │   └── src/
 │       ├── components/       # UI (customer/, manager/, checkout/, home/, common/)
@@ -203,6 +206,12 @@ Never commit API keys for external services, credentials, or service account fil
 cd frontend && npm test        # tests
 cd frontend && npm run build   # build verification
 ```
+
+### Continuous integration
+
+The same two commands run automatically on every push to `main` and on every pull request, defined in `.github/workflows/ci.yml`. The workflow installs dependencies with `npm ci`, runs the test suite, and verifies that a production build succeeds. It performs no deployment.
+
+Results appear in three places: the **Actions** tab of the repository, as a status check at the bottom of each pull request, and as the badge at the top of this file. A failing step stops the run and marks it red, with the full log available from the Actions tab.
 
 Core flows were also tested manually: registration, a full purchase, cancellation and return, manager order and inventory handling, and permission boundaries between manager and customer. Barcode scanning was tested against real barcodes generated with QRHyper.
 
