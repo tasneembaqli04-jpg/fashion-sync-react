@@ -1,4 +1,8 @@
 import { useLanguage } from "../../../translations/LanguageProvider";
+import {
+  getItemName,
+  getItemSize,
+} from "../../../functions/customer/itemDisplay";
 
 export default function OrderDetailsModal({ open, order, onClose }) {
   const { lang, t: dict } = useLanguage();
@@ -183,7 +187,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           >
             <img
               src={item.img}
-              alt={item.name}
+              alt={getItemName(item, lang)}
               style={{
                 width: "48px",
                 height: "48px",
@@ -192,14 +196,12 @@ export default function OrderDetailsModal({ open, order, onClose }) {
               }}
             />
             <div>
+              {/* שם ומידה נבחרים לפי שפת הממשק */}
               <div>
-                {lang === "en"
-                  ? item.nameEn ||
-                    (item.name === "כרטיס מתנה FashionSync" ? "FashionSync Gift Card" : item.name)
-                  : item.name}
+                {getItemName(item, lang)}
               </div>
               <div style={{ opacity: 0.7, fontSize: "0.85rem" }}>
-                {t.sizeLabel} {item.size === "אחיד" && lang === "en" ? "One Size" : item.size} · {t.qtyLabel} {item.qty} · ₪{item.price}
+                {t.sizeLabel} {getItemSize(item, lang)} · {t.qtyLabel} {item.qty} · ₪{item.price}
               </div>
               {item.isCustomSize && (
                 <div
