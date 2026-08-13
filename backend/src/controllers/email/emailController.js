@@ -1,4 +1,6 @@
-const { sendOrderConfirmationEmail } = require("../services/emailService");
+const {
+  sendOrderConfirmationEmail,
+} = require("../../services/email/emailService");
 
 async function emailController(request, response) {
   try {

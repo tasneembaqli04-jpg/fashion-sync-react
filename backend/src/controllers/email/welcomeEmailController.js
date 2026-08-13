@@ -1,8 +1,10 @@
-const { sendOrderCancellationEmail } = require("../services/orderCancellationEmailService");
+const {
+  sendWelcomeEmail,
+} = require("../../services/email/verificationEmailService");
 
-async function orderCancellationEmailController(request, response) {
+async function welcomeEmailController(request, response) {
   try {
-    const { toEmail, orderId, total, lang } = request.body || {};
+    const { toEmail, name, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,14 +13,14 @@ async function orderCancellationEmailController(request, response) {
       });
     }
 
-    const result = await sendOrderCancellationEmail({ toEmail, orderId, total, lang });
+    const result = await sendWelcomeEmail({ toEmail, name, lang });
 
     return response.status(200).json({
       success: true,
       emailId: result.emailId,
     });
   } catch (error) {
-    console.error("Order cancellation email controller error:", error);
+    console.error("Welcome email controller error:", error);
 
     return response.status(500).json({
       success: false,
@@ -28,5 +30,5 @@ async function orderCancellationEmailController(request, response) {
 }
 
 module.exports = {
-  orderCancellationEmailController,
+  welcomeEmailController,
 };

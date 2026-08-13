@@ -1,4 +1,6 @@
-const { sendGiftCardActivatedEmail } = require("../services/emailService");
+const {
+  sendGiftCardActivatedEmail,
+} = require("../../services/email/emailService");
 
 async function giftCardActivatedEmailController(request, response) {
   try {

@@ -5,46 +5,46 @@ const {defineSecret} = require("firebase-functions/params");
 const gmailUser = defineSecret("GMAIL_USER");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 
-const {tryOnController} = require("./controllers/tryOnController");
-const {tryOnV2Controller} = require("./controllers/tryOnV2Controller");
-const {chatController} = require("./controllers/chatController");
-const {emailController} = require("./controllers/emailController");
+const {tryOnController} = require("./controllers/tryOn/tryOnController");
+const {tryOnV2Controller} = require("./controllers/tryOn/tryOnV2Controller");
+const {chatController} = require("./controllers/chat/chatController");
+const {emailController} = require("./controllers/email/emailController");
 const {
   stockAlertEmailController,
-} = require("./controllers/stockAlertEmailController");
+} = require("./controllers/email/stockAlertEmailController");
 const {
   shippingUpdateEmailController,
-} = require("./controllers/shippingUpdateEmailController");
+} = require("./controllers/email/shippingUpdateEmailController");
 const {
   giftCardActivatedEmailController,
-} = require("./controllers/giftCardActivatedEmailController");
+} = require("./controllers/email/giftCardActivatedEmailController");
 const {
   orderRejectedEmailController,
-} = require("./controllers/orderRejectedEmailController");
+} = require("./controllers/email/orderRejectedEmailController");
 const {
   giftCardRejectedEmailController,
-} = require("./controllers/giftCardRejectedEmailController");
+} = require("./controllers/email/giftCardRejectedEmailController");
 const {
   returnStatusEmailController,
-} = require("./controllers/returnStatusEmailController");
+} = require("./controllers/email/returnStatusEmailController");
 const {
   orderCancellationEmailController,
-} = require("./controllers/orderCancellationEmailController");
+} = require("./controllers/email/orderCancellationEmailController");
 const {
   pickupScheduledEmailController,
-} = require("./controllers/pickupScheduledEmailController");
+} = require("./controllers/email/pickupScheduledEmailController");
 const {
   verificationEmailController,
-} = require("./controllers/verificationEmailController");
+} = require("./controllers/email/verificationEmailController");
 const {
   welcomeEmailController,
-} = require("./controllers/welcomeEmailController");
+} = require("./controllers/email/welcomeEmailController");
 const {
   contactNotificationEmailController,
-} = require("./controllers/contactNotificationEmailController");
+} = require("./controllers/email/contactNotificationEmailController");
 const {
   passwordResetEmailController,
-} = require("./controllers/passwordResetEmailController");
+} = require("./controllers/email/passwordResetEmailController");
 
 
 const backendHealthCheck = onRequest((request, response) => {

@@ -1,4 +1,6 @@
-const { sendStockAlertEmail } = require("../services/emailService");
+const {
+  sendStockAlertEmail,
+} = require("../../services/email/emailService");
 
 async function stockAlertEmailController(request, response) {
   try {

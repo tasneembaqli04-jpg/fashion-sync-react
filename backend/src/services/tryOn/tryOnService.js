@@ -1,4 +1,4 @@
-const {vertexAi} = require("../config/vertexGemini");
+const {vertexAi} = require("../../config/vertexGemini");
 const MODEL_NAME = "gemini-2.5-flash-image";
 
 function normalizeCategory(product) {

@@ -1,4 +1,4 @@
-const { getGeminiClient } = require("../config/gemini");
+const { getGeminiClient } = require("../../config/gemini");
 
 const IMAGE_MODEL_NAME = "gemini-3.1-flash-image";
 const MAX_REFERENCE_IMAGES = 6;

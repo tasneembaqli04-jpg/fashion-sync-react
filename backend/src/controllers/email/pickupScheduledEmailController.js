@@ -1,8 +1,10 @@
-const { sendGiftCardRejectedEmail } = require("../services/emailService");
+const {
+  sendPickupScheduledEmail,
+} = require("../../services/email/pickupScheduledEmailService");
 
-async function giftCardRejectedEmailController(request, response) {
+async function pickupScheduledEmailController(request, response) {
   try {
-    const { toEmail, lang } = request.body || {};
+    const { toEmail, orderId, pickupDate, pickupTime, lang } = request.body || {};
 
     if (!toEmail) {
       return response.status(400).json({
@@ -11,8 +13,11 @@ async function giftCardRejectedEmailController(request, response) {
       });
     }
 
-    const result = await sendGiftCardRejectedEmail({
+    const result = await sendPickupScheduledEmail({
       toEmail,
+      orderId,
+      pickupDate,
+      pickupTime,
       lang,
     });
 
@@ -21,7 +26,7 @@ async function giftCardRejectedEmailController(request, response) {
       emailId: result.emailId,
     });
   } catch (error) {
-    console.error("Gift card rejected email controller error:", error);
+    console.error("Pickup scheduled email controller error:", error);
 
     return response.status(500).json({
       success: false,
@@ -31,5 +36,5 @@ async function giftCardRejectedEmailController(request, response) {
 }
 
 module.exports = {
-  giftCardRejectedEmailController,
+  pickupScheduledEmailController,
 };

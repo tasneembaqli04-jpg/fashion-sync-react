@@ -1,8 +1,10 @@
-const { sendOrderRejectedEmail } = require("../services/emailService");
+const {
+  sendShippingUpdateEmail,
+} = require("../../services/email/emailService");
 
-async function orderRejectedEmailController(request, response) {
+async function shippingUpdateEmailController(request, response) {
   try {
-    const { toEmail, orderId, reason, lang } = request.body || {};
+    const { toEmail, orderId, stageIndex, isPickup, lang } = request.body || {};
 
     if (!toEmail || !orderId) {
       return response.status(400).json({
@@ -11,10 +13,11 @@ async function orderRejectedEmailController(request, response) {
       });
     }
 
-    const result = await sendOrderRejectedEmail({
+    const result = await sendShippingUpdateEmail({
       toEmail,
       orderId,
-      reason,
+      stageIndex,
+      isPickup,
       lang,
     });
 
@@ -23,7 +26,7 @@ async function orderRejectedEmailController(request, response) {
       emailId: result.emailId,
     });
   } catch (error) {
-    console.error("Order rejected email controller error:", error);
+    console.error("Shipping update email controller error:", error);
 
     return response.status(500).json({
       success: false,
@@ -33,5 +36,5 @@ async function orderRejectedEmailController(request, response) {
 }
 
 module.exports = {
-  orderRejectedEmailController,
+  shippingUpdateEmailController,
 };

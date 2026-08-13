@@ -1,6 +1,6 @@
 const {
   sendPasswordResetEmail,
-} = require("../services/passwordResetEmailService");
+} = require("../../services/email/passwordResetEmailService");
 
 async function passwordResetEmailController(request, response) {
   try {

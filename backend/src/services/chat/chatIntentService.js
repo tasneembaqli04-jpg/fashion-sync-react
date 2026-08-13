@@ -8,7 +8,7 @@
  * זמינות בפועל, ולבסוף בחירת לוק/מוצר על ידי מנוע ה-AI — כך שהמלצות
  * הצ'אטבוט תמיד מבוססות על נתונים אמיתיים, לא על ניחוש חופשי של המודל.
  */
-const {getGeminiClient} = require("../config/gemini");
+const {getGeminiClient} = require("../../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
 const RESPONSE_MODE_VALUES = Object.freeze([

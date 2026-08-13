@@ -1,4 +1,4 @@
-const {generateTryOn} = require("../services/tryOnService");
+const {generateTryOn} = require("../../services/tryOn/tryOnService");
 
 async function tryOnController(request, response) {
   try {
