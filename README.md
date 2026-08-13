@@ -192,11 +192,12 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-123 tests across five files, covering the business logic that carries the most risk.
+147 tests across six files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
 | `checkoutPricing.test.js` | 20 | Subtotal, discounts, shipping, total |
+| `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
 | `orderPolicy.test.js` | 15 | The 24-hour cancellation and 7-day return windows |
 | `stockPolicy.test.js` | 10 | Availability per product and variant |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
@@ -264,6 +265,7 @@ These are known, measured, and scoped. Each was identified during a security and
 | **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the first candidate, being the smallest and the easiest to demonstrate |
 | **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
+| **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |
 
 ## Working with Git
 

@@ -27,6 +27,44 @@ export function getCartCount(cart) {
 }
 
 /**
+ * Returns the stock ceiling for one cart line.
+ *
+ * A cart line is a specific colour and size, so the ceiling must be the
+ * quantity of that exact variant — not product.stock, which is the sum across
+ * every variant. Using the sum let a customer put three of a size into the
+ * cart when only one existed, because two other sizes made up the difference.
+ *
+ * Falls back to product.stock when the line has no colour or size, when the
+ * product has no variants, or when the colour is not found. Custom sizes
+ * ("אחר") are handled outside the regular stock system and keep the old
+ * behaviour too.
+ *
+ * @param {object|null} product - Product from the catalogue.
+ * @param {string} [color] - Colour on the cart line.
+ * @param {string} [size] - Size on the cart line.
+ * @returns {number} Maximum quantity allowed for this line.
+ */
+export function getVariantStockLimit(product, color, size) {
+  const totalStock = Number(product?.stock) || 0;
+
+  if (!product || !color || !size || size === "אחר") {
+    return totalStock;
+  }
+
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (!variants.length) {
+    return totalStock;
+  }
+
+  const matchingVariant = variants.find((v) => v.colorName === color);
+  if (!matchingVariant || matchingVariant.sizes?.[size] === undefined) {
+    return totalStock;
+  }
+
+  return Number(matchingVariant.sizes[size]) || 0;
+}
+
+/**
  * Calculates the cart totals shown in the cart drawer.
  *
  * IMPORTANT — appliedDiscount here is a fraction (0.1 for 10%), not a
@@ -85,12 +123,19 @@ export async function addToCart({
   let nextCart;
 
   if (existingItem) {
+    // Cap at the selected variant's quantity, not the product-wide total.
+    const variantLimit = getVariantStockLimit(
+      product,
+      variant.color,
+      variant.size
+    );
+
     nextCart = cart.map((item) =>
       item.key !== key
         ? item
         : {
             ...item,
-            qty: Math.min(item.qty + 1, product.stock),
+            qty: Math.min(item.qty + 1, variantLimit),
           }
     );
   } else {
@@ -126,10 +171,11 @@ export async function addToCart({
  * Changes the quantity of a cart line by a delta, and persists the result.
  *
  * Two edge cases are handled here rather than by the caller: reaching zero or
- * below removes the line entirely, and the quantity is capped at the product's
- * current stock so the cart cannot exceed what is available. When the product
- * is no longer in the catalogue the cap falls back to 99, so an item that was
- * removed from the store does not become unchangeable.
+ * below removes the line entirely, and the quantity is capped at the stock of
+ * the selected variant, so the cart cannot exceed what exists in that exact
+ * colour and size. When the product is no longer in the catalogue the cap
+ * falls back to 99, so an item that was removed from the store does not
+ * become unchangeable.
  *
  * @param {Array} cart - Current cart.
  * @param {string} key - Composite key of the line to change (code|size|color).
@@ -143,7 +189,9 @@ export async function changeQty(cart, key, delta, products, email) {
   if (!currentItem) return cart;
 
   const product = products.find((p) => p.code === currentItem.code);
-  const maxStock = product ? product.stock : 99;
+  const maxStock = product
+    ? getVariantStockLimit(product, currentItem.color, currentItem.size)
+    : 99;
   const nextQty = currentItem.qty + delta;
 
   let nextCart;
