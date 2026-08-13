@@ -53,8 +53,6 @@ async function chatController(request, response) {
           return;
         }
 
-        console.log("CHAT CONTROLLER WRITING CHUNK:", String(text));
-
         writeStreamEvent({
           type: "chunk",
           text: String(text),
@@ -122,8 +120,6 @@ async function chatController(request, response) {
         products: Array.isArray(result?.products) ? result.products : [],
         intent: result?.intent || null,
       });
-
-      console.log("CHAT CONTROLLER ENDING TEXT STREAM:", true);
 
       return response.end();
     }

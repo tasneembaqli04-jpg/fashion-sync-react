@@ -658,8 +658,6 @@ async function searchProducts({
     return firstProduct.price - secondProduct.price;
   });
 
-  console.log("CHAT PRODUCTS FOUND:", products.length);
-
   return products.slice(0, safeLimit);
 }
 

@@ -5,13 +5,13 @@ import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function TryOnModal({
   open = false,
-  tryonSelfie = "",
+  tryOnSelfie = "",
   tryOnResult = null,
   tryOnLoading = false,
   tryOnError = "",
-  closeVisualModal,
+  closeTryOnModal,
   tryOnSelfieUpload,
-  clearTryonSelfie,
+  clearTryOnSelfie,
   onTryOn,
 }) {
   const { alertDialog } = useDialog();
@@ -84,7 +84,7 @@ export default function TryOnModal({
         <button
           type="button"
           className={modalStyles.modalClose}
-          onClick={closeVisualModal}
+          onClick={closeTryOnModal}
         >
           ✕
         </button>
@@ -114,7 +114,7 @@ export default function TryOnModal({
           <div className={modalStyles.card}>
             <div className={baseStyles.secTitle}>{t.uploadSectionTitle}</div>
 
-            {!tryonSelfie ? (
+            {!tryOnSelfie ? (
               <div className={modalStyles.uploadDrop}>
                 <input
                   type="file"
@@ -128,7 +128,7 @@ export default function TryOnModal({
             ) : (
               <div style={{ marginTop: "1rem" }}>
                 <img
-                  src={tryonSelfie}
+                  src={tryOnSelfie}
                   alt={t.uploadedAlt}
                   style={{
                     width: "100%",
@@ -167,7 +167,7 @@ export default function TryOnModal({
                   <button
                     type="button"
                     className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-                    onClick={clearTryonSelfie}
+                    onClick={clearTryOnSelfie}
                     disabled={tryOnLoading}
                   >
                     {t.deleteImage}

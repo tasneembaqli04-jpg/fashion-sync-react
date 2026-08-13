@@ -480,14 +480,6 @@ async function generateOutfitVisualization({
   const ai = getGeminiClient();
   const baseOutfitImagePart = convertDataUrlToInlineData(currentOutfitImage);
 
-  console.log("BASE OUTFIT IMAGE:", {
-    exists: Boolean(baseOutfitImagePart),
-
-    mimeType: baseOutfitImagePart?.inlineData?.mimeType || null,
-
-    size: baseOutfitImagePart?.inlineData?.data?.length || 0,
-  });
-
   const visualizationContext = buildVisualizationContext({
     originalMessage,
     history,
@@ -496,8 +488,6 @@ async function generateOutfitVisualization({
     currentOutfit,
     products,
   });
-
-  console.log("OUTFIT VISUALIZATION CONTEXT:", visualizationContext);
 
   const baseImageInstruction = baseOutfitImagePart ?
     `
@@ -529,11 +519,6 @@ ${buildVisualizationPrompt({
         "No product reference images were downloaded; generating from text only",
     );
   }
-
-  console.log(
-      "OUTFIT REFERENCE IMAGES:",
-      referenceImageParts.filter((part) => part?.inlineData).length,
-  );
 
   const response = await ai.models.generateContent({
     model: IMAGE_MODEL_NAME,
