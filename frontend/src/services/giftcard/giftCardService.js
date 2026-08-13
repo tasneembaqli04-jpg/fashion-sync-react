@@ -67,7 +67,13 @@ export async function redeemGiftCardAmount(code, amountToDeduct) {
     return { ok: false, error: "כרטיס המתנה כבר נוצל במלואו" };
   }
 
-  const deducted = Math.min(Number(data.balance), Number(amountToDeduct) || 0);
+  // Math.max(0, ...) מונע סכום ניכוי שלילי.
+  // בלעדיו, amountToDeduct שלילי היה מחזיר deducted שלילי, והחיסור
+  // למטה היה מגדיל את יתרת הכרטיס במקום להקטין אותה.
+  const deducted = Math.max(
+    0,
+    Math.min(Number(data.balance), Number(amountToDeduct) || 0)
+  );
   const remainingBalance = Number(data.balance) - deducted;
 
   await updateDoc(ref, {
