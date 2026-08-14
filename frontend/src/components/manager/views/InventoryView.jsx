@@ -4,6 +4,7 @@ import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scs
 import { CATEGORIES } from "../../../data/categories";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { getStockStatus } from "../../../functions/customer/stockPolicy";
 
 function getSeasonMeta(t) {
   return {
@@ -70,7 +71,9 @@ function StatusBadge({ stock, minStock }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.inventory;
 
-  if (stock === 0) {
+  const status = getStockStatus(stock, minStock);
+
+  if (status === "out") {
     return (
       <span className={`${uiStyles.tag} ${uiStyles.tRed}`}>
         {t.badges.out}
@@ -78,7 +81,7 @@ function StatusBadge({ stock, minStock }) {
     );
   }
 
-  if (stock <= minStock) {
+  if (status === "low") {
     return (
       <span className={`${uiStyles.tag} ${uiStyles.tYellow}`}>
         {t.badges.low}
@@ -128,13 +131,17 @@ export default function InventoryView({
       const genderMatch =
         genderFilter === common.all ? true : p.gender === genderFilter;
 
+      // The filter reads the same status the badge shows, so a product can
+      // never display one state and be filtered under another.
+      const stockStatus = getStockStatus(p.stock, p.minStock);
+
       let stockStatusMatch = true;
       if (stockStatusFilter === t.options.stockStatus.available) {
-        stockStatusMatch = p.stock > p.minStock;
+        stockStatusMatch = stockStatus === "available";
       } else if (stockStatusFilter === t.options.stockStatus.low) {
-        stockStatusMatch = p.stock > 0 && p.stock <= p.minStock;
+        stockStatusMatch = stockStatus === "low";
       } else if (stockStatusFilter === t.options.stockStatus.out) {
-        stockStatusMatch = p.stock === 0;
+        stockStatusMatch = stockStatus === "out";
       }
 
       const productNameMatch = productNameFilter.trim()

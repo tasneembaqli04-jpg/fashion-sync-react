@@ -10,6 +10,43 @@ function detectIsLight() {
   );
 }
 
+/**
+ * Globe marking the control as a language switch.
+ *
+ * Decorative only: both buttons carry their own visible text, so the icon adds
+ * nothing for a screen reader and is hidden from the accessibility tree.
+ *
+ * @param {object} props - Component props.
+ * @param {string} props.color - Stroke colour, matched to the current theme.
+ * @returns {JSX.Element} The globe icon.
+ */
+function GlobeIcon({ color }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      style={{
+        flexShrink: 0,
+        // Logical property: resolves to the left in LTR and the right in RTL,
+        // so the globe leads the buttons in both directions.
+        marginInlineStart: "0.25rem",
+      }}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 export default function LanguageToggle({ style }) {
   const { lang, setLang } = useLanguage();
   const [isLight, setIsLight] = useState(detectIsLight);
@@ -55,6 +92,7 @@ export default function LanguageToggle({ style }) {
         ...style,
       }}
     >
+      <GlobeIcon color={mutedColor} />
       <button
         type="button"
         onClick={() => setLang("he")}

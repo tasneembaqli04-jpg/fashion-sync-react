@@ -1,6 +1,7 @@
 import styles from "../../styles/checkout/CheckoutPayment.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { splitInstallments } from "../../utils/money";
 
 export default function CheckoutStep3Payment({
   payMethod = "card",
@@ -207,7 +208,13 @@ export default function CheckoutStep3Payment({
 
                     <div className={styles.installRow}>
                       {installments.map((count) => {
-                        const monthly = Math.ceil(total / count);
+                        // Same split as the price box, so the chip can never
+                        // quote a monthly amount higher than the customer
+                        // actually pays. A trailing "+" marks a plan whose
+                        // final instalment carries a few agorot more; the
+                        // price box below spells the split out in full.
+                        const plan = splitInstallments(total, count);
+                        const monthly = plan.regular;
 
                         return (
                           <div
@@ -221,7 +228,9 @@ export default function CheckoutStep3Payment({
                           >
                             {count === 1
                               ? t.onePayment
-                              : `${count} × ₪${monthly.toLocaleString()}`}
+                              : `${count} × ₪${monthly.toLocaleString()}${
+                                  plan.isUniform ? "" : "+"
+                                }`}
                           </div>
                         );
                       })}

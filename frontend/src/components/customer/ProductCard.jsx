@@ -1,6 +1,7 @@
 import cardStyles from "../../styles/customer/ProductCard.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { getStockStatus } from "../../functions/customer/stockPolicy";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -33,14 +34,16 @@ function variantSummary(product) {
 }
 
 function stockBadge(stock, minStock, t) {
-  if (stock === 0) {
+  const status = getStockStatus(stock, minStock);
+
+  if (status === "out") {
     return (
       <span className={`${baseStyles.badge} ${baseStyles.badgeRed}`}>
         {t.outOfStock}
       </span>
     );
   }
-  if (stock <= minStock) {
+  if (status === "low") {
     return (
       <span className={`${baseStyles.badge} ${baseStyles.badgeYellow}`}>
         {t.lowStock}

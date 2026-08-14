@@ -1,6 +1,7 @@
 import { db } from "../../firebase";
 import { doc, setDoc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { translateText } from "../translation/translationService";
+import { roundMoney } from "../../utils/money";
 
 function normalizeCode(code) {
   return String(code || "").trim().toUpperCase();
@@ -67,15 +68,18 @@ export async function redeemGiftCardAmount(code, amountToDeduct) {
     return { ok: false, error: "כרטיס המתנה כבר נוצל במלואו" };
   }
 
-  // Math.max(0, ...) guards against a negative deduction.
-  // Without it, a negative amountToDeduct produced a negative "deducted",
-  // and the subtraction below increased the card balance instead of
-  // reducing it.
-  const deducted = Math.max(
-    0,
-    Math.min(Number(data.balance), Number(amountToDeduct) || 0)
+  // The deduction is clamped to the range [0, balance]. Math.max keeps a
+  // negative amountToDeduct from turning the subtraction below into an
+  // increase; Math.min keeps a card from paying out more than it holds.
+  //
+  // Both the deduction and the new balance are rounded, because they are
+  // written to Firestore and because the status below compares the balance
+  // against zero: an unrounded remainder such as 0.00000000001 would leave a
+  // spent card marked active.
+  const deducted = roundMoney(
+    Math.max(0, Math.min(Number(data.balance), Number(amountToDeduct) || 0))
   );
-  const remainingBalance = Number(data.balance) - deducted;
+  const remainingBalance = roundMoney(Number(data.balance) - deducted);
 
   await updateDoc(ref, {
     balance: remainingBalance,

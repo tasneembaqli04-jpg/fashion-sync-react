@@ -86,15 +86,20 @@ export async function decrementProductsStock(cartItems = []) {
           (variant) => variant.colorName === item.color
         );
 
+        // Tracked separately from qty. When the requested quantity exceeds the
+        // stock actually held for that colour, the surplus cannot be taken off
+        // the shelf, so it must not be counted as a sale either.
+        let deductedQty = 0;
+
         if (variantIndex !== -1) {
           const sizesInColor = variants[variantIndex].sizes || {};
 
           if (item.size && sizesInColor[item.size] !== undefined) {
             const currentSizeQty = Number(sizesInColor[item.size]) || 0;
-            variants[variantIndex].sizes[item.size] = Math.max(
-              0,
-              currentSizeQty - qty
-            );
+            const deduct = Math.min(currentSizeQty, qty);
+
+            variants[variantIndex].sizes[item.size] = currentSizeQty - deduct;
+            deductedQty = deduct;
           } else {
             let remaining = qty;
 
@@ -106,6 +111,7 @@ export async function decrementProductsStock(cartItems = []) {
 
               variants[variantIndex].sizes[sizeKey] = current - deduct;
               remaining -= deduct;
+              deductedQty += deduct;
             }
           }
         }
@@ -123,15 +129,18 @@ export async function decrementProductsStock(cartItems = []) {
         await updateDoc(productRef, {
           stock: newStock,
           variants,
-          salesLastMonth: currentSales + qty,
+          salesLastMonth: currentSales + deductedQty,
         });
       } else {
         const currentStock = Number(data.stock) || 0;
-        const newStock = Math.max(0, currentStock - qty);
+        // The same rule as the variant path: only stock that came off the
+        // shelf counts as sold.
+        const deductedQty = Math.min(currentStock, qty);
+        const newStock = currentStock - deductedQty;
 
         await updateDoc(productRef, {
           stock: newStock,
-          salesLastMonth: currentSales + qty,
+          salesLastMonth: currentSales + deductedQty,
         });
       }
     } catch (err) {
