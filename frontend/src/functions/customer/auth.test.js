@@ -116,9 +116,9 @@ describe("isGuestMode", () => {
     expect(isGuestMode()).toBe(false);
   });
 
-  // This guards the bug that would sign every guest out: reading the mode from
-  // a LS_KEYS map that has no MODE entry yields undefined, and the guest check
-  // silently stops working.
+  // The guest check must read the mode key by its real name. Reading it from
+  // a key map that holds no MODE entry yields undefined, and the check then
+  // fails silently, signing every guest out.
   it("reads the real mode key", () => {
     localStorage.setItem(MODE_KEY, "guest");
     expect(isGuestMode()).toBe(true);

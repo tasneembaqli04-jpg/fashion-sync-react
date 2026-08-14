@@ -145,7 +145,7 @@ function toTitleCase(text) {
 /**
  * Strips a gibberish prefix from the start of a translation.
  *
- * Only removes tokens we are confident about: a known blacklist, or a short
+ * Only removes unambiguous tokens: a known blacklist, or a short
  * token containing a digit. A legitimate prefix such as "UV" is preserved.
  *
  * @param {string} text - The translation from the API.

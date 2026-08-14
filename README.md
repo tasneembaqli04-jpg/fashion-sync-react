@@ -271,12 +271,12 @@ Two rules are intentionally left open and marked as such in the file: gift card 
 
 ## Known Limitations and Roadmap
 
-These are known, measured, and scoped. Each was identified during a security and correctness review of the system, and each has a decided next step. They are listed here rather than left implicit because the decision to defer them was deliberate: the checkout flow works and is stable, and replacing it late in the project carried more risk than the gap itself.
+The system carries the following constraints. Each is bounded in scope, and each has a defined next step.
 
 | Limitation | Impact | Planned fix |
 |---|---|---|
-| **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the single highest-value change remaining |
-| **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the first candidate, being the smallest and the easiest to demonstrate |
+| **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the highest-value change on this list |
+| **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the smallest of the three and the natural first candidate |
 | **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |

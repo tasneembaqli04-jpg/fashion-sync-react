@@ -22,9 +22,9 @@ const MANAGER_USERNAME = "manager";
 // its own grants nothing, and it already appears in firestore.rules and in
 // Manager.jsx.
 //
-// The password is the secret, and it is deliberately not in this file. It used
-// to be hard-coded here, which shipped it in the bundle to every visitor. The
-// manager now types it into the form, so it never reaches the build output.
+// The password is the secret, and it is deliberately not in this file. The
+// manager types it into the form, so it never reaches the build output and is
+// never shipped to a visitor's browser.
 const MANAGER_EMAIL = "manager@fashionsync-internal.com";
 
 export default function LoginOverlay({ onLoginSuccess }) {

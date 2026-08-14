@@ -73,11 +73,10 @@ export async function decrementProductsStock(cartItems = []) {
       const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
       if (hasVariants) {
-        // Clone variants while preserving every existing field.
-        // This previously rebuilt each variant with only colorName and sizes,
-        // which silently dropped other fields (such as colorNameEn) on every
-        // write back to Firestore. The spread on sizes stays, so the update
-        // below does not mutate the original snapshot data.
+        // Clone variants while preserving every existing field. Rebuilding a
+        // variant from a fixed set of keys would drop the rest, such as
+        // colorNameEn, on every write back to Firestore. The nested spread on
+        // sizes keeps the update below from mutating the original snapshot.
         const variants = data.variants.map((variant) => ({
           ...variant,
           sizes: { ...(variant.sizes || {}) },
@@ -153,9 +152,9 @@ export async function restockReturnedItem({ code, qty, color, size }) {
   const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
 
   if (hasVariants) {
-    // Clone variants while preserving every existing field.
-    // Same bug as in decrementProductsStock: rebuilding with only two fields
-    // erased fields such as colorNameEn on every restock.
+    // Clone variants while preserving every existing field, for the same
+    // reason as in decrementProductsStock: a partial rebuild would erase
+    // fields such as colorNameEn on every restock.
     const variants = data.variants.map((variant) => ({
       ...variant,
       sizes: { ...(variant.sizes || {}) },

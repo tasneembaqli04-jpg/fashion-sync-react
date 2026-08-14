@@ -12,7 +12,8 @@ const { getVariantStockLimit, addToCart, changeQty, getCartTotals, getCartCount 
   await import("./cart");
 
 // A product whose sizes hold one unit each: the total is 3, but no single
-// size has more than 1. This is the shape that exposed the original bug.
+// size has more than 1. This is the shape that separates the per-size cap
+// from the product total.
 const scarceProduct = {
   code: "FS-001",
   name: "חולצה",
@@ -96,7 +97,8 @@ describe("getVariantStockLimit", () => {
 
 describe("changeQty — the quantity ceiling", () => {
   it("blocks raising a line above the stock of its own size", async () => {
-    // One unit of M exists. The product total is 3, which used to be the cap.
+    // One unit of M exists, against a product total of 3. The cap is the
+    // stock of the size, not the total.
     const cart = [line(scarceProduct, "שחור", "M", 1)];
     const next = await changeQty(cart, cart[0].key, 2, [scarceProduct], "a@b.c");
 
@@ -198,11 +200,10 @@ describe("addToCart — the quantity ceiling", () => {
   });
 });
 
-describe("regression — the stock inflation scenario", () => {
+describe("stock inflation", () => {
   it("prevents buying three of a size that holds one", async () => {
-    // Original bug: the cart accepted 3 because product.stock was 3.
-    // Buying 3 clamped the size to 0, and cancelling added 3 back,
-    // inflating total stock from 3 to 5.
+    // Accepting 3 on the product total would clamp the size to 0, and a
+    // cancellation would then add 3 back, inflating total stock from 3 to 5.
     const cart = [line(scarceProduct, "שחור", "M", 1)];
 
     let next = await changeQty(cart, cart[0].key, 1, [scarceProduct], "a@b.c");
