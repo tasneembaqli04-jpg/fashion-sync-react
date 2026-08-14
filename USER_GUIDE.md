@@ -72,6 +72,8 @@ The result is a simulation for guidance, not a photograph of the product on you.
 
 Sign in at the `/manager` address with the manager username and the password configured for the manager account in Firebase Authentication. The password is not stored in the site's code and must be typed at each login.
 
+The management session lasts as long as the browser tab. Refreshing or moving between management screens keeps you signed in, but closing the browser ends the session, so the password is required again the next time you open it. Opening the management interface in a second tab counts as a new session and asks for the password. Customer sessions are unaffected and still survive a browser restart.
+
 | Screen | What it does |
 |---|---|
 | **Inventory** | Add and edit products, including variants by colour and size, images and prices. Name and description are translated to English automatically on save |

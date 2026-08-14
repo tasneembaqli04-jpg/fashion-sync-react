@@ -192,7 +192,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-147 tests across six files, covering the business logic that carries the most risk.
+165 tests across seven files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -200,6 +200,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
 | `orderPolicy.test.js` | 15 | The 24-hour cancellation and 7-day return windows |
 | `stockPolicy.test.js` | 10 | Availability per product and variant |
+| `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `translationService.test.js` | 52 | Fashion term dictionary, translation fixes, colour translation guard |
 
@@ -241,6 +242,19 @@ Firestore Security Rules are role based.
 ### Manager credentials
 
 There are no passwords in the source code. The login screen takes a username and password from the form and passes them to Firebase Authentication. The manager account's email appears as a constant, which is not a secret — an email address on its own grants no access.
+
+### Sessions and identity
+
+Firebase Auth is the single source of truth for who is signed in. A listener in `Customer.jsx` reacts to every change in the authentication state, and `localStorage` holds only a display cache — a name and an email address, so the interface can render before the listener resolves. When Firebase reports no user, the cache is cleared and the visitor is returned to the login screen; it can never show a signed-in customer whose Firestore requests would be denied. Guest mode is exempt, having no Firebase session by design.
+
+The two roles are given different session lifetimes, and both are set explicitly rather than left to the Firebase default:
+
+| Role | Persistence | Effect |
+|---|---|---|
+| **Manager** | `browserSessionPersistence` | The session lives in the tab. Closing the browser signs the manager out, so the password is required again on the next visit |
+| **Customer** | `browserLocalPersistence` | The session survives a browser restart, so a returning customer is not asked to sign in on every visit |
+
+Both settings are applied to the same shared authentication instance, which is why neither is left implicit. Persistence is a property of that instance, not of a single sign-in call: were the customer path to rely on the default, a customer signing in from the same tab after a manager login would silently inherit the narrower manager setting and be signed out when the browser closed. Stating both removes the ordering dependency.
 
 ### Field and operation limits
 
