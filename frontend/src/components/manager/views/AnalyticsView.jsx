@@ -3,122 +3,22 @@ import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
-
-function isSameMonth(dateStr) {
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-  );
-}
+import { calculateMonthlyStats } from "../../../functions/manager/analytics";
 
 export default function AnalyticsView({ orders = [], products = [], returnRequests = [] }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.analytics;
 
-  const stats = useMemo(() => {
-    const realOrders = orders.filter(
-      (o) =>
-        !Array.isArray(o.items) ||
-        !o.items.every((item) => item.isGiftCard)
-    );
-
-    const monthOrders = realOrders.filter((o) =>
-      isSameMonth(o.date || o.createdAt)
-    );
-
-    const monthRevenue = monthOrders.reduce(
-      (sum, o) => sum + (Number(o.total) || 0),
-      0
-    );
-    const salesCount = monthOrders.length;
-    const avgOrder = salesCount ? Math.round(monthRevenue / salesCount) : 0;
-
-    let missingCostCount = 0;
-    const monthExpenses = monthOrders.reduce((sum, order) => {
-      const orderExpense = (order.items || []).reduce((itemSum, item) => {
-        if (item.isGiftCard) return itemSum;
-
-        const product = products.find((p) => p.code === item.code);
-        const cost = Number(product?.cost) || 0;
-
-        if (!product || !product.cost) {
-          missingCostCount += 1;
-        }
-
-        return itemSum + cost * (Number(item.qty) || 0);
-      }, 0);
-
-      return sum + orderExpense;
-    }, 0);
-
-    const approvedReturnsThisMonth = returnRequests.filter(
-      (r) => r.status === "approved" && isSameMonth(r.createdAt)
-    );
-
-    const returnsRevenueDeduction = approvedReturnsThisMonth.reduce(
-      (sum, r) => sum + (Number(r.price) || 0) * (Number(r.qty) || 1),
-      0
-    );
-
-    const returnsExpenseRecovered = approvedReturnsThisMonth
-      .filter((r) => r.reasonKey !== "defective")
-      .reduce((sum, r) => {
-        const product = products.find((p) => p.code === r.itemCode);
-        const cost = Number(product?.cost) || 0;
-        return sum + cost * (Number(r.qty) || 1);
-      }, 0);
-
-    const adjustedRevenue = monthRevenue - returnsRevenueDeduction;
-    const adjustedExpenses = monthExpenses - returnsExpenseRecovered;
-    const monthProfit = adjustedRevenue - adjustedExpenses;
-
-    const categoryMap = {};
-    monthOrders.forEach((order) => {
-      (order.items || []).forEach((item) => {
-        if (item.isGiftCard) return;
-        const product = products.find((p) => p.code === item.code);
-        const category = product?.cat || t.otherCategory;
-        const itemTotal = (Number(item.price) || 0) * (Number(item.qty) || 0);
-        categoryMap[category] = (categoryMap[category] || 0) + itemTotal;
-      });
-    });
-
-    const categorySales = Object.entries(categoryMap).sort(
-      (a, b) => b[1] - a[1]
-    );
-
-    const maxCategorySale = Math.max(1, ...categorySales.map(([, v]) => v));
-
-    const ordersByCustomer = {};
-    realOrders.forEach((order) => {
-      const email = order.customerEmail || "unknown";
-      ordersByCustomer[email] = (ordersByCustomer[email] || 0) + 1;
-    });
-
-    const totalCustomers = Object.keys(ordersByCustomer).length;
-    const repeatCustomers = Object.values(ordersByCustomer).filter(
-      (c) => c > 1
-    ).length;
-    const repeatPct = totalCustomers
-      ? Math.round((repeatCustomers / totalCustomers) * 100)
-      : 0;
-
-    return {
-      monthRevenue: adjustedRevenue,
-      monthExpenses: adjustedExpenses,
-      monthProfit,
-      missingCostCount,
-      salesCount,
-      avgOrder,
-      categorySales,
-      maxCategorySale,
-      repeatPct,
-      returnsRevenueDeduction,
-      returnsCount: approvedReturnsThisMonth.length,
-    };
-  }, [orders, products, returnRequests]);
+  const stats = useMemo(
+    () =>
+      calculateMonthlyStats({
+        orders,
+        products,
+        returnRequests,
+        otherCategoryLabel: t.otherCategory,
+      }),
+    [orders, products, returnRequests, t.otherCategory]
+  );
 
   const categoryColors = [
     "var(--gold)",

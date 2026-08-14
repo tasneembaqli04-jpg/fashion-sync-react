@@ -20,6 +20,7 @@ import {
   saveReceiptAndOrder,
 } from "../functions/checkout/checkoutActions";
 import { decrementProductsStock } from "../services/products/productsService";
+import { roundMoney } from "../utils/money";
 import {
   getDiscountAmount,
   getShippingCost,
@@ -107,7 +108,9 @@ export default function Checkout() {
       localStorage.getItem(LS_KEYS.GIFT_CARD_CODE) || ""
     );
     setPreAppliedGiftCardDiscount(
-      parseFloat(localStorage.getItem(LS_KEYS.GIFT_CARD_DISCOUNT) || "0") || 0
+      roundMoney(
+        parseFloat(localStorage.getItem(LS_KEYS.GIFT_CARD_DISCOUNT) || "0") || 0
+      )
     );
 
     const currentUser = getCurrentUser();
@@ -164,9 +167,14 @@ export default function Checkout() {
       ? Math.max(0, subtotal - discountAmount - pointsDiscountAmount)
       : getTotal(cart, discountPct, selectedShipping, pointsDiscountAmount);
 
-    return Math.max(
-      0,
-      baseTotal - preAppliedGiftCardDiscount - checkoutGiftCardDiscount
+    // End of the chain, and the value every later comparison uses
+    // (total <= 0, total < 100, the instalment split), so it is rounded once
+    // here rather than at any intermediate step.
+    return roundMoney(
+      Math.max(
+        0,
+        baseTotal - preAppliedGiftCardDiscount - checkoutGiftCardDiscount
+      )
     );
   }, [
       cart,
@@ -243,7 +251,8 @@ export default function Checkout() {
       ? Math.max(0, subtotal - discountAmount - pointsDiscountAmount)
       : getTotal(cart, discountPct, selectedShipping, pointsDiscountAmount);
 
-    return Math.max(0, baseTotal - preAppliedGiftCardDiscount);
+    // Compared against the card balance below, so it is rounded here.
+    return roundMoney(Math.max(0, baseTotal - preAppliedGiftCardDiscount));
   }, [
     cart,
     discountPct,
@@ -271,7 +280,9 @@ export default function Checkout() {
       return;
     }
 
-    const usable = Math.min(Number(card.balance), remainingBeforeCheckoutGiftCard);
+    const usable = roundMoney(
+      Math.min(Number(card.balance), remainingBeforeCheckoutGiftCard)
+    );
 
     setCheckoutGiftCardCode(code);
     setCheckoutGiftCardDiscount(usable);
@@ -437,15 +448,20 @@ export default function Checkout() {
         const orderGiftCardCode = localStorage.getItem(LS_KEYS.GIFT_CARD_CODE) || "";
         const orderGiftCardDiscount =
           parseFloat(localStorage.getItem(LS_KEYS.GIFT_CARD_DISCOUNT) || "0") || 0;
-        const orderTotal = Math.max(
-          0,
+
+        // The whole chain runs at full precision and is rounded once, here and
+        // in the receipt below, so no intermediate rounding error accumulates.
+        const orderTotal = roundMoney(
           Math.max(
             0,
-            orderSubtotal - orderDiscountAmount - orderPointsDiscountAmount
-          ) +
-            orderShippingCost -
-            orderGiftCardDiscount -
-            checkoutGiftCardDiscount
+            Math.max(
+              0,
+              orderSubtotal - orderDiscountAmount - orderPointsDiscountAmount
+            ) +
+              orderShippingCost -
+              orderGiftCardDiscount -
+              checkoutGiftCardDiscount
+          )
         );
 
         const fullName = `${formData.firstName} ${formData.lastName}`.trim();
@@ -474,13 +490,13 @@ export default function Checkout() {
             notes: formData.notes,
           },
           items: orderItems,
-          subtotal: orderSubtotal,
-          discountAmount: orderDiscountAmount,
+          subtotal: roundMoney(orderSubtotal),
+          discountAmount: roundMoney(orderDiscountAmount),
           discountPct,
           pointsRedeemed: orderPointsRedeemed,
-          pointsDiscountAmount: orderPointsDiscountAmount,
+          pointsDiscountAmount: roundMoney(orderPointsDiscountAmount),
           shipping: selectedShipping,
-          shippingCost: orderShippingCost,
+          shippingCost: roundMoney(orderShippingCost),
           pickupDate: "",
           pickupTime: "",
           total: orderTotal,

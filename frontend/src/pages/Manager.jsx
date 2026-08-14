@@ -48,6 +48,7 @@ import { sendShippingUpdateEmail, sendStockAlertEmail, sendGiftCardActivatedEmai
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { logOut } from "../services/auth/firebaseAuth";
+import { getStockStatus } from "../functions/customer/stockPolicy";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 
@@ -290,10 +291,10 @@ export default function Manager({ onPromote }) {
   const stats = useMemo(() => {
     const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     const lowCount = products.filter(
-      (p) => p.stock === 0 || (p.stock > 0 && p.stock <= p.minStock),
+      (p) => getStockStatus(p.stock, p.minStock) !== "available",
     ).length;
     const demandCount = products.filter((p) => {
-      if (p.stock !== 0) return false;
+      if (getStockStatus(p.stock, p.minStock) !== "out") return false;
       const requestCount = stockNotifications.filter(
         (n) => n.productCode === p.code
       ).length;

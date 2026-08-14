@@ -1,6 +1,15 @@
+import { resolveTimestamp } from "../../utils/dates";
+
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const CANCEL_WINDOW_MS = 24 * ONE_HOUR_MS;
 const RETURN_WINDOW_MS = 7 * 24 * ONE_HOUR_MS;
+
+// Orders carry two timestamps: `date` is stamped when the customer completes
+// the purchase, `createdAt` when the write reaches Firestore. The two differ by
+// however long the write took. `date` is the business event these windows are
+// measured from, and it is the field the order list sorts by and the analytics
+// screen buckets by, so it is preferred here as well. `createdAt` is the
+// fallback for records that predate it.
 
 /**
  * Checks whether a customer may still cancel an order.
@@ -23,8 +32,8 @@ export function canCancelOrder(order, now = Date.now()) {
   if (order.cancelled) return false;
   if (Number(order.status) === 3) return false;
 
-  const createdTimestamp = new Date(order.createdAt || order.date).getTime();
-  if (Number.isNaN(createdTimestamp)) return false;
+  const createdTimestamp = resolveTimestamp(order.date, order.createdAt);
+  if (createdTimestamp === null) return false;
 
   return now - createdTimestamp < CANCEL_WINDOW_MS;
 }
@@ -50,11 +59,13 @@ export function canRequestReturn(order, now = Date.now()) {
   if (!order) return false;
   if (Number(order.status) !== 3) return false;
 
-  const deliveredTimestamp = new Date(
-    order.deliveredAt || order.createdAt || order.date
-  ).getTime();
+  const deliveredTimestamp = resolveTimestamp(
+    order.deliveredAt,
+    order.date,
+    order.createdAt
+  );
 
-  if (Number.isNaN(deliveredTimestamp)) return false;
+  if (deliveredTimestamp === null) return false;
 
   return now - deliveredTimestamp < RETURN_WINDOW_MS;
 }

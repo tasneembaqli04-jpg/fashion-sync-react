@@ -117,3 +117,86 @@ describe("canRequestReturn", () => {
     expect(canRequestReturn(order)).toBe(false);
   });
 });
+
+describe("date field precedence", () => {
+  // Orders carry both fields. `date` is the purchase moment; `createdAt` is
+  // stamped when the write lands, so it is always the later of the two.
+  it("cancellation measures from date, not createdAt", () => {
+    const now = Date.now();
+    const order = {
+      status: 0,
+      date: new Date(now - 25 * HOUR).toISOString(),
+      createdAt: new Date(now - 1 * HOUR).toISOString(),
+    };
+    expect(canCancelOrder(order, now)).toBe(false);
+  });
+
+  it("return measures from date, not createdAt", () => {
+    const now = Date.now();
+    const order = {
+      status: 3,
+      date: new Date(now - 8 * DAY).toISOString(),
+      createdAt: new Date(now - 1 * DAY).toISOString(),
+    };
+    expect(canRequestReturn(order, now)).toBe(false);
+  });
+
+  it("deliveredAt still outranks both date fields for a return", () => {
+    const now = Date.now();
+    const order = {
+      status: 3,
+      deliveredAt: new Date(now - 2 * DAY).toISOString(),
+      date: new Date(now - 30 * DAY).toISOString(),
+    };
+    expect(canRequestReturn(order, now)).toBe(true);
+  });
+});
+
+describe("missing and malformed dates", () => {
+  // new Date(null) is the epoch rather than an invalid date, so a null field
+  // would read as 1970 and silently close the window.
+  it("falls through a null date to createdAt", () => {
+    const now = Date.now();
+    const order = {
+      status: 0,
+      date: null,
+      createdAt: new Date(now - 2 * HOUR).toISOString(),
+    };
+    expect(canCancelOrder(order, now)).toBe(true);
+  });
+
+  it("falls through an empty date string to createdAt", () => {
+    const now = Date.now();
+    const order = {
+      status: 0,
+      date: "",
+      createdAt: new Date(now - 2 * HOUR).toISOString(),
+    };
+    expect(canCancelOrder(order, now)).toBe(true);
+  });
+
+  it("falls through an unparseable date to createdAt", () => {
+    const now = Date.now();
+    const order = {
+      status: 0,
+      date: "not a date",
+      createdAt: new Date(now - 2 * HOUR).toISOString(),
+    };
+    expect(canCancelOrder(order, now)).toBe(true);
+  });
+
+  it("refuses cancellation when both fields are null", () => {
+    const order = { status: 0, date: null, createdAt: null };
+    expect(canCancelOrder(order, Date.now())).toBe(false);
+  });
+
+  it("falls through a null deliveredAt to the order date", () => {
+    const now = Date.now();
+    const order = {
+      status: 3,
+      deliveredAt: null,
+      date: new Date(now - 2 * DAY).toISOString(),
+    };
+    expect(canRequestReturn(order, now)).toBe(true);
+  });
+});

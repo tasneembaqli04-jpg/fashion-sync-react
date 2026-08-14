@@ -1,4 +1,6 @@
 import { SHIPPING_OPTIONS } from "../../data/shippingOptions";
+import { resolveTimestamp } from "../../utils/dates";
+import { getStockStatus } from "../customer/stockPolicy";
 
 export function isOrderOverdue(order) {
   if (!order || !order.confirmed || order.cancelled) return false;
@@ -13,10 +15,11 @@ export function isOrderOverdue(order) {
 
   if (!maxDays) return false;
 
-  const orderDate = new Date(order.date || order.createdAt);
-  if (Number.isNaN(orderDate.getTime())) return false;
+  // Same field order as the cancellation and return windows in orderPolicy.
+  const orderTimestamp = resolveTimestamp(order.date, order.createdAt);
+  if (orderTimestamp === null) return false;
 
-  const daysElapsed = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+  const daysElapsed = (Date.now() - orderTimestamp) / (1000 * 60 * 60 * 24);
 
   return daysElapsed > maxDays;
 }
@@ -33,7 +36,9 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
   }
 
   products.forEach((p) => {
-    if (p.stock === 0)
+    const stockStatus = getStockStatus(p.stock, p.minStock);
+
+    if (stockStatus === "out")
       alerts.push({
         key: `oos_${p.code}`,
         type: "danger",
@@ -42,7 +47,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
         msg: displayName(p),
         createdAt: Date.now(),
       });
-    if (p.stock > 0 && p.stock <= p.minStock)
+    if (stockStatus === "low")
       alerts.push({
         key: `low_${p.code}`,
         type: "warn",
@@ -52,7 +57,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
         createdAt: Date.now(),
       });
 
-    const demandCount = p.stock === 0 ? notifyRequestCount(p.code) : 0;
+    const demandCount = stockStatus === "out" ? notifyRequestCount(p.code) : 0;
 
     if (demandCount > 15)
       alerts.push({

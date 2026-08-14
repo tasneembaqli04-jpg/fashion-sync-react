@@ -1,5 +1,6 @@
 import styles from "../../styles/checkout/CheckoutPayment.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { splitInstallments } from "../../utils/money";
 
 export default function CheckoutPriceBox({
   subtotal = 0,
@@ -15,7 +16,11 @@ export default function CheckoutPriceBox({
   const { t: dict } = useLanguage();
   const t = dict.customer.checkout.priceBox;
   const showInstallments = payMethod === "card" && installments > 1;
-  const monthlyPayment = showInstallments ? Math.ceil(total / installments) : 0;
+
+  // The instalments must add back up to the total. Rounding each one the same
+  // way would leave the sum above the amount owed, so the final instalment
+  // carries the remainder and is shown separately when it differs.
+  const plan = splitInstallments(total, installments);
 
   return (
     <div className={styles.priceBox}>
@@ -56,7 +61,9 @@ export default function CheckoutPriceBox({
         <div className={styles.pline}>
           <span className={styles.pl}>{t.installments}</span>
           <span>
-            {installments} × ₪{monthlyPayment.toLocaleString()}
+            {plan.isUniform
+              ? `${installments} × ₪${plan.regular.toLocaleString()}`
+              : `${installments - 1} × ₪${plan.regular.toLocaleString()} + ₪${plan.last.toLocaleString()}`}
           </span>
         </div>
       )}

@@ -1,4 +1,39 @@
 /**
+ * Classifies a product's stock level into exactly one status.
+ *
+ * Every product resolves to "out", "low" or "available" and never to none of
+ * them, which is what lets the badge on screen and the inventory filter agree
+ * by construction rather than by two parallel sets of conditions.
+ *
+ * Two inputs need deliberate handling:
+ *
+ * - A missing minStock coerces to a threshold of 0, so a stocked product is
+ *   "available" rather than falling outside every category. Comparing against
+ *   an undefined threshold yields false in both directions.
+ * - A negative quantity counts as "out". It is not reachable through the
+ *   purchase and restock paths, which clamp at zero, but a value edited
+ *   directly in Firestore must still land somewhere.
+ *
+ * @param {*} stock - Quantity in stock.
+ * @param {*} minStock - Threshold below which stock counts as low.
+ * @returns {"out"|"low"|"available"} The stock status.
+ */
+export function getStockStatus(stock, minStock) {
+  const quantity = Number(stock) || 0;
+  const threshold = Number(minStock) || 0;
+
+  if (quantity <= 0) {
+    return "out";
+  }
+
+  if (quantity <= threshold) {
+    return "low";
+  }
+
+  return "available";
+}
+
+/**
  * Checks whether a specific product variant (colour + size) can be added to
  * the cart, based on live stock data.
  *
