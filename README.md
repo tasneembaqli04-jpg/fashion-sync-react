@@ -59,8 +59,8 @@ In numbers: 7 customer panels and 14 management screens, built from 57 React com
                  ┌──────────┘ └──────────┐
                  ▼                       ▼
           ┌─────────────┐         ┌─────────────┐
-          │  Gemini AI  │         │  Gmail API  │
-          │ (Vertex AI) │         │   (email)   │
+          │  Gemini AI  │         │    Gmail    │
+          │ (Vertex AI) │         │   (SMTP)    │
           └─────────────┘         └─────────────┘
 ```
 
@@ -95,7 +95,7 @@ Hebrew search splits the query into words that may appear in any order, and matc
 | Barcode | `@zxing/library`, reading from the device camera |
 | Backend | Firebase Cloud Functions, Node.js 22 |
 | AI | Google Gemini, Vertex AI Virtual Try-On |
-| Email | Gmail API, with credentials in Secret Manager |
+| Email | Nodemailer over Gmail SMTP, authenticated with an app password held in Secret Manager |
 | Database | Cloud Firestore, real time |
 | Auth | Firebase Authentication, email and password |
 | Testing | Vitest |

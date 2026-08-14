@@ -155,8 +155,8 @@ function wordMatchesProductWords(queryWord, productWords) {
  * "שמלת ערב אלגנטית".
  *
  * Each word is tested two ways and either one is enough:
- * 1. As a character run inside the product text — the previous behaviour,
- *    kept so that no result that worked before can disappear.
+ * 1. As a character run inside the product text, which is the broader of the
+ *    two and catches matches that fall inside a longer word.
  * 2. As a whole-word stem match, which handles forms like שמלה vs שמלת.
  *
  * @param {object} product Product to inspect.

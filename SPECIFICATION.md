@@ -47,7 +47,7 @@ flowchart TD
     B["Firebase<br/>Auth · Firestore · Storage"]
     C["Cloud Functions<br/>Node.js 22"]
     D["Gemini AI<br/>Vertex AI"]
-    E["Gmail API"]
+    E["Gmail SMTP"]
 
     A -->|"קריאה וכתיבה ישירה"| B
     A -->|"בקשות הדורשות לוגיקת שרת"| C
