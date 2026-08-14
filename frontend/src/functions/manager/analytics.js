@@ -27,6 +27,127 @@ export function isSameMonth(value, now = Date.now()) {
 }
 
 /**
+ * Selects the slow-moving products worth a manager's attention.
+ *
+ * A fixed threshold does not survive a young catalogue. "In stock and two
+ * sales or fewer" matched 101 of 114 products, which is a description of the
+ * shop rather than a list of things to act on.
+ *
+ * The list is therefore sized relative to the catalogue and ranked on two
+ * signals rather than one:
+ *
+ * - fewest sales first, which is what "slow" means; and
+ * - among products that sold equally little, the most capital sitting on the
+ *   shelf first, because 40 unsold coats matter more than 2 unsold scarves.
+ *
+ * The second signal is what makes the list usable at all: 71 of the products
+ * have sold nothing, so sales alone cannot order them.
+ *
+ * @param {Array<object>} [products] - The catalogue.
+ * @param {object} [options] - Sizing options.
+ * @param {number} [options.share] - Fraction of the in-stock catalogue to list.
+ * @param {number} [options.min] - Never show fewer than this many.
+ * @param {number} [options.max] - Never show more than this many.
+ * @returns {Array<object>} The slowest movers, worst first.
+ */
+export function getSlowProducts(
+  products = [],
+  { share = 0.1, min = 5, max = 15 } = {}
+) {
+  const inStock = products.filter((product) => (Number(product.stock) || 0) > 0);
+
+  if (!inStock.length) {
+    return [];
+  }
+
+  const ranked = [...inStock].sort((first, second) => {
+    const firstSales = Number(first.salesLastMonth) || 0;
+    const secondSales = Number(second.salesLastMonth) || 0;
+
+    if (firstSales !== secondSales) {
+      return firstSales - secondSales;
+    }
+
+    const firstValue = (Number(first.stock) || 0) * (Number(first.price) || 0);
+    const secondValue = (Number(second.stock) || 0) * (Number(second.price) || 0);
+
+    if (firstValue !== secondValue) {
+      return secondValue - firstValue;
+    }
+
+    // Stable, so the panel does not reshuffle between renders.
+    return String(first.code || "").localeCompare(String(second.code || ""));
+  });
+
+  const size = Math.min(max, Math.max(min, Math.ceil(inStock.length * share)));
+
+  return ranked.slice(0, Math.min(size, ranked.length));
+}
+
+/**
+ * Revenue recognised for a single order.
+ *
+ * Measured from the goods that left the shop, not from the cash that came in.
+ * Two consequences follow, and both are the point of measuring it this way:
+ *
+ * 1. **Shipping is excluded.** The order total carries the delivery fee the
+ *    customer paid, while the expense side holds unit costs only. Counting the
+ *    fee as income with no carrier charge against it books every paid delivery
+ *    as pure margin. No carrier charge is recorded anywhere, so the honest
+ *    figure is a gross margin on goods, with delivery left out of both sides.
+ *
+ * 2. **Gift cards behave correctly without needing a field.** Selling a gift
+ *    card is a liability, not income: the shop has taken cash and owes goods.
+ *    Income belongs to the moment the goods are handed over. Measuring from
+ *    the cash collected got this backwards — the card sale was excluded, and
+ *    then redeeming it lowered the total of the order it was spent on, so the
+ *    amount was never recognised at all. Measuring the goods instead
+ *    recognises the full value on delivery, whatever paid for it. The order
+ *    document does not record how much of a gift card was redeemed, so this is
+ *    also the only formulation available.
+ *
+ * Coupon and points discounts are real reductions in the price of goods and
+ * are subtracted. They are apportioned to the goods share of the order,
+ * because an order can hold both goods and gift cards while the discount is
+ * recorded once for the order as a whole.
+ *
+ * @param {object} order - The order.
+ * @returns {number} Revenue attributable to goods delivered.
+ */
+export function getOrderGoodsRevenue(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+
+  const goodsValue = items.reduce(
+    (sum, item) =>
+      item.isGiftCard
+        ? sum
+        : sum + (Number(item.price) || 0) * (Number(item.qty) || 0),
+    0
+  );
+
+  if (goodsValue <= 0) {
+    // No goods on the order. Either it is a gift card sale, which is a
+    // liability, or there is nothing to recognise.
+    return 0;
+  }
+
+  const itemsValue = items.reduce(
+    (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0),
+    0
+  );
+
+  const discounts =
+    (Number(order.discountAmount) || 0) +
+    (Number(order.pointsDiscountAmount) || 0);
+
+  // With no gift cards on the order the share is 1 and the discount applies in
+  // full, which is the ordinary case.
+  const goodsShare = itemsValue > 0 ? goodsValue / itemsValue : 1;
+
+  return Math.max(0, goodsValue - discounts * goodsShare);
+}
+
+/**
  * Calculates the monthly figures shown on the analytics screen.
  *
  * Extracted from the view so the arithmetic can be exercised directly. Every
@@ -64,7 +185,7 @@ export function calculateMonthlyStats({
   );
 
   const monthRevenue = monthOrders.reduce(
-    (sum, order) => sum + (Number(order.total) || 0),
+    (sum, order) => sum + getOrderGoodsRevenue(order),
     0
   );
   const salesCount = monthOrders.length;

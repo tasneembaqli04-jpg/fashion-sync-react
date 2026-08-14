@@ -58,8 +58,8 @@ describe("decrementProductsStock — salesLastMonth counts what left the shelf",
     });
   });
 
-  // The surplus cannot come off the shelf, so it must not be counted as sold.
-  // Stock previously fell by 6 while salesLastMonth rose by 8.
+  // The surplus cannot come off the shelf, so it must not be counted as sold:
+  // stock falls by 6, so the counter has to rise by 6 and not by 8.
   it("counts only the deducted quantity when the order exceeds the colour", async () => {
     store.set("FS-002", {
       salesLastMonth: 0,

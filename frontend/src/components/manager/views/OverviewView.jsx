@@ -3,6 +3,7 @@ import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss"
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { getSlowProducts } from "../../../functions/manager/analytics";
 
 function getAlertClass(type) {
   if (type === "danger") {
@@ -72,7 +73,10 @@ export default function OverviewView({
 
   const max = Math.max(1, ...weekSales);
 
-  const slowProducts = products.filter((p) => p.stock > 0 && (p.salesLastMonth || 0) <= 2);
+  // Sized relative to the catalogue and ranked by sales then by capital on
+  // the shelf. A fixed "two sales or fewer" threshold listed almost the whole
+  // catalogue and gave the manager nothing to act on.
+  const slowProducts = getSlowProducts(products);
 
   return (
     <div className={layoutStyles.view}>

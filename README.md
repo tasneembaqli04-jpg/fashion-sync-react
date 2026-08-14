@@ -192,17 +192,21 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-165 tests across seven files, covering the business logic that carries the most risk.
+259 tests across eleven files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
-| `checkoutPricing.test.js` | 20 | Subtotal, discounts, shipping, total |
-| `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
-| `orderPolicy.test.js` | 15 | The 24-hour cancellation and 7-day return windows |
-| `stockPolicy.test.js` | 10 | Availability per product and variant |
-| `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
-| `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `translationService.test.js` | 52 | Fashion term dictionary, translation fixes, colour translation guard |
+| `analytics.test.js` | 42 | Revenue recognition, profit, averages, slow movers |
+| `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
+| `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
+| `orderPolicy.test.js` | 23 | The 24-hour cancellation and 7-day return windows |
+| `checkoutPricing.test.js` | 20 | Subtotal, discounts, shipping, total |
+| `money.test.js` | 19 | Two-decimal rounding and the instalment split |
+| `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
+| `stockPolicy.test.js` | 17 | Availability and stock status per product and variant |
+| `dates.test.js` | 9 | Resolving an order timestamp from its candidate fields |
+| `productsService.test.js` | 9 | Stock decrement and the sales counter |
 
 ```bash
 cd frontend && npm test        # tests
@@ -281,9 +285,7 @@ The system carries the following constraints. Each is bounded in scope, and each
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |
 | **`salesLastMonth` is a running total, not a monthly one** | The field only ever increases. Nothing resets it at the turn of the month and nothing reduces it when an order is cancelled or returned, so the name and the "sales this month" label both overstate what it holds. It ranks the catalogue bestsellers and the slow-moving list | A scheduled function that rolls the counter over monthly, and a decrement on the cancellation and return paths. Rolling it over needs a scheduler, which is why it is not a client-side change |
-| **Gift card income is absent from the analytics** | An order consisting only of gift cards is excluded from revenue, and redeeming the card later reduces the total of the order it is spent on. The purchase price is therefore never counted. The treatment also differs by order shape: in a mixed order the card is counted as revenue with no offsetting cost | Record the sale of a card as deferred income and recognise it on redemption, which means separating gift card movements from trading revenue rather than filtering orders by their contents |
-| **Returns are deducted at list price** | A return deducts `price × qty` from revenue using the item's catalogue price, not the share the customer actually paid after a coupon or redeemed points. On a discounted order the deduction exceeds the amount received | Record the effective per-item price on the order line at checkout, and deduct that figure on approval |
-| **Profit counts shipping income without shipping cost** | The order total includes the shipping fee and counts towards revenue, while expenses cover unit costs only. Every paid delivery is therefore recorded as pure margin | Record the courier charge per order and subtract it, which means the expense side has to hold more than the cost of goods |
+| **Returns are deducted at list price** | A return deducts `price × qty` from revenue using the item's catalogue price, not the share the customer actually paid after a coupon or redeemed points. On a discounted order the deduction exceeds the revenue that was recognised | Record the effective per-item price on the order line at checkout, and deduct that figure on approval |
 
 ## Working with Git
 
