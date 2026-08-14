@@ -49,8 +49,8 @@ service cloud.firestore {
       allow list: if isManager();
 
       // INTENTIONALLY OPEN — do not tighten without a server-side replacement.
-      // addLoyaltyPoints and redeemLoyaltyPoints still run in the browser
-      // during checkout; restricting writes here breaks checkout immediately.
+      // addLoyaltyPoints and redeemLoyaltyPoints run in the browser during
+      // checkout; restricting writes here breaks checkout immediately.
       allow write: if isManager() || isOwner(customerEmail);
     }
 
@@ -79,7 +79,7 @@ service cloud.firestore {
       allow list: if isManager();
 
       // INTENTIONALLY OPEN — do not tighten without a server-side replacement.
-      // issueGiftCard and redeemGiftCardAmount still run in the browser during
+      // issueGiftCard and redeemGiftCardAmount run in the browser during
       // checkout; restricting writes here breaks buying and paying with a card.
       allow create, update: if isManager() || isSignedIn();
       allow delete: if isManager();
@@ -121,8 +121,8 @@ service cloud.firestore {
 
     // Verification runs after signUp, so the user is already authenticated at
     // all three touch points (create code, resend, verify). Owner-only access
-    // closes the public exposure; the code is still generated and checked in
-    // the browser, so a full fix requires moving both to the server.
+    // keeps the codes private. The code itself is generated and checked in the
+    // browser, so full protection requires moving both to the server.
     match /emailVerifications/{email} {
       allow read, write: if isOwner(email);
     }

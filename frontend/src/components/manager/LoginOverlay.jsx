@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import FloatingItems from "../home/FloatingItems";
 import { signIn } from "../../services/auth/firebaseAuth";
+import { auth } from "../../firebase";
+import { setPersistence, browserSessionPersistence } from "firebase/auth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
 import formStyles from "../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -20,9 +22,9 @@ const MANAGER_USERNAME = "manager";
 // its own grants nothing, and it already appears in firestore.rules and in
 // Manager.jsx.
 //
-// The password is the secret, and it is deliberately not in this file. It used
-// to be hard-coded here, which shipped it in the bundle to every visitor. The
-// manager now types it into the form, so it never reaches the build output.
+// The password is the secret, and it is deliberately not in this file. The
+// manager types it into the form, so it never reaches the build output and is
+// never shipped to a visitor's browser.
 const MANAGER_EMAIL = "manager@fashionsync-internal.com";
 
 export default function LoginOverlay({ onLoginSuccess }) {
@@ -56,6 +58,22 @@ export default function LoginOverlay({ onLoginSuccess }) {
     }
 
     setErrorVisible(false);
+
+    // Keep the management session to this browser session only, so closing the
+    // browser signs the manager out and the password is required again.
+    //
+    // This is set here rather than on the shared auth instance in firebase.js
+    // on purpose: persistence applies per sign-in call, so scoping it to the
+    // management login leaves the customer session on the default persistence,
+    // which survives a browser restart as it always has.
+    //
+    // A failure here is not worth blocking the login over — the session would
+    // simply persist as before, so it is logged and the sign-in continues.
+    try {
+      await setPersistence(auth, browserSessionPersistence);
+    } catch (err) {
+      console.error("Could not scope the manager session to this tab:", err);
+    }
 
     // The password comes from the field the manager typed, not from code.
     // Firebase verifies it — not a string comparison in the browser.

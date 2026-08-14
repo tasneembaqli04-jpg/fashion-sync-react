@@ -192,7 +192,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-147 tests across six files, covering the business logic that carries the most risk.
+165 tests across seven files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -200,6 +200,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
 | `orderPolicy.test.js` | 15 | The 24-hour cancellation and 7-day return windows |
 | `stockPolicy.test.js` | 10 | Availability per product and variant |
+| `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `translationService.test.js` | 52 | Fashion term dictionary, translation fixes, colour translation guard |
 
@@ -242,6 +243,19 @@ Firestore Security Rules are role based.
 
 There are no passwords in the source code. The login screen takes a username and password from the form and passes them to Firebase Authentication. The manager account's email appears as a constant, which is not a secret — an email address on its own grants no access.
 
+### Sessions and identity
+
+Firebase Auth is the single source of truth for who is signed in. A listener in `Customer.jsx` reacts to every change in the authentication state, and `localStorage` holds only a display cache — a name and an email address, so the interface can render before the listener resolves. When Firebase reports no user, the cache is cleared and the visitor is returned to the login screen; it can never show a signed-in customer whose Firestore requests would be denied. Guest mode is exempt, having no Firebase session by design.
+
+The two roles are given different session lifetimes, and both are set explicitly rather than left to the Firebase default:
+
+| Role | Persistence | Effect |
+|---|---|---|
+| **Manager** | `browserSessionPersistence` | The session lives in the tab. Closing the browser signs the manager out, so the password is required again on the next visit |
+| **Customer** | `browserLocalPersistence` | The session survives a browser restart, so a returning customer is not asked to sign in on every visit |
+
+Both settings are applied to the same shared authentication instance, which is why neither is left implicit. Persistence is a property of that instance, not of a single sign-in call: were the customer path to rely on the default, a customer signing in from the same tab after a manager login would silently inherit the narrower manager setting and be signed out when the browser closed. Stating both removes the ordering dependency.
+
 ### Field and operation limits
 
 Beyond the role split, the rules restrict which operations and which fields each role may use:
@@ -257,12 +271,12 @@ Two rules are intentionally left open and marked as such in the file: gift card 
 
 ## Known Limitations and Roadmap
 
-These are known, measured, and scoped. Each was identified during a security and correctness review of the system, and each has a decided next step. They are listed here rather than left implicit because the decision to defer them was deliberate: the checkout flow works and is stable, and replacing it late in the project carried more risk than the gap itself.
+The system carries the following constraints. Each is bounded in scope, and each has a defined next step.
 
 | Limitation | Impact | Planned fix |
 |---|---|---|
-| **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the single highest-value change remaining |
-| **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the first candidate, being the smallest and the easiest to demonstrate |
+| **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the highest-value change on this list |
+| **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the smallest of the three and the natural first candidate |
 | **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |

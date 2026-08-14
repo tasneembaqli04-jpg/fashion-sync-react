@@ -1,4 +1,6 @@
 import { signIn, signUp } from "../../services/auth/firebaseAuth.js";
+import { auth } from "../../firebase.js";
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
 import { saveAuthUser, CUSTOMER_PAGE } from "./storage.js";
 import {
   createAndSendVerificationCode,
@@ -21,6 +23,20 @@ export async function loginOrCreateUser(email, password, t, lang) {
 
   if (normalizedPass.length < 8) {
     return { error: t.passwordTooShort };
+  }
+
+  // Customer sessions survive a browser restart. This is stated explicitly
+  // rather than relying on the Firebase default, because the management login
+  // narrows the same auth instance to session-only persistence. Without this
+  // line, a customer signing in from the same tab after a manager login would
+  // inherit that narrower setting and be signed out when the browser closes.
+  //
+  // Both signIn and signUp below are covered: persistence applies to the auth
+  // instance, so it only needs setting once ahead of them.
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch (err) {
+    console.error("Could not set customer session persistence:", err);
   }
 
   let result = await signIn(normalizedEmail, normalizedPass, t);

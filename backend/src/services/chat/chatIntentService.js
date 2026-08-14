@@ -713,7 +713,7 @@ function extractJsonText(rawText) {
 
 /**
  * Ensures a value returned by Gemini is one of the allowed values, guarding
- * against the model inventing a value that is not in our schema.
+ * against the model inventing a value that is not in the schema.
  *
  * @param {*} value - The value returned by Gemini.
  * @param {string[]} allowedValues - The list of allowed values.
@@ -777,7 +777,7 @@ function normalizeProductCode(value) {
 
 /**
  * Validates and normalizes the full intent returned by Gemini, field by
- * field, against our strict schema. This is the main line of defence against
+ * field, against a strict schema. This is the main line of defence against
  * a malformed model response — any field that breaks the rules is replaced
  * with a safe default, so later pipeline stages always receive a predictable
  * structure.
