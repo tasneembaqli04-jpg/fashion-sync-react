@@ -3,6 +3,7 @@ import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
 import { useTryOn } from "../hooks/useTryOn";
 import { useCustomerOrders } from "../hooks/useCustomerOrders";
+import { useChat } from "../hooks/useChat";
 import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
@@ -56,8 +57,6 @@ import {
   getCartCount,
   getCartTotals,
 } from "../functions/customer/cart";
-import { getReply } from "../functions/customer/chat";
-import { requestChatReplyStream } from "../services/chat/chatService";
 import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";
@@ -135,33 +134,18 @@ export default function Customer() {
   const [currentSeasonTab, setCurrentSeasonTab] = useState(getCurrentSeason());
   const [currentListMode, setCurrentListMode] = useState("all");
 
-  const [chatInput, setChatInput] = useState("");
-  const [moreQuestionsOpen, setMoreQuestionsOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      type: "bot",
-      html: dict.customer.chat.welcomeMessage,
-      isWelcome: true,
-    },
-  ]);
-  const [isChatTyping, setIsChatTyping] = useState(false);
-
-  useEffect(() => {
-    setChatMessages((prev) => {
-      if (prev.length === 1 && prev[0].isWelcome) {
-        return [
-          {
-            type: "bot",
-            html: dict.customer.chat.welcomeMessage,
-            isWelcome: true,
-          },
-        ];
-      }
-      return prev;
-    });
-  }, [lang]);
-  const [currentOutfit, setCurrentOutfit] = useState([]);
-  const [currentOutfitImage, setCurrentOutfitImage] = useState("");
+  // The shopping assistant, self-contained: it needs nothing from the page
+  // beyond the language, which it reads itself.
+  const {
+    chatMessages,
+    chatInput,
+    setChatInput,
+    isChatTyping,
+    moreQuestionsOpen,
+    sendMsg,
+    quickMsg,
+    toggleMoreQuestions,
+  } = useChat();
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
@@ -487,160 +471,6 @@ export default function Customer() {
 
   function handleToggleTheme() {
     toggleThemeFn(setTheme);
-  }
-
-  function quickMsg(text) {
-    setChatInput(text);
-    setTimeout(() => sendMsg(text), 0);
-  }
-
-  async function sendMsg(forcedText) {
-    const text = (forcedText ?? chatInput).trim();
-    if (!text) return;
-
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        type: "user",
-        html: text,
-      },
-    ]);
-
-    setChatInput("");
-    setIsChatTyping(true);
-
-    const history = chatMessages.map((message) => ({
-      role: message.type === "user" ? "user" : "bot",
-      text: message.html || "",
-    }));
-
-    let botMessageStarted = false;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 30000);
-
-    try {
-      const result = await requestChatReplyStream({
-        message: text,
-        history,
-        currentOutfit,
-        currentOutfitImage,
-        lang,
-        signal: controller.signal,
-
-        onChunk: (fullTextSoFar) => {
-          if (!botMessageStarted) {
-            botMessageStarted = true;
-            setIsChatTyping(false);
-
-            setChatMessages((prev) => [
-              ...prev,
-              {
-                type: "bot",
-                html: fullTextSoFar,
-              },
-            ]);
-          } else {
-            setChatMessages((prev) => {
-              const next = [...prev];
-
-              next[next.length - 1] = {
-                type: "bot",
-                html: fullTextSoFar,
-              };
-
-              return next;
-            });
-          }
-        },
-      });
-      if (
-        botMessageStarted &&
-        result?.responseMode === "TEXT" &&
-        Array.isArray(result?.products) &&
-        result.products.length > 0
-      ) {
-        setChatMessages((prev) => {
-          const next = [...prev];
-
-          next[next.length - 1] = {
-            ...next[next.length - 1],
-            products: result.products,
-          };
-
-          return next;
-        });
-      }
-
-      if (
-        result?.responseMode === "IMAGE" &&
-        result?.imageGenerated === true &&
-        result?.image?.dataUrl
-      ) {
-        setCurrentOutfit(Array.isArray(result.products) ? result.products : []);
-        setCurrentOutfitImage(result.image.dataUrl);
-        setIsChatTyping(false);
-
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: dict.customer.chat.outfitImageReady,
-            imageUrl: result.image.dataUrl,
-            imageMimeType: result.image.mimeType || "image/png",
-            products: result.products || [],
-          },
-        ]);
-
-        return;
-      }
-
-      if (
-        result?.responseMode === "TEXT" &&
-        result?.text &&
-        !botMessageStarted
-      ) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: result.text,
-            products: result.products || [],
-          },
-        ]);
-      }
-    } catch (err) {
-      console.warn(`Chat service unreachable, using the fallback reply: ${err.message}`);
-
-      if (err?.name === "AbortError") {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: dict.customer.chat.requestTimedOut,
-          },
-        ]);
-
-        return;
-      }
-
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          html: getReply(dict),
-        },
-      ]);
-    } finally {
-      clearTimeout(timeoutId);
-      setIsChatTyping(false);
-    }
-  }
-
-  function toggleMoreQuestions() {
-    setMoreQuestionsOpen((prev) => !prev);
   }
 
   function toggleWish(code) {
