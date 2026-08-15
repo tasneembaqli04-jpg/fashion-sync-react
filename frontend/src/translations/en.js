@@ -604,7 +604,7 @@ export const en = {
       messagePlaceholder: "Type a message...",
       serviceUnavailable: "The assistant is unavailable right now. Please try again shortly, or see the policy page.",
       outfitImageReady: "Here is the look you asked for:",
-      requestTimedOut: "That took too long. Please try again.",
+      requestTimedOut: "I could not answer that one. Please try again, or ask me something else.",
       welcomeMessage: "Hello! 👋 I'm SYNC, FashionSync's smart assistant.<br />I can help you find clothes, check prices, business hours, and more.<br />How can I help you today?",
     },
     browse: {
