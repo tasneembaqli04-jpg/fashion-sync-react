@@ -142,7 +142,7 @@ fashion-sync-react/
 │       ├── pages/            # Customer, Manager, Checkout, Home
 │       ├── services/         # Direct Firestore access — the "database" layer
 │       ├── functions/        # Business logic built on services/ — the "logic" layer
-│       ├── hooks/            # Shared React hooks
+│       ├── hooks/            # Shared React hooks, and the page feature hooks
 │       ├── translations/     # Hebrew/English strings
 │       └── styles/           # SCSS Modules
 ├── backend/                  # Firebase Cloud Functions
@@ -153,7 +153,20 @@ fashion-sync-react/
 └── scripts/                  # One-off maintenance scripts, outside the Vite build
 ```
 
-**The frontend split matters:** `services/` performs database access; `functions/` holds the business logic that builds on it. Keeping the logic layer free of network calls is what makes it unit-testable, which is why all five test files target `functions/` and `services/translation`.
+**The frontend split matters:** `services/` performs database access; `functions/` holds the business logic that builds on it. Keeping the logic layer free of network calls is what makes it unit-testable, which is why every test file targets `functions/` or `services/`.
+
+**Features live in hooks, not in the page.** The customer and management pages were single components holding every screen's state at once. Each self-contained feature now sits in its own hook under `hooks/`, and the page calls them and passes the results down:
+
+| Hook | Holds |
+|---|---|
+| `useShareModal` | Sharing a product by link, email or WhatsApp |
+| `useGiftCard` | Buying a gift card, and checking a balance |
+| `useTryOn` | The Try-On dialog, its photo and its cancellable request |
+| `useCustomerOrders` | A customer's order history and the returns raised against it |
+| `useManagerOrders` | Every order, its live subscription, and the manager's decisions |
+| `useChat` | The shopping assistant and its streaming reply |
+
+This took `Customer.jsx` from 1,529 lines to 1,086 and `Manager.jsx` from 995 to 812. The hooks hold state and side effects; the pure rules they rely on stay in `functions/`, where the tests reach them.
 
 **The backend split mirrors itself:** `controllers/` and `services/` use the same three domains, and each controller is a thin entry point that calls the matching service.
 
@@ -192,7 +205,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-365 tests across seventeen files, covering the business logic that carries the most risk.
+382 tests across eighteen files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -207,6 +220,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `money.test.js` | 19 | Two-decimal rounding and the instalment split |
 | `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
 | `stockPolicy.test.js` | 17 | Availability and stock status per product and variant |
+| `orderStatus.test.js` | 17 | Which orders still need a decision, and which are in transit |
 | `giftCard.test.js` | 15 | Gift card purchase rules and refusal codes |
 | `businessHoursPolicy.test.js` | 11 | Opening hours validation |
 | `notificationSettingsService.test.js` | 11 | Alert preferences, and defaults that never silence an alert |
@@ -301,6 +315,8 @@ The system carries the following constraints. Each is bounded in scope, and each
 | **The size options per category are duplicated** | `CATEGORY_SIZE_OPTIONS` is declared separately in `ProductCard`, `ProductModal`, `AddProductModal` and `DetailsModal`. Adding a size means editing four files, and a miss shows different options on the customer and management sides | Move it beside `CATEGORIES` in `data/` |
 | **Order status labels are stored but never read** | Every order is written with a `steps` array and a `statusLabel` in Hebrew. No screen renders either: the interface derives the stage from the numeric `status` and takes its wording from the dictionary | Drop both fields from the order document |
 | **Dialogs do not trap focus** | Every dialog announces itself, closes on Escape and moves focus inside on open, but Tab still walks out of it and into the page behind. A keyboard user can reach the content the dialog is covering without closing it first | Hold Tab and Shift+Tab inside the dialog while it is open, in the same `useModalA11y` hook the fifteen dialogs already share |
+| **State is cleared inside an effect on sign-out** | `useCustomerOrders` empties the order and return lists from within its effects when the customer signs out, which `react-hooks/set-state-in-effect` reports as two errors. The lists do clear correctly; the cost is an extra render pass each time | Derive the lists from the signed-in customer instead of storing and clearing them, or give the panel a `key` so React discards its state on sign-out. Both change how the state is held, not what it holds |
+| **An effect calls a function declared below it** | The catalogue load in `Customer.jsx` calls `openProductModal`, which is declared later in the same component. The call works, because a `function` declaration is hoisted, but `react-hooks` reports it as one error | Move the declaration above the effect. It is a large diff for a line that already behaves correctly, which is why it has not been made |
 
 ## Working with Git
 
