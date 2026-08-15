@@ -320,7 +320,9 @@ export default function Customer() {
       if (sharedItemCode) {
         const sharedProduct = products.find((p) => p.code === sharedItemCode);
         if (sharedProduct) {
-          openProductModal(sharedItemCode);
+          // Passed through, because the catalogue above is a local list and
+          // the state behind it has not been committed yet.
+          openProductModal(sharedItemCode, sharedProduct);
         }
       }
     }
@@ -492,8 +494,16 @@ export default function Customer() {
     });
   }
 
-  function openProductModal(code) {
-    const product = products.find((item) => item.code === code);
+  /**
+   * Opens the product dialog on a code.
+   *
+   * `knownProduct` exists for the one caller that already holds the product
+   * and cannot rely on state: the page load that follows a shared link runs
+   * before the catalogue it just fetched has been committed, so looking the
+   * code up here would find nothing and the dialog would stay shut.
+   */
+  function openProductModal(code, knownProduct) {
+    const product = knownProduct || products.find((item) => item.code === code);
     if (!product) return;
 
     const colorsFromVariants = product.variants
