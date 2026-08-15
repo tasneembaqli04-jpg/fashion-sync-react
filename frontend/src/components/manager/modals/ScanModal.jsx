@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import { createPortal } from "react-dom";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
@@ -7,6 +8,10 @@ import { useLanguage } from "../../../translations/LanguageProvider";
 export default function ScanModal({ open, onClose, onCodeScanned }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.scanModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: onClose,
+  });
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -198,6 +203,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       }}
     >
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={modalStyles.modalBox}
         style={{
           width: "100%",
@@ -220,7 +227,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
           className={modalStyles.modalTitle}
           style={{ marginBottom: "0.3rem" }}
         >
-          {t.title}
+          <span {...titleProps}>{t.title}</span>
         </div>
 
         <p

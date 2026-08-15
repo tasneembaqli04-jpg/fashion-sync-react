@@ -192,7 +192,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-319 tests across fourteen files, covering the business logic that carries the most risk.
+341 tests across sixteen files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -207,9 +207,11 @@ Never commit API keys for external services, credentials, or service account fil
 | `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
 | `stockPolicy.test.js` | 17 | Availability and stock status per product and variant |
 | `giftCard.test.js` | 15 | Gift card purchase rules and refusal codes |
+| `businessHoursPolicy.test.js` | 11 | Opening hours validation |
+| `notificationSettingsService.test.js` | 11 | Alert preferences, and defaults that never silence an alert |
 | `dates.test.js` | 9 | Resolving an order timestamp from its candidate fields |
-| `productsService.test.js` | 9 | Stock decrement and the sales counter |
 | `managerHelpers.test.js` | 9 | Stock alerts and the manager alert preferences |
+| `productsService.test.js` | 9 | Stock decrement and the sales counter |
 
 ```bash
 cd frontend && npm test        # tests
@@ -291,6 +293,13 @@ The system carries the following constraints. Each is bounded in scope, and each
 | **`salesLastMonth` is a running total, not a monthly one** | The field only ever increases. Nothing resets it at the turn of the month and nothing reduces it when an order is cancelled or returned, so the name and the "sales this month" label both overstate what it holds. It ranks the catalogue bestsellers and the slow-moving list | A scheduled function that rolls the counter over monthly, and a decrement on the cancellation and return paths. Rolling it over needs a scheduler, which is why it is not a client-side change |
 | **Returns are deducted at list price** | A return deducts `price × qty` from revenue using the item's catalogue price, not the share the customer actually paid after a coupon or redeemed points. On a discounted order the deduction exceeds the revenue that was recognised | Record the effective per-item price on the order line at checkout, and deduct that figure on approval |
 | **Email verification is a UX gate, not a security control** | The Firebase Auth session is created before the code is sent, so the account is already signed in while the code screen is showing. The code is generated and checked in the browser, and the security rules let a customer read and write her own verification document, so the code can be read from Firestore or the document deleted to skip the step entirely | Replace the whole mechanism with Firebase's built-in `sendEmailVerification`, which issues and validates the token server-side and exposes the result as `emailVerified` on the auth token |
+| **Catalogue search is weaker than the assistant search** | The catalogue matches on `name.includes(search)`: case sensitive, and the words must appear in the given order with nothing between them. Searching `שמלה` misses `שמלת ערב`, which the assistant finds, so the same query behaves differently in the two places | Move the word splitting and Hebrew stem matching out of `chatProductService` into a shared module both sides call |
+| **Card expiry is only checked for shape** | The payment form accepts any `NN/NN`, so `99/99` passes. There is no month bound and no check that the date is in the future. The form is a simulation with no payment provider behind it, so nothing downstream rejects it either | Bound the month and compare against the current date, alongside the real provider integration whenever one is added |
+| **A pickup date is read in the browser timezone** | `new Date("YYYY-MM-DD")` parses as UTC midnight while `getDay()` reports the local day. The two agree in Israel, which is ahead of UTC, and disagree for a customer whose device is set to a timezone behind it | Read the day from the date parts directly rather than through a `Date` |
+| **Three modules implement the theme toggle** | `functions/home/theme.js`, `functions/customer/theme.js` and `functions/manager/managerStorage.js` each read and write the same `fs_theme` key, one returning a boolean and two returning a string. The stored values agree, so the screens stay in step, but a change has to be made three times | Collapse them into one module under `utils/` |
+| **The size options per category are duplicated** | `CATEGORY_SIZE_OPTIONS` is declared separately in `ProductCard`, `ProductModal`, `AddProductModal` and `DetailsModal`. Adding a size means editing four files, and a miss shows different options on the customer and management sides | Move it beside `CATEGORIES` in `data/` |
+| **Order status labels are stored but never read** | Every order is written with a `steps` array and a `statusLabel` in Hebrew. No screen renders either: the interface derives the stage from the numeric `status` and takes its wording from the dictionary | Drop both fields from the order document |
+| **Dialogs do not trap focus** | Every dialog announces itself, closes on Escape and moves focus inside on open, but Tab still walks out of it and into the page behind. A keyboard user can reach the content the dialog is covering without closing it first | Hold Tab and Shift+Tab inside the dialog while it is open, in the same `useModalA11y` hook the fifteen dialogs already share |
 
 ## Working with Git
 

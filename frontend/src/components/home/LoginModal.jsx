@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import styles from "../../styles/Home.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 
@@ -17,6 +18,10 @@ export default function LoginModal({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.home.loginModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen,
+    onClose,
+  });
   const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
@@ -24,13 +29,13 @@ export default function LoginModal({
   return (
     <div className={`${styles.fsModal} ${styles.show}`}>
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={styles.fsModalCard}
-        role="dialog"
-        aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.fsModalHeader}>
-          <h3>{t.title}</h3>
+          <h3 {...titleProps}>{t.title}</h3>
           <button className={styles.fsClose} onClick={onClose} aria-label={t.close}>
             ✕
           </button>

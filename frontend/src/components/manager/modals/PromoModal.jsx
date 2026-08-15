@@ -1,4 +1,5 @@
 import { createPortal } from "react-dom";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
@@ -13,6 +14,9 @@ export default function PromoModal({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.promoModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    onClose: onClose,
+  });
 
   if (!open || !product) return null;
 
@@ -22,6 +26,8 @@ export default function PromoModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={modalStyles.promoModalBox}
         onClick={(e) => e.stopPropagation()}
       >
@@ -40,7 +46,7 @@ export default function PromoModal({
             marginBottom: "0.95rem",
           }}
         >
-          {t.title}
+          <span {...titleProps}>{t.title}</span>
         </div>
 
         <div

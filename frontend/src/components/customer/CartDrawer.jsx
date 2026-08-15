@@ -1,6 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import { useLanguage } from "../../translations/LanguageProvider";
-import { useEscapeKey } from "../../hooks/useEscapeKey";
 import {
   getItemName,
   getItemColor,
@@ -28,8 +28,11 @@ export default function CartDrawer({
   pointsDiscountAmount = 0,
 }) {
   const { t: dict, lang } = useLanguage();
-  useEscapeKey(open, closeCart);
   const t = dict.customer.cart;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: closeCart,
+  });
 
   return (
     <>
@@ -39,10 +42,12 @@ export default function CartDrawer({
       />
 
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={`${modalStyles.drawer} ${open ? modalStyles.drawerOpen : ""}`}
       >
         <div className={modalStyles.drawerHead}>
-          <div className={modalStyles.drawerTitle}>{t.title}</div>
+          <div className={modalStyles.drawerTitle}><span {...titleProps}>{t.title}</span></div>
           <button className={modalStyles.drawerClose} onClick={closeCart}>
             ✕
           </button>

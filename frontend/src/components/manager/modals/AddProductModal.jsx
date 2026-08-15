@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
@@ -32,6 +33,13 @@ export default function AddProductModal({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.addProductModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen,
+    // Wrapped rather than passed directly: handleClose is declared further
+    // down as a const, so naming it here would read it before initialisation.
+    // The arrow defers that read until Escape is actually pressed.
+    onClose: () => handleClose(),
+  });
 
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -307,7 +315,7 @@ export default function AddProductModal({
     <div
       className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
     >
-      <div className={styles.addProductModal}>
+      <div ref={dialogRef} {...dialogProps} className={styles.addProductModal}>
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
@@ -340,7 +348,7 @@ export default function AddProductModal({
               margin: 0,
             }}
           >
-            {t.title}
+            <span {...titleProps}>{t.title}</span>
           </h2>
         </div>
 

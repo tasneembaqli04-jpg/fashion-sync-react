@@ -1,4 +1,5 @@
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import {
   getItemName,
   getItemColor,
@@ -8,6 +9,10 @@ import {
 export default function ReceiptDetailsModal({ open, receipt, onClose }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.receiptDetailsModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: onClose,
+  });
   const priceT = dict.customer.checkout.priceBox;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
@@ -68,6 +73,8 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
       }}
     >
       <div
+        ref={dialogRef}
+        {...dialogProps}
         style={{
           background: "var(--surface)",
           color: "var(--text)",
@@ -108,7 +115,7 @@ export default function ReceiptDetailsModal({ open, receipt, onClose }) {
         <div style={{ textAlign: "center", marginBottom: "1rem" }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🧾</div>
           <h2 style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: "var(--gold)" }}>
-            {t.title}
+            <span {...titleProps}>{t.title}</span>
           </h2>
           <div style={{ opacity: 0.75, marginTop: "0.3rem" }}>{receipt.id}</div>
           <div style={{ opacity: 0.6, fontSize: "0.85rem" }}>{fmtDate(receipt.date)}</div>

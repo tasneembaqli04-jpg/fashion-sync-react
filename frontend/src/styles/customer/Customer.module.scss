@@ -35,6 +35,7 @@
   background: var(--black);
   color: var(--white);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -43,6 +44,7 @@
   margin-inline-start: var(--sidebar);
   flex: 1;
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 2.5rem;
   padding-top: 4.5rem;
 }
