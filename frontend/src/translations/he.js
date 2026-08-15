@@ -344,6 +344,7 @@ export const he = {
       historicalTranslationButton: "עדכן נתונים היסטוריים",
       historicalTranslationRunning: "מתרגם... ({done}/{total})",
       historicalTranslationDone: "✅ הושלם! כל הנתונים עודכנו.",
+      historicalTranslationNothing: "✅ הכול מתורגם, אין מה לעדכן",
       failedTranslationsFound: "⚠️ נמצאו {count} פריטים שהתרגום שלהם לאנגלית נכשל או חסר",
     },
     orderDetailsModal: {

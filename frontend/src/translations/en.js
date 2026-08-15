@@ -338,6 +338,7 @@ export const en = {
       historicalTranslationButton: "Update Historical Data",
       historicalTranslationRunning: "Translating... ({done}/{total})",
       historicalTranslationDone: "✅ Done! All data updated.",
+      historicalTranslationNothing: "✅ Everything is translated, nothing to update",
       failedTranslationsFound: "⚠️ Found {count} items with missing or failed English translation",
     },
     orderDetailsModal: {
