@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { POINT_REDEMPTION_VALUE, withPolicyNumbers } from "../data/storePolicy";
 import { useNavigate } from "react-router-dom";
 import { translateText, keepPersonName } from "../services/translation/translationService";
 import styles from "../styles/checkout/Checkout.module.scss";
@@ -166,7 +167,7 @@ export default function Checkout() {
   );
 
   const pointsDiscountAmount = useMemo(
-    () => pointsRedeemed * 0.05,
+    () => pointsRedeemed * POINT_REDEMPTION_VALUE,
     [pointsRedeemed],
   );
 
@@ -331,7 +332,7 @@ export default function Checkout() {
     const optionT = dict.shippingOptionLabels[selectedShipping.id] || selectedShipping;
 
     return `${t.estimatedDeliveryPrefix} ${optionT.days}${
-      optionT.note ? ` · ${optionT.note}` : ""
+      optionT.note ? ` · ${withPolicyNumbers(optionT.note)}` : ""
     }`;
   }
 
@@ -453,7 +454,7 @@ export default function Checkout() {
         const orderPointsRedeemed =
           parseInt(localStorage.getItem(LS_KEYS.POINTS_REDEEMED) || "0", 10) ||
           0;
-        const orderPointsDiscountAmount = orderPointsRedeemed * 0.05;
+        const orderPointsDiscountAmount = orderPointsRedeemed * POINT_REDEMPTION_VALUE;
         const orderIsGiftCardOnly = orderItems.every((item) => item.isGiftCard);
         const orderShippingCost = orderIsGiftCardOnly
           ? 0

@@ -476,6 +476,43 @@ function getOccasionKeywords(occasion) {
 }
 
 /**
+ * Orders two scored products for display.
+ *
+ * Three comparisons, each breaking ties in the one before:
+ *
+ * 1. In stock first. A sold-out product the customer cannot buy belongs below
+ *    an available one however well it matches, so availability outranks the
+ *    relevance score rather than being folded into it.
+ * 2. Higher relevance score first.
+ * 3. Cheaper first, so equally good matches are offered at the lower price.
+ *
+ * Expects `relevanceScore` to have been set on both products already.
+ *
+ * @param {object} firstProduct Product with a relevanceScore.
+ * @param {object} secondProduct Product with a relevanceScore.
+ * @return {number} Negative, zero or positive, as Array#sort expects.
+ */
+function compareProductsForDisplay(firstProduct, secondProduct) {
+  const firstStock = getProductAvailableStock(firstProduct);
+  const secondStock = getProductAvailableStock(secondProduct);
+
+  if (firstStock > 0 && secondStock <= 0) {
+    return -1;
+  }
+
+  if (firstStock <= 0 && secondStock > 0) {
+    return 1;
+  }
+
+  // Higher score first.
+  if (secondProduct.relevanceScore !== firstProduct.relevanceScore) {
+    return secondProduct.relevanceScore - firstProduct.relevanceScore;
+  }
+
+  return firstProduct.price - secondProduct.price;
+}
+
+/**
  * Scores a product against the requested occasion, style and season.
  *
  * The score only affects ordering and never rejects a product: a product that
@@ -679,34 +716,7 @@ async function searchProducts({
     ),
   }));
 
-  products.sort((firstProduct, secondProduct) => {
-    const firstStock =
-      getProductAvailableStock(firstProduct);
-
-    const secondStock =
-      getProductAvailableStock(secondProduct);
-
-    if (firstStock > 0 && secondStock <= 0) {
-      return -1;
-    }
-
-    if (firstStock <= 0 && secondStock > 0) {
-      return 1;
-    }
-
-    // Higher score first.
-    if (
-      secondProduct.relevanceScore !==
-      firstProduct.relevanceScore
-    ) {
-      return (
-        secondProduct.relevanceScore -
-        firstProduct.relevanceScore
-      );
-    }
-
-    return firstProduct.price - secondProduct.price;
-  });
+  products.sort(compareProductsForDisplay);
 
   return products.slice(0, safeLimit);
 }
@@ -714,4 +724,12 @@ async function searchProducts({
 module.exports = {
   getProductByCode,
   searchProducts,
+
+  // Exported for their tests. These are the pure parts of the search: they
+  // touch no database and no model, so they can be checked directly.
+  toHebrewStem,
+  wordMatchesProductWords,
+  getProductRelevanceScore,
+  compareProductsForDisplay,
+  getProductAvailableStock,
 };

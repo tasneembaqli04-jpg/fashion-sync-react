@@ -24,7 +24,6 @@ For how to actually use the system, see [`USER_GUIDE.md`](./USER_GUIDE.md).
 - [Testing and CI](#testing-and-ci)
 - [Deployment](#deployment)
 - [Security](#security)
-- [Future Improvements](#future-improvements)
 
 ## Purpose
 
@@ -244,15 +243,3 @@ Firestore Security Rules are role based, and there are no passwords in the sourc
 Both persistence settings are stated explicitly rather than left to the default, because persistence belongs to the shared auth instance and not to a single sign-in call.
 
 The rules also limit which fields each role may write — a customer can update an order's cancellation fields but not its total or status — and separate reading one document from scanning a collection, so a customer can validate her own gift card without enumerating every card.
-
-## Future Improvements
-
-The system is complete and in use. These are the next steps identified for it, in order of value:
-
-- **Move order creation to the server.** The total is currently computed in the browser, so a `createOrder` cloud function would compute it from the catalogue and write the order itself — closing the gap and letting the follow-up steps run as one transaction.
-- **Authenticate the cloud functions,** with `verifyIdToken` on each controller or Firebase App Check in front of them.
-- **Use transactions on shared counters,** so two concurrent updates to stock, loyalty points or a gift card balance cannot lose one of them.
-- **Enforce coupon usage server-side,** since the recorded usage is not currently read back to block reuse.
-- **Share the Hebrew search** between the catalogue and the assistant, so the same query behaves the same way in both.
-
-A fuller account of the known constraints, with the reasoning behind each, is given in the project report.

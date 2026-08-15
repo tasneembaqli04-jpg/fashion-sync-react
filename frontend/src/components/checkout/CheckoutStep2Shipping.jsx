@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { withPolicyNumbers } from "../../data/storePolicy";
 import styles from "../../styles/checkout/CheckoutForms.module.scss";
 import CheckoutPriceBox from "./CheckoutPriceBox";
 import { getShippingCost } from "../../functions/checkout/checkoutPricing";
@@ -69,7 +70,7 @@ export default function CheckoutStep2Shipping({
                         ? ` · ${pickupAddress}`
                         : ""
                       : optionT.note
-                      ? ` · ${optionT.note}`
+                      ? ` · ${withPolicyNumbers(optionT.note)}`
                       : ""}
                   </div>
                 </div>

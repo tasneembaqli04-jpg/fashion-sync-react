@@ -14,7 +14,6 @@ const FIELDS = [
   "shippingLine3",
   "shippingLine4",
   "privacyLine1",
-  "contactPhone",
 ];
 
 export async function getPolicyContent() {

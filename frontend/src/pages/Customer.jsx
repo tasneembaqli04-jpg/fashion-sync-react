@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import ErrorBoundary from "../components/common/ErrorBoundary";
+import { POINT_REDEMPTION_VALUE } from "../data/storePolicy";
 import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
 import { useTryOn } from "../hooks/useTryOn";
@@ -423,7 +425,7 @@ export default function Customer() {
     });
   }, [rawStockAlerts, products]);
   const cartCount = getCartCount(cart);
-  const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
+  const pointsDiscountAmount = appliedPointsRedeemed * POINT_REDEMPTION_VALUE;
   const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
 
   const realCurrentSeason = getCurrentSeason();
@@ -636,7 +638,7 @@ export default function Customer() {
 
     const { raw, discount } = getCartTotals(cart, appliedDiscount);
     const afterCoupon = Math.max(0, raw - discount);
-    const maxPointsUsable = Math.floor(afterCoupon / 0.05);
+    const maxPointsUsable = Math.floor(afterCoupon / POINT_REDEMPTION_VALUE);
 
     if (maxPointsUsable <= 0) {
       alertDialog(dict.customer.dialogs.cartAlreadyCovered);
@@ -794,6 +796,16 @@ export default function Customer() {
       />
 
       <main className={styles.main} ref={mainContentRef}>
+        {/*
+          Keyed on the panel: a panel that fails to render shows its message
+          here while the sidebar, topbar and cart stay usable, and switching
+          panel clears it.
+        */}
+        <ErrorBoundary
+          resetKey={activePanel}
+          title={dict.common.errorBoundaryTitle}
+          message={dict.common.errorBoundaryMessage}
+        >
         {stockAlerts.length > 0 && (
           <div
             style={{
@@ -1014,6 +1026,7 @@ export default function Customer() {
           show={activePanel === "policy"}
           currentUser={currentUser}
         />
+        </ErrorBoundary>
       </main>
 
       <ProductModal
