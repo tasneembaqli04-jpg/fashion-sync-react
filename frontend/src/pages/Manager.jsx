@@ -389,7 +389,10 @@ export default function Manager({ onPromote }) {
      setProducts((prev) => prev.filter((p) => p.code !== code));
   };
   const [translatingHistorical, setTranslatingHistorical] = useState(false);
-  const [historicalProgress, setHistoricalProgress] = useState({ done: 0, total: 0 });
+  // null until the sweep has been run at least once. A run that finds nothing
+  // sets { total: 0 }, which has to stay distinguishable from "never run" so
+  // the screen can confirm the sweep happened rather than staying silent.
+  const [historicalProgress, setHistoricalProgress] = useState(null);
 
   function needsTranslation(original, translated) {
     if (!original) return false;

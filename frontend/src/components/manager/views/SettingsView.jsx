@@ -838,12 +838,19 @@ export default function SettingsView({
                 : t.historicalTranslationButton}
             </button>
 
-            {!translatingHistorical && historicalProgress?.total > 0 && (
+            {/*
+              Shown once the sweep has run, whatever it found. A sweep that
+              finds nothing used to leave the screen unchanged, so the button
+              looked inert on a fully translated catalogue.
+            */}
+            {!translatingHistorical && historicalProgress && (
               <div
                 className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
                 style={{ marginTop: ".75rem" }}
               >
-                {t.historicalTranslationDone}
+                {historicalProgress.total > 0
+                  ? t.historicalTranslationDone
+                  : t.historicalTranslationNothing}
               </div>
             )}
           </div>
