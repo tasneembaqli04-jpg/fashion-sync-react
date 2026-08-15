@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
 import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
+import { useTryOn } from "../hooks/useTryOn";
 import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
@@ -23,7 +23,6 @@ import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 import { getCoupon } from "../services/coupons/couponsService";
-import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
 import { sendOrderCancellationEmail } from "../services/email/emailService";
 import {
   applyTheme,
@@ -81,15 +80,6 @@ import ShareModal from "../components/customer/ShareModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
 import TryOnModal from "../components/customer/TryOnModal";
-
-// Each Try-On error code maps to a key under customer.dialogs. A code with no
-// entry here falls back to the general message.
-const TRY_ON_ERROR_KEYS = {
-  [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
-  [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
-  [TRY_ON_ERRORS.NO_CUSTOMER_IMAGE]: "tryOnErrorUploadImage",
-  [TRY_ON_ERRORS.REQUEST_FAILED]: "tryOnErrorGeneric",
-};
 
 export default function Customer() {
   const navigate = useNavigate();
@@ -214,12 +204,20 @@ export default function Customer() {
   const [pcfText, setPcfText] = useState("");
   const [pcfTopics, setPcfTopics] = useState([]);
 
-  const [tryOnOpen, setTryOnOpen] = useState(false);
-  const [tryOnSelfie, setTryOnSelfie] = useState("");
-  const [tryOnLoading, setTryOnLoading] = useState(false);
-  const [tryOnResult, setTryOnResult] = useState(null);
-  const [tryOnError, setTryOnError] = useState("");
-  const tryOnAbortRef = useRef(null);
+  // Declared after `products` and the product dialog's own state, since it
+  // resolves the product to try on from the code that dialog is showing.
+  const {
+    tryOnOpen,
+    tryOnSelfie,
+    tryOnLoading,
+    tryOnResult,
+    tryOnError,
+    closeTryOnModal,
+    tryOnSelfieUpload,
+    clearTryOnSelfie,
+    handleTryOnRequest,
+    openTryOnFromProduct,
+  } = useTryOn({ products, selectedProductCode, setSelectedProductCode });
 
   // Placed after cart, currentUser and navigate, all of which it receives.
   const {
@@ -908,94 +906,6 @@ export default function Customer() {
         currentUser?.email || "",
       ),
     );
-  }
-
-  function closeTryOnModal() {
-    tryOnAbortRef.current?.abort();
-    tryOnAbortRef.current = null;
-
-    setTryOnLoading(false);
-    setTryOnError("");
-    setTryOnOpen(false);
-  }
-
-  function tryOnSelfieUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setTryOnSelfie(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearTryOnSelfie() {
-    setTryOnSelfie("");
-  }
-  async function handleTryOnRequest() {
-    if (!tryOnSelfie) {
-      setTryOnError(dict.customer.dialogs.tryOnErrorUploadImage);
-      return;
-    }
-
-    const productForTryOn = products.find(
-      (product) => String(product.code) === String(selectedProductCode),
-    );
-
-    if (!productForTryOn) {
-      setTryOnError(dict.customer.dialogs.tryOnErrorProductNotFound);
-      return;
-    }
-
-    tryOnAbortRef.current?.abort();
-
-    const controller = new AbortController();
-    tryOnAbortRef.current = controller;
-
-    setTryOnLoading(true);
-    setTryOnError("");
-    setTryOnResult(null);
-
-    try {
-      const result = await requestSmartTryOn({
-        product: productForTryOn,
-        imageUrl: tryOnSelfie,
-        signal: controller.signal,
-      });
-
-      if (controller.signal.aborted) return;
-
-      setTryOnResult(result);
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        return;
-      }
-
-      console.error("Try On request failed:", error);
-
-      // The code decides the wording; the message stays in the console. An
-      // unrecognised code, including anything thrown by the network layer,
-      // falls back to the general message rather than showing its own text.
-      const messageKey = TRY_ON_ERROR_KEYS[error?.code];
-
-      setTryOnError(
-        dict.customer.dialogs[messageKey] ||
-          dict.customer.dialogs.tryOnErrorGeneric
-      );
-    } finally {
-      if (tryOnAbortRef.current === controller) {
-        tryOnAbortRef.current = null;
-        setTryOnLoading(false);
-      }
-    }
-  }
-
-  function openTryOnFromProduct(code) {
-    setSelectedProductCode(code);
-    setTryOnOpen(true);
-    setTryOnResult(null);
-    setTryOnError("");
   }
 
   async function dismissStockAlert(id) {
