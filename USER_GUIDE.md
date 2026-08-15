@@ -11,6 +11,7 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 - [Virtual Try-On](#virtual-try-on)
 - [Manager Guide](#manager-guide)
 - [Handling an Order](#handling-an-order)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -100,3 +101,37 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 4. Approve or reject it
 5. Move to "Delivery tracking"
 6. Advance the status as the order progresses
+
+---
+
+## Troubleshooting
+
+### The verification code has not arrived
+
+Check the spam folder first, which is where it usually is. The screen offers a fresh code after one minute, and prompts you to check spam after three.
+
+A code is valid for **five minutes**. After that it stops working and you need a new one — the screen says the code expired rather than that it was wrong, so you can tell the two apart.
+
+Requesting a new code does not immediately break the previous one. The old code keeps working for a further minute, so if both emails arrive together, either will do. Past that minute the older one is refused, and the screen says it was replaced rather than mistyped.
+
+You can request **five codes per hour** for the same address. Beyond that the system stops sending until the hour is up. If you reach that point, the code you already have is almost certainly in the spam folder.
+
+### The product I want is out of stock
+
+A sold-out product stays visible in the catalogue but cannot be added to the cart, and the chatbot will not recommend it. If only some combinations are gone, choosing a different colour or size may be enough.
+
+To be told when it returns, open the product and request an alert. You are notified twice — by email, and in "My Alerts" in your personal area. The alert is for the product, so it fires when stock returns in any colour or size.
+
+### The gift card code is not found
+
+Check the prefix. Codes are of two kinds, and both are entered in the same field:
+
+| Prefix | What it is |
+|---|---|
+| `GC-` | A gift card someone bought |
+| `RTN-` | A credit issued after an approved return |
+
+Two other reasons a valid-looking code is refused:
+
+- **A newly bought card is not active yet.** A `GC-` card is created the moment it is paid for, but stays inactive until the manager approves the order it was bought in. A `RTN-` credit is different: it works as soon as the return is approved.
+- **The balance is already spent.** A card can be spent across several orders, and each purchase deducts from what is left rather than voiding the card. A code that worked before may have nothing on it now. Check the balance on the "Gift Card" page before checking out.

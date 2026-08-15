@@ -14,6 +14,9 @@ For how to actually use the system, see [`USER_GUIDE.md`](./USER_GUIDE.md).
 
 - [Purpose](#purpose)
 - [Architecture](#architecture)
+- [The AI Pipeline](#the-ai-pipeline)
+- [Original Algorithms](#original-algorithms)
+- [Revenue Model](#revenue-model)
 - [Technology Stack](#technology-stack)
 - [Data Model](#data-model)
 - [Project Structure](#project-structure)
@@ -33,8 +36,6 @@ Small fashion stores selling through social networks struggle to keep stock accu
 - Automated customer email: order confirmation, delivery updates, stock alerts
 - AI assistance grounded in the live catalogue, not in generic answers
 - Management reporting from live data
-
-In numbers: 7 customer panels and 14 management screens, built from 57 React components, over 15 Firestore collections and 17 cloud functions.
 
 ## Architecture
 
@@ -66,9 +67,11 @@ In numbers: 7 customer panels and 14 management screens, built from 57 React com
 
 The React frontend talks directly to Firebase Auth and Firestore for most operations, and to Cloud Functions for anything needing server-side logic: sending email, calling the AI models, and generating images. There are 17 cloud functions.
 
-### AI pipeline
+## The AI Pipeline
 
-The chatbot is a multi-stage pipeline rather than a single model call. The design principle throughout is that **the model never invents catalogue data** — every answer is grounded in what Firestore actually holds.
+**The model never invents catalogue data.** A language model asked "do you have this dress in M?" will produce a fluent answer whether or not it knows, and a wrong answer about stock costs a real sale and a real customer. So the model is never the source of a fact about the shop. It is used for two things only: reading what the customer meant, and phrasing an answer built from data the system fetched itself.
+
+That principle is why the assistant is a five-stage pipeline rather than one model call. Stages 2 and 3 exist to put facts in front of the model, and stage 5 hands it those facts with an instruction not to add to them.
 
 | Stage | What happens | Where |
 |---|---|---|
@@ -78,7 +81,7 @@ The chatbot is a multi-stage pipeline rather than a single model call. The desig
 | 4. Relevance scoring | Occasion, style and season rank the results. Scoring only reorders — it never rejects, so a search cannot come back empty because of the occasion | `chatProductService.js` |
 | 5. Answer | Real results injected into the prompt with an explicit instruction not to invent products, prices or availability. Reply is streamed | `chatOrchestratorService.js` |
 
-Hebrew search splits the query into words that may appear in any order, and matches construct-state forms against each other, so `שמלה ערב` finds `שמלת ערב אלגנטית`.
+The schema in stage 1 is what makes the rest reliable. A free-text reply would have to be parsed and could arrive in any shape; a schema-constrained reply arrives as fields the search can use directly, so a misread question degrades into a broader search rather than a malformed one.
 
 | Model | Used for |
 |---|---|
@@ -86,6 +89,69 @@ Hebrew search splits the query into words that may appear in any order, and matc
 | `gemini-3.1-flash-image` | Outfit visualization |
 | `gemini-2.5-flash-image` | Try-On on a customer photo |
 | `virtual-try-on-001` | Vertex AI Virtual Try-On |
+
+## Original Algorithms
+
+Four pieces of logic are written rather than delegated, each because a library or a model call does not solve the specific problem.
+
+### Hebrew stem derivation
+
+**The problem.** Hebrew inflects the same noun in ways plain string matching cannot see through. A customer searching `שמלה` should find `שמלת ערב`, but the two forms end in different letters, so an exact comparison fails on words that are the same noun. Final letters compound it: `אדום` is written with `ם` at the end and `אדומה` with `מ` in the middle, so even the shared part does not match character for character.
+
+**How it works.** Two orthographic steps, no semantic stemming. Final letters fold to their regular forms, then a trailing `ה` or `ת` is dropped from words of at least four characters. The four-character floor is deliberate: it keeps every stem at three characters or more, so short words are never ground down to noise.
+
+**Example.** `שמלה` (4 characters, ends in `ה`) → stem `שמל`. `שמלת` (4 characters, ends in `ת`) → stem `שמל`. Equal, so the search matches. But `אמה` is only 3 characters, stays `אמה`, and does not collapse to the 2-character `אמ`.
+
+Matching is on whole-word prefixes with a 3-character minimum, so `ערב` matches the word `ערב` but not `מעורב`. Implemented in `toHebrewStem`, `chatProductService.js`.
+
+### Relevance scoring
+
+**The problem.** Occasion, style and season are soft preferences, not requirements. Treating them as filters produces the worst possible result: a customer asking for "something for a wedding" gets an empty catalogue because no product has the word "wedding" in its description.
+
+**How it works.** Each product gets a score, and the score only ever reorders. Nothing is rejected for scoring zero. Weights reflect how much each signal narrows the choice: occasion 3, style 2, season 1.
+
+**Example.** A customer asks for an elegant summer evening dress. A black evening dress described as elegant, marked summer, scores 3 + 2 + 1 = 6. A summer dress with no style or occasion words scores 0 + 0 + 1 = 1. A winter coat scores 0. All three stay in the results, in that order — so the answer is never empty, and the best match is always first.
+
+Implemented in `getProductRelevanceScore`, `chatProductService.js`.
+
+### Three-level sort
+
+**The problem.** Relevance alone puts a sold-out perfect match above an available good one, which is the wrong recommendation: the customer cannot buy the first.
+
+**How it works.** Three comparisons in order, each breaking ties in the one before. Availability first, then relevance score descending, then price ascending.
+
+**Example.** Four dresses, all matching the search:
+
+| Dress | In stock | Score | Price | Position |
+|---|---|---|---|---|
+| A | yes | 6 | ₪450 | 1st — highest score among the available |
+| B | yes | 3 | ₪280 | 2nd |
+| C | yes | 3 | ₪390 | 3rd — ties B on score, loses on price |
+| D | no | 6 | ₪300 | 4th — ties A on score and is cheaper, but unbuyable |
+
+D matches as well as A and costs less, and still sorts last, because availability is decided before anything else. B beats C only on price, since their scores tie. The maximum score is 6, from 3 + 2 + 1.
+
+### Translation dictionary
+
+**The problem.** Machine translation fails on fashion vocabulary in three distinct ways, each needing the same fix. It transliterates instead of translating (`חולצת קרופ` → "Crop shirt"). It injects unrelated text on short inputs. And it picks the wrong sense of a homonym: `שרוולים תפוחים` means puff sleeves, but `תפוח` alone is an apple.
+
+**How it works.** A dictionary of known terms is consulted first, and the API is called only on a miss. 17 product terms and 20 colours, each an entry the API demonstrably got wrong.
+
+**Example.** `חולצת שרוולים תפוחים` hits the dictionary and returns "Puff Sleeve Top" with no API call. A product name not in the dictionary goes to the API, and the correction pass runs on the result.
+
+The dictionary applies to product names and colours only. Customer names, addresses and messages go through the generic translation path, which must never have fashion terms applied to it. Implemented in `translationService.js`.
+
+## Revenue Model
+
+Revenue is measured by **goods that left the shop**, not by cash that arrived. The two differ, and using cash received would misreport both figures the manager relies on.
+
+| Rule | Why | Where |
+|---|---|---|
+| Delivery charges are excluded from revenue | A delivery fee is collected on behalf of the courier and paid out again. Counting it as income without the matching cost inflates profit by the full fee | `getOrderGoodsRevenue` |
+| A gift card is recognised when it is spent, not when it is bought | Selling a card takes cash but delivers nothing. Until it is redeemed the shop owes goods, so the sale is a liability. Counting it at purchase and again at redemption would count the same money twice | `getOrderGoodsRevenue` |
+| Discounts are apportioned across the goods | An order-level discount reduces what the goods actually earned. Applying it anywhere else would leave the line items summing to more than the order was worth | `getOrderGoodsRevenue` |
+
+**Example.** An order of ₪500 in clothing plus a ₪100 gift card, with ₪30 delivery and a ₪50 coupon, is charged at ₪580. Recognised revenue is not ₪580 and not ₪550. The gift card contributes nothing yet, delivery contributes nothing, and the coupon is apportioned to the goods share of the order: ₪500 − (₪50 × 500/600) ≈ **₪458**. The remaining ₪100 is recognised later, when someone spends the card.
 
 ## Technology Stack
 
@@ -132,6 +198,8 @@ The rule compares the document key against the email in the caller's auth token.
 `variants[]` on a product is an array of `{ colorName, colorNameEn, sizes }`, where `sizes` maps a size label to its quantity. Total `stock` is the sum across all variants.
 
 ## Project Structure
+
+7 customer panels and 14 management screens, built from 57 React components over 15 Firestore collections and 17 cloud functions.
 
 ```
 fashion-sync-react/
@@ -299,25 +367,15 @@ The system carries the following constraints. Each is bounded in scope, and each
 
 | Limitation | Impact | Planned fix |
 |---|---|---|
-| **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the highest-value change on this list |
+| **The order total is computed in the browser** | Checkout calculates the total in JavaScript and writes the resulting number to Firestore. The security rules can confirm that the customer owns the order, but they cannot recompute a cart, so they have no way to tell a correct total from an edited one. A customer who alters the value before it is sent has it accepted and stored | A `createOrder` cloud function that receives the items and the coupon code, computes the total server-side from the catalogue, and writes the order itself. The browser would then send only what was chosen, never what it costs. This is the highest-value change on this list |
 | **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the smallest of the three and the natural first candidate |
 | **The steps after an order is saved are not atomic** | Stock, coupon usage, loyalty points, gift card balances and the cart are updated one after another once the order document exists. A failure part way through leaves the order recorded with some of its consequences missing; the customer still reaches her confirmation and the failure is logged for the manager | Move the whole sequence into the `createOrder` cloud function above, where it can run as one Firestore transaction |
-| **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
+| **Cloud functions do not authenticate the caller** | A separate problem from the one above: that one is about trusting a number the browser sends, this one is about who may call at all. 16 of the 17 functions are declared with `cors: true`, and no controller checks an identity token, so anyone holding a function URL can invoke the email and AI endpoints directly without signing in | `verifyIdToken` at the top of each controller, or Firebase App Check in front of all of them |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |
 | **`salesLastMonth` is a running total, not a monthly one** | The field only ever increases. Nothing resets it at the turn of the month and nothing reduces it when an order is cancelled or returned, so the name and the "sales this month" label both overstate what it holds. It ranks the catalogue bestsellers and the slow-moving list | A scheduled function that rolls the counter over monthly, and a decrement on the cancellation and return paths. Rolling it over needs a scheduler, which is why it is not a client-side change |
 | **Returns are deducted at list price** | A return deducts `price × qty` from revenue using the item's catalogue price, not the share the customer actually paid after a coupon or redeemed points. On a discounted order the deduction exceeds the revenue that was recognised | Record the effective per-item price on the order line at checkout, and deduct that figure on approval |
 | **Email verification is a UX gate, not a security control** | The Firebase Auth session is created before the code is sent, so the account is already signed in while the code screen is showing. The code is generated and checked in the browser, and the security rules let a customer read and write her own verification document, so the code can be read from Firestore or the document deleted to skip the step entirely | Replace the whole mechanism with Firebase's built-in `sendEmailVerification`, which issues and validates the token server-side and exposes the result as `emailVerified` on the auth token |
 | **Catalogue search is weaker than the assistant search** | The catalogue matches on `name.includes(search)`: case sensitive, and the words must appear in the given order with nothing between them. Searching `שמלה` misses `שמלת ערב`, which the assistant finds, so the same query behaves differently in the two places | Move the word splitting and Hebrew stem matching out of `chatProductService` into a shared module both sides call |
-| **Card expiry is only checked for shape** | The payment form accepts any `NN/NN`, so `99/99` passes. There is no month bound and no check that the date is in the future. The form is a simulation with no payment provider behind it, so nothing downstream rejects it either | Bound the month and compare against the current date, alongside the real provider integration whenever one is added |
-| **A pickup date is read in the browser timezone** | `new Date("YYYY-MM-DD")` parses as UTC midnight while `getDay()` reports the local day. The two agree in Israel, which is ahead of UTC, and disagree for a customer whose device is set to a timezone behind it | Read the day from the date parts directly rather than through a `Date` |
-| **Three modules implement the theme toggle** | `functions/home/theme.js`, `functions/customer/theme.js` and `functions/manager/managerStorage.js` each read and write the same `fs_theme` key, one returning a boolean and two returning a string. The stored values agree, so the screens stay in step, but a change has to be made three times | Collapse them into one module under `utils/` |
-| **The size options per category are duplicated** | `CATEGORY_SIZE_OPTIONS` is declared separately in `ProductCard`, `ProductModal`, `AddProductModal` and `DetailsModal`. Adding a size means editing four files, and a miss shows different options on the customer and management sides | Move it beside `CATEGORIES` in `data/` |
-| **Order status labels are stored but never read** | Every order is written with a `steps` array and a `statusLabel` in Hebrew. No screen renders either: the interface derives the stage from the numeric `status` and takes its wording from the dictionary | Drop both fields from the order document |
 | **Dialogs do not trap focus** | Every dialog announces itself, closes on Escape and moves focus inside on open, but Tab still walks out of it and into the page behind. A keyboard user can reach the content the dialog is covering without closing it first | Hold Tab and Shift+Tab inside the dialog while it is open, in the same `useModalA11y` hook the fifteen dialogs already share |
-| **State is cleared inside an effect on sign-out** | `useCustomerOrders` empties the order and return lists from within its effects when the customer signs out, which `react-hooks/set-state-in-effect` reports as two errors. The lists do clear correctly; the cost is an extra render pass each time | Derive the lists from the signed-in customer instead of storing and clearing them, or give the panel a `key` so React discards its state on sign-out. Both change how the state is held, not what it holds |
-| **An effect calls a function declared below it** | The catalogue load in `Customer.jsx` calls `openProductModal`, which is declared later in the same component. The call works, because a `function` declaration is hoisted, but `react-hooks` reports it as one error | Move the declaration above the effect. It is a large diff for a line that already behaves correctly, which is why it has not been made |
 
-## Working with Git
-
-Work on a branch per feature, never directly on `main`. Verify `npm run build` passes before committing. Commit with a message describing what changed, and open a pull request to merge.
