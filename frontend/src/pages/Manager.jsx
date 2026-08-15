@@ -28,12 +28,11 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
+import { updateOrderCustomerAndItems } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText, keepPersonName } from "../services/translation/translationService";
 import { translateProductName } from "../services/translation/translationService";
-import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
 import { getAllCustomers, updateCustomerNameTranslation, updateCustomerAddressTranslation } from "../services/customer/customerFirestore";
 import {
   getFeaturedProduct,
@@ -44,7 +43,7 @@ import {
   loadTheme,
   saveTheme,
 } from "../functions/manager/managerStorage";
-import { sendShippingUpdateEmail, sendStockAlertEmail, sendGiftCardActivatedEmail, sendOrderRejectedEmail, sendGiftCardRejectedEmail } from "../services/email/emailService";
+import { sendStockAlertEmail } from "../services/email/emailService";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { logOut } from "../services/auth/firebaseAuth";
@@ -58,6 +57,7 @@ import {
 } from "../functions/manager/historicalTranslation";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
+import { useManagerOrders } from "../hooks/useManagerOrders";
 
 export default function Manager({ onPromote }) {
   const navigate = useNavigate();
@@ -130,69 +130,19 @@ export default function Manager({ onPromote }) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [stockRequestsProductFilter, setStockRequestsProductFilter] = useState("");
 
-  const [orders, setOrders] = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    let unsubscribe = null;
-    let customersMap = new Map();
-
-    getAllCustomers().then((customers) => {
-      customersMap = new Map(
-        customers.map((customer) => [customer.email, customer])
-      );
-
-      setOrders((prev) =>
-        prev.map((order) => ({
-          ...order,
-          customerDetails: customersMap.get(order.customerEmail) || order.customerDetails,
-        })),
-      );
-    });
-
-    unsubscribe = subscribeToOrders((firestoreOrders) => {
-      const normalized = firestoreOrders.map((order) => {
-        const customer = customersMap.get(order.customerEmail);
-
-        return {
-          docId: order.docId,
-          id: order.id,
-
-          customerDetails: customer || null,
-          customerEmail: order.customerEmail,
-          customerEmbedded: order.customer || null,
-
-          status: order.ready ? "ready" : "pending",
-          stageIndex: Number(order.status) || 0,
-          confirmed: Boolean(order.confirmed),
-          items: Array.isArray(order.items) ? order.items : [],
-          total: Number(order.total) || 0,
-          subtotal: Number(order.subtotal) || 0,
-          discountAmount: Number(order.discountAmount) || 0,
-          shippingCost: Number(order.shippingCost) || 0,
-          date: order.date || order.createdAt || null,
-          createdAt: order.date || order.createdAt || null,
-          payMethod: order.payMethod || "",
-          shipping: order.shipping || null,
-          cancelled: Boolean(order.cancelled),
-          rejected: Boolean(order.rejected),
-          rejectedAt: order.rejectedAt || null,
-          deliveredAt: order.deliveredAt || null,
-          pickupDate: order.pickupDate || "",
-          pickupTime: order.pickupTime || "",
-        };
-      });
-
-      setOrders(normalized);
-      setOrdersLoading(false);
-    });
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-   }, [isLoggedIn, refreshKey]);
+  // Every order, with its subscription and the decisions taken on it. Placed
+  // after isLoggedIn and refreshKey, both of which it reads.
+  const {
+    orders,
+    ordersLoading,
+    pendingOrdersCount,
+    pendingDeliveriesCount,
+    receipts,
+    handleConfirmOrder,
+    handleRejectOrder,
+    handleAdvanceOrderStage,
+    applyOrderTranslation,
+  } = useManagerOrders({ isLoggedIn, refreshKey });
 
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
   const [stockNotifications, setStockNotifications] = useState([]);
@@ -275,19 +225,6 @@ export default function Manager({ onPromote }) {
     [products, orders, dict, lang, stockNotifications, notificationSettings],
   );
 
-  const pendingOrdersCount = useMemo(
-    () => orders.filter((o) => !o.confirmed && !o.cancelled).length,
-    [orders],
-  );
-
-  const pendingDeliveriesCount = useMemo(
-    () =>
-      orders.filter(
-        (o) => o.confirmed && !o.cancelled && (Number(o.stageIndex) || 0) < 3,
-      ).length,
-    [orders],
-  );
-
   const pendingReturnsCount = useMemo(
     () => returnRequests.filter((r) => r.status === "pending").length,
     [returnRequests],
@@ -296,22 +233,6 @@ export default function Manager({ onPromote }) {
     () => contactMessages.filter((m) => !m.read).length,
     [contactMessages],
   );
-  const receipts = useMemo(() => {
-    return orders.map((order) => ({
-      id: order.id,
-      date: order.date || order.createdAt || new Date().toISOString(),
-      total: Number(order.total) || 0,
-      subtotal: Number(order.subtotal) || 0,
-      discountAmount: Number(order.discountAmount) || 0,
-      shippingCost: Number(order.shippingCost) || 0,
-      payMethod: order.payMethod || "",
-      shipping: order.shipping || null,
-      customer: order.customerEmbedded || order.customerDetails || null,
-      items: Array.isArray(order.items) ? order.items : [],
-    }));
-  }, [orders]);
- 
-
   const stats = useMemo(() => {
     const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     const lowCount = products.filter(
@@ -522,17 +443,10 @@ export default function Manager({ onPromote }) {
         );
       }
 
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.docId === order.docId
-            ? {
-                ...o,
-                items: updatedItems,
-                customerEmbedded: updatedCustomer,
-              }
-            : o
-        )
-      );
+      applyOrderTranslation(order.docId, {
+        items: updatedItems,
+        customerEmbedded: updatedCustomer,
+      });
 
       done += 1;
       setHistoricalProgress({ done, total });
@@ -641,102 +555,6 @@ export default function Manager({ onPromote }) {
 
     setTranslatingHistorical(false);
     setRefreshKey((k) => k + 1);
-  }
-
-  function handleConfirmOrder(orderDocId) {
-    confirmOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, confirmed: true } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
-
-    if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        activateGiftCard(item.code);
-      });
-
-      if (order?.customerEmail) {
-        sendGiftCardActivatedEmail({
-          toEmail: order.customerEmail,
-          giftCardCode: giftCardItems[0].code,
-          amount: giftCardItems[0].price,
-          lang,
-        });
-      }
-
-      return;
-    }
-
-    if (order?.customerEmail) {
-      sendShippingUpdateEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        stageIndex: 0,
-        lang,
-      });
-    }
-  }
-
-  function handleRejectOrder(orderDocId) {
-    rejectOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, rejected: true } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
-
-    if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        rejectGiftCard(item.code);
-      });
-
-      if (order?.customerEmail) {
-        sendGiftCardRejectedEmail({
-          toEmail: order.customerEmail,
-          lang,
-        });
-      }
-
-      return;
-    }
-
-    if (order?.customerEmail) {
-      sendOrderRejectedEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        lang,
-      });
-    }
-  }
-
-  function handleAdvanceOrderStage(orderDocId, nextIndex, isPickup = false) {
-    advanceOrderStatus(orderDocId, nextIndex, isPickup);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, stageIndex: nextIndex } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    if (order?.customerEmail) {
-      sendShippingUpdateEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        stageIndex: nextIndex,
-        isPickup,
-        lang,
-      });
-    }
   }
 
   const shellClassName = `${styles.appShell} ${
