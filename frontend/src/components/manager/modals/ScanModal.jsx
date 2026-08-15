@@ -51,7 +51,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       try {
         codeReaderRef.current.reset();
       } catch (e) {
-        console.error("ZXing reset error:", e);
+        // Cleanup on unmount; nothing downstream depends on it.
+        console.warn(`Scanner cleanup: ${e.message}`);
       }
     }
 
@@ -158,7 +159,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       await track.applyConstraints({ advanced: [{ torch: next }] });
       setTorchOn(next);
     } catch (e) {
-      console.error("Torch toggle error:", e);
+      // Most cameras have no torch. Expected on desktop.
+      console.warn(`Torch not available: ${e.message}`);
     }
   }
 

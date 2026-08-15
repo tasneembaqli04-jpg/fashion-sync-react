@@ -36,7 +36,7 @@ export async function loginOrCreateUser(email, password, t, lang) {
   try {
     await setPersistence(auth, browserLocalPersistence);
   } catch (err) {
-    console.error("Could not set customer session persistence:", err);
+    console.warn(`Session left on the default persistence: ${err.message}`);
   }
 
   let result = await signIn(normalizedEmail, normalizedPass, t);

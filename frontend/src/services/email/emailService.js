@@ -1,3 +1,13 @@
+/**
+ * Callers into the email cloud functions.
+ *
+ * Every send is fire-and-forget: no caller awaits the result, and a message
+ * that does not go out never blocks the order, the return or the status change
+ * that triggered it. A failure here is therefore reported at warning level.
+ * Raising it to an error would put a red line in the console for something the
+ * application has already handled, and it would put twenty-two of them there
+ * whenever the functions are simply unreachable.
+ */
 const EMAIL_URL =
   import.meta.env.VITE_EMAIL_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendOrderEmail";
@@ -15,13 +25,13 @@ export async function sendOrderConfirmationEmail({ toEmail, order, lang }) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Order email failed:", data?.message);
+      console.warn(`Order email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Order email request failed:", err);
+    console.warn(`Order email not sent: ${err.message}`);
     return null;
   }
 }
@@ -43,13 +53,13 @@ export async function sendStockAlertEmail({ toEmail, productName, productNameEn,
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Stock alert email failed:", data?.message);
+      console.warn(`Stock alert email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Stock alert email request failed:", err);
+    console.warn(`Stock alert email not sent: ${err.message}`);
     return null;
   }
 }
@@ -70,13 +80,13 @@ export async function sendShippingUpdateEmail({ toEmail, orderId, stageIndex, is
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Shipping update email failed:", data?.message);
+      console.warn(`Shipping update email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Shipping update email request failed:", err);
+    console.warn(`Shipping update email not sent: ${err.message}`);
     return null;
   }
 }
@@ -97,13 +107,13 @@ export async function sendPickupScheduledEmail({ toEmail, orderId, pickupDate, p
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Pickup scheduled email failed:", data?.message);
+      console.warn(`Pickup scheduled email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Pickup scheduled email request failed:", err);
+    console.warn(`Pickup scheduled email not sent: ${err.message}`);
     return null;
   }
 }
@@ -125,13 +135,13 @@ export async function sendReturnStatusEmail({ toEmail, itemName, itemNameEn, sta
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Return status email failed:", data?.message);
+      console.warn(`Return status email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Return status email request failed:", err);
+    console.warn(`Return status email not sent: ${err.message}`);
     return null;
   }
 }
@@ -152,13 +162,13 @@ export async function sendOrderCancellationEmail({ toEmail, orderId, total, lang
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Order cancellation email failed:", data?.message);
+      console.warn(`Order cancellation email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Order cancellation email request failed:", err);
+    console.warn(`Order cancellation email not sent: ${err.message}`);
     return null;
   }
 }
@@ -179,13 +189,13 @@ export async function sendContactNotificationEmail({ name, email, message }) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Contact notification email failed:", data?.message);
+      console.warn(`Contact notification email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Contact notification email request failed:", err);
+    console.warn(`Contact notification email not sent: ${err.message}`);
     return null;
   }
 }
@@ -206,13 +216,13 @@ export async function sendWelcomeEmail({ toEmail, name, lang }) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Welcome email failed:", data?.message);
+      console.warn(`Welcome email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Welcome email request failed:", err);
+    console.warn(`Welcome email not sent: ${err.message}`);
     return null;
   }
 }
@@ -233,7 +243,7 @@ export async function sendPasswordResetRequest({ toEmail, lang }) {
     const data = await response.json().catch(() => null);
     return data;
   } catch (err) {
-    console.error("Password reset request failed:", err);
+    console.warn(`Password reset not sent: ${err.message}`);
     return null;
   }
 }
@@ -254,13 +264,13 @@ export async function sendVerificationCodeEmail({ toEmail, code, lang }) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Verification email failed:", data?.message);
+      console.warn(`Verification email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Verification email request failed:", err);
+    console.warn(`Verification email not sent: ${err.message}`);
     return null;
   }
 }
@@ -281,13 +291,13 @@ export async function sendGiftCardActivatedEmail({ toEmail, giftCardCode, amount
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Gift card activated email failed:", data?.message);
+      console.warn(`Gift card activated email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Gift card activated email request failed:", err);
+    console.warn(`Gift card activated email not sent: ${err.message}`);
     return null;
   }
 }
@@ -308,13 +318,13 @@ export async function sendOrderRejectedEmail({ toEmail, orderId, reason, lang })
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Order rejected email failed:", data?.message);
+      console.warn(`Order rejected email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Order rejected email request failed:", err);
+    console.warn(`Order rejected email not sent: ${err.message}`);
     return null;
   }
 }
@@ -335,13 +345,13 @@ export async function sendGiftCardRejectedEmail({ toEmail, lang }) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success) {
-      console.error("Gift card rejected email failed:", data?.message);
+      console.warn(`Gift card rejected email not sent: ${data?.message || "rejected by the server"}`);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Gift card rejected email request failed:", err);
+    console.warn(`Gift card rejected email not sent: ${err.message}`);
     return null;
   }
 }

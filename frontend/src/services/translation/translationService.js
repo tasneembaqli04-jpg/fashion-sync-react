@@ -241,16 +241,51 @@ export async function translateText(text, sourceLang = "he", targetLang = "en") 
 
     const translated = data?.responseData?.translatedText;
 
+    // A refusal from the API is a handled outcome, not a fault: the empty
+    // string sends every caller back to the Hebrew value. Logged at warning
+    // level, and without the response body, so a translation the service
+    // declines does not read as a broken screen.
     if (!translated || data?.responseStatus !== 200) {
-      console.error("Translation failed for:", trimmed, data);
+      console.warn(`Translation unavailable for "${trimmed}", keeping Hebrew`);
       return "";
     }
 
     return cleanTranslatedText(translated);
   } catch (err) {
-    console.error("Translation request failed:", err);
+    // Reached when the network call itself fails. The browser has already
+    // printed its own error for the failed request, so only the consequence
+    // is worth adding, without the stack.
+    console.warn(`Translation request failed, keeping Hebrew: ${err.message}`);
     return "";
   }
+}
+
+/**
+ * Returns a person's name unchanged, for storing in an "En" field.
+ *
+ * Names of people are not translated. A translation service maps words to
+ * words, and a name is not a word to be mapped: "תמר" comes back as "Date",
+ * "שיר" as "Song", and an account name derived from an email address, such as
+ * "tasneembaqli04", is not language at all. The result is a corrupted customer
+ * record and a network call spent to produce it.
+ *
+ * The decision is made per field rather than per value, because no inspection
+ * of the text can make it. "תמר" is both a woman's name and the word for a
+ * date, and the two are spelled identically — only knowing that the field
+ * holds a name settles it. Every caller here is a name field: customer names,
+ * gift card recipients, contact form senders.
+ *
+ * Place names are the deliberate exception and stay translated. A city or a
+ * street genuinely has an English form, and translating it helps a reader.
+ *
+ * Callers store the result in the matching "En" field, so the interface finds
+ * a value in either language and renders the name as its owner writes it.
+ *
+ * @param {*} name - The person's name.
+ * @returns {string} The same name, trimmed.
+ */
+export function keepPersonName(name) {
+  return String(name || "").trim();
 }
 
 async function translateColorName(colorName) {

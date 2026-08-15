@@ -630,7 +630,7 @@ export default function Customer() {
         ]);
       }
     } catch (err) {
-      console.error("Real chat API failed, using fallback reply:", err);
+      console.warn(`Chat service unreachable, using the fallback reply: ${err.message}`);
 
       if (err?.name === "AbortError") {
         setChatMessages((prev) => [

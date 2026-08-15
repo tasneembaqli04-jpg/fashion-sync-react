@@ -68,7 +68,9 @@ export default function TryOnModal({
 
       alertDialog(dict.customer.dialogs.shareNotSupported);
     } catch (error) {
-      console.error("Share failed:", error);
+      // Includes the AbortError the browser throws when the visitor closes
+      // the share sheet, which is an ordinary choice and not a fault.
+      console.warn(`Share unavailable, offered a download instead: ${error.message}`);
       alertDialog(dict.customer.dialogs.shareNotSupportedBrowser);
     }
   };

@@ -1,5 +1,5 @@
 import { saveCartToFirestore } from "../../services/customer/cartFirestore";
-import { translateText } from "../../services/translation/translationService";
+import { translateText, keepPersonName } from "../../services/translation/translationService";
 export function buildGiftCardPreview({ amount, customAmount, name, message }) {
   const previewAmount = amount === "other" ? customAmount || "?" : amount;
 
@@ -57,10 +57,9 @@ export async function buyGiftCard({ amount, customAmount, name, message, email, 
   const trimmedRecipient = name.trim();
   const trimmedMessage = message ? message.trim() : "";
 
-  const [giftRecipientEn, giftMessageEn] = await Promise.all([
-    translateText(trimmedRecipient),
-    trimmedMessage ? translateText(trimmedMessage) : Promise.resolve(""),
-  ]);
+  // The recipient is a person; only the free-text message is translated.
+  const giftRecipientEn = keepPersonName(trimmedRecipient);
+  const giftMessageEn = trimmedMessage ? await translateText(trimmedMessage) : "";
 
   const gcItem = {
     code: gcCode,

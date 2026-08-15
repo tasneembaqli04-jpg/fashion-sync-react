@@ -88,7 +88,7 @@ export default function ManagerReturns({ products = [] }) {
           });
         }
       } catch (err) {
-        console.error("Restock failed (continuing anyway):", err);
+        console.warn(`Restock skipped, return still approved: ${err.message}`);
       }
 
       giftCardAmount = (Number(request.price) || 0) * (Number(request.qty) || 1);
@@ -104,7 +104,7 @@ export default function ManagerReturns({ products = [] }) {
             message: `זיכוי אוטומטי עבור החזרת ${request.itemName || "פריט"}`,
           });
         } catch (err) {
-          console.error("Gift card issuance failed (continuing anyway):", err);
+          console.warn(`Credit card not issued, return still approved: ${err.message}`);
           giftCardCode = "";
         }
       }

@@ -56,10 +56,11 @@ describe("avgOrder reconciles with the displayed revenue", () => {
 
     expect(stats.monthRevenue).toBe(800);
     expect(stats.salesCount).toBe(3);
-    expect(stats.avgOrder).toBe(267);
-    expect(stats.avgOrder * stats.salesCount).toBe(801);
+    // One decimal place, so the average multiplied back by the order count
+    // stays within 0.05 per order of the revenue shown beside it.
+    expect(stats.avgOrder).toBe(266.7);
     expect(Math.abs(stats.avgOrder * stats.salesCount - stats.monthRevenue))
-      .toBeLessThanOrEqual(stats.salesCount / 2);
+      .toBeLessThanOrEqual(stats.salesCount * 0.05);
   });
 
   it("matches exactly when the net revenue divides evenly", () => {
@@ -83,7 +84,7 @@ describe("avgOrder reconciles with the displayed revenue", () => {
     });
 
     expect(stats.monthRevenue).toBe(1000);
-    expect(stats.avgOrder).toBe(333);
+    expect(stats.avgOrder).toBe(333.3);
   });
 
   it("is 0 rather than NaN when there are no orders", () => {
@@ -547,5 +548,46 @@ describe("getSlowProducts", () => {
     const second = getSlowProducts([make("A", 0, 5, 100), make("B", 0, 5, 100)]);
 
     expect(first.map((p) => p.code)).toEqual(second.map((p) => p.code));
+  });
+});
+
+describe("avgOrder precision", () => {
+  const NOW3 = new Date("2026-08-15T12:00:00Z").getTime();
+  const mk = (total) => ({
+    total,
+    date: "2026-08-05T10:00:00.000Z",
+    customerEmail: "a@b.c",
+    subtotal: total,
+    items: [{ code: "FS-001", price: total, qty: 1 }],
+  });
+
+  // 8,346 over 37 orders is 225.567…, and a whole-shekel 226 multiplied back
+  // gives 8,362 — a 16 shekel spread on the same screen.
+  it("keeps one decimal place", () => {
+    const orders = Array.from({ length: 37 }, () => mk(8346 / 37));
+    const stats = calculateMonthlyStats({ orders, now: NOW3 });
+
+    expect(stats.salesCount).toBe(37);
+    expect(stats.avgOrder).toBe(225.6);
+    expect(Math.abs(stats.avgOrder * 37 - 8346)).toBeLessThan(2);
+  });
+
+  it("stays within half an agora per order of the revenue", () => {
+    for (const [count, revenue] of [[37, 8346], [3, 1000], [7, 999], [11, 5000]]) {
+      const orders = Array.from({ length: count }, () => mk(revenue / count));
+      const stats = calculateMonthlyStats({ orders, now: NOW3 });
+
+      expect(Math.abs(stats.avgOrder * count - revenue))
+        .toBeLessThanOrEqual(count * 0.05);
+    }
+  });
+
+  it("still returns a whole number when the average is exact", () => {
+    const stats = calculateMonthlyStats({ orders: [mk(300), mk(500)], now: NOW3 });
+    expect(stats.avgOrder).toBe(400);
+  });
+
+  it("is 0 rather than NaN with no orders", () => {
+    expect(calculateMonthlyStats({ orders: [], now: NOW3 }).avgOrder).toBe(0);
   });
 });
