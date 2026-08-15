@@ -366,252 +366,270 @@ export default function Manager({ onPromote }) {
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
-    // These lists are re-read rather than taken from state, so the sweep works
-    // from what Firestore holds right now.
-    const [allFeedback, allCustomers, allReturns, allStockAlerts] =
-      await Promise.all([
-        getAllFeedback(),
-        getAllCustomers(),
-        getAllReturnRequests(),
-        getAllStockNotifications(),
-      ]);
-
-    const {
-      orders: ordersNeedingUpdate,
-      messages: messagesNeedingUpdate,
-      feedback: feedbackNeedingUpdate,
-      customers: customersNeedingUpdate,
-      products: productsNeedingUpdate,
-      returns: returnsNeedingUpdate,
-      stockAlerts: stockAlertsNeedingUpdate,
-      total,
-    } = selectRecordsNeedingTranslation({
-      orders,
-      contactMessages,
-      feedback: allFeedback,
-      customers: allCustomers,
-      products,
-      returns: allReturns,
-      stockAlerts: allStockAlerts,
-    });
-
-    setHistoricalProgress({ done: 0, total });
     let done = 0;
+    let failed = 0;
+    let total = 0;
 
-    for (const order of ordersNeedingUpdate) {
-      const updatedItems = await Promise.all(
-        (order.items || []).map(async (item) => {
-          let nextItem = item;
-
-          if (needsTranslation(nextItem.name, nextItem.nameEn)) {
-            const product = products.find((p) => p.code === item.code);
-            if (product?.nameEn && product.nameEn.trim() !== nextItem.name.trim()) {
-              nextItem = { ...nextItem, nameEn: product.nameEn };
-            } else {
-              // An item name is a product name, so it goes through the fashion dictionary
-              const nameEn = await translateProductName(nextItem.name);
-              if (nameEn) nextItem = { ...nextItem, nameEn };
-            }
-          }
-
-          if (nextItem.isGiftCard) {
-            if (needsPersonNameFill(nextItem.giftRecipient, nextItem.giftRecipientEn)) {
-              const giftRecipientEn = keepPersonName(nextItem.giftRecipient);
-              if (giftRecipientEn) nextItem = { ...nextItem, giftRecipientEn };
-            }
-            if (needsTranslation(nextItem.giftMessage, nextItem.giftMessageEn)) {
-              const giftMessageEn = await translateText(nextItem.giftMessage);
-              if (giftMessageEn) nextItem = { ...nextItem, giftMessageEn };
-            }
-          }
-
-          return nextItem;
-        })
-      );
-
-      const existingCustomer = order.customerEmbedded || order.customerDetails || null;
-      let updatedCustomer = existingCustomer;
-
-      if (existingCustomer) {
-        const needsNameEn = needsPersonNameFill(existingCustomer.name, existingCustomer.nameEn);
-        const needsCityEn = needsTranslation(existingCustomer.city, existingCustomer.cityEn);
-        const needsStreetEn = needsTranslation(existingCustomer.street, existingCustomer.streetEn);
-
-        if (needsNameEn || needsCityEn || needsStreetEn) {
-          const [nameEn, cityEn, streetEn] = await Promise.all([
-            Promise.resolve(needsNameEn ? keepPersonName(existingCustomer.name) : existingCustomer.nameEn),
-            needsCityEn ? translateText(existingCustomer.city) : Promise.resolve(existingCustomer.cityEn),
-            needsStreetEn ? translateText(existingCustomer.street) : Promise.resolve(existingCustomer.streetEn),
-          ]);
-
-          updatedCustomer = {
-            ...existingCustomer,
-            nameEn: nameEn || existingCustomer.nameEn || existingCustomer.name,
-            cityEn: cityEn || existingCustomer.cityEn || existingCustomer.city,
-            streetEn: streetEn || existingCustomer.streetEn || existingCustomer.street,
-          };
-        }
+    /**
+     * Runs one record's update and advances the progress counter.
+     *
+     * The sweep talks to a translation API and to Firestore for every record,
+     * so a single unreachable call is expected rather than exceptional. Each
+     * record is therefore isolated: a failure costs that record, is counted,
+     * and the sweep carries on to the next. The counter advances either way,
+     * so the progress shown always reaches the total it promised.
+     */
+    async function sweepRecord(describe, work) {
+      try {
+          await work();
+    } catch (err) {
+        failed += 1;
+        console.warn(`${describe} left untranslated: ${err.message}`);
       }
 
-      if (order.docId) {
-        await updateOrderCustomerAndItems(
-          order.docId,
-          updatedCustomer !== existingCustomer ? updatedCustomer : null,
-          updatedItems
-        );
-      }
-
-      applyOrderTranslation(order.docId, {
-        items: updatedItems,
-        customerEmbedded: updatedCustomer,
-      });
-
       done += 1;
-      setHistoricalProgress({ done, total });
+      setHistoricalProgress({ done, total, failed });
     }
 
-    for (const message of messagesNeedingUpdate) {
-      const needsNameEn = needsPersonNameFill(message.name, message.nameEn);
-      const needsMessageEn = needsTranslation(message.message, message.messageEn);
-
-      const [nameEn, messageEn] = await Promise.all([
-        Promise.resolve(needsNameEn ? keepPersonName(message.name) : message.nameEn),
-        needsMessageEn ? translateText(message.message || "") : Promise.resolve(message.messageEn),
-      ]);
-
-      const finalNameEn = nameEn || message.nameEn || message.name || "";
-      const finalMessageEn = messageEn || message.messageEn || message.message || "";
-
-      await updateContactMessageTranslation(message.id, {
-        nameEn: finalNameEn,
-        messageEn: finalMessageEn,
-      });
-
-      setContactMessages((prev) =>
-        prev.map((m) => (m.id === message.id ? { ...m, nameEn: finalNameEn, messageEn: finalMessageEn } : m))
-      );
-
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
-
-    for (const feedbackItem of feedbackNeedingUpdate) {
-      const textEn = await translateText(feedbackItem.text);
-      await updateFeedbackTranslation(feedbackItem.id, textEn || feedbackItem.textEn || feedbackItem.text);
-
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
-
-    for (const customer of customersNeedingUpdate) {
-      if (needsTranslation(customer.name, customer.nameEn)) {
-        const nameEn = keepPersonName(customer.name);
-        await updateCustomerNameTranslation(customer.email, nameEn || customer.nameEn || customer.name);
-      }
-
-      const needsCityEn = needsTranslation(customer.city, customer.cityEn);
-      const needsStreetEn = needsTranslation(customer.street, customer.streetEn);
-
-      if (needsCityEn || needsStreetEn) {
-        const [cityEn, streetEn] = await Promise.all([
-          needsCityEn ? translateText(customer.city) : Promise.resolve(customer.cityEn),
-          needsStreetEn ? translateText(customer.street) : Promise.resolve(customer.streetEn),
+    try {
+      // These lists are re-read rather than taken from state, so the sweep works
+      // from what Firestore holds right now.
+      const [allFeedback, allCustomers, allReturns, allStockAlerts] =
+        await Promise.all([
+          getAllFeedback(),
+          getAllCustomers(),
+          getAllReturnRequests(),
+          getAllStockNotifications(),
         ]);
 
-        await updateCustomerAddressTranslation(customer.email, {
-          cityEn: cityEn || customer.cityEn || customer.city,
-          streetEn: streetEn || customer.streetEn || customer.street,
+      const {
+        orders: ordersNeedingUpdate,
+        messages: messagesNeedingUpdate,
+        feedback: feedbackNeedingUpdate,
+        customers: customersNeedingUpdate,
+        products: productsNeedingUpdate,
+        returns: returnsNeedingUpdate,
+        stockAlerts: stockAlertsNeedingUpdate,
+        total: totalNeedingUpdate,
+      } = selectRecordsNeedingTranslation({
+        orders,
+        contactMessages,
+        feedback: allFeedback,
+        customers: allCustomers,
+        products,
+        returns: allReturns,
+        stockAlerts: allStockAlerts,
+      });
+
+      total = totalNeedingUpdate;
+      setHistoricalProgress({ done: 0, total, failed: 0 });
+
+      for (const order of ordersNeedingUpdate) {
+        await sweepRecord(`Order ${order.id || order.docId}`, async () => {
+        const updatedItems = await Promise.all(
+          (order.items || []).map(async (item) => {
+            let nextItem = item;
+
+            if (needsTranslation(nextItem.name, nextItem.nameEn)) {
+              const product = products.find((p) => p.code === item.code);
+              if (product?.nameEn && product.nameEn.trim() !== nextItem.name.trim()) {
+                nextItem = { ...nextItem, nameEn: product.nameEn };
+              } else {
+                // An item name is a product name, so it goes through the fashion dictionary
+                const nameEn = await translateProductName(nextItem.name);
+                if (nameEn) nextItem = { ...nextItem, nameEn };
+              }
+            }
+
+            if (nextItem.isGiftCard) {
+              if (needsPersonNameFill(nextItem.giftRecipient, nextItem.giftRecipientEn)) {
+                const giftRecipientEn = keepPersonName(nextItem.giftRecipient);
+                if (giftRecipientEn) nextItem = { ...nextItem, giftRecipientEn };
+              }
+              if (needsTranslation(nextItem.giftMessage, nextItem.giftMessageEn)) {
+                const giftMessageEn = await translateText(nextItem.giftMessage);
+                if (giftMessageEn) nextItem = { ...nextItem, giftMessageEn };
+              }
+            }
+
+            return nextItem;
+          })
+        );
+
+        const existingCustomer = order.customerEmbedded || order.customerDetails || null;
+        let updatedCustomer = existingCustomer;
+
+        if (existingCustomer) {
+          const needsNameEn = needsPersonNameFill(existingCustomer.name, existingCustomer.nameEn);
+          const needsCityEn = needsTranslation(existingCustomer.city, existingCustomer.cityEn);
+          const needsStreetEn = needsTranslation(existingCustomer.street, existingCustomer.streetEn);
+
+          if (needsNameEn || needsCityEn || needsStreetEn) {
+            const [nameEn, cityEn, streetEn] = await Promise.all([
+              Promise.resolve(needsNameEn ? keepPersonName(existingCustomer.name) : existingCustomer.nameEn),
+              needsCityEn ? translateText(existingCustomer.city) : Promise.resolve(existingCustomer.cityEn),
+              needsStreetEn ? translateText(existingCustomer.street) : Promise.resolve(existingCustomer.streetEn),
+            ]);
+
+            updatedCustomer = {
+              ...existingCustomer,
+              nameEn: nameEn || existingCustomer.nameEn || existingCustomer.name,
+              cityEn: cityEn || existingCustomer.cityEn || existingCustomer.city,
+              streetEn: streetEn || existingCustomer.streetEn || existingCustomer.street,
+            };
+          }
+        }
+
+        if (order.docId) {
+          await updateOrderCustomerAndItems(
+            order.docId,
+            updatedCustomer !== existingCustomer ? updatedCustomer : null,
+            updatedItems
+          );
+        }
+
+        applyOrderTranslation(order.docId, {
+          items: updatedItems,
+          customerEmbedded: updatedCustomer,
+        });
         });
       }
 
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
+      for (const message of messagesNeedingUpdate) {
+        await sweepRecord(`Message ${message.id}`, async () => {
+        const needsNameEn = needsPersonNameFill(message.name, message.nameEn);
+        const needsMessageEn = needsTranslation(message.message, message.messageEn);
 
-    for (const product of productsNeedingUpdate) {
-      let nextProduct = product;
+        const [nameEn, messageEn] = await Promise.all([
+          Promise.resolve(needsNameEn ? keepPersonName(message.name) : message.nameEn),
+          needsMessageEn ? translateText(message.message || "") : Promise.resolve(message.messageEn),
+        ]);
 
-      if (needsTranslation(product.name, product.nameEn)) {
-        // Product names use the fashion dictionary, not the generic translator
-        const nameEn = await translateProductName(product.name);
-        if (nameEn) nextProduct = { ...nextProduct, nameEn };
-      }
+        const finalNameEn = nameEn || message.nameEn || message.name || "";
+        const finalMessageEn = messageEn || message.messageEn || message.message || "";
 
-      if (needsTranslation(product.desc, product.descEn)) {
-        const descEn = await translateText(product.desc);
-        if (descEn) nextProduct = { ...nextProduct, descEn };
-      }
+        await updateContactMessageTranslation(message.id, {
+          nameEn: finalNameEn,
+          messageEn: finalMessageEn,
+        });
 
-      if (nextProduct.variants?.length) {
-        const updatedVariants = await Promise.all(
-          nextProduct.variants.map(async (variant) => {
-            if (!needsTranslation(variant.colorName, variant.colorNameEn)) {
-              return variant;
-            }
-            const colorNameEn = await translateProductFields({
-              name: "",
-              desc: "",
-              colorNames: [variant.colorName],
-            });
-            const translated = colorNameEn.colorNamesEn?.[0];
-            return translated ? { ...variant, colorNameEn: translated } : variant;
-          }),
+        setContactMessages((prev) =>
+          prev.map((m) => (m.id === message.id ? { ...m, nameEn: finalNameEn, messageEn: finalMessageEn } : m))
         );
-        nextProduct = { ...nextProduct, variants: updatedVariants };
+        });
       }
 
-      if (nextProduct !== product) {
-        await updateProduct(nextProduct);
-        setProducts((prev) =>
-          prev.map((p) => (p.code === product.code ? nextProduct : p)),
-        );
+      for (const feedbackItem of feedbackNeedingUpdate) {
+        await sweepRecord(`Feedback ${feedbackItem.id}`, async () => {
+          const textEn = await translateText(feedbackItem.text);
+          await updateFeedbackTranslation(feedbackItem.id, textEn || feedbackItem.textEn || feedbackItem.text);
+        });
       }
 
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
-
-    // Returns and stock alerts both name a product the catalogue already holds
-    // a translation for, so the name is looked up rather than translated
-    // again. Translation is the fallback, for a product since removed.
-    // Each record is guarded on its own: one unreachable translation should
-    // cost that record, not the rest of the sweep and not the progress count.
-    for (const request of returnsNeedingUpdate) {
-      try {
-        const fromCatalogue = resolveCatalogueNameEn(request.itemCode, products);
-        const itemNameEn =
-          fromCatalogue || (await translateProductName(request.itemName));
-
-        if (itemNameEn) {
-          await updateReturnItemTranslation(request.id, itemNameEn);
+      for (const customer of customersNeedingUpdate) {
+        await sweepRecord(`Customer ${customer.email}`, async () => {
+        if (needsTranslation(customer.name, customer.nameEn)) {
+          const nameEn = keepPersonName(customer.name);
+          await updateCustomerNameTranslation(customer.email, nameEn || customer.nameEn || customer.name);
         }
-      } catch (err) {
-        console.warn(`Return ${request.id} left untranslated: ${err.message}`);
-      }
 
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
+        const needsCityEn = needsTranslation(customer.city, customer.cityEn);
+        const needsStreetEn = needsTranslation(customer.street, customer.streetEn);
 
-    for (const alert of stockAlertsNeedingUpdate) {
-      try {
-        const fromCatalogue = resolveCatalogueNameEn(alert.productCode, products);
-        const productNameEn =
-          fromCatalogue || (await translateProductName(alert.productName));
+        if (needsCityEn || needsStreetEn) {
+          const [cityEn, streetEn] = await Promise.all([
+            needsCityEn ? translateText(customer.city) : Promise.resolve(customer.cityEn),
+            needsStreetEn ? translateText(customer.street) : Promise.resolve(customer.streetEn),
+          ]);
 
-        if (productNameEn) {
-          await updateStockNotificationTranslation(alert.id, productNameEn);
+          await updateCustomerAddressTranslation(customer.email, {
+            cityEn: cityEn || customer.cityEn || customer.city,
+            streetEn: streetEn || customer.streetEn || customer.street,
+          });
         }
-      } catch (err) {
-        console.warn(`Stock alert ${alert.id} left untranslated: ${err.message}`);
+        });
       }
 
-      done += 1;
-      setHistoricalProgress({ done, total });
-    }
+      for (const product of productsNeedingUpdate) {
+        await sweepRecord(`Product ${product.code}`, async () => {
+        let nextProduct = product;
 
-    setTranslatingHistorical(false);
-    setRefreshKey((k) => k + 1);
+        if (needsTranslation(product.name, product.nameEn)) {
+          // Product names use the fashion dictionary, not the generic translator
+          const nameEn = await translateProductName(product.name);
+          if (nameEn) nextProduct = { ...nextProduct, nameEn };
+        }
+
+        if (needsTranslation(product.desc, product.descEn)) {
+          const descEn = await translateText(product.desc);
+          if (descEn) nextProduct = { ...nextProduct, descEn };
+        }
+
+        if (nextProduct.variants?.length) {
+          const updatedVariants = await Promise.all(
+            nextProduct.variants.map(async (variant) => {
+              if (!needsTranslation(variant.colorName, variant.colorNameEn)) {
+                return variant;
+              }
+              const colorNameEn = await translateProductFields({
+                name: "",
+                desc: "",
+                colorNames: [variant.colorName],
+              });
+              const translated = colorNameEn.colorNamesEn?.[0];
+              return translated ? { ...variant, colorNameEn: translated } : variant;
+            }),
+          );
+          nextProduct = { ...nextProduct, variants: updatedVariants };
+        }
+
+        if (nextProduct !== product) {
+          await updateProduct(nextProduct);
+          setProducts((prev) =>
+            prev.map((p) => (p.code === product.code ? nextProduct : p)),
+          );
+        }
+        });
+      }
+
+      // Returns and stock alerts both name a product the catalogue already holds
+      // a translation for, so the name is looked up rather than translated
+      // again. Translation is the fallback, for a product since removed.
+      for (const request of returnsNeedingUpdate) {
+        await sweepRecord(`Return ${request.id}`, async () => {
+          const fromCatalogue = resolveCatalogueNameEn(request.itemCode, products);
+          const itemNameEn =
+            fromCatalogue || (await translateProductName(request.itemName));
+
+          if (itemNameEn) {
+            await updateReturnItemTranslation(request.id, itemNameEn);
+          }
+        });
+      }
+
+      for (const alert of stockAlertsNeedingUpdate) {
+        await sweepRecord(`Stock alert ${alert.id}`, async () => {
+          const fromCatalogue = resolveCatalogueNameEn(alert.productCode, products);
+          const productNameEn =
+            fromCatalogue || (await translateProductName(alert.productName));
+
+          if (productNameEn) {
+            await updateStockNotificationTranslation(alert.id, productNameEn);
+          }
+        });
+      }
+    } catch (err) {
+      // Reaching here means the sweep could not start or could not be
+      // continued, rather than one record failing. Whatever was written before
+      // the failure stands, and running again picks up what is left.
+      console.warn(`Historical translation stopped early: ${err.message}`);
+      setHistoricalProgress({ done, total, failed: failed + 1 });
+    } finally {
+      // Always released, so a failure cannot leave the button reading
+      // "translating" until the screen is reloaded.
+      setTranslatingHistorical(false);
+      setRefreshKey((k) => k + 1);
+    }
   }
 
   const shellClassName = `${styles.appShell} ${

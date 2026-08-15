@@ -342,11 +342,12 @@ export const he = {
       saveSettings: "💾 שמור הגדרות",
       settingsSaved: "✅ הגדרות נשמרו",
       historicalTranslationTitle: "🌍 עדכון תרגומים היסטורי",
-      historicalTranslationDesc: "מתרגם לאנגלית הזמנות, פניות, משוב ולקוחות ישנים שעדיין לא תורגמו — כתובות, שמות וכרטיסי מתנה כלולים.",
+      historicalTranslationDesc: "מתרגם לאנגלית הזמנות, פניות, משוב, לקוחות, החזרות והתראות מלאי שעדיין לא תורגמו — כתובות, שמות וכרטיסי מתנה כלולים.",
       historicalTranslationButton: "עדכן נתונים היסטוריים",
       historicalTranslationRunning: "מתרגם... ({done}/{total})",
       historicalTranslationDone: "✅ הושלם! כל הנתונים עודכנו.",
       historicalTranslationNothing: "✅ הכול מתורגם, אין מה לעדכן",
+      historicalTranslationPartial: "⚠️ הסתיים, אך {failed} פריטים לא עודכנו. אפשר להריץ שוב.",
       failedTranslationsFound: "⚠️ נמצאו {count} פריטים שהתרגום שלהם לאנגלית נכשל או חסר",
     },
     orderDetailsModal: {

@@ -336,11 +336,12 @@ export const en = {
       saveSettings: "💾 Save Settings",
       settingsSaved: "✅ Settings saved",
       historicalTranslationTitle: "🌍 Historical Translation Update",
-      historicalTranslationDesc: "Translates old orders, messages, feedback, and customers to English that haven't been translated yet — addresses, names, and gift cards included.",
+      historicalTranslationDesc: "Translates old orders, messages, feedback, customers, returns and stock alerts to English that haven't been translated yet — addresses, names, and gift cards included.",
       historicalTranslationButton: "Update Historical Data",
       historicalTranslationRunning: "Translating... ({done}/{total})",
       historicalTranslationDone: "✅ Done! All data updated.",
       historicalTranslationNothing: "✅ Everything is translated, nothing to update",
+      historicalTranslationPartial: "⚠️ Finished, but {failed} items were not updated. You can run it again.",
       failedTranslationsFound: "⚠️ Found {count} items with missing or failed English translation",
     },
     orderDetailsModal: {

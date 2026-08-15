@@ -923,10 +923,24 @@ export default function SettingsView({
             */}
             {!translatingHistorical && historicalProgress && (
               <div
-                className={`${uiStyles.alert} ${uiStyles.aSuccess}`}
+                className={`${uiStyles.alert} ${
+                  historicalProgress.failed > 0
+                    ? uiStyles.aWarn
+                    : uiStyles.aSuccess
+                }`}
                 style={{ marginTop: ".75rem" }}
               >
-                {historicalProgress.total > 0
+                {/*
+                  A run that could not finish every record says so. Reporting
+                  it as done would hide records still holding Hebrew, and the
+                  sweep can simply be run again to pick them up.
+                */}
+                {historicalProgress.failed > 0
+                  ? t.historicalTranslationPartial.replace(
+                      "{failed}",
+                      historicalProgress.failed,
+                    )
+                  : historicalProgress.total > 0
                   ? t.historicalTranslationDone
                   : t.historicalTranslationNothing}
               </div>
