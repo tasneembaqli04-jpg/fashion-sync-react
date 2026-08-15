@@ -62,3 +62,6 @@ build/Release
 
 # Firebase Data Connect generated files
 .dataconnect
+
+# Scratch copy of README sections moved into the academic report
+README-removed-sections.md

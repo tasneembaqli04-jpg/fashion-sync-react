@@ -553,7 +553,11 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
                                   : "var(--gold)",
                             }}
                           >
-                            {r.itemName}:{" "}
+                            {getItemName(
+                              { name: r.itemName, nameEn: r.itemNameEn },
+                              lang,
+                            )}
+                            :{" "}
                             {r.status === "approved"
                               ? rt.statusApproved
                               : r.status === "rejected"

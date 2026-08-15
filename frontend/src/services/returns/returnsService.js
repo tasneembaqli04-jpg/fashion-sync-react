@@ -18,6 +18,7 @@ export async function requestReturn({
   orderId,
   itemCode,
   itemName,
+  itemNameEn,
   itemImg,
   qty,
   color,
@@ -34,6 +35,9 @@ export async function requestReturn({
     orderId,
     itemCode,
     itemName,
+    // Stored alongside the Hebrew name because the customer reads this record
+    // back on her own orders screen, in whichever language she is using.
+    itemNameEn: itemNameEn || "",
     itemImg: itemImg || "",
     qty: Number(qty) || 1,
     color: color || "",
@@ -69,6 +73,22 @@ export async function updateReturnStatus(id, status) {
 
 export async function markReturnSeenByCustomer(id) {
   await updateDoc(doc(db, "returnRequests", id), { seenByCustomer: true });
+}
+
+/**
+ * Fills in the English item name on a return raised before the field existed.
+ *
+ * Only that one field is written, so a sweep over old records cannot disturb
+ * the status or the customer's own note.
+ *
+ * @param {string} id - Return request document id.
+ * @param {string} itemNameEn - The English item name.
+ * @returns {Promise<void>}
+ */
+export async function updateReturnItemTranslation(id, itemNameEn) {
+  if (!id || !itemNameEn) return;
+
+  await updateDoc(doc(db, "returnRequests", id), { itemNameEn });
 }
 
 export function subscribeToReturnRequestsByUser(email, callback) {

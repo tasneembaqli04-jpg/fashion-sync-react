@@ -6,6 +6,9 @@ import {
   countProductGaps,
   countOutstandingTranslations,
   selectRecordsNeedingTranslation,
+  countReturnGaps,
+  countStockAlertGaps,
+  resolveCatalogueNameEn,
 } from "./historicalTranslation";
 
 describe("needsTranslation", () => {
@@ -208,16 +211,18 @@ describe("selectRecordsNeedingTranslation", () => {
     expect(selectRecordsNeedingTranslation({ products: [product] }).total).toBe(1);
   });
 
-  it("totals across all five sources", () => {
+  it("totals across all seven sources", () => {
     const result = selectRecordsNeedingTranslation({
       orders: [{ items: [{ name: "שמלה", nameEn: "" }] }],
       contactMessages: [{ message: "שלום", messageEn: "" }],
       feedback: [{ text: "מעולה", textEn: "" }],
       customers: [{ city: "אילת", cityEn: "" }],
       products: [{ name: "חולצה", nameEn: "" }],
+      returns: [{ itemName: "מכנסיים", itemNameEn: "" }],
+      stockAlerts: [{ productName: "נעליים", productNameEn: "" }],
     });
 
-    expect(result.total).toBe(5);
+    expect(result.total).toBe(7);
   });
 
   it("returns empty lists and a zero total for a clean shop", () => {
@@ -231,5 +236,90 @@ describe("selectRecordsNeedingTranslation", () => {
 
   it("survives being called with nothing", () => {
     expect(selectRecordsNeedingTranslation().total).toBe(0);
+  });
+});
+
+describe("countReturnGaps", () => {
+  it("counts a return stored before the English field existed", () => {
+    expect(countReturnGaps({ itemName: "שמלת ערב" })).toBe(1);
+  });
+
+  it("counts a return whose English name came back untranslated", () => {
+    expect(
+      countReturnGaps({ itemName: "שמלת ערב", itemNameEn: "שמלת ערב" }),
+    ).toBe(1);
+  });
+
+  it("leaves a translated return alone", () => {
+    expect(
+      countReturnGaps({ itemName: "שמלת ערב", itemNameEn: "Evening Dress" }),
+    ).toBe(0);
+  });
+
+  // The reason travels with a reasonKey the reader translates, and the note is
+  // the customer's own words, so neither is a gap.
+  it("ignores the reason and the note", () => {
+    expect(
+      countReturnGaps({
+        itemName: "שמלת ערב",
+        itemNameEn: "Evening Dress",
+        reason: "פגום",
+        reasonKey: "defective",
+        note: "הגיע קרוע",
+      }),
+    ).toBe(0);
+  });
+
+  it("treats a missing record as no gap", () => {
+    expect(countReturnGaps(null)).toBe(0);
+    expect(countReturnGaps({})).toBe(0);
+  });
+});
+
+describe("countStockAlertGaps", () => {
+  it("counts an alert stored before the English field existed", () => {
+    expect(countStockAlertGaps({ productName: "נעלי עקב" })).toBe(1);
+  });
+
+  it("leaves a translated alert alone", () => {
+    expect(
+      countStockAlertGaps({ productName: "נעלי עקב", productNameEn: "Heels" }),
+    ).toBe(0);
+  });
+
+  it("treats a missing record as no gap", () => {
+    expect(countStockAlertGaps(null)).toBe(0);
+    expect(countStockAlertGaps({})).toBe(0);
+  });
+});
+
+describe("resolveCatalogueNameEn", () => {
+  const catalogue = [
+    { code: "FS-001", name: "שמלת ערב", nameEn: "Evening Dress" },
+    { code: "FS-002", name: "חולצה", nameEn: "" },
+  ];
+
+  it("takes the name the catalogue already holds", () => {
+    expect(resolveCatalogueNameEn("FS-001", catalogue)).toBe("Evening Dress");
+  });
+
+  // Codes arrive as numbers on some records and strings on others.
+  it("matches a code across types", () => {
+    expect(resolveCatalogueNameEn(7, [{ code: "7", nameEn: "Scarf" }])).toBe(
+      "Scarf",
+    );
+  });
+
+  it("returns nothing when the product has no English name", () => {
+    expect(resolveCatalogueNameEn("FS-002", catalogue)).toBe("");
+  });
+
+  it("returns nothing when the product has been removed", () => {
+    expect(resolveCatalogueNameEn("FS-999", catalogue)).toBe("");
+  });
+
+  it("survives a missing code or catalogue", () => {
+    expect(resolveCatalogueNameEn("", catalogue)).toBe("");
+    expect(resolveCatalogueNameEn("FS-001", null)).toBe("");
   });
 });

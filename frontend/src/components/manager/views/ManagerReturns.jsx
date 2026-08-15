@@ -9,6 +9,7 @@ import { sendReturnStatusEmail } from "../../../services/email/emailService";
 import { restockReturnedItem } from "../../../services/products/productsService";
 import { issueGiftCard } from "../../../services/giftcard/giftCardService";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { buildReturnCreditMessage } from "../../../functions/manager/returnCredit";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -74,6 +75,10 @@ export default function ManagerReturns({ products = [] }) {
 
     if (!request) return;
 
+    // Resolved once and used twice: the credit note and the status email both
+    // need the item's English name, and older returns were stored without it.
+    const creditProduct = products.find((p) => p.code === request.itemCode);
+
     let giftCardCode = "";
     let giftCardAmount = 0;
 
@@ -96,12 +101,21 @@ export default function ManagerReturns({ products = [] }) {
       if (giftCardAmount > 0) {
         try {
           giftCardCode = `RTN-${id.slice(0, 8).toUpperCase()}`;
+
+          // Stored in both languages: the manager writes this note and the
+          // customer reads it, and she may be reading in the other one.
+          const creditNote = buildReturnCreditMessage(
+            request.itemName,
+            request.itemNameEn || creditProduct?.nameEn || "",
+          );
+
           await issueGiftCard({
             code: giftCardCode,
             amount: giftCardAmount,
             buyerEmail: request.customerEmail,
             recipientName: request.customerName,
-            message: `זיכוי אוטומטי עבור החזרת ${request.itemName || "פריט"}`,
+            message: creditNote.message,
+            messageEn: creditNote.messageEn,
           });
         } catch (err) {
           console.warn(`Credit card not issued, return still approved: ${err.message}`);
@@ -111,12 +125,10 @@ export default function ManagerReturns({ products = [] }) {
     }
 
     if (request.customerEmail) {
-      const product = products.find((p) => p.code === request.itemCode);
-
       sendReturnStatusEmail({
         toEmail: request.customerEmail,
         itemName: request.itemName,
-        itemNameEn: product?.nameEn || "",
+        itemNameEn: request.itemNameEn || creditProduct?.nameEn || "",
         status,
         giftCardCode,
         giftCardAmount,
