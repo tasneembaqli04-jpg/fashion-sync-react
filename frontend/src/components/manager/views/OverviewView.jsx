@@ -4,6 +4,7 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getSlowProducts } from "../../../functions/manager/analytics";
+import { HIGH_DEMAND_THRESHOLD } from "../../../functions/manager/managerHelpers";
 
 function getAlertClass(type) {
   if (type === "danger") {
@@ -144,7 +145,9 @@ export default function OverviewView({
           >
             {stats.demandCount}
           </div>
-          <div className={overviewStyles.statSub}>notifyCount &gt; 15</div>
+          <div className={overviewStyles.statSub}>
+            {t.highDemandDesc.replace("{count}", HIGH_DEMAND_THRESHOLD)}
+          </div>
         </div>
       </div>
 

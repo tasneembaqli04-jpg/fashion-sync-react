@@ -22,7 +22,7 @@ import styles from "../styles/Manager.module.scss";
 import ManagerOrders from "../components/manager/views/ManagerOrders";
 import GiftCardOrdersView from "../components/manager/views/GiftCardOrdersView";
 import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
-import { createAlerts } from "../functions/manager/managerHelpers";
+import { createAlerts, HIGH_DEMAND_THRESHOLD } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
 import { translateProductFields } from "../services/translation/translationService";
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
@@ -298,7 +298,7 @@ export default function Manager({ onPromote }) {
       const requestCount = stockNotifications.filter(
         (n) => n.productCode === p.code
       ).length;
-      return requestCount > 15;
+      return requestCount > HIGH_DEMAND_THRESHOLD;
     }).length;
     const sales = receipts.reduce((sum, r) => sum + r.total, 0);
     return {
