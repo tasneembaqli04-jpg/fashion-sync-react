@@ -236,7 +236,14 @@ export function calculateMonthlyStats({
   // avgOrder × salesCount reconciles with the revenue figure beside it.
   // Averaging the gross revenue instead would show two numbers on one screen
   // that cannot both be true.
-  const avgOrder = salesCount ? Math.round(adjustedRevenue / salesCount) : 0;
+  //
+  // Kept to one decimal place. A whole-shekel average multiplied back by the
+  // order count lands up to half a shekel per order away from the revenue
+  // beside it: 8,346 over 37 orders shows 226, and 226 × 37 is 8,362. One
+  // decimal narrows that spread by a factor of ten while staying readable.
+  const avgOrder = salesCount
+    ? Math.round((adjustedRevenue / salesCount) * 10) / 10
+    : 0;
 
   const categoryMap = {};
   monthOrders.forEach((order) => {

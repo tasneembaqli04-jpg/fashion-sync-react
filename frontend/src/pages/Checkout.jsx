@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { translateText } from "../services/translation/translationService";
+import { translateText, keepPersonName } from "../services/translation/translationService";
 import styles from "../styles/checkout/Checkout.module.scss";
 
 import { SHIPPING_OPTIONS } from "../data/shippingOptions";
@@ -467,7 +467,7 @@ export default function Checkout() {
         const fullName = `${formData.firstName} ${formData.lastName}`.trim();
 
         const [nameEn, cityEn, streetEn] = await Promise.all([
-          translateText(fullName),
+          Promise.resolve(keepPersonName(fullName)),
           formData.city ? translateText(formData.city) : Promise.resolve(""),
           formData.street ? translateText(formData.street) : Promise.resolve(""),
         ]);
@@ -561,9 +561,9 @@ export default function Checkout() {
         setCurrentStep(4);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (error) {
-        console.error("Payment save error FULL:", error);
-        console.error("message:", error?.message);
-        console.error("stack:", error?.stack);
+        // A genuine failure: the order was not saved and the customer is told
+        // so. One line, because the error object already carries its stack.
+        console.error("Order could not be saved:", error);
         setProcessing(false);
         alertDialog(
           `אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`,

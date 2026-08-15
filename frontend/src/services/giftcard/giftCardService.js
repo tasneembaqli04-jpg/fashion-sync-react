@@ -1,6 +1,6 @@
 import { db } from "../../firebase";
 import { doc, setDoc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
-import { translateText } from "../translation/translationService";
+import { translateText, keepPersonName } from "../translation/translationService";
 import { roundMoney } from "../../utils/money";
 
 function normalizeCode(code) {
@@ -99,9 +99,9 @@ export async function translateGiftCard(card) {
 
   const updates = {};
 
-  if (card.recipientName && (!card.recipientNameEn || card.recipientNameEn.trim() === card.recipientName.trim())) {
-    const translated = await translateText(card.recipientName);
-    if (translated) updates.recipientNameEn = translated;
+  // The recipient is a person, so the English field simply mirrors the name.
+  if (card.recipientName && !card.recipientNameEn) {
+    updates.recipientNameEn = keepPersonName(card.recipientName);
   }
 
   if (card.message && (!card.messageEn || card.messageEn.trim() === card.message.trim())) {

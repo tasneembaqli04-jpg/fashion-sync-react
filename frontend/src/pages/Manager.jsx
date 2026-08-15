@@ -31,7 +31,7 @@ import { getAllContactMessages } from "../services/contact/contactMessagesServic
 import { subscribeToOrders, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
-import { translateText } from "../services/translation/translationService";
+import { translateText, keepPersonName } from "../services/translation/translationService";
 import { translateProductName } from "../services/translation/translationService";
 import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
 import { getAllCustomers, updateCustomerNameTranslation, updateCustomerAddressTranslation } from "../services/customer/customerFirestore";
@@ -397,6 +397,18 @@ export default function Manager({ onPromote }) {
     return translated.trim() === original.trim();
   }
 
+  // Person names are never translated: the English field mirrors the name (see
+  // keepPersonName). An English value equal to the Hebrew one is therefore the
+  // finished state, not a failed translation, and needsTranslation would read
+  // it as failure and re-attempt it on every sweep for ever.
+  //
+  // A name field is outstanding only while its English counterpart is empty,
+  // which is the case for records written before the mirror existed. Filling
+  // it once settles it permanently.
+  function needsPersonNameFill(original, translated) {
+    return Boolean(original) && !translated;
+  }
+
   const failedTranslationsCount = useMemo(() => {
     let count = 0;
 
@@ -404,21 +416,21 @@ export default function Manager({ onPromote }) {
       (order.items || []).forEach((item) => {
         if (needsTranslation(item.name, item.nameEn)) count += 1;
         if (item.isGiftCard) {
-          if (needsTranslation(item.giftRecipient, item.giftRecipientEn)) count += 1;
+          if (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn)) count += 1;
           if (needsTranslation(item.giftMessage, item.giftMessageEn)) count += 1;
         }
       });
 
       const customer = order.customerEmbedded || order.customerDetails;
       if (customer) {
-        if (needsTranslation(customer.name, customer.nameEn)) count += 1;
+        if (needsPersonNameFill(customer.name, customer.nameEn)) count += 1;
         if (needsTranslation(customer.city, customer.cityEn)) count += 1;
         if (needsTranslation(customer.street, customer.streetEn)) count += 1;
       }
     });
 
     contactMessages.forEach((m) => {
-      if (needsTranslation(m.name, m.nameEn)) count += 1;
+      if (needsPersonNameFill(m.name, m.nameEn)) count += 1;
       if (needsTranslation(m.message, m.messageEn)) count += 1;
     });
 
@@ -427,7 +439,7 @@ export default function Manager({ onPromote }) {
     });
 
     customersList.forEach((c) => {
-      if (needsTranslation(c.name, c.nameEn)) count += 1;
+      if (needsPersonNameFill(c.name, c.nameEn)) count += 1;
       if (needsTranslation(c.city, c.cityEn)) count += 1;
       if (needsTranslation(c.street, c.streetEn)) count += 1;
     });
@@ -451,7 +463,7 @@ export default function Manager({ onPromote }) {
         (item) =>
           needsTranslation(item.name, item.nameEn) ||
           (item.isGiftCard &&
-            (needsTranslation(item.giftRecipient, item.giftRecipientEn) ||
+            (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn) ||
               needsTranslation(item.giftMessage, item.giftMessageEn)))
       );
 
@@ -460,13 +472,13 @@ export default function Manager({ onPromote }) {
         customer &&
         (needsTranslation(customer.city, customer.cityEn) ||
           needsTranslation(customer.street, customer.streetEn) ||
-          needsTranslation(customer.name, customer.nameEn));
+          needsPersonNameFill(customer.name, customer.nameEn));
 
       return itemsNeedUpdate || addressNeedsUpdate;
     });
 
     const messagesNeedingUpdate = contactMessages.filter(
-      (m) => needsTranslation(m.name, m.nameEn) || needsTranslation(m.message, m.messageEn)
+      (m) => needsPersonNameFill(m.name, m.nameEn) || needsTranslation(m.message, m.messageEn)
     );
 
     const allFeedback = await getAllFeedback();
@@ -477,7 +489,7 @@ export default function Manager({ onPromote }) {
     const allCustomers = await getAllCustomers();
     const customersNeedingUpdate = allCustomers.filter(
       (c) =>
-        needsTranslation(c.name, c.nameEn) ||
+        needsPersonNameFill(c.name, c.nameEn) ||
         needsTranslation(c.city, c.cityEn) ||
         needsTranslation(c.street, c.streetEn)
     );
@@ -518,8 +530,8 @@ export default function Manager({ onPromote }) {
           }
 
           if (nextItem.isGiftCard) {
-            if (needsTranslation(nextItem.giftRecipient, nextItem.giftRecipientEn)) {
-              const giftRecipientEn = await translateText(nextItem.giftRecipient);
+            if (needsPersonNameFill(nextItem.giftRecipient, nextItem.giftRecipientEn)) {
+              const giftRecipientEn = keepPersonName(nextItem.giftRecipient);
               if (giftRecipientEn) nextItem = { ...nextItem, giftRecipientEn };
             }
             if (needsTranslation(nextItem.giftMessage, nextItem.giftMessageEn)) {
@@ -536,13 +548,13 @@ export default function Manager({ onPromote }) {
       let updatedCustomer = existingCustomer;
 
       if (existingCustomer) {
-        const needsNameEn = needsTranslation(existingCustomer.name, existingCustomer.nameEn);
+        const needsNameEn = needsPersonNameFill(existingCustomer.name, existingCustomer.nameEn);
         const needsCityEn = needsTranslation(existingCustomer.city, existingCustomer.cityEn);
         const needsStreetEn = needsTranslation(existingCustomer.street, existingCustomer.streetEn);
 
         if (needsNameEn || needsCityEn || needsStreetEn) {
           const [nameEn, cityEn, streetEn] = await Promise.all([
-            needsNameEn ? translateText(existingCustomer.name) : Promise.resolve(existingCustomer.nameEn),
+            Promise.resolve(needsNameEn ? keepPersonName(existingCustomer.name) : existingCustomer.nameEn),
             needsCityEn ? translateText(existingCustomer.city) : Promise.resolve(existingCustomer.cityEn),
             needsStreetEn ? translateText(existingCustomer.street) : Promise.resolve(existingCustomer.streetEn),
           ]);
@@ -581,11 +593,11 @@ export default function Manager({ onPromote }) {
     }
 
     for (const message of messagesNeedingUpdate) {
-      const needsNameEn = needsTranslation(message.name, message.nameEn);
+      const needsNameEn = needsPersonNameFill(message.name, message.nameEn);
       const needsMessageEn = needsTranslation(message.message, message.messageEn);
 
       const [nameEn, messageEn] = await Promise.all([
-        needsNameEn ? translateText(message.name || "") : Promise.resolve(message.nameEn),
+        Promise.resolve(needsNameEn ? keepPersonName(message.name) : message.nameEn),
         needsMessageEn ? translateText(message.message || "") : Promise.resolve(message.messageEn),
       ]);
 
@@ -615,7 +627,7 @@ export default function Manager({ onPromote }) {
 
     for (const customer of customersNeedingUpdate) {
       if (needsTranslation(customer.name, customer.nameEn)) {
-        const nameEn = await translateText(customer.name);
+        const nameEn = keepPersonName(customer.name);
         await updateCustomerNameTranslation(customer.email, nameEn || customer.nameEn || customer.name);
       }
 

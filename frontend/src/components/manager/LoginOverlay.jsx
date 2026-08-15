@@ -72,7 +72,7 @@ export default function LoginOverlay({ onLoginSuccess }) {
     try {
       await setPersistence(auth, browserSessionPersistence);
     } catch (err) {
-      console.error("Could not scope the manager session to this tab:", err);
+      console.warn(`Session left on the default persistence: ${err.message}`);
     }
 
     // The password comes from the field the manager typed, not from code.

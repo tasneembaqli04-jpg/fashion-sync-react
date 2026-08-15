@@ -8,16 +8,15 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { translateText } from "../translation/translationService";
+import { translateText, keepPersonName } from "../translation/translationService";
 import { omitEmpty } from "../translation/omitEmpty";
 
 const contactCollection = collection(db, "contactMessages");
 
 export async function submitContactMessage({ name, email, message }) {
-  const [nameEn, messageEn] = await Promise.all([
-    translateText(name || ""),
-    translateText(message || ""),
-  ]);
+  // The sender is a person; only the message body is translated.
+  const nameEn = keepPersonName(name);
+  const messageEn = await translateText(message || "");
 
   await addDoc(
     contactCollection,

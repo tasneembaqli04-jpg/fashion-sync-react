@@ -91,7 +91,8 @@ export async function requestChatReplyStream({
     try {
       event = JSON.parse(trimmedLine);
     } catch (error) {
-      console.error("Failed to parse chat stream event:", trimmedLine, error);
+      // A malformed line is dropped and the stream continues.
+      console.warn(`Skipped an unreadable chat stream line: ${error.message}`);
 
       return;
     }
