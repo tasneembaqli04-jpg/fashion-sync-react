@@ -88,6 +88,14 @@ import TryOnModal from "../components/customer/TryOnModal";
 
 // Each Try-On error code maps to a key under customer.dialogs. A code with no
 // entry here falls back to the general message.
+// Each gift card refusal maps to a key under customer.giftCard. An unknown
+// reason falls back to the general message.
+const GIFT_CARD_ERROR_KEYS = {
+  recipientRequired: "errorRecipientRequired",
+  invalidAmount: "errorInvalidAmount",
+  loginRequired: "errorLoginRequired",
+};
+
 const TRY_ON_ERROR_KEYS = {
   [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
   [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
@@ -615,7 +623,7 @@ export default function Customer() {
           ...prev,
           {
             type: "bot",
-            html: "הנה המחשת הלוק שביקשת:",
+            html: dict.customer.chat.outfitImageReady,
             imageUrl: result.image.dataUrl,
             imageMimeType: result.image.mimeType || "image/png",
             products: result.products || [],
@@ -647,7 +655,7 @@ export default function Customer() {
           ...prev,
           {
             type: "bot",
-            html: "הבקשה לקחה יותר מדי זמן. נסי שוב.",
+            html: dict.customer.chat.requestTimedOut,
           },
         ]);
 
@@ -1078,7 +1086,10 @@ export default function Customer() {
     });
 
     if (!result.ok) {
-      setGiftError(result.error);
+      setGiftError(
+        dict.customer.giftCard[GIFT_CARD_ERROR_KEYS[result.reason]] ||
+          dict.customer.dialogs.unknownError
+      );
       return;
     }
 

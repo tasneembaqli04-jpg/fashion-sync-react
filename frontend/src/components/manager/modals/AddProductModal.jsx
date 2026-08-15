@@ -131,6 +131,18 @@ export default function AddProductModal({
     setIsCameraActive(false);
   };
 
+  // Releases the camera when the component goes away with it still running.
+  // Every other path here stops it explicitly, but an unmount, such as leaving
+  // the management screen, went through none of them and left the camera on.
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
   const resetForm = () => {
     setForm({
       code: "",
@@ -172,7 +184,10 @@ export default function AddProductModal({
         }
       }, 50);
     } catch (err) {
-      setError(t.cameraAccessError + (err.message || err.name));
+      // The browser writes err.message in its own language and vocabulary, so
+      // it belongs in the console rather than on screen.
+      console.warn(`Camera unavailable: ${err.message || err.name}`);
+      setError(t.cameraAccessError);
     }
   };
 

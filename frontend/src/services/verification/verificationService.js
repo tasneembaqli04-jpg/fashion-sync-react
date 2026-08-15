@@ -6,12 +6,29 @@ import { sendVerificationCodeEmail } from "../email/emailService";
  * How long a code stays usable.
  *
  * Sized against how long the email actually takes: Gmail delivery runs from
- * under a minute to about five, and a message that lands in spam is not seen
- * until the recipient goes looking. Ten minutes covers a slow delivery and a
- * spam-folder detour, and is still short enough that a code read over someone's
- * shoulder is worth little.
+ * under a minute to about five. Five minutes covers a normal delivery and
+ * leaves room to fetch the message back out of a spam folder, while keeping a
+ * code glimpsed over a shoulder worth little.
+ *
+ * The three timings in this flow have to keep this order:
+ *
+ *   resend cooldown (1 min)  <  spam-folder hint (3 min)  <  this (5 min)
+ *
+ * The hint sends the customer off to look for the message, so it has to arrive
+ * while the code still works and after the resend button has come back to
+ * life. The other two live in EmailVerificationModal.
  */
-export const CODE_TTL_MS = 10 * 60 * 1000;
+export const CODE_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * The same lifetime in whole minutes, for wording that states it.
+ *
+ * The verification email tells the customer how long she has. Sending the
+ * figure along with the request keeps that sentence true when the constant
+ * above moves, rather than leaving the number written into a template twice,
+ * once per language.
+ */
+export const CODE_TTL_MINUTES = CODE_TTL_MS / 60000;
 
 /**
  * How long the previous code keeps working after a new one is issued.
@@ -97,7 +114,12 @@ export async function createAndSendVerificationCode(email, name, lang) {
     sendCount: sendCount + 1,
   });
 
-  await sendVerificationCodeEmail({ toEmail: normalizedEmail, code, lang });
+  await sendVerificationCodeEmail({
+    toEmail: normalizedEmail,
+    code,
+    lang,
+    expiresInMinutes: CODE_TTL_MINUTES,
+  });
 
   return { ok: true };
 }

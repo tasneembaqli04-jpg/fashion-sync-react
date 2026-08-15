@@ -39,6 +39,15 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
     return () => clearTimeout(timer);
   }, [open, mode]);
 
+  // Releases the camera when the component goes away while still open. The
+  // effect above only tears down when `open` turns false, so navigating off
+  // the management screen mid-scan left the camera running with its indicator
+  // light on. stopAll only touches refs, so capturing it once is safe.
+  useEffect(() => {
+    return () => stopAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function getReader() {
     if (!codeReaderRef.current) {
       codeReaderRef.current = new BrowserMultiFormatReader();
@@ -103,10 +112,14 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       streamRef.current = videoRef.current?.srcObject || null;
     } catch (err) {
       console.error("Camera start error:", err);
+      // Anything other than a refused permission gets the general wording.
+      // The browser writes err.message in its own language and its own
+      // vocabulary ("Could not start video source"), which is not something to
+      // put on screen; it stays in the console above for diagnosis.
       if (err.name === "NotAllowedError") {
         setCamStatus(t.cameraPermissionNeeded);
       } else {
-        setCamStatus("⚠️ " + (err.message || err.name));
+        setCamStatus(t.cameraError);
       }
     }
   }

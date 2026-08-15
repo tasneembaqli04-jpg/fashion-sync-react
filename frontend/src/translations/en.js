@@ -400,7 +400,7 @@ export const en = {
       cancelButton: "Cancel",
     },
     addProductModal: {
-      cameraAccessError: "Unable to access camera — ",
+      cameraAccessError: "Unable to access camera",
       selectImageFile: "⚠️ Please select an image file",
       fillAllFields: "❌ Please fill in all fields and add an image",
       codeAlreadyExists: "❌ Code {code} already exists in inventory — every product needs a unique code",
@@ -511,6 +511,11 @@ export const en = {
       wrongCredentials: "❌ Incorrect username or password",
       loginButton: "Log in",
     },
+    promo: {
+      successTitle: "Done!",
+      productPromoted: "\"{name}\" is now featured on the home page.",
+      promotionCancelled: "The promotion was cancelled.",
+    },
     inventory: {
       title: "Inventory Management",
       filterToggle: "Filters",
@@ -588,6 +593,8 @@ export const en = {
       matchingProductsTitle: "Matching products",
       attachImageTitle: "Send image",
       messagePlaceholder: "Type a message...",
+      outfitImageReady: "Here is the look you asked for:",
+      requestTimedOut: "That took too long. Please try again.",
       welcomeMessage: "Hello! 👋 I'm SYNC, FashionSync's smart assistant.<br />I can help you find clothes, check prices, business hours, and more.<br />How can I help you today?",
     },
     browse: {
@@ -885,6 +892,9 @@ export const en = {
       buyButton: "🎁 Buy Gift Card",
       previewTitle: "Preview",
       giftCardLabel: "Gift Card",
+      errorRecipientRequired: "Please enter a recipient name.",
+      errorInvalidAmount: "Please enter a valid amount (minimum ₪10).",
+      errorLoginRequired: "Please sign in to buy a gift card.",
       forLabel: "For:",
       checkBalanceTitle: "💳 Check Gift Card Balance",
       checkBalanceButton: "Check Balance",

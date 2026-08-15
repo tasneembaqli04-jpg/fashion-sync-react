@@ -333,7 +333,7 @@ export default function Manager({ onPromote }) {
     if (onPromote) onPromote(product);
     setCurrentPromotedCode(product.code);
     setFeaturedProduct(product);
-    setPromoMessage(product.name);
+    setPromoMessage({ kind: "promoted", productName: product.name });
     setIsPromoOpen(false);
     setTimeout(() => setSelectedProduct(null), 0);
     setTimeout(() => setPromoMessage(null), 3000);
@@ -343,7 +343,7 @@ export default function Manager({ onPromote }) {
     clearFeaturedProduct();
     setCurrentPromotedCode(null);
     if (onPromote) onPromote(null);
-    setPromoMessage("הקידום בוטל בהצלחה");
+    setPromoMessage({ kind: "cancelled" });
     setIsPromoOpen(false);
     setTimeout(() => setSelectedProduct(null), 0);
     setTimeout(() => setPromoMessage(null), 3000);
@@ -1027,8 +1027,16 @@ export default function Manager({ onPromote }) {
           <div className={styles.promoCard}>
             <div className={styles.checkBadge}>✓</div>
             <div className={styles.textDetails}>
-              <strong>הפעולה הצליחה!</strong>
-              <span> "{promoMessage}" עודכן בדף הבית.</span>
+              <strong>{dict.manager.promo.successTitle}</strong>
+              <span>
+                {" "}
+                {promoMessage.kind === "promoted"
+                  ? dict.manager.promo.productPromoted.replace(
+                      "{name}",
+                      promoMessage.productName,
+                    )
+                  : dict.manager.promo.promotionCancelled}
+              </span>
             </div>
             <button
               onClick={() => setPromoMessage(null)}

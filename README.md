@@ -192,13 +192,13 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-291 tests across twelve files, covering the business logic that carries the most risk.
+310 tests across thirteen files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
 | `translationService.test.js` | 52 | Fashion term dictionary, translation fixes, colour translation guard |
 | `analytics.test.js` | 46 | Revenue recognition, profit, averages, slow movers |
-| `verificationService.test.js` | 28 | Code lifetime, resend ceiling, superseded codes |
+| `verificationService.test.js` | 32 | Code lifetime, resend ceiling, superseded codes |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
 | `orderPolicy.test.js` | 23 | The 24-hour cancellation and 7-day return windows |
@@ -206,6 +206,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `money.test.js` | 19 | Two-decimal rounding and the instalment split |
 | `auth.test.js` | 18 | The identity cache: writing, clearing, guest mode |
 | `stockPolicy.test.js` | 17 | Availability and stock status per product and variant |
+| `giftCard.test.js` | 15 | Gift card purchase rules and refusal codes |
 | `dates.test.js` | 9 | Resolving an order timestamp from its candidate fields |
 | `productsService.test.js` | 9 | Stock decrement and the sales counter |
 
@@ -282,6 +283,7 @@ The system carries the following constraints. Each is bounded in scope, and each
 |---|---|---|
 | **Pricing runs on the client** | The order total is calculated in the browser and written to Firestore. Rules validate ownership but cannot recompute a cart, so a modified total would be accepted | A `createOrder` cloud function that receives items and a coupon code, computes the total server-side, and writes the order itself. This is the highest-value change on this list |
 | **No transactions on shared counters** | Stock, loyalty points and gift card balances are read then written. Two concurrent operations on the same document can lose one update | `runTransaction` on the three write paths. Gift card redemption is the smallest of the three and the natural first candidate |
+| **The steps after an order is saved are not atomic** | Stock, coupon usage, loyalty points, gift card balances and the cart are updated one after another once the order document exists. A failure part way through leaves the order recorded with some of its consequences missing; the customer still reaches her confirmation and the failure is logged for the manager | Move the whole sequence into the `createOrder` cloud function above, where it can run as one Firestore transaction |
 | **Cloud functions are unauthenticated** | 16 of the 17 functions are declared with `cors: true` and none verify the caller, so the email and AI endpoints can be invoked directly | `verifyIdToken` on each controller, or Firebase App Check |
 | **Coupon usage is recorded but not enforced** | `logCouponUsage` writes a usage document, but nothing reads it to block reuse, so one coupon can be redeemed repeatedly | Enforcement belongs server-side, since the rules correctly deny customers read access to other users' usage records |
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |

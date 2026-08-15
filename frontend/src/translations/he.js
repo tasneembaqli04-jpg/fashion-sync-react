@@ -406,7 +406,7 @@ export const he = {
       cancelButton: "ביטול",
     },
     addProductModal: {
-      cameraAccessError: "לא ניתן לגשת למצלמה — ",
+      cameraAccessError: "לא ניתן לגשת למצלמה",
       selectImageFile: "⚠️ יש לבחור קובץ תמונה",
       fillAllFields: "❌ יש למלא את כל השדות ולהוסיף תמונה",
       codeAlreadyExists: "❌ הקוד {code} כבר קיים במלאי — כל מוצר חייב קוד ייחודי",
@@ -516,6 +516,11 @@ export const he = {
       hidePassword: "הסתר סיסמה",
       wrongCredentials: "❌ שם משתמש או סיסמה שגויים",
       loginButton: "כניסה",
+    },
+    promo: {
+      successTitle: "הפעולה הצליחה!",
+      productPromoted: "\"{name}\" עודכן בדף הבית.",
+      promotionCancelled: "הקידום בוטל בהצלחה.",
     },
     inventory: {
       title: " ניהול מלאי",
@@ -633,6 +638,8 @@ export const he = {
       matchingProductsTitle: "מוצרים מתאימים",
       attachImageTitle: "שלח תמונה",
       messagePlaceholder: "כתוב הודעה...",
+      outfitImageReady: "הנה המחשת הלוק שביקשת:",
+      requestTimedOut: "הבקשה לקחה יותר מדי זמן. נסי שוב.",
       welcomeMessage: "שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?",
     },
     browse: {
@@ -930,6 +937,9 @@ export const he = {
       buyButton: "🎁 רכוש כרטיס מתנה",
       previewTitle: "תצוגה מקדימה",
       giftCardLabel: "כרטיס מתנה",
+      errorRecipientRequired: "נא להזין שם מקבל.",
+      errorInvalidAmount: "נא להזין סכום תקין (מינימום ₪10).",
+      errorLoginRequired: "יש להתחבר כדי לרכוש כרטיס מתנה.",
       forLabel: "עבור:",
       checkBalanceTitle: "💳 בדיקת יתרה בכרטיס מתנה",
       checkCodePlaceholder: "הזן/י קוד כרטיס מתנה (GC-...)",
