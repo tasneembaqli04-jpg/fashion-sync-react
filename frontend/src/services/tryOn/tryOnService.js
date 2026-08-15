@@ -1,3 +1,5 @@
+import { TRY_ON_ERRORS, tryOnError } from "./tryOnErrors";
+
 const TRY_ON_URL =
   import.meta.env.VITE_TRY_ON_URL ||
   "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/tryOn";
@@ -8,11 +10,11 @@ export async function requestTryOn({
   signal,
 }) {
   if (!product?.code) {
-    throw new Error("לא נבחר מוצר");
+    throw tryOnError(TRY_ON_ERRORS.NO_PRODUCT);
   }
 
   if (!imageUrl) {
-    throw new Error("לא הועלתה תמונה");
+    throw tryOnError(TRY_ON_ERRORS.NO_CUSTOMER_IMAGE);
   }
 
   const response = await fetch(TRY_ON_URL, {
@@ -36,10 +38,9 @@ export async function requestTryOn({
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      data?.message ||
-        data?.error ||
-        "בקשת Try On נכשלה"
+    throw tryOnError(
+      TRY_ON_ERRORS.REQUEST_FAILED,
+      data?.message || data?.error || `Try-On request failed (${response.status})`
     );
   }
 

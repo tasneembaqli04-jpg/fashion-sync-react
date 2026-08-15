@@ -2,6 +2,19 @@ import { SHIPPING_OPTIONS } from "../../data/shippingOptions";
 import { resolveTimestamp } from "../../utils/dates";
 import { getStockStatus } from "../customer/stockPolicy";
 
+/**
+ * Stock alert requests a sold-out product must exceed before it counts as in
+ * high demand.
+ *
+ * Exported because the overview screen names the threshold in its caption.
+ * Reading it from here keeps the caption true if the number ever changes; a
+ * copy written into the translation strings would quietly go stale.
+ *
+ * The comparison is strictly greater than, so 16 requests qualify and 15 do
+ * not. The caption is worded to match.
+ */
+export const HIGH_DEMAND_THRESHOLD = 15;
+
 export function isOrderOverdue(order) {
   if (!order || !order.confirmed || order.cancelled) return false;
   if ((Number(order.stageIndex) || 0) >= 3) return false;
@@ -59,7 +72,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
 
     const demandCount = stockStatus === "out" ? notifyRequestCount(p.code) : 0;
 
-    if (demandCount > 15)
+    if (demandCount > HIGH_DEMAND_THRESHOLD)
       alerts.push({
         key: `demand_${p.code}`,
         type: "info",

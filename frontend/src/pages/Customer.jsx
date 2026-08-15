@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
 import { getStoreDetails } from "../services/settings/storeDetailsService";
 import { getBusinessHours } from "../services/settings/businessHoursService";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +85,15 @@ import ShareModal from "../components/customer/ShareModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
 import TryOnModal from "../components/customer/TryOnModal";
+
+// Each Try-On error code maps to a key under customer.dialogs. A code with no
+// entry here falls back to the general message.
+const TRY_ON_ERROR_KEYS = {
+  [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
+  [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
+  [TRY_ON_ERRORS.NO_CUSTOMER_IMAGE]: "tryOnErrorUploadImage",
+  [TRY_ON_ERRORS.REQUEST_FAILED]: "tryOnErrorGeneric",
+};
 
 export default function Customer() {
   const navigate = useNavigate();
@@ -1008,7 +1018,15 @@ export default function Customer() {
 
       console.error("Try On request failed:", error);
 
-      setTryOnError(error?.message || dict.customer.dialogs.tryOnErrorGeneric);
+      // The code decides the wording; the message stays in the console. An
+      // unrecognised code, including anything thrown by the network layer,
+      // falls back to the general message rather than showing its own text.
+      const messageKey = TRY_ON_ERROR_KEYS[error?.code];
+
+      setTryOnError(
+        dict.customer.dialogs[messageKey] ||
+          dict.customer.dialogs.tryOnErrorGeneric
+      );
     } finally {
       if (tryOnAbortRef.current === controller) {
         tryOnAbortRef.current = null;

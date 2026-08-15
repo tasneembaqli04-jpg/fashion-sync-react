@@ -265,6 +265,7 @@ export const he = {
       foundReceipts: "✅ נמצאו {count} קבלות",
       allRecentReceipts: "📋 כל הקבלות האחרונות",
       receiptDetailsButton: "📋 פרטי קבלה",
+      filterByMonthLabel: "סינון לפי חודש",
       allMonths: "📅 כל החודשים",
     },
     receiptDetailsModal: {
@@ -315,12 +316,6 @@ export const he = {
       policySavingButton: "⏳ שומר ומתרגם...",
       policySaved: "✅ תוכן המדיניות נשמר ותורגם",
       policyEnglishTitle: "🌐 תוכן באנגלית",
-      policyTranslateButton: "🔄 תרגם עכשיו",
-      policyTranslatingButton: "⏳ מתרגם...",
-      translationSectionTitle: "🌐 תרגום נתונים ישנים",
-      translationSectionDesc: "הזמנות, הודעות יצירת קשר, משוב ושמות לקוחות שנשמרו לפני שהופעל התרגום האוטומטי לא תורגמו למפרע. לחיצה כאן תתרגם אותם עכשיו, לפי המוצרים והתוכן הקיימים.",
-      translationSectionButton: "🌐 תרגם נתונים ישנים",
-      translationSectionProgress: "⏳ מתרגם... ({done}/{total})",
       storeName: "שם החנות",
       phone: "טלפון",
       email: "אימייל",
@@ -334,7 +329,7 @@ export const he = {
       outOfStockLabel: "התראות מלאי אפס",
       outOfStockDesc: "קבל התראה כשמוצר אוזל לחלוטין",
       highDemandLabel: "התראות ביקושים גבוהים",
-      highDemandDesc: "כאשר notifyCount עולה על 15",
+      highDemandDesc: "מוצרים עם יותר מ-{count} בקשות התראה",
       demandThresholdLabel: "סף ביקושים לאזהרה",
       demandThresholdDesc: "כמות בקשות מינימלית להתראה",
       saveSettings: "💾 שמור הגדרות",
@@ -461,8 +456,6 @@ export const he = {
       productNameLabel: "שם המוצר",
       productDescLabel: "תיאור המוצר",
       englishContentTitle: "🌐 תוכן באנגלית",
-      retranslateButton: "🔄 תרגם מחדש",
-      retranslatingButton: "⏳ מתרגם...",
       productNameEnLabel: "שם המוצר (אנגלית)",
       productDescEnLabel: "תיאור המוצר (אנגלית)",
       changeImage: "🖼️ החלף תמונה",
@@ -526,9 +519,6 @@ export const he = {
     },
     inventory: {
       title: " ניהול מלאי",
-      translateAllButton: "🌐 תרגם הכל לאנגלית",
-      forceTranslateAllButton: "⚠️ תרגם מחדש הכל (מכריח)",
-      translateAllProgress: "⏳ מתרגם... ({done}/{total})",
       filterToggle: "סינון",
       clearFilters: "אפס סינונים",
 
@@ -604,12 +594,6 @@ export const he = {
       },
     },
 
-    categories: {
-      shirts: "חולצות",
-      pants: "מכנסיים",
-      dresses: "שמלות",
-      outerwear: "עליוניות",
-    },
   },
 
   categoryLabels: {
@@ -653,6 +637,7 @@ export const he = {
     },
     browse: {
       searchPlaceholder: "חיפוש לפי שם/ברקוד",
+      refreshTitle: "🔄 רענן",
       scanTooltip: "סריקת ברקוד",
       genderAll: "לכולם",
       allCategories: "כל הקטגוריות",
@@ -972,6 +957,7 @@ export const he = {
       notifySuccessMessage: "נרשמת בהצלחה! נעדכן אותך במייל ({email}) וגם באזור האישי שלך כשהמוצר יחזור למלאי.",
       tryOnErrorUploadImage: "יש להעלות תמונה לפני הפעלת נסה עליי",
       tryOnErrorProductNotFound: "המוצר שנבחר לא נמצא",
+      tryOnErrorProductImageMissing: "למוצר שנבחר אין תמונה, ולכן אי אפשר להפעיל נסה עליי",
       tryOnErrorGeneric: "אירעה שגיאה בהפעלת נסה עליי",
       barcodeNotFound: '⚠️ מוצר עם הקוד "{code}" לא נמצא',
       confirmGoHome: "לחזור לדף הבית?",
@@ -1137,6 +1123,7 @@ export const he = {
       errorNotFound: "לא נמצאה בקשת אימות. נסי לבקש קוד חדש.",
       errorExpired: "הקוד פג תוקף. בקשי קוד חדש.",
       errorMismatch: "קוד שגוי, נסי שוב.",
+      didntReceiveHint: "לא קיבלת? בדקי בתיקיית הספאם ואז בקשי קוד חדש.",
       likelyFakeEmailHint: "⚠️ הקוד פג תוקף — כנראה שהכתובת שגויה או לא קיימת. בדקי אותה ונסי שוב.",
     },
   },

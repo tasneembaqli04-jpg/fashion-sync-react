@@ -4,7 +4,10 @@ export default function OutfitProductsCatalog({
   products = [],
   openProductModal,
   onAddAll,
-  title = "מוצרים מתאימים",
+  // No default. The caller holds the dictionary and passes a translated
+  // heading; a Hebrew literal here would surface in the English interface the
+  // moment a caller forgot to.
+  title = "",
 }) {
   if (!Array.isArray(products) || products.length === 0) {
     return null;

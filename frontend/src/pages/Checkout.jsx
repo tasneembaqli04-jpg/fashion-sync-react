@@ -269,14 +269,14 @@ export default function Checkout() {
     setGiftCardApplyError("");
 
     if (!code) {
-      setGiftCardApplyError(dict.customer.dialogs.invalidGiftCard);
+      setGiftCardApplyError(dict.customer.checkout.step3.invalidGiftCard);
       return;
     }
 
     const card = await getGiftCard(code);
 
     if (!card || card.status !== "active" || Number(card.balance) <= 0) {
-      setGiftCardApplyError(dict.customer.dialogs.invalidGiftCard);
+      setGiftCardApplyError(dict.customer.checkout.step3.invalidGiftCard);
       return;
     }
 
@@ -566,7 +566,10 @@ export default function Checkout() {
         console.error("Order could not be saved:", error);
         setProcessing(false);
         alertDialog(
-          `אירעה שגיאה בשמירת ההזמנה: ${error?.message || "שגיאה לא ידועה"}`,
+          dict.customer.dialogs.orderSaveError.replace(
+            "{message}",
+            error?.message || dict.customer.dialogs.unknownError,
+          ),
         );
       }
     }, 1500);
