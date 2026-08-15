@@ -192,7 +192,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-341 tests across sixteen files, covering the business logic that carries the most risk.
+365 tests across seventeen files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -201,6 +201,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `verificationService.test.js` | 32 | Code lifetime, resend ceiling, superseded codes |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
+| `historicalTranslation.test.js` | 24 | Which stored records still need translating, and how many |
 | `orderPolicy.test.js` | 23 | The 24-hour cancellation and 7-day return windows |
 | `checkoutPricing.test.js` | 20 | Subtotal, discounts, shipping, total |
 | `money.test.js` | 19 | Two-decimal rounding and the instalment split |

@@ -50,6 +50,12 @@ import { onAuthStateChanged } from "firebase/auth";
 import { logOut } from "../services/auth/firebaseAuth";
 import { getStockStatus } from "../functions/customer/stockPolicy";
 import { getNotificationSettings } from "../services/settings/notificationSettingsService";
+import {
+  needsTranslation,
+  needsPersonNameFill,
+  countOutstandingTranslations,
+  selectRecordsNeedingTranslation,
+} from "../functions/manager/historicalTranslation";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 
@@ -412,124 +418,43 @@ export default function Manager({ onPromote }) {
   // the screen can confirm the sweep happened rather than staying silent.
   const [historicalProgress, setHistoricalProgress] = useState(null);
 
-  function needsTranslation(original, translated) {
-    if (!original) return false;
-    if (!translated) return true;
-    return translated.trim() === original.trim();
-  }
 
-  // Person names are never translated: the English field mirrors the name (see
-  // keepPersonName). An English value equal to the Hebrew one is therefore the
-  // finished state, not a failed translation, and needsTranslation would read
-  // it as failure and re-attempt it on every sweep for ever.
-  //
-  // A name field is outstanding only while its English counterpart is empty,
-  // which is the case for records written before the mirror existed. Filling
-  // it once settles it permanently.
-  function needsPersonNameFill(original, translated) {
-    return Boolean(original) && !translated;
-  }
-
-  const failedTranslationsCount = useMemo(() => {
-    let count = 0;
-
-    orders.forEach((order) => {
-      (order.items || []).forEach((item) => {
-        if (needsTranslation(item.name, item.nameEn)) count += 1;
-        if (item.isGiftCard) {
-          if (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn)) count += 1;
-          if (needsTranslation(item.giftMessage, item.giftMessageEn)) count += 1;
-        }
-      });
-
-      const customer = order.customerEmbedded || order.customerDetails;
-      if (customer) {
-        if (needsPersonNameFill(customer.name, customer.nameEn)) count += 1;
-        if (needsTranslation(customer.city, customer.cityEn)) count += 1;
-        if (needsTranslation(customer.street, customer.streetEn)) count += 1;
-      }
-    });
-
-    contactMessages.forEach((m) => {
-      if (needsPersonNameFill(m.name, m.nameEn)) count += 1;
-      if (needsTranslation(m.message, m.messageEn)) count += 1;
-    });
-
-    feedbackList.forEach((f) => {
-      if (needsTranslation(f.text, f.textEn)) count += 1;
-    });
-
-    customersList.forEach((c) => {
-      if (needsPersonNameFill(c.name, c.nameEn)) count += 1;
-      if (needsTranslation(c.city, c.cityEn)) count += 1;
-      if (needsTranslation(c.street, c.streetEn)) count += 1;
-    });
-
-    products.forEach((p) => {
-      if (needsTranslation(p.name, p.nameEn)) count += 1;
-      if (needsTranslation(p.desc, p.descEn)) count += 1;
-      (p.variants || []).forEach((v) => {
-        if (needsTranslation(v.colorName, v.colorNameEn)) count += 1;
-      });
-    });
-
-    return count;
-  }, [orders, contactMessages, feedbackList, customersList, products]);
+  const failedTranslationsCount = useMemo(
+    () =>
+      countOutstandingTranslations({
+        orders,
+        contactMessages,
+        feedback: feedbackList,
+        customers: customersList,
+        products,
+      }),
+    [orders, contactMessages, feedbackList, customersList, products],
+  );
 
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
-    const ordersNeedingUpdate = orders.filter((order) => {
-      const itemsNeedUpdate = (order.items || []).some(
-        (item) =>
-          needsTranslation(item.name, item.nameEn) ||
-          (item.isGiftCard &&
-            (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn) ||
-              needsTranslation(item.giftMessage, item.giftMessageEn)))
-      );
+    // The feedback and customer lists are re-read rather than taken from
+    // state, so the sweep works from what Firestore holds right now.
+    const [allFeedback, allCustomers] = await Promise.all([
+      getAllFeedback(),
+      getAllCustomers(),
+    ]);
 
-      const customer = order.customerEmbedded || order.customerDetails;
-      const addressNeedsUpdate =
-        customer &&
-        (needsTranslation(customer.city, customer.cityEn) ||
-          needsTranslation(customer.street, customer.streetEn) ||
-          needsPersonNameFill(customer.name, customer.nameEn));
-
-      return itemsNeedUpdate || addressNeedsUpdate;
+    const {
+      orders: ordersNeedingUpdate,
+      messages: messagesNeedingUpdate,
+      feedback: feedbackNeedingUpdate,
+      customers: customersNeedingUpdate,
+      products: productsNeedingUpdate,
+      total,
+    } = selectRecordsNeedingTranslation({
+      orders,
+      contactMessages,
+      feedback: allFeedback,
+      customers: allCustomers,
+      products,
     });
-
-    const messagesNeedingUpdate = contactMessages.filter(
-      (m) => needsPersonNameFill(m.name, m.nameEn) || needsTranslation(m.message, m.messageEn)
-    );
-
-    const allFeedback = await getAllFeedback();
-    const feedbackNeedingUpdate = allFeedback.filter(
-      (f) => needsTranslation(f.text, f.textEn)
-    );
-
-    const allCustomers = await getAllCustomers();
-    const customersNeedingUpdate = allCustomers.filter(
-      (c) =>
-        needsPersonNameFill(c.name, c.nameEn) ||
-        needsTranslation(c.city, c.cityEn) ||
-        needsTranslation(c.street, c.streetEn)
-    );
-
-    const productsNeedingUpdate = products.filter((p) => {
-      const nameNeedsUpdate = needsTranslation(p.name, p.nameEn);
-      const descNeedsUpdate = needsTranslation(p.desc, p.descEn);
-      const colorsNeedUpdate = (p.variants || []).some((v) =>
-        needsTranslation(v.colorName, v.colorNameEn),
-      );
-      return nameNeedsUpdate || descNeedsUpdate || colorsNeedUpdate;
-    });
-
-    const total =
-      ordersNeedingUpdate.length +
-      messagesNeedingUpdate.length +
-      feedbackNeedingUpdate.length +
-      customersNeedingUpdate.length +
-      productsNeedingUpdate.length;
 
     setHistoricalProgress({ done: 0, total });
     let done = 0;

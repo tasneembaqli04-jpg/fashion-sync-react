@@ -145,8 +145,18 @@ export default function OverviewView({
           >
             {stats.demandCount}
           </div>
+          {/*
+            Read from the settings slice rather than this screen's own: the
+            sentence describes the high-demand alert, and the settings screen
+            shows the same wording beside the switch that controls it. Keeping
+            one copy means the two screens cannot end up describing the
+            threshold differently.
+          */}
           <div className={overviewStyles.statSub}>
-            {t.highDemandDesc.replace("{count}", HIGH_DEMAND_THRESHOLD)}
+            {dict.manager.settings.highDemandDesc.replace(
+              "{count}",
+              HIGH_DEMAND_THRESHOLD,
+            )}
           </div>
         </div>
       </div>
