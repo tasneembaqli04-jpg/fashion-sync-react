@@ -1,5 +1,6 @@
 import styles from "../../styles/customer/OutfitProductsCatalog.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
+import { getItemName } from "../../functions/customer/itemDisplay";
 
 export default function OutfitProductsCatalog({
   products = [],
@@ -10,7 +11,7 @@ export default function OutfitProductsCatalog({
   // moment a caller forgot to.
   title = "",
 }) {
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
 
   if (!Array.isArray(products) || products.length === 0) {
     return null;
@@ -28,12 +29,12 @@ export default function OutfitProductsCatalog({
           >
             <img
               src={product.imageUrl || product.img}
-              alt={product.name}
+              alt={getItemName(product, lang)}
               className={styles.image}
             />
 
             <div className={styles.name}>
-              {product.name}
+              {getItemName(product, lang)}
             </div>
 
             <div className={styles.price}>

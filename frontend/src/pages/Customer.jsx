@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
+import { useShareModal } from "../hooks/useShareModal";
+import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
@@ -202,10 +204,16 @@ export default function Customer() {
   const [customColor, setCustomColor] = useState("");
   const [customSize, setCustomSize] = useState("");
 
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareItemName, setShareItemName] = useState("");
-  const [shareProductCode, setShareProductCode] = useState("");
-  const [shareCopied, setShareCopied] = useState(false);
+  // Declared here, where the share state used to sit, and after `products`,
+  // which it reads to resolve the code it is opened with.
+  const {
+    shareModalOpen,
+    shareItemName,
+    shareCopied,
+    openShareModal,
+    closeShareModal,
+    doShare,
+  } = useShareModal(products);
 
   const [cartOpen, setCartOpen] = useState(false);
   const [couponValue, setCouponValue] = useState("");
@@ -477,7 +485,10 @@ export default function Customer() {
       ...base,
       text: neutralTextByTab[currentSeasonTab] || base.text,
     };
-  }, [currentSeasonTab, realCurrentSeason]);
+    // dict belongs here: the banner text is read from it, so leaving it out
+    // froze the wording at whichever language was active on the first render
+    // and switching language left the old sentence on screen.
+  }, [currentSeasonTab, realCurrentSeason, dict]);
 
   const giftPreview = buildGiftCardPreview({
     amount: giftAmount,
@@ -872,48 +883,6 @@ export default function Customer() {
     navigate("/checkout");
   }
 
-  function openShareModal(code) {
-    const product = products.find((item) => item.code === code);
-    if (!product) return;
-
-    setShareProductCode(code);
-    setShareItemName(`${product.name} · ₪${product.price}`);
-    setShareCopied(false);
-    setShareModalOpen(true);
-  }
-
-  function closeShareModal() {
-    setShareModalOpen(false);
-  }
-
-  function doShare(type) {
-    const product = products.find((item) => item.code === shareProductCode);
-    if (!product) return;
-
-    const url = `${window.location.origin}/customer?item=${product.code}`;
-    const text = dict.customer.misc.shareMessageTemplate
-      .replace("{name}", product.name)
-      .replace("{price}", product.price);
-
-    if (type === "copy") {
-      navigator.clipboard?.writeText(url);
-      setShareCopied(true);
-    } else if (type === "whatsapp") {
-      window.open(
-        "https://wa.me/?text=" + encodeURIComponent(`${text} ${url}`),
-        "_blank",
-      );
-    } else if (type === "email") {
-      window.location.href =
-        "mailto:?subject=" +
-        encodeURIComponent(
-          dict.customer.misc.shareEmailSubjectPrefix + product.name,
-        ) +
-        "&body=" +
-        encodeURIComponent(text + "\n" + url);
-    }
-  }
-
   async function openNotifyModal(code) {
     if (isGuest) {
       guestPrompt();
@@ -926,7 +895,9 @@ export default function Customer() {
     const confirmed = await confirmDialog(
       dict.customer.dialogs.notifyConfirmMessage
         .replace("{email}", currentUser?.email || "")
-        .replace("{name}", product.name),
+        // The dialog is written in the interface language, so the product
+        // name has to follow it.
+        .replace("{name}", getItemName(product, lang)),
     );
     if (!confirmed) return;
 
