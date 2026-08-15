@@ -19,10 +19,6 @@ function safeParse(value, fallback) {
   }
 }
 
-function normalizeEmail(email) {
-  return String(email || "").trim().toLowerCase();
-}
-
 
 
 export function getCurrentUser() {

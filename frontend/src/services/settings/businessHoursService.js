@@ -61,7 +61,8 @@ export async function getBusinessHours() {
 
   try {
     snapshot = await getDoc(HOURS_DOC);
-  } catch (err) {
+  } catch {
+    // One retry: the first read can fail on a cold connection.
     await new Promise((resolve) => setTimeout(resolve, 500));
     snapshot = await getDoc(HOURS_DOC);
   }

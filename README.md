@@ -196,12 +196,15 @@ If the emulator is not running, the calls fail and the chat falls back to a loca
 
 ## Environment Variables
 
-Two files in `frontend/`, both covered by `.gitignore`:
+Two files in `frontend/`, holding the same 16 variables with different values:
 
-| File | Loaded when | Contents |
-|---|---|---|
-| `.env` | Always | Cloud function URLs (`cloudfunctions.net`) |
-| `.env.emulator` | Only with `npm run dev:emulator` | The same variables pointing at `127.0.0.1:5001` |
+| File | Tracked | Loaded when | Contents |
+|---|---|---|---|
+| `.env` | No — gitignored | Always | Cloud function URLs (`cloudfunctions.net`) |
+| `.env.emulator` | Yes | Only with `npm run dev:emulator` | The same variables pointing at `127.0.0.1:5001` |
+| `.env.example` | Yes | Never | The variable names with placeholder values, to copy into `.env` |
+
+`.env.emulator` is committed on purpose: it contains nothing but localhost addresses, and keeping it in the repository means a fresh clone can run against the emulator without rebuilding sixteen URLs by hand. `.env` holds the deployed URLs and stays out.
 
 Vite loads `.env` first, then `.env.<mode>` on top, overriding matching names.
 
@@ -209,14 +212,20 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing and CI
 
-401 unit tests across nineteen files, covering the business logic that carries the most risk: pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, and which orders still need a decision.
+439 unit tests over the business logic that carries the most risk.
+
+| Suite | Tests | Covers |
+|---|---|---|
+| Frontend | 420 across 21 files | Pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, which orders still need a decision |
+| Backend | 19 across 1 file | The search logic: Hebrew stem derivation, relevance scoring, the three-level sort |
 
 ```bash
-cd frontend && npm test        # tests
+cd frontend && npm test        # frontend tests
 cd frontend && npm run build   # build verification
+cd backend  && npm test        # backend tests
 ```
 
-Both commands run automatically on every push to `main` and on every pull request, defined in `.github/workflows/ci.yml`. The workflow installs with `npm ci`, runs the suite, and verifies a production build. It performs no deployment.
+`.github/workflows/ci.yml` runs these as two jobs, frontend and backend, on every push to `main` and on every pull request. Each installs with `npm ci` and runs its suite; the frontend job also verifies a production build. The backend has no build step, since the cloud functions are deployed from source. Neither job deploys.
 
 ## Deployment
 
