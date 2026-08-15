@@ -1080,7 +1080,10 @@ export const en = {
       errorExpired: "The code has expired. Please request a new one.",
       errorMismatch: "Incorrect code, please try again.",
       didntReceiveHint: "Did not arrive? Check your spam folder, then request a new code.",
-      likelyFakeEmailHint: "⚠️ The code has expired — the address is likely incorrect or doesn't exist. Please check it and try again.",
+      likelyFakeEmailHint: "Still nothing? Check your spam folder, or make sure the address is correct.",
+      errorSuperseded: "A new code was sent — please use that one, the earlier code no longer works.",
+      errorTooManyRequests: "Too many codes have been sent to this address. Please try again in an hour.",
+      errorResendFailed: "We could not send a new code. Please try again in a moment.",
     },
   },
 
