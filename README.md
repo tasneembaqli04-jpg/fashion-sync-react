@@ -192,12 +192,13 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-259 tests across eleven files, covering the business logic that carries the most risk.
+291 tests across twelve files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
 | `translationService.test.js` | 52 | Fashion term dictionary, translation fixes, colour translation guard |
-| `analytics.test.js` | 42 | Revenue recognition, profit, averages, slow movers |
+| `analytics.test.js` | 46 | Revenue recognition, profit, averages, slow movers |
+| `verificationService.test.js` | 28 | Code lifetime, resend ceiling, superseded codes |
 | `itemDisplay.test.js` | 26 | Item name, colour and size by interface language |
 | `cart.test.js` | 24 | The per-variant quantity ceiling and cart mutations |
 | `orderPolicy.test.js` | 23 | The 24-hour cancellation and 7-day return windows |
@@ -286,6 +287,7 @@ The system carries the following constraints. Each is bounded in scope, and each
 | **Restocking spreads differently from decrementing** | An item bought without a specific size has its quantity taken across several sizes, but a cancellation or return returns the whole quantity to the first size. The product total stays correct; the split between sizes does not | Mirror the two functions so a restock reverses the exact sizes a purchase drew from, which means recording the per-size split on the order item |
 | **`salesLastMonth` is a running total, not a monthly one** | The field only ever increases. Nothing resets it at the turn of the month and nothing reduces it when an order is cancelled or returned, so the name and the "sales this month" label both overstate what it holds. It ranks the catalogue bestsellers and the slow-moving list | A scheduled function that rolls the counter over monthly, and a decrement on the cancellation and return paths. Rolling it over needs a scheduler, which is why it is not a client-side change |
 | **Returns are deducted at list price** | A return deducts `price × qty` from revenue using the item's catalogue price, not the share the customer actually paid after a coupon or redeemed points. On a discounted order the deduction exceeds the revenue that was recognised | Record the effective per-item price on the order line at checkout, and deduct that figure on approval |
+| **Email verification is a UX gate, not a security control** | The Firebase Auth session is created before the code is sent, so the account is already signed in while the code screen is showing. The code is generated and checked in the browser, and the security rules let a customer read and write her own verification document, so the code can be read from Firestore or the document deleted to skip the step entirely | Replace the whole mechanism with Firebase's built-in `sendEmailVerification`, which issues and validates the token server-side and exposes the result as `emailVerified` on the auth token |
 
 ## Working with Git
 

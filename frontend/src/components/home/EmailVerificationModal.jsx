@@ -6,6 +6,15 @@ import {
   resendVerificationCode,
 } from "../../services/verification/verificationService";
 
+// Cooldown, hint delay and code lifetime have to stay in this order:
+//   cooldown  <  hint  <  code lifetime
+// The hint tells the customer to go looking in her spam folder, so it has to
+// arrive while the code is still usable and after the resend button has come
+// back to life. Holding them equal, as 60 seconds each once did, meant the
+// hint appeared at the exact moment the code died.
+const RESEND_COOLDOWN_SECONDS = 60;
+const UNDELIVERED_HINT_SECONDS = 180;
+
 export default function EmailVerificationModal({
   isOpen,
   email,
@@ -28,7 +37,7 @@ export default function EmailVerificationModal({
       setCode("");
       setError("");
       setVerifying(false);
-      setResendCooldown(30);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setResendMessage("");
       setSecondsSinceOpen(0);
     }
@@ -42,7 +51,7 @@ export default function EmailVerificationModal({
     return () => clearInterval(timer);
   }, [isOpen]);
 
-  const codeLikelyExpired = secondsSinceOpen >= 60;
+  const emailLikelyUndeliverable = secondsSinceOpen >= UNDELIVERED_HINT_SECONDS;
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -65,6 +74,8 @@ export default function EmailVerificationModal({
             ? t.errorExpired
             : result.reason === "notFound"
             ? t.errorNotFound
+            : result.reason === "superseded"
+            ? t.errorSuperseded
             : t.errorMismatch
         );
         return;
@@ -79,9 +90,20 @@ export default function EmailVerificationModal({
   async function handleResend() {
     if (resendCooldown > 0) return;
 
-    await resendVerificationCode(email, name, lang);
-    setResendCooldown(30);
+    const result = await resendVerificationCode(email, name, lang);
+
+    if (!result?.ok) {
+      setError(
+        result?.reason === "rateLimited"
+          ? t.errorTooManyRequests
+          : t.errorResendFailed
+      );
+      return;
+    }
+
+    setResendCooldown(RESEND_COOLDOWN_SECONDS);
     setSecondsSinceOpen(0);
+    setError("");
     setResendMessage(t.resendSuccess);
     setTimeout(() => setResendMessage(""), 3000);
   }
@@ -158,12 +180,12 @@ export default function EmailVerificationModal({
           <div
             style={{
               fontSize: "0.76rem",
-              color: codeLikelyExpired ? "#ff6b6b" : "var(--light-gray)",
-              fontWeight: codeLikelyExpired ? 700 : 400,
+              color: emailLikelyUndeliverable ? "var(--gold)" : "var(--light-gray)",
+              fontWeight: emailLikelyUndeliverable ? 700 : 400,
               marginTop: "0.6rem",
             }}
           >
-            {codeLikelyExpired ? t.likelyFakeEmailHint : t.didntReceiveHint}
+            {emailLikelyUndeliverable ? t.likelyFakeEmailHint : t.didntReceiveHint}
           </div>
         </div>
       </div>
