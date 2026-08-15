@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
 import { useShareModal } from "../hooks/useShareModal";
+import { useGiftCard } from "../hooks/useGiftCard";
 import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
@@ -60,11 +61,6 @@ import {
 } from "../functions/customer/cart";
 import { getReply } from "../functions/customer/chat";
 import { requestChatReplyStream } from "../services/chat/chatService";
-import {
-  buildGiftCardPreview,
-  buyGiftCard as buyGiftCardFn,
-} from "../functions/customer/giftCard";
-import { getGiftCard } from "../services/giftcard/giftCardService";
 import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";
@@ -88,14 +84,6 @@ import TryOnModal from "../components/customer/TryOnModal";
 
 // Each Try-On error code maps to a key under customer.dialogs. A code with no
 // entry here falls back to the general message.
-// Each gift card refusal maps to a key under customer.giftCard. An unknown
-// reason falls back to the general message.
-const GIFT_CARD_ERROR_KEYS = {
-  recipientRequired: "errorRecipientRequired",
-  invalidAmount: "errorInvalidAmount",
-  loginRequired: "errorLoginRequired",
-};
-
 const TRY_ON_ERROR_KEYS = {
   [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
   [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
@@ -233,15 +221,28 @@ export default function Customer() {
   const [tryOnError, setTryOnError] = useState("");
   const tryOnAbortRef = useRef(null);
 
-  const [giftAmount, setGiftAmount] = useState("100");
-  const [giftCustomAmount, setGiftCustomAmount] = useState("");
-  const [giftName, setGiftName] = useState("");
-  const [giftMessage, setGiftMessage] = useState("");
-  const [giftPreviewCode, setGiftPreviewCode] = useState("—");
-  const [giftError, setGiftError] = useState("");
-  const [giftCheckCode, setGiftCheckCode] = useState("");
-  const [giftCheckResult, setGiftCheckResult] = useState(null);
-  const [giftCheckError, setGiftCheckError] = useState("");
+  // Placed after cart, currentUser and navigate, all of which it receives.
+  const {
+    giftAmount,
+    setGiftAmount,
+    giftCustomAmount,
+    setGiftCustomAmount,
+    giftName,
+    setGiftName,
+    giftMessage,
+    setGiftMessage,
+    giftPreviewCode,
+    giftError,
+    giftPreview,
+    handleGcAmountChange,
+    buyGiftCard,
+    giftCheckCode,
+    setGiftCheckCode,
+    giftCheckResult,
+    giftCheckError,
+    checkGiftCardBalance,
+  } = useGiftCard({ cart, setCart, currentUser, navigate });
+
   const [returnRequests, setReturnRequests] = useState([]);
   const [returnModalOrder, setReturnModalOrder] = useState(null);
 
@@ -490,12 +491,6 @@ export default function Customer() {
     // and switching language left the old sentence on screen.
   }, [currentSeasonTab, realCurrentSeason, dict]);
 
-  const giftPreview = buildGiftCardPreview({
-    amount: giftAmount,
-    customAmount: giftCustomAmount,
-    name: giftName,
-    message: giftMessage,
-  });
 
   function toggleSidebar() {
     setSidebarOpen((prev) => !prev);
@@ -1003,54 +998,6 @@ export default function Customer() {
     setTryOnError("");
   }
 
-  function handleGcAmountChange(value) {
-    setGiftAmount(value);
-  }
-
-  function updateGiftPreview() {}
-  async function checkGiftCardBalance() {
-    const code = giftCheckCode.trim();
-    setGiftCheckError("");
-    setGiftCheckResult(null);
-
-    if (!code) {
-      setGiftCheckError(dict.customer.misc.giftCheckErrorEmptyCode);
-      return;
-    }
-
-    const card = await getGiftCard(code);
-
-    if (!card) {
-      setGiftCheckError(dict.customer.misc.giftCheckErrorNotFound);
-      return;
-    }
-
-    setGiftCheckResult(card);
-  }
-
-  async function buyGiftCard() {
-    const result = await buyGiftCardFn({
-      amount: giftAmount,
-      customAmount: giftCustomAmount,
-      name: giftName,
-      message: giftMessage,
-      email: currentUser?.email,
-      cart,
-    });
-
-    if (!result.ok) {
-      setGiftError(
-        dict.customer.giftCard[GIFT_CARD_ERROR_KEYS[result.reason]] ||
-          dict.customer.dialogs.unknownError
-      );
-      return;
-    }
-
-    setGiftError("");
-    setGiftPreviewCode(result.code);
-    setCart(result.nextCart);
-    navigate("/checkout");
-  }
   async function dismissStockAlert(id) {
     await markStockAlertSeen(id);
     setRawStockAlerts((prev) => prev.filter((item) => item.id !== id));
@@ -1382,7 +1329,6 @@ export default function Customer() {
           giftError={giftError}
           giftPreview={giftPreview}
           handleGcAmountChange={handleGcAmountChange}
-          updateGiftPreview={updateGiftPreview}
           buyGiftCard={buyGiftCard}
           setGiftAmount={setGiftAmount}
           setGiftCustomAmount={setGiftCustomAmount}
