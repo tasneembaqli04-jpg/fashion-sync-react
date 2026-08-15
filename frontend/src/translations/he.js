@@ -209,6 +209,8 @@ export const he = {
       reasonChangedMind: "שיניתי את דעתי",
       reasonOther: "אחר",
       noRestockNote: "לא יוחזר למלאי — מוצר פגום",
+      creditMessage: "זיכוי אוטומטי עבור החזרת {item}",
+      creditFallbackItem: "פריט",
     },
     contactMessages: {
       title: "הודעות יצירת קשר",

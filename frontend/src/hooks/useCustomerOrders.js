@@ -142,6 +142,7 @@ export function useCustomerOrders({ currentUser, activePanel }) {
       orderId: returnModalOrder.id,
       itemCode: item.code,
       itemName: item.name,
+      itemNameEn: item.nameEn || "",
       itemImg: item.img,
       qty: item.qty,
       color: item.color,

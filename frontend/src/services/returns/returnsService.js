@@ -18,6 +18,7 @@ export async function requestReturn({
   orderId,
   itemCode,
   itemName,
+  itemNameEn,
   itemImg,
   qty,
   color,
@@ -34,6 +35,9 @@ export async function requestReturn({
     orderId,
     itemCode,
     itemName,
+    // Stored alongside the Hebrew name because the customer reads this record
+    // back on her own orders screen, in whichever language she is using.
+    itemNameEn: itemNameEn || "",
     itemImg: itemImg || "",
     qty: Number(qty) || 1,
     color: color || "",

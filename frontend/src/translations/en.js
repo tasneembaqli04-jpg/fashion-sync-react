@@ -209,6 +209,8 @@ export const en = {
       reasonChangedMind: "Changed my mind",
       reasonOther: "Other",
       noRestockNote: "Not restocked — defective product",
+      creditMessage: "Automatic credit for the return of {item}",
+      creditFallbackItem: "an item",
     },
     contactMessages: {
       title: "Contact Messages",

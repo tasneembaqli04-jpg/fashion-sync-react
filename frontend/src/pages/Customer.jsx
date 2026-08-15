@@ -411,10 +411,15 @@ export default function Customer() {
       .map((product) => ({ ...product, wished: true }));
   }, [products, wishlistCodes]);
 
+  // The alert stores the product name in Hebrew, since that is the language it
+  // was requested in. The catalogue is joined back on so the banner can show
+  // the name in whichever language the customer is reading now.
   const stockAlerts = useMemo(() => {
-    return rawStockAlerts.filter((alert) => {
+    return rawStockAlerts.flatMap((alert) => {
       const product = products.find((p) => p.code === alert.productCode);
-      return product && Number(product.stock) > 0;
+      if (!product || Number(product.stock) <= 0) return [];
+
+      return [{ ...alert, product }];
     });
   }, [rawStockAlerts, products]);
   const cartCount = getCartCount(cart);
@@ -818,7 +823,9 @@ export default function Customer() {
                       <>
                         {before}
                         <strong>
-                          {alert.productName || alert.productCode}
+                          {getItemName(alert.product, lang) ||
+                            alert.productName ||
+                            alert.productCode}
                         </strong>
                         {after}
                       </>
@@ -876,7 +883,12 @@ export default function Customer() {
                 >
                   <span>
                     {before}
-                    <strong>{request.itemName}</strong>
+                    <strong>
+                      {getItemName(
+                        { name: request.itemName, nameEn: request.itemNameEn },
+                        lang,
+                      )}
+                    </strong>
                     {after}
                   </span>
                   <button
