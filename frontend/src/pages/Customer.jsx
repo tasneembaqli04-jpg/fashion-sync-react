@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
 import { useTryOn } from "../hooks/useTryOn";
+import { useCustomerOrders } from "../hooks/useCustomerOrders";
 import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
-import { restockOrderItems } from "../services/products/productsService";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
 import {
   getWishlist,
@@ -23,7 +22,6 @@ import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 import { getCoupon } from "../services/coupons/couponsService";
-import { sendOrderCancellationEmail } from "../services/email/emailService";
 import {
   applyTheme,
   getSavedTheme,
@@ -67,11 +65,6 @@ import CustomerBrowse from "../components/customer/CustomerBrowse";
 import CustomerWishlist from "../components/customer/CustomerWishlist";
 import CustomerOrders from "../components/customer/CustomerOrders";
 import ReturnRequestModal from "../components/customer/ReturnRequestModal";
-import {
-  requestReturn,
-  markReturnSeenByCustomer,
-  subscribeToReturnRequestsByUser,
-} from "../services/returns/returnsService";
 import CustomerLoyalty from "../components/customer/CustomerLoyalty";
 import CustomerGiftCard from "../components/customer/CustomerGiftCard";
 import CustomerPolicy from "../components/customer/CustomerPolicy";
@@ -171,7 +164,6 @@ export default function Customer() {
   const [currentOutfitImage, setCurrentOutfitImage] = useState("");
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
   const [rawStockAlerts, setRawStockAlerts] = useState([]);
 
@@ -241,25 +233,30 @@ export default function Customer() {
     checkGiftCardBalance,
   } = useGiftCard({ cart, setCart, currentUser, navigate });
 
-  const [returnRequests, setReturnRequests] = useState([]);
-  const [returnModalOrder, setReturnModalOrder] = useState(null);
+  // Orders and the returns raised against them, with their own loading. Placed
+  // after currentUser and activePanel, both of which it reads.
+  const {
+    orders,
+    returnRequests,
+    returnModalOrder,
+    unseenReturnUpdates,
+    activeOrdersCount,
+    updateOrder,
+    handleCancelOrder,
+    dismissReturnUpdate,
+    openReturnRequestModal,
+    closeReturnRequestModal,
+    submitReturnRequest,
+  } = useCustomerOrders({ currentUser, activePanel });
 
   useEffect(() => {
     if (!currentUser?.email) {
-      setOrders([]);
       setLoyaltyPoints(0);
       setRawStockAlerts([]);
-      setReturnRequests([]);
       return;
     }
 
     let cancelled = false;
-
-    getOrdersByUser(currentUser.email).then((userOrders) => {
-      if (!cancelled) {
-        setOrders(userOrders.slice().reverse());
-      }
-    });
 
     getLoyaltyPoints(currentUser.email).then((points) => {
       if (!cancelled) {
@@ -281,20 +278,6 @@ export default function Customer() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
-
-  useEffect(() => {
-    if (!currentUser?.email) {
-      setReturnRequests([]);
-      return;
-    }
-
-    const unsubscribe = subscribeToReturnRequestsByUser(
-      currentUser.email,
-      setReturnRequests,
-    );
-
-    return () => unsubscribe();
-  }, [currentUser]);
 
   // Firebase Auth is the source of truth for identity. initAuth() below only
   // reads a localStorage cache so the page can render straight away; this
@@ -448,16 +431,6 @@ export default function Customer() {
       return product && Number(product.stock) > 0;
     });
   }, [rawStockAlerts, products]);
-  const unseenReturnUpdates = useMemo(() => {
-    return returnRequests.filter(
-      (r) => r.status !== "pending" && !r.seenByCustomer,
-    );
-  }, [returnRequests]);
-  const activeOrdersCount = useMemo(
-    () => orders.filter((o) => (Number(o.status) || 0) < 3).length,
-    [orders],
-  );
-
   const cartCount = getCartCount(cart);
   const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
   const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
@@ -912,70 +885,8 @@ export default function Customer() {
     await markStockAlertSeen(id);
     setRawStockAlerts((prev) => prev.filter((item) => item.id !== id));
   }
-  async function dismissReturnUpdate(id) {
-    await markReturnSeenByCustomer(id);
-    setReturnRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, seenByCustomer: true } : r)),
-    );
-  }
-
   function handleLogout() {
     doLogoutFn(setCart, dict.customer.dialogs);
-  }
-
-  function openReturnRequestModal(order) {
-    setReturnModalOrder(order);
-  }
-  async function handleCancelOrder(order) {
-    const confirmed = await confirmDialog(
-      dict.customer.orders.confirmCancelOrder,
-    );
-    if (!confirmed) return;
-
-    await cancelOrder(order.docId);
-    await restockOrderItems(order.items);
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.docId === order.docId ? { ...o, cancelled: true } : o,
-      ),
-    );
-    sendOrderCancellationEmail({
-      toEmail: order.customerEmail || currentUser?.email || "",
-      orderId: order.id,
-      total: order.total,
-      lang,
-    });
-
-    alertDialog(dict.customer.orders.cancelSuccess);
-  }
-
-  function closeReturnRequestModal() {
-    setReturnModalOrder(null);
-  }
-
-  async function submitReturnRequest({ item, reason, reasonKey, note }) {
-    if (!returnModalOrder || !item) return;
-
-    await requestReturn({
-      orderDocId: returnModalOrder.docId,
-      orderId: returnModalOrder.id,
-      itemCode: item.code,
-      itemName: item.name,
-      itemImg: item.img,
-      qty: item.qty,
-      color: item.color,
-      size: item.size,
-      price: item.price,
-      customerEmail: currentUser?.email || "",
-      customerName: currentUser?.name || "",
-      reason,
-      reasonKey,
-      note,
-    });
-
-    closeReturnRequestModal();
-    alertDialog(dict.customer.returns.submitSuccess);
   }
 
   function guestPrompt() {
@@ -1216,11 +1127,7 @@ export default function Customer() {
           returnRequests={returnRequests}
           onRequestReturn={openReturnRequestModal}
           onCancelOrder={handleCancelOrder}
-          onUpdateOrder={(docId, updates) =>
-            setOrders((prev) =>
-              prev.map((o) => (o.docId === docId ? { ...o, ...updates } : o))
-            )
-          }
+          onUpdateOrder={updateOrder}
         />
 
         <CustomerLoyalty
