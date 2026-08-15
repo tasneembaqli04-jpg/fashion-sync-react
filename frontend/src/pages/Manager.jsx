@@ -49,6 +49,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { logOut } from "../services/auth/firebaseAuth";
 import { getStockStatus } from "../functions/customer/stockPolicy";
+import { getNotificationSettings } from "../services/settings/notificationSettingsService";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 
@@ -246,9 +247,26 @@ export default function Manager({ onPromote }) {
     });
   }, [isLoggedIn]);
 
+  // The alert preferences the manager set in Settings. Until they load, the
+  // empty object leaves every alert on, which is what createAlerts defaults to.
+  const [notificationSettings, setNotificationSettings] = useState({});
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    getNotificationSettings().then(setNotificationSettings);
+  }, [isLoggedIn, refreshKey]);
+
   const alerts = useMemo(
-    () => createAlerts(products, orders, dict.manager.alerts, lang, stockNotifications),
-    [products, orders, dict, lang, stockNotifications],
+    () =>
+      createAlerts(
+        products,
+        orders,
+        dict.manager.alerts,
+        lang,
+        stockNotifications,
+        notificationSettings,
+      ),
+    [products, orders, dict, lang, stockNotifications, notificationSettings],
   );
 
   const pendingOrdersCount = useMemo(

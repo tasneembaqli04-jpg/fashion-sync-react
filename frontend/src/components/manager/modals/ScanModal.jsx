@@ -45,7 +45,6 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
   // light on. stopAll only touches refs, so capturing it once is safe.
   useEffect(() => {
     return () => stopAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getReader() {

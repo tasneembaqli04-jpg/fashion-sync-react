@@ -638,6 +638,7 @@ export const he = {
       matchingProductsTitle: "מוצרים מתאימים",
       attachImageTitle: "שלח תמונה",
       messagePlaceholder: "כתוב הודעה...",
+      serviceUnavailable: "העוזר אינו זמין כרגע. אפשר לנסות שוב בעוד רגע, או לעיין בעמוד המדיניות.",
       outfitImageReady: "הנה המחשת הלוק שביקשת:",
       requestTimedOut: "הבקשה לקחה יותר מדי זמן. נסי שוב.",
       welcomeMessage: "שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?",

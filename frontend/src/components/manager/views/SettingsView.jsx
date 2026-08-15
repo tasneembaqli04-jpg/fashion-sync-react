@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import {
+  getNotificationSettings,
+  setNotificationSettings,
+} from "../../../services/settings/notificationSettingsService";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
@@ -215,7 +219,26 @@ export default function SettingsView({
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleSaveNotif = () => {
+  // Loaded from Firestore rather than held in component state. The panel used
+  // to show a saved confirmation without writing anything, so the preferences
+  // reverted on every reload and the alert builder never saw them.
+  useEffect(() => {
+    getNotificationSettings().then((settings) => {
+      setNotifLow(settings.lowStock);
+      setNotifOos(settings.outOfStock);
+      setNotifDemand(settings.highDemand);
+      setDemandThreshold(settings.demandThreshold);
+    });
+  }, []);
+
+  const handleSaveNotif = async () => {
+    await setNotificationSettings({
+      lowStock: notifLow,
+      outOfStock: notifOos,
+      highDemand: notifDemand,
+      demandThreshold,
+    });
+
     setNotifSaved(true);
     setTimeout(() => setNotifSaved(false), 2000);
   };

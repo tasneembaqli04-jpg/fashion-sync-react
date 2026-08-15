@@ -81,6 +81,21 @@ export default function AddProductModal({
     setForm((prev) => ({ ...prev, code: `${prefix}${nextNumber}` }));
   }, [isOpen, products]);
 
+  // Releases the camera when the component goes away with it still running.
+  // Every other path stops it explicitly, but an unmount, such as leaving the
+  // management screen, went through none of them and left the camera on.
+  //
+  // Placed above the early return below: a hook after it would be skipped
+  // whenever the modal is closed, which changes the hook order between renders.
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   const handleChange = (field, value) => {
@@ -130,18 +145,6 @@ export default function AddProductModal({
     if (videoRef.current) videoRef.current.srcObject = null;
     setIsCameraActive(false);
   };
-
-  // Releases the camera when the component goes away with it still running.
-  // Every other path here stops it explicitly, but an unmount, such as leaving
-  // the management screen, went through none of them and left the camera on.
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
-    };
-  }, []);
 
   const resetForm = () => {
     setForm({

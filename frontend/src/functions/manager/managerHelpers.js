@@ -37,7 +37,35 @@ export function isOrderOverdue(order) {
   return daysElapsed > maxDays;
 }
 
-export function createAlerts(products, orders = [], t, lang = "he", stockNotifications = []) {
+/**
+ * Builds the alert list for the management screen.
+ *
+ * @param {Array<object>} products - The catalogue.
+ * @param {Array<object>} [orders] - Orders in progress.
+ * @param {object} t - Alert wording from the dictionary.
+ * @param {string} [lang] - Interface language.
+ * @param {Array<object>} [stockNotifications] - Back-in-stock requests.
+ * @param {object} [settings] - Which alerts the manager asked for, and the
+ * demand threshold. Defaults keep every alert on, so a shop that has never
+ * opened the settings screen behaves as it always did.
+ * @returns {Array<object>} The alerts to display.
+ */
+export function createAlerts(
+  products,
+  orders = [],
+  t,
+  lang = "he",
+  stockNotifications = [],
+  settings = {},
+) {
+  const showLowStock = settings.lowStock !== false;
+  const showOutOfStock = settings.outOfStock !== false;
+  const showHighDemand = settings.highDemand !== false;
+  const demandThreshold =
+    Number(settings.demandThreshold) > 0 ?
+      Number(settings.demandThreshold) :
+      HIGH_DEMAND_THRESHOLD;
+
   const alerts = [];
 
   function displayName(entity) {
@@ -51,7 +79,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
   products.forEach((p) => {
     const stockStatus = getStockStatus(p.stock, p.minStock);
 
-    if (stockStatus === "out")
+    if (showOutOfStock && stockStatus === "out")
       alerts.push({
         key: `oos_${p.code}`,
         type: "danger",
@@ -60,7 +88,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
         msg: displayName(p),
         createdAt: Date.now(),
       });
-    if (stockStatus === "low")
+    if (showLowStock && stockStatus === "low")
       alerts.push({
         key: `low_${p.code}`,
         type: "warn",
@@ -72,7 +100,7 @@ export function createAlerts(products, orders = [], t, lang = "he", stockNotific
 
     const demandCount = stockStatus === "out" ? notifyRequestCount(p.code) : 0;
 
-    if (demandCount > HIGH_DEMAND_THRESHOLD)
+    if (showHighDemand && demandCount > demandThreshold)
       alerts.push({
         key: `demand_${p.code}`,
         type: "info",

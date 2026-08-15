@@ -192,7 +192,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing
 
-310 tests across thirteen files, covering the business logic that carries the most risk.
+319 tests across fourteen files, covering the business logic that carries the most risk.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -209,6 +209,7 @@ Never commit API keys for external services, credentials, or service account fil
 | `giftCard.test.js` | 15 | Gift card purchase rules and refusal codes |
 | `dates.test.js` | 9 | Resolving an order timestamp from its candidate fields |
 | `productsService.test.js` | 9 | Stock decrement and the sales counter |
+| `managerHelpers.test.js` | 9 | Stock alerts and the manager alert preferences |
 
 ```bash
 cd frontend && npm test        # tests

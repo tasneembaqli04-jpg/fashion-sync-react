@@ -4,8 +4,53 @@ const PRODUCTS_COLLECTION = "products";
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 100;
 
-// Season value marking a product as suitable all year round.
-const ALL_SEASONS_VALUE = "כל העונות";
+// Season value marking a product as suitable all year round. Products store
+// their season as an English slug, so this is "all" rather than any Hebrew
+// wording.
+const ALL_SEASONS_VALUE = "all";
+
+// Season words to the slug held on the product.
+//
+// The model returns the season as free text in the customer's own words
+// ("קיץ", "לקיץ", "summer"), while a product carries one of four slugs. With
+// no translation between the two, the comparison could never succeed and the
+// season point was never awarded to any product.
+const SEASON_SLUGS = Object.freeze({
+  "קיץ": "summer",
+  "חורף": "winter",
+  "אביב": "spring-autumn",
+  "סתיו": "spring-autumn",
+  "summer": "summer",
+  "winter": "winter",
+  "spring": "spring-autumn",
+  "autumn": "spring-autumn",
+  "fall": "spring-autumn",
+});
+
+/**
+ * Resolves the requested season to the slug products are stored with.
+ *
+ * Matching is by containment rather than equality, because the model writes a
+ * phrase rather than a single word.
+ *
+ * @param {string|null} season Season text from the intent.
+ * @return {string} The matching slug, or an empty string.
+ */
+function toSeasonSlug(season) {
+  const normalized = normalizeText(season);
+
+  if (!normalized) {
+    return "";
+  }
+
+  for (const [word, slug] of Object.entries(SEASON_SLUGS)) {
+    if (normalized.includes(word)) {
+      return slug;
+    }
+  }
+
+  return "";
+}
 
 // Hebrew final letters mapped to their regular form, for word comparison.
 const FINAL_LETTER_FORMS = Object.freeze({
@@ -462,14 +507,14 @@ function getProductRelevanceScore(product, occasionKeywords, style, season) {
     score += 2;
   }
 
-  const normalizedSeason = normalizeText(season);
-  const normalizedProductSeason = normalizeText(product.season);
+  const requestedSeasonSlug = toSeasonSlug(season);
+  const productSeasonSlug = normalizeText(product.season);
 
   if (
-    normalizedSeason &&
-    normalizedProductSeason &&
-    (normalizedProductSeason === normalizedSeason ||
-      normalizedProductSeason === ALL_SEASONS_VALUE)
+    requestedSeasonSlug &&
+    productSeasonSlug &&
+    (productSeasonSlug === requestedSeasonSlug ||
+      productSeasonSlug === ALL_SEASONS_VALUE)
   ) {
     score += 1;
   }
