@@ -75,6 +75,22 @@ export async function markReturnSeenByCustomer(id) {
   await updateDoc(doc(db, "returnRequests", id), { seenByCustomer: true });
 }
 
+/**
+ * Fills in the English item name on a return raised before the field existed.
+ *
+ * Only that one field is written, so a sweep over old records cannot disturb
+ * the status or the customer's own note.
+ *
+ * @param {string} id - Return request document id.
+ * @param {string} itemNameEn - The English item name.
+ * @returns {Promise<void>}
+ */
+export async function updateReturnItemTranslation(id, itemNameEn) {
+  if (!id || !itemNameEn) return;
+
+  await updateDoc(doc(db, "returnRequests", id), { itemNameEn });
+}
+
 export function subscribeToReturnRequestsByUser(email, callback) {
   const normalized = String(email || "").trim().toLowerCase();
   if (!normalized) {

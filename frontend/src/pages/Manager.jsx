@@ -25,8 +25,8 @@ import ManagerDeliveries from "../components/manager/views/ManagerDeliveries";
 import { createAlerts, HIGH_DEMAND_THRESHOLD } from "../functions/manager/managerHelpers";
 import { getProducts, addProduct, deleteProduct, updateProduct } from "../services/products/productsService";
 import { translateProductFields } from "../services/translation/translationService";
-import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
-import { getAllReturnRequests } from "../services/returns/returnsService";
+import { resolveStockNotifications, getAllStockNotifications, updateStockNotificationTranslation } from "../services/notifications/notificationsService";
+import { getAllReturnRequests, updateReturnItemTranslation } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
 import { updateOrderCustomerAndItems } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
@@ -54,6 +54,7 @@ import {
   needsPersonNameFill,
   countOutstandingTranslations,
   selectRecordsNeedingTranslation,
+  resolveCatalogueNameEn,
 } from "../functions/manager/historicalTranslation";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
@@ -348,19 +349,32 @@ export default function Manager({ onPromote }) {
         feedback: feedbackList,
         customers: customersList,
         products,
+        returns: returnRequests,
+        stockAlerts: stockNotifications,
       }),
-    [orders, contactMessages, feedbackList, customersList, products],
+    [
+      orders,
+      contactMessages,
+      feedbackList,
+      customersList,
+      products,
+      returnRequests,
+      stockNotifications,
+    ],
   );
 
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
-    // The feedback and customer lists are re-read rather than taken from
-    // state, so the sweep works from what Firestore holds right now.
-    const [allFeedback, allCustomers] = await Promise.all([
-      getAllFeedback(),
-      getAllCustomers(),
-    ]);
+    // These lists are re-read rather than taken from state, so the sweep works
+    // from what Firestore holds right now.
+    const [allFeedback, allCustomers, allReturns, allStockAlerts] =
+      await Promise.all([
+        getAllFeedback(),
+        getAllCustomers(),
+        getAllReturnRequests(),
+        getAllStockNotifications(),
+      ]);
 
     const {
       orders: ordersNeedingUpdate,
@@ -368,6 +382,8 @@ export default function Manager({ onPromote }) {
       feedback: feedbackNeedingUpdate,
       customers: customersNeedingUpdate,
       products: productsNeedingUpdate,
+      returns: returnsNeedingUpdate,
+      stockAlerts: stockAlertsNeedingUpdate,
       total,
     } = selectRecordsNeedingTranslation({
       orders,
@@ -375,6 +391,8 @@ export default function Manager({ onPromote }) {
       feedback: allFeedback,
       customers: allCustomers,
       products,
+      returns: allReturns,
+      stockAlerts: allStockAlerts,
     });
 
     setHistoricalProgress({ done: 0, total });
@@ -547,6 +565,45 @@ export default function Manager({ onPromote }) {
         setProducts((prev) =>
           prev.map((p) => (p.code === product.code ? nextProduct : p)),
         );
+      }
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    // Returns and stock alerts both name a product the catalogue already holds
+    // a translation for, so the name is looked up rather than translated
+    // again. Translation is the fallback, for a product since removed.
+    // Each record is guarded on its own: one unreachable translation should
+    // cost that record, not the rest of the sweep and not the progress count.
+    for (const request of returnsNeedingUpdate) {
+      try {
+        const fromCatalogue = resolveCatalogueNameEn(request.itemCode, products);
+        const itemNameEn =
+          fromCatalogue || (await translateProductName(request.itemName));
+
+        if (itemNameEn) {
+          await updateReturnItemTranslation(request.id, itemNameEn);
+        }
+      } catch (err) {
+        console.warn(`Return ${request.id} left untranslated: ${err.message}`);
+      }
+
+      done += 1;
+      setHistoricalProgress({ done, total });
+    }
+
+    for (const alert of stockAlertsNeedingUpdate) {
+      try {
+        const fromCatalogue = resolveCatalogueNameEn(alert.productCode, products);
+        const productNameEn =
+          fromCatalogue || (await translateProductName(alert.productName));
+
+        if (productNameEn) {
+          await updateStockNotificationTranslation(alert.id, productNameEn);
+        }
+      } catch (err) {
+        console.warn(`Stock alert ${alert.id} left untranslated: ${err.message}`);
       }
 
       done += 1;

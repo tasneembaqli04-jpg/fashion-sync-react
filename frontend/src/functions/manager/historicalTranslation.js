@@ -43,6 +43,53 @@ export function needsPersonNameFill(original, translated) {
 }
 
 /**
+ * Finds the English name the catalogue already holds for a product code.
+ *
+ * Returns and stock alerts both name a product that exists in the catalogue,
+ * and products are translated when they are saved. Looking the name up is
+ * therefore better than translating it again: it costs no API call and it
+ * matches what every other screen shows for that product. Translation is only
+ * a fallback, for a record whose product has since been removed.
+ *
+ * @param {string} code - Product code stored on the record.
+ * @param {Array<object>} products - The catalogue.
+ * @returns {string} The English name, or an empty string when unavailable.
+ */
+export function resolveCatalogueNameEn(code, products) {
+  if (!code || !Array.isArray(products)) return "";
+
+  const product = products.find(
+    (item) => String(item?.code) === String(code),
+  );
+
+  return product?.nameEn || "";
+}
+
+/**
+ * Counts the outstanding fields on one return request.
+ *
+ * Only the item name is counted. The reason is stored with a `reasonKey` that
+ * the reader translates, and the customer's own note is left in the language
+ * she wrote it in.
+ *
+ * @param {object} request - The return request.
+ * @returns {number} How many fields are outstanding.
+ */
+export function countReturnGaps(request) {
+  return needsTranslation(request?.itemName, request?.itemNameEn) ? 1 : 0;
+}
+
+/**
+ * Counts the outstanding fields on one stock alert.
+ *
+ * @param {object} alert - The stock alert.
+ * @returns {number} How many fields are outstanding.
+ */
+export function countStockAlertGaps(alert) {
+  return needsTranslation(alert?.productName, alert?.productNameEn) ? 1 : 0;
+}
+
+/**
  * Counts the outstanding fields on one order.
  *
  * @param {object} order - The order.
@@ -147,13 +194,17 @@ export function countOutstandingTranslations({
   feedback = [],
   customers = [],
   products = [],
+  returns = [],
+  stockAlerts = [],
 } = {}) {
   return (
     orders.reduce((sum, order) => sum + countOrderGaps(order), 0) +
     contactMessages.reduce((sum, message) => sum + countMessageGaps(message), 0) +
     feedback.reduce((sum, entry) => sum + countFeedbackGaps(entry), 0) +
     customers.reduce((sum, customer) => sum + countCustomerGaps(customer), 0) +
-    products.reduce((sum, product) => sum + countProductGaps(product), 0)
+    products.reduce((sum, product) => sum + countProductGaps(product), 0) +
+    returns.reduce((sum, request) => sum + countReturnGaps(request), 0) +
+    stockAlerts.reduce((sum, alert) => sum + countStockAlertGaps(alert), 0)
   );
 }
 
@@ -173,6 +224,8 @@ export function selectRecordsNeedingTranslation({
   feedback = [],
   customers = [],
   products = [],
+  returns = [],
+  stockAlerts = [],
 } = {}) {
   const selected = {
     orders: orders.filter((order) => countOrderGaps(order) > 0),
@@ -180,15 +233,15 @@ export function selectRecordsNeedingTranslation({
     feedback: feedback.filter((entry) => countFeedbackGaps(entry) > 0),
     customers: customers.filter((customer) => countCustomerGaps(customer) > 0),
     products: products.filter((product) => countProductGaps(product) > 0),
+    returns: returns.filter((request) => countReturnGaps(request) > 0),
+    stockAlerts: stockAlerts.filter((alert) => countStockAlertGaps(alert) > 0),
   };
 
   return {
     ...selected,
-    total:
-      selected.orders.length +
-      selected.messages.length +
-      selected.feedback.length +
-      selected.customers.length +
-      selected.products.length,
+    total: Object.values(selected).reduce(
+      (sum, records) => sum + records.length,
+      0,
+    ),
   };
 }

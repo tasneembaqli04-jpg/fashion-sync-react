@@ -42,6 +42,23 @@ export async function markStockNotificationDone(id) {
   await updateDoc(doc(db, "stockNotifications", id), { notified: true });
 }
 
+/**
+ * Fills in the English product name on an alert raised before the field
+ * existed.
+ *
+ * Only that one field is written, so a sweep over old records cannot mark an
+ * outstanding alert as already handled.
+ *
+ * @param {string} id - Stock notification document id.
+ * @param {string} productNameEn - The English product name.
+ * @returns {Promise<void>}
+ */
+export async function updateStockNotificationTranslation(id, productNameEn) {
+  if (!id || !productNameEn) return;
+
+  await updateDoc(doc(db, "stockNotifications", id), { productNameEn });
+}
+
 export async function deleteStockNotification(id) {
   await deleteDoc(doc(db, "stockNotifications", id));
 }
