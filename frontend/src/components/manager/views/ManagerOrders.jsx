@@ -246,7 +246,16 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
         </select>
       </div>
 
-      {!visibleOrders.length ? (
+      {/*
+        Told apart from an empty result: while the orders are still arriving
+        there is nothing to report, and the celebratory "no open orders" would
+        be wrong as often as it is right.
+      */}
+      {loading ? (
+        <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
+          {dict.common.loading}
+        </div>
+      ) : !visibleOrders.length ? (
         <div className={ordersStyles.emptyState}>
           <div className={ordersStyles.emptyIcon}>🎉</div>
           <div className={ordersStyles.emptyText}>

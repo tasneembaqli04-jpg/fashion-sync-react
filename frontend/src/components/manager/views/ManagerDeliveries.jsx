@@ -195,7 +195,16 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
         )}
       </div>
 
-      {!visibleOrders.length ? (
+      {/*
+        Told apart from an empty result: while the orders are still arriving
+        there is nothing to report, and saying "no orders in this stage" then
+        would be wrong as often as it is right.
+      */}
+      {loading ? (
+        <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
+          {dict.common.loading}
+        </div>
+      ) : !visibleOrders.length ? (
         <div className={deliveriesStyles.emptyState}>
           <div className={deliveriesStyles.emptyIcon}>🚚</div>
           <div className={deliveriesStyles.emptyText}>{t.noOrdersInStage}</div>
