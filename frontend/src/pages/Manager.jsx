@@ -28,12 +28,11 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications } from "../services/notifications/notificationsService";
 import { getAllReturnRequests } from "../services/returns/returnsService";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
-import { subscribeToOrders, updateOrderCustomerAndItems, advanceOrderStatus, confirmOrder, rejectOrder } from "../services/orders/ordersService";
+import { updateOrderCustomerAndItems } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
 import { getAllFeedback, updateFeedbackTranslation } from "../services/feedback/feedbackService";
 import { translateText, keepPersonName } from "../services/translation/translationService";
 import { translateProductName } from "../services/translation/translationService";
-import { activateGiftCard, rejectGiftCard } from "../services/giftcard/giftCardService";
 import { getAllCustomers, updateCustomerNameTranslation, updateCustomerAddressTranslation } from "../services/customer/customerFirestore";
 import {
   getFeaturedProduct,
@@ -44,14 +43,21 @@ import {
   loadTheme,
   saveTheme,
 } from "../functions/manager/managerStorage";
-import { sendShippingUpdateEmail, sendStockAlertEmail, sendGiftCardActivatedEmail, sendOrderRejectedEmail, sendGiftCardRejectedEmail } from "../services/email/emailService";
+import { sendStockAlertEmail } from "../services/email/emailService";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { logOut } from "../services/auth/firebaseAuth";
 import { getStockStatus } from "../functions/customer/stockPolicy";
 import { getNotificationSettings } from "../services/settings/notificationSettingsService";
+import {
+  needsTranslation,
+  needsPersonNameFill,
+  countOutstandingTranslations,
+  selectRecordsNeedingTranslation,
+} from "../functions/manager/historicalTranslation";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
+import { useManagerOrders } from "../hooks/useManagerOrders";
 
 export default function Manager({ onPromote }) {
   const navigate = useNavigate();
@@ -124,69 +130,19 @@ export default function Manager({ onPromote }) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [stockRequestsProductFilter, setStockRequestsProductFilter] = useState("");
 
-  const [orders, setOrders] = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    let unsubscribe = null;
-    let customersMap = new Map();
-
-    getAllCustomers().then((customers) => {
-      customersMap = new Map(
-        customers.map((customer) => [customer.email, customer])
-      );
-
-      setOrders((prev) =>
-        prev.map((order) => ({
-          ...order,
-          customerDetails: customersMap.get(order.customerEmail) || order.customerDetails,
-        })),
-      );
-    });
-
-    unsubscribe = subscribeToOrders((firestoreOrders) => {
-      const normalized = firestoreOrders.map((order) => {
-        const customer = customersMap.get(order.customerEmail);
-
-        return {
-          docId: order.docId,
-          id: order.id,
-
-          customerDetails: customer || null,
-          customerEmail: order.customerEmail,
-          customerEmbedded: order.customer || null,
-
-          status: order.ready ? "ready" : "pending",
-          stageIndex: Number(order.status) || 0,
-          confirmed: Boolean(order.confirmed),
-          items: Array.isArray(order.items) ? order.items : [],
-          total: Number(order.total) || 0,
-          subtotal: Number(order.subtotal) || 0,
-          discountAmount: Number(order.discountAmount) || 0,
-          shippingCost: Number(order.shippingCost) || 0,
-          date: order.date || order.createdAt || null,
-          createdAt: order.date || order.createdAt || null,
-          payMethod: order.payMethod || "",
-          shipping: order.shipping || null,
-          cancelled: Boolean(order.cancelled),
-          rejected: Boolean(order.rejected),
-          rejectedAt: order.rejectedAt || null,
-          deliveredAt: order.deliveredAt || null,
-          pickupDate: order.pickupDate || "",
-          pickupTime: order.pickupTime || "",
-        };
-      });
-
-      setOrders(normalized);
-      setOrdersLoading(false);
-    });
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-   }, [isLoggedIn, refreshKey]);
+  // Every order, with its subscription and the decisions taken on it. Placed
+  // after isLoggedIn and refreshKey, both of which it reads.
+  const {
+    orders,
+    ordersLoading,
+    pendingOrdersCount,
+    pendingDeliveriesCount,
+    receipts,
+    handleConfirmOrder,
+    handleRejectOrder,
+    handleAdvanceOrderStage,
+    applyOrderTranslation,
+  } = useManagerOrders({ isLoggedIn, refreshKey });
 
   const [pendingStockRequestsCount, setPendingStockRequestsCount] = useState(0);
   const [stockNotifications, setStockNotifications] = useState([]);
@@ -269,19 +225,6 @@ export default function Manager({ onPromote }) {
     [products, orders, dict, lang, stockNotifications, notificationSettings],
   );
 
-  const pendingOrdersCount = useMemo(
-    () => orders.filter((o) => !o.confirmed && !o.cancelled).length,
-    [orders],
-  );
-
-  const pendingDeliveriesCount = useMemo(
-    () =>
-      orders.filter(
-        (o) => o.confirmed && !o.cancelled && (Number(o.stageIndex) || 0) < 3,
-      ).length,
-    [orders],
-  );
-
   const pendingReturnsCount = useMemo(
     () => returnRequests.filter((r) => r.status === "pending").length,
     [returnRequests],
@@ -290,22 +233,6 @@ export default function Manager({ onPromote }) {
     () => contactMessages.filter((m) => !m.read).length,
     [contactMessages],
   );
-  const receipts = useMemo(() => {
-    return orders.map((order) => ({
-      id: order.id,
-      date: order.date || order.createdAt || new Date().toISOString(),
-      total: Number(order.total) || 0,
-      subtotal: Number(order.subtotal) || 0,
-      discountAmount: Number(order.discountAmount) || 0,
-      shippingCost: Number(order.shippingCost) || 0,
-      payMethod: order.payMethod || "",
-      shipping: order.shipping || null,
-      customer: order.customerEmbedded || order.customerDetails || null,
-      items: Array.isArray(order.items) ? order.items : [],
-    }));
-  }, [orders]);
- 
-
   const stats = useMemo(() => {
     const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     const lowCount = products.filter(
@@ -412,124 +339,43 @@ export default function Manager({ onPromote }) {
   // the screen can confirm the sweep happened rather than staying silent.
   const [historicalProgress, setHistoricalProgress] = useState(null);
 
-  function needsTranslation(original, translated) {
-    if (!original) return false;
-    if (!translated) return true;
-    return translated.trim() === original.trim();
-  }
 
-  // Person names are never translated: the English field mirrors the name (see
-  // keepPersonName). An English value equal to the Hebrew one is therefore the
-  // finished state, not a failed translation, and needsTranslation would read
-  // it as failure and re-attempt it on every sweep for ever.
-  //
-  // A name field is outstanding only while its English counterpart is empty,
-  // which is the case for records written before the mirror existed. Filling
-  // it once settles it permanently.
-  function needsPersonNameFill(original, translated) {
-    return Boolean(original) && !translated;
-  }
-
-  const failedTranslationsCount = useMemo(() => {
-    let count = 0;
-
-    orders.forEach((order) => {
-      (order.items || []).forEach((item) => {
-        if (needsTranslation(item.name, item.nameEn)) count += 1;
-        if (item.isGiftCard) {
-          if (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn)) count += 1;
-          if (needsTranslation(item.giftMessage, item.giftMessageEn)) count += 1;
-        }
-      });
-
-      const customer = order.customerEmbedded || order.customerDetails;
-      if (customer) {
-        if (needsPersonNameFill(customer.name, customer.nameEn)) count += 1;
-        if (needsTranslation(customer.city, customer.cityEn)) count += 1;
-        if (needsTranslation(customer.street, customer.streetEn)) count += 1;
-      }
-    });
-
-    contactMessages.forEach((m) => {
-      if (needsPersonNameFill(m.name, m.nameEn)) count += 1;
-      if (needsTranslation(m.message, m.messageEn)) count += 1;
-    });
-
-    feedbackList.forEach((f) => {
-      if (needsTranslation(f.text, f.textEn)) count += 1;
-    });
-
-    customersList.forEach((c) => {
-      if (needsPersonNameFill(c.name, c.nameEn)) count += 1;
-      if (needsTranslation(c.city, c.cityEn)) count += 1;
-      if (needsTranslation(c.street, c.streetEn)) count += 1;
-    });
-
-    products.forEach((p) => {
-      if (needsTranslation(p.name, p.nameEn)) count += 1;
-      if (needsTranslation(p.desc, p.descEn)) count += 1;
-      (p.variants || []).forEach((v) => {
-        if (needsTranslation(v.colorName, v.colorNameEn)) count += 1;
-      });
-    });
-
-    return count;
-  }, [orders, contactMessages, feedbackList, customersList, products]);
+  const failedTranslationsCount = useMemo(
+    () =>
+      countOutstandingTranslations({
+        orders,
+        contactMessages,
+        feedback: feedbackList,
+        customers: customersList,
+        products,
+      }),
+    [orders, contactMessages, feedbackList, customersList, products],
+  );
 
   async function handleTranslateHistoricalData() {
     setTranslatingHistorical(true);
 
-    const ordersNeedingUpdate = orders.filter((order) => {
-      const itemsNeedUpdate = (order.items || []).some(
-        (item) =>
-          needsTranslation(item.name, item.nameEn) ||
-          (item.isGiftCard &&
-            (needsPersonNameFill(item.giftRecipient, item.giftRecipientEn) ||
-              needsTranslation(item.giftMessage, item.giftMessageEn)))
-      );
+    // The feedback and customer lists are re-read rather than taken from
+    // state, so the sweep works from what Firestore holds right now.
+    const [allFeedback, allCustomers] = await Promise.all([
+      getAllFeedback(),
+      getAllCustomers(),
+    ]);
 
-      const customer = order.customerEmbedded || order.customerDetails;
-      const addressNeedsUpdate =
-        customer &&
-        (needsTranslation(customer.city, customer.cityEn) ||
-          needsTranslation(customer.street, customer.streetEn) ||
-          needsPersonNameFill(customer.name, customer.nameEn));
-
-      return itemsNeedUpdate || addressNeedsUpdate;
+    const {
+      orders: ordersNeedingUpdate,
+      messages: messagesNeedingUpdate,
+      feedback: feedbackNeedingUpdate,
+      customers: customersNeedingUpdate,
+      products: productsNeedingUpdate,
+      total,
+    } = selectRecordsNeedingTranslation({
+      orders,
+      contactMessages,
+      feedback: allFeedback,
+      customers: allCustomers,
+      products,
     });
-
-    const messagesNeedingUpdate = contactMessages.filter(
-      (m) => needsPersonNameFill(m.name, m.nameEn) || needsTranslation(m.message, m.messageEn)
-    );
-
-    const allFeedback = await getAllFeedback();
-    const feedbackNeedingUpdate = allFeedback.filter(
-      (f) => needsTranslation(f.text, f.textEn)
-    );
-
-    const allCustomers = await getAllCustomers();
-    const customersNeedingUpdate = allCustomers.filter(
-      (c) =>
-        needsPersonNameFill(c.name, c.nameEn) ||
-        needsTranslation(c.city, c.cityEn) ||
-        needsTranslation(c.street, c.streetEn)
-    );
-
-    const productsNeedingUpdate = products.filter((p) => {
-      const nameNeedsUpdate = needsTranslation(p.name, p.nameEn);
-      const descNeedsUpdate = needsTranslation(p.desc, p.descEn);
-      const colorsNeedUpdate = (p.variants || []).some((v) =>
-        needsTranslation(v.colorName, v.colorNameEn),
-      );
-      return nameNeedsUpdate || descNeedsUpdate || colorsNeedUpdate;
-    });
-
-    const total =
-      ordersNeedingUpdate.length +
-      messagesNeedingUpdate.length +
-      feedbackNeedingUpdate.length +
-      customersNeedingUpdate.length +
-      productsNeedingUpdate.length;
 
     setHistoricalProgress({ done: 0, total });
     let done = 0;
@@ -597,17 +443,10 @@ export default function Manager({ onPromote }) {
         );
       }
 
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.docId === order.docId
-            ? {
-                ...o,
-                items: updatedItems,
-                customerEmbedded: updatedCustomer,
-              }
-            : o
-        )
-      );
+      applyOrderTranslation(order.docId, {
+        items: updatedItems,
+        customerEmbedded: updatedCustomer,
+      });
 
       done += 1;
       setHistoricalProgress({ done, total });
@@ -716,102 +555,6 @@ export default function Manager({ onPromote }) {
 
     setTranslatingHistorical(false);
     setRefreshKey((k) => k + 1);
-  }
-
-  function handleConfirmOrder(orderDocId) {
-    confirmOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, confirmed: true } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
-
-    if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        activateGiftCard(item.code);
-      });
-
-      if (order?.customerEmail) {
-        sendGiftCardActivatedEmail({
-          toEmail: order.customerEmail,
-          giftCardCode: giftCardItems[0].code,
-          amount: giftCardItems[0].price,
-          lang,
-        });
-      }
-
-      return;
-    }
-
-    if (order?.customerEmail) {
-      sendShippingUpdateEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        stageIndex: 0,
-        lang,
-      });
-    }
-  }
-
-  function handleRejectOrder(orderDocId) {
-    rejectOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, rejected: true } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
-
-    if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        rejectGiftCard(item.code);
-      });
-
-      if (order?.customerEmail) {
-        sendGiftCardRejectedEmail({
-          toEmail: order.customerEmail,
-          lang,
-        });
-      }
-
-      return;
-    }
-
-    if (order?.customerEmail) {
-      sendOrderRejectedEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        lang,
-      });
-    }
-  }
-
-  function handleAdvanceOrderStage(orderDocId, nextIndex, isPickup = false) {
-    advanceOrderStatus(orderDocId, nextIndex, isPickup);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, stageIndex: nextIndex } : order
-      )
-    );
-
-    const order = orders.find((o) => o.docId === orderDocId);
-    if (order?.customerEmail) {
-      sendShippingUpdateEmail({
-        toEmail: order.customerEmail,
-        orderId: order.id,
-        stageIndex: nextIndex,
-        isPickup,
-        lang,
-      });
-    }
   }
 
   const shellClassName = `${styles.appShell} ${

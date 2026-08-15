@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
+import { useShareModal } from "../hooks/useShareModal";
+import { useGiftCard } from "../hooks/useGiftCard";
+import { useTryOn } from "../hooks/useTryOn";
+import { useCustomerOrders } from "../hooks/useCustomerOrders";
+import { useChat } from "../hooks/useChat";
+import { getItemName } from "../functions/customer/itemDisplay";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
-import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
-import { restockOrderItems } from "../services/products/productsService";
 import { getFeaturedProduct } from "../services/settings/featuredProductService";
 import {
   getWishlist,
@@ -20,8 +23,6 @@ import { LS_KEYS } from "../functions/checkout/checkoutStorage";
 import { useDialog } from "../components/common/DialogProvider";
 import { useLanguage } from "../translations/LanguageProvider";
 import { getCoupon } from "../services/coupons/couponsService";
-import { requestSmartTryOn } from "../services/tryOn/smartTryOnService";
-import { sendOrderCancellationEmail } from "../services/email/emailService";
 import {
   applyTheme,
   getSavedTheme,
@@ -56,13 +57,6 @@ import {
   getCartCount,
   getCartTotals,
 } from "../functions/customer/cart";
-import { getReply } from "../functions/customer/chat";
-import { requestChatReplyStream } from "../services/chat/chatService";
-import {
-  buildGiftCardPreview,
-  buyGiftCard as buyGiftCardFn,
-} from "../functions/customer/giftCard";
-import { getGiftCard } from "../services/giftcard/giftCardService";
 import CustomerTopbar from "../components/customer/CustomerTopbar";
 import CustomerSidebar from "../components/customer/CustomerSidebar";
 import CustomerChat from "../components/customer/CustomerChat";
@@ -70,11 +64,6 @@ import CustomerBrowse from "../components/customer/CustomerBrowse";
 import CustomerWishlist from "../components/customer/CustomerWishlist";
 import CustomerOrders from "../components/customer/CustomerOrders";
 import ReturnRequestModal from "../components/customer/ReturnRequestModal";
-import {
-  requestReturn,
-  markReturnSeenByCustomer,
-  subscribeToReturnRequestsByUser,
-} from "../services/returns/returnsService";
 import CustomerLoyalty from "../components/customer/CustomerLoyalty";
 import CustomerGiftCard from "../components/customer/CustomerGiftCard";
 import CustomerPolicy from "../components/customer/CustomerPolicy";
@@ -83,23 +72,6 @@ import ShareModal from "../components/customer/ShareModal";
 import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
 import TryOnModal from "../components/customer/TryOnModal";
-
-// Each Try-On error code maps to a key under customer.dialogs. A code with no
-// entry here falls back to the general message.
-// Each gift card refusal maps to a key under customer.giftCard. An unknown
-// reason falls back to the general message.
-const GIFT_CARD_ERROR_KEYS = {
-  recipientRequired: "errorRecipientRequired",
-  invalidAmount: "errorInvalidAmount",
-  loginRequired: "errorLoginRequired",
-};
-
-const TRY_ON_ERROR_KEYS = {
-  [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
-  [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
-  [TRY_ON_ERRORS.NO_CUSTOMER_IMAGE]: "tryOnErrorUploadImage",
-  [TRY_ON_ERRORS.REQUEST_FAILED]: "tryOnErrorGeneric",
-};
 
 export default function Customer() {
   const navigate = useNavigate();
@@ -162,36 +134,20 @@ export default function Customer() {
   const [currentSeasonTab, setCurrentSeasonTab] = useState(getCurrentSeason());
   const [currentListMode, setCurrentListMode] = useState("all");
 
-  const [chatInput, setChatInput] = useState("");
-  const [moreQuestionsOpen, setMoreQuestionsOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    {
-      type: "bot",
-      html: dict.customer.chat.welcomeMessage,
-      isWelcome: true,
-    },
-  ]);
-  const [isChatTyping, setIsChatTyping] = useState(false);
-
-  useEffect(() => {
-    setChatMessages((prev) => {
-      if (prev.length === 1 && prev[0].isWelcome) {
-        return [
-          {
-            type: "bot",
-            html: dict.customer.chat.welcomeMessage,
-            isWelcome: true,
-          },
-        ];
-      }
-      return prev;
-    });
-  }, [lang]);
-  const [currentOutfit, setCurrentOutfit] = useState([]);
-  const [currentOutfitImage, setCurrentOutfitImage] = useState("");
+  // The shopping assistant, self-contained: it needs nothing from the page
+  // beyond the language, which it reads itself.
+  const {
+    chatMessages,
+    chatInput,
+    setChatInput,
+    isChatTyping,
+    moreQuestionsOpen,
+    sendMsg,
+    quickMsg,
+    toggleMoreQuestions,
+  } = useChat();
 
   const [wishlistCodes, setWishlistCodes] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
   const [rawStockAlerts, setRawStockAlerts] = useState([]);
 
@@ -202,10 +158,16 @@ export default function Customer() {
   const [customColor, setCustomColor] = useState("");
   const [customSize, setCustomSize] = useState("");
 
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareItemName, setShareItemName] = useState("");
-  const [shareProductCode, setShareProductCode] = useState("");
-  const [shareCopied, setShareCopied] = useState(false);
+  // Declared here, where the share state used to sit, and after `products`,
+  // which it reads to resolve the code it is opened with.
+  const {
+    shareModalOpen,
+    shareItemName,
+    shareCopied,
+    openShareModal,
+    closeShareModal,
+    doShare,
+  } = useShareModal(products);
 
   const [cartOpen, setCartOpen] = useState(false);
   const [couponValue, setCouponValue] = useState("");
@@ -218,41 +180,67 @@ export default function Customer() {
   const [pcfText, setPcfText] = useState("");
   const [pcfTopics, setPcfTopics] = useState([]);
 
-  const [tryOnOpen, setTryOnOpen] = useState(false);
-  const [tryOnSelfie, setTryOnSelfie] = useState("");
-  const [tryOnLoading, setTryOnLoading] = useState(false);
-  const [tryOnResult, setTryOnResult] = useState(null);
-  const [tryOnError, setTryOnError] = useState("");
-  const tryOnAbortRef = useRef(null);
+  // Declared after `products` and the product dialog's own state, since it
+  // resolves the product to try on from the code that dialog is showing.
+  const {
+    tryOnOpen,
+    tryOnSelfie,
+    tryOnLoading,
+    tryOnResult,
+    tryOnError,
+    closeTryOnModal,
+    tryOnSelfieUpload,
+    clearTryOnSelfie,
+    handleTryOnRequest,
+    openTryOnFromProduct,
+  } = useTryOn({ products, selectedProductCode, setSelectedProductCode });
 
-  const [giftAmount, setGiftAmount] = useState("100");
-  const [giftCustomAmount, setGiftCustomAmount] = useState("");
-  const [giftName, setGiftName] = useState("");
-  const [giftMessage, setGiftMessage] = useState("");
-  const [giftPreviewCode, setGiftPreviewCode] = useState("—");
-  const [giftError, setGiftError] = useState("");
-  const [giftCheckCode, setGiftCheckCode] = useState("");
-  const [giftCheckResult, setGiftCheckResult] = useState(null);
-  const [giftCheckError, setGiftCheckError] = useState("");
-  const [returnRequests, setReturnRequests] = useState([]);
-  const [returnModalOrder, setReturnModalOrder] = useState(null);
+  // Placed after cart, currentUser and navigate, all of which it receives.
+  const {
+    giftAmount,
+    setGiftAmount,
+    giftCustomAmount,
+    setGiftCustomAmount,
+    giftName,
+    setGiftName,
+    giftMessage,
+    setGiftMessage,
+    giftPreviewCode,
+    giftError,
+    giftPreview,
+    handleGcAmountChange,
+    buyGiftCard,
+    giftCheckCode,
+    setGiftCheckCode,
+    giftCheckResult,
+    giftCheckError,
+    checkGiftCardBalance,
+  } = useGiftCard({ cart, setCart, currentUser, navigate });
+
+  // Orders and the returns raised against them, with their own loading. Placed
+  // after currentUser and activePanel, both of which it reads.
+  const {
+    orders,
+    returnRequests,
+    returnModalOrder,
+    unseenReturnUpdates,
+    activeOrdersCount,
+    updateOrder,
+    handleCancelOrder,
+    dismissReturnUpdate,
+    openReturnRequestModal,
+    closeReturnRequestModal,
+    submitReturnRequest,
+  } = useCustomerOrders({ currentUser, activePanel });
 
   useEffect(() => {
     if (!currentUser?.email) {
-      setOrders([]);
       setLoyaltyPoints(0);
       setRawStockAlerts([]);
-      setReturnRequests([]);
       return;
     }
 
     let cancelled = false;
-
-    getOrdersByUser(currentUser.email).then((userOrders) => {
-      if (!cancelled) {
-        setOrders(userOrders.slice().reverse());
-      }
-    });
 
     getLoyaltyPoints(currentUser.email).then((points) => {
       if (!cancelled) {
@@ -274,20 +262,6 @@ export default function Customer() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
-
-  useEffect(() => {
-    if (!currentUser?.email) {
-      setReturnRequests([]);
-      return;
-    }
-
-    const unsubscribe = subscribeToReturnRequestsByUser(
-      currentUser.email,
-      setReturnRequests,
-    );
-
-    return () => unsubscribe();
-  }, [currentUser]);
 
   // Firebase Auth is the source of truth for identity. initAuth() below only
   // reads a localStorage cache so the page can render straight away; this
@@ -346,7 +320,9 @@ export default function Customer() {
       if (sharedItemCode) {
         const sharedProduct = products.find((p) => p.code === sharedItemCode);
         if (sharedProduct) {
-          openProductModal(sharedItemCode);
+          // Passed through, because the catalogue above is a local list and
+          // the state behind it has not been committed yet.
+          openProductModal(sharedItemCode, sharedProduct);
         }
       }
     }
@@ -441,16 +417,6 @@ export default function Customer() {
       return product && Number(product.stock) > 0;
     });
   }, [rawStockAlerts, products]);
-  const unseenReturnUpdates = useMemo(() => {
-    return returnRequests.filter(
-      (r) => r.status !== "pending" && !r.seenByCustomer,
-    );
-  }, [returnRequests]);
-  const activeOrdersCount = useMemo(
-    () => orders.filter((o) => (Number(o.status) || 0) < 3).length,
-    [orders],
-  );
-
   const cartCount = getCartCount(cart);
   const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
   const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
@@ -477,14 +443,11 @@ export default function Customer() {
       ...base,
       text: neutralTextByTab[currentSeasonTab] || base.text,
     };
-  }, [currentSeasonTab, realCurrentSeason]);
+    // dict belongs here: the banner text is read from it, so leaving it out
+    // froze the wording at whichever language was active on the first render
+    // and switching language left the old sentence on screen.
+  }, [currentSeasonTab, realCurrentSeason, dict]);
 
-  const giftPreview = buildGiftCardPreview({
-    amount: giftAmount,
-    customAmount: giftCustomAmount,
-    name: giftName,
-    message: giftMessage,
-  });
 
   function toggleSidebar() {
     setSidebarOpen((prev) => !prev);
@@ -512,160 +475,6 @@ export default function Customer() {
     toggleThemeFn(setTheme);
   }
 
-  function quickMsg(text) {
-    setChatInput(text);
-    setTimeout(() => sendMsg(text), 0);
-  }
-
-  async function sendMsg(forcedText) {
-    const text = (forcedText ?? chatInput).trim();
-    if (!text) return;
-
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        type: "user",
-        html: text,
-      },
-    ]);
-
-    setChatInput("");
-    setIsChatTyping(true);
-
-    const history = chatMessages.map((message) => ({
-      role: message.type === "user" ? "user" : "bot",
-      text: message.html || "",
-    }));
-
-    let botMessageStarted = false;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 30000);
-
-    try {
-      const result = await requestChatReplyStream({
-        message: text,
-        history,
-        currentOutfit,
-        currentOutfitImage,
-        lang,
-        signal: controller.signal,
-
-        onChunk: (fullTextSoFar) => {
-          if (!botMessageStarted) {
-            botMessageStarted = true;
-            setIsChatTyping(false);
-
-            setChatMessages((prev) => [
-              ...prev,
-              {
-                type: "bot",
-                html: fullTextSoFar,
-              },
-            ]);
-          } else {
-            setChatMessages((prev) => {
-              const next = [...prev];
-
-              next[next.length - 1] = {
-                type: "bot",
-                html: fullTextSoFar,
-              };
-
-              return next;
-            });
-          }
-        },
-      });
-      if (
-        botMessageStarted &&
-        result?.responseMode === "TEXT" &&
-        Array.isArray(result?.products) &&
-        result.products.length > 0
-      ) {
-        setChatMessages((prev) => {
-          const next = [...prev];
-
-          next[next.length - 1] = {
-            ...next[next.length - 1],
-            products: result.products,
-          };
-
-          return next;
-        });
-      }
-
-      if (
-        result?.responseMode === "IMAGE" &&
-        result?.imageGenerated === true &&
-        result?.image?.dataUrl
-      ) {
-        setCurrentOutfit(Array.isArray(result.products) ? result.products : []);
-        setCurrentOutfitImage(result.image.dataUrl);
-        setIsChatTyping(false);
-
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: dict.customer.chat.outfitImageReady,
-            imageUrl: result.image.dataUrl,
-            imageMimeType: result.image.mimeType || "image/png",
-            products: result.products || [],
-          },
-        ]);
-
-        return;
-      }
-
-      if (
-        result?.responseMode === "TEXT" &&
-        result?.text &&
-        !botMessageStarted
-      ) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: result.text,
-            products: result.products || [],
-          },
-        ]);
-      }
-    } catch (err) {
-      console.warn(`Chat service unreachable, using the fallback reply: ${err.message}`);
-
-      if (err?.name === "AbortError") {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            html: dict.customer.chat.requestTimedOut,
-          },
-        ]);
-
-        return;
-      }
-
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          html: getReply(dict),
-        },
-      ]);
-    } finally {
-      clearTimeout(timeoutId);
-      setIsChatTyping(false);
-    }
-  }
-
-  function toggleMoreQuestions() {
-    setMoreQuestionsOpen((prev) => !prev);
-  }
-
   function toggleWish(code) {
     if (isGuest) {
       guestPrompt();
@@ -685,8 +494,16 @@ export default function Customer() {
     });
   }
 
-  function openProductModal(code) {
-    const product = products.find((item) => item.code === code);
+  /**
+   * Opens the product dialog on a code.
+   *
+   * `knownProduct` exists for the one caller that already holds the product
+   * and cannot rely on state: the page load that follows a shared link runs
+   * before the catalogue it just fetched has been committed, so looking the
+   * code up here would find nothing and the dialog would stay shut.
+   */
+  function openProductModal(code, knownProduct) {
+    const product = knownProduct || products.find((item) => item.code === code);
     if (!product) return;
 
     const colorsFromVariants = product.variants
@@ -872,48 +689,6 @@ export default function Customer() {
     navigate("/checkout");
   }
 
-  function openShareModal(code) {
-    const product = products.find((item) => item.code === code);
-    if (!product) return;
-
-    setShareProductCode(code);
-    setShareItemName(`${product.name} · ₪${product.price}`);
-    setShareCopied(false);
-    setShareModalOpen(true);
-  }
-
-  function closeShareModal() {
-    setShareModalOpen(false);
-  }
-
-  function doShare(type) {
-    const product = products.find((item) => item.code === shareProductCode);
-    if (!product) return;
-
-    const url = `${window.location.origin}/customer?item=${product.code}`;
-    const text = dict.customer.misc.shareMessageTemplate
-      .replace("{name}", product.name)
-      .replace("{price}", product.price);
-
-    if (type === "copy") {
-      navigator.clipboard?.writeText(url);
-      setShareCopied(true);
-    } else if (type === "whatsapp") {
-      window.open(
-        "https://wa.me/?text=" + encodeURIComponent(`${text} ${url}`),
-        "_blank",
-      );
-    } else if (type === "email") {
-      window.location.href =
-        "mailto:?subject=" +
-        encodeURIComponent(
-          dict.customer.misc.shareEmailSubjectPrefix + product.name,
-        ) +
-        "&body=" +
-        encodeURIComponent(text + "\n" + url);
-    }
-  }
-
   async function openNotifyModal(code) {
     if (isGuest) {
       guestPrompt();
@@ -926,7 +701,9 @@ export default function Customer() {
     const confirmed = await confirmDialog(
       dict.customer.dialogs.notifyConfirmMessage
         .replace("{email}", currentUser?.email || "")
-        .replace("{name}", product.name),
+        // The dialog is written in the interface language, so the product
+        // name has to follow it.
+        .replace("{name}", getItemName(product, lang)),
     );
     if (!confirmed) return;
 
@@ -944,210 +721,12 @@ export default function Customer() {
     );
   }
 
-  function closeTryOnModal() {
-    tryOnAbortRef.current?.abort();
-    tryOnAbortRef.current = null;
-
-    setTryOnLoading(false);
-    setTryOnError("");
-    setTryOnOpen(false);
-  }
-
-  function tryOnSelfieUpload(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setTryOnSelfie(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearTryOnSelfie() {
-    setTryOnSelfie("");
-  }
-  async function handleTryOnRequest() {
-    if (!tryOnSelfie) {
-      setTryOnError(dict.customer.dialogs.tryOnErrorUploadImage);
-      return;
-    }
-
-    const productForTryOn = products.find(
-      (product) => String(product.code) === String(selectedProductCode),
-    );
-
-    if (!productForTryOn) {
-      setTryOnError(dict.customer.dialogs.tryOnErrorProductNotFound);
-      return;
-    }
-
-    tryOnAbortRef.current?.abort();
-
-    const controller = new AbortController();
-    tryOnAbortRef.current = controller;
-
-    setTryOnLoading(true);
-    setTryOnError("");
-    setTryOnResult(null);
-
-    try {
-      const result = await requestSmartTryOn({
-        product: productForTryOn,
-        imageUrl: tryOnSelfie,
-        signal: controller.signal,
-      });
-
-      if (controller.signal.aborted) return;
-
-      setTryOnResult(result);
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        return;
-      }
-
-      console.error("Try On request failed:", error);
-
-      // The code decides the wording; the message stays in the console. An
-      // unrecognised code, including anything thrown by the network layer,
-      // falls back to the general message rather than showing its own text.
-      const messageKey = TRY_ON_ERROR_KEYS[error?.code];
-
-      setTryOnError(
-        dict.customer.dialogs[messageKey] ||
-          dict.customer.dialogs.tryOnErrorGeneric
-      );
-    } finally {
-      if (tryOnAbortRef.current === controller) {
-        tryOnAbortRef.current = null;
-        setTryOnLoading(false);
-      }
-    }
-  }
-
-  function openTryOnFromProduct(code) {
-    setSelectedProductCode(code);
-    setTryOnOpen(true);
-    setTryOnResult(null);
-    setTryOnError("");
-  }
-
-  function handleGcAmountChange(value) {
-    setGiftAmount(value);
-  }
-
-  function updateGiftPreview() {}
-  async function checkGiftCardBalance() {
-    const code = giftCheckCode.trim();
-    setGiftCheckError("");
-    setGiftCheckResult(null);
-
-    if (!code) {
-      setGiftCheckError(dict.customer.misc.giftCheckErrorEmptyCode);
-      return;
-    }
-
-    const card = await getGiftCard(code);
-
-    if (!card) {
-      setGiftCheckError(dict.customer.misc.giftCheckErrorNotFound);
-      return;
-    }
-
-    setGiftCheckResult(card);
-  }
-
-  async function buyGiftCard() {
-    const result = await buyGiftCardFn({
-      amount: giftAmount,
-      customAmount: giftCustomAmount,
-      name: giftName,
-      message: giftMessage,
-      email: currentUser?.email,
-      cart,
-    });
-
-    if (!result.ok) {
-      setGiftError(
-        dict.customer.giftCard[GIFT_CARD_ERROR_KEYS[result.reason]] ||
-          dict.customer.dialogs.unknownError
-      );
-      return;
-    }
-
-    setGiftError("");
-    setGiftPreviewCode(result.code);
-    setCart(result.nextCart);
-    navigate("/checkout");
-  }
   async function dismissStockAlert(id) {
     await markStockAlertSeen(id);
     setRawStockAlerts((prev) => prev.filter((item) => item.id !== id));
   }
-  async function dismissReturnUpdate(id) {
-    await markReturnSeenByCustomer(id);
-    setReturnRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, seenByCustomer: true } : r)),
-    );
-  }
-
   function handleLogout() {
     doLogoutFn(setCart, dict.customer.dialogs);
-  }
-
-  function openReturnRequestModal(order) {
-    setReturnModalOrder(order);
-  }
-  async function handleCancelOrder(order) {
-    const confirmed = await confirmDialog(
-      dict.customer.orders.confirmCancelOrder,
-    );
-    if (!confirmed) return;
-
-    await cancelOrder(order.docId);
-    await restockOrderItems(order.items);
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.docId === order.docId ? { ...o, cancelled: true } : o,
-      ),
-    );
-    sendOrderCancellationEmail({
-      toEmail: order.customerEmail || currentUser?.email || "",
-      orderId: order.id,
-      total: order.total,
-      lang,
-    });
-
-    alertDialog(dict.customer.orders.cancelSuccess);
-  }
-
-  function closeReturnRequestModal() {
-    setReturnModalOrder(null);
-  }
-
-  async function submitReturnRequest({ item, reason, reasonKey, note }) {
-    if (!returnModalOrder || !item) return;
-
-    await requestReturn({
-      orderDocId: returnModalOrder.docId,
-      orderId: returnModalOrder.id,
-      itemCode: item.code,
-      itemName: item.name,
-      itemImg: item.img,
-      qty: item.qty,
-      color: item.color,
-      size: item.size,
-      price: item.price,
-      customerEmail: currentUser?.email || "",
-      customerName: currentUser?.name || "",
-      reason,
-      reasonKey,
-      note,
-    });
-
-    closeReturnRequestModal();
-    alertDialog(dict.customer.returns.submitSuccess);
   }
 
   function guestPrompt() {
@@ -1388,11 +967,7 @@ export default function Customer() {
           returnRequests={returnRequests}
           onRequestReturn={openReturnRequestModal}
           onCancelOrder={handleCancelOrder}
-          onUpdateOrder={(docId, updates) =>
-            setOrders((prev) =>
-              prev.map((o) => (o.docId === docId ? { ...o, ...updates } : o))
-            )
-          }
+          onUpdateOrder={updateOrder}
         />
 
         <CustomerLoyalty
@@ -1411,7 +986,6 @@ export default function Customer() {
           giftError={giftError}
           giftPreview={giftPreview}
           handleGcAmountChange={handleGcAmountChange}
-          updateGiftPreview={updateGiftPreview}
           buyGiftCard={buyGiftCard}
           setGiftAmount={setGiftAmount}
           setGiftCustomAmount={setGiftCustomAmount}

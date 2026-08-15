@@ -5,6 +5,7 @@ import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.s
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { DELIVERED_STAGE } from "../../../functions/manager/orderStatus";
 
 function getMonthKey(value) {
   const d = new Date(value);
@@ -51,8 +52,13 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pickupOnly, setPickupOnly] = useState(false);
 
+  // Rejected orders are excluded here as well as in the badge, so the screen
+  // and the count it feeds never disagree about what is on its way.
   const confirmedOrders = useMemo(
-    () => orders.filter((order) => order.confirmed && !order.cancelled),
+    () =>
+      orders.filter(
+        (order) => order.confirmed && !order.cancelled && !order.rejected,
+      ),
     [orders],
   );
 
@@ -76,8 +82,8 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
 
   const sortedOrders = useMemo(() => {
     return [...monthFilteredOrders].sort((a, b) => {
-      const aDone = (a.stageIndex ?? 0) >= 3;
-      const bDone = (b.stageIndex ?? 0) >= 3;
+      const aDone = (a.stageIndex ?? 0) >= DELIVERED_STAGE;
+      const bDone = (b.stageIndex ?? 0) >= DELIVERED_STAGE;
 
       if (aDone !== bDone) return aDone ? 1 : -1;
 
@@ -198,7 +204,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
         <div className={deliveriesStyles.deliveriesList}>
           {visibleOrders.map((order) => {
             const currentIndex = order.stageIndex ?? 0;
-            const nextIndex = currentIndex < 3 ? currentIndex + 1 : null;
+            const nextIndex = currentIndex < DELIVERED_STAGE ? currentIndex + 1 : null;
             const createdAtText = fmtDate(order.createdAt);
             const isPickup = order.shipping?.id === "pickup";
             const orderStepLabels = isPickup ? dict.pickupStatusLabels : STEP_LABELS;

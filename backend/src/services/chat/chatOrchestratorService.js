@@ -201,6 +201,11 @@ function buildProductForAi(product, options = {}) {
 
     name: product?.name || "",
 
+    // The English name travels with the product so the cards in the chat can
+    // follow the interface language. The model is given the Hebrew name and
+    // reasons about that; this field is for display only.
+    nameEn: product?.nameEn || "",
+
     category: product?.category || product?.cat || "",
 
     imageUrl: product?.imageUrl || product?.img || "",

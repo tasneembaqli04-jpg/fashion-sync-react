@@ -117,6 +117,11 @@ function normalizeProduct(documentSnapshot) {
     id: documentSnapshot.id,
     code: data.code || documentSnapshot.id,
     name: data.name || "",
+    // Carried through so the interface can show the product in the language
+    // the customer is reading. Without it the reply arrives in English with
+    // Hebrew product names inside it, because the screen has nothing else to
+    // fall back to.
+    nameEn: data.nameEn || "",
     category: data.cat || data.category || "",
     gender: data.gender || "",
     season: data.season || "",

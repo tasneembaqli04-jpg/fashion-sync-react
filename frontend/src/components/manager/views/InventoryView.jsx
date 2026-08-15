@@ -6,6 +6,18 @@ import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getStockStatus } from "../../../functions/customer/stockPolicy";
 
+// Filter values that never change with the interface language.
+//
+// The selects used to carry their own translated labels as values, and the
+// comparisons below matched against those same translations. Switching
+// language left the stored value written in the old one, no branch matched,
+// and the filter silently reverted to showing everything while the dropdown
+// displayed a value no longer in its own list. Stable keys here, translation
+// only in the option text.
+const ANY = "any";
+const STOCK_FILTERS = { available: "available", low: "low", out: "out" };
+const PROMO_FILTERS = { yes: "yes", no: "no" };
+
 function getSeasonMeta(t) {
   return {
     summer: {
@@ -114,33 +126,31 @@ export default function InventoryView({
   const common = dict.common;
   const [showFilters, setShowFilters] = useState(false);
 
-  const [categoryFilter, setCategoryFilter] = useState(t.options.allCategories);
-  const [genderFilter, setGenderFilter] = useState(common.all);
-  const [stockStatusFilter, setStockStatusFilter] = useState(common.all);
+  const [categoryFilter, setCategoryFilter] = useState(ANY);
+  const [genderFilter, setGenderFilter] = useState(ANY);
+  const [stockStatusFilter, setStockStatusFilter] = useState(ANY);
   const [productNameFilter, setProductNameFilter] = useState("");
   const [productCodeFilter, setProductCodeFilter] = useState("");
-  const [promoOnlyFilter, setPromoOnlyFilter] = useState(common.all);
+  const [promoOnlyFilter, setPromoOnlyFilter] = useState(ANY);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const categoryMatch =
-        categoryFilter === t.options.allCategories
-          ? true
-          : p.cat === categoryFilter;
+        categoryFilter === ANY ? true : p.cat === categoryFilter;
 
       const genderMatch =
-        genderFilter === common.all ? true : p.gender === genderFilter;
+        genderFilter === ANY ? true : p.gender === genderFilter;
 
       // The filter reads the same status the badge shows, so a product can
       // never display one state and be filtered under another.
       const stockStatus = getStockStatus(p.stock, p.minStock);
 
       let stockStatusMatch = true;
-      if (stockStatusFilter === t.options.stockStatus.available) {
+      if (stockStatusFilter === STOCK_FILTERS.available) {
         stockStatusMatch = stockStatus === "available";
-      } else if (stockStatusFilter === t.options.stockStatus.low) {
+      } else if (stockStatusFilter === STOCK_FILTERS.low) {
         stockStatusMatch = stockStatus === "low";
-      } else if (stockStatusFilter === t.options.stockStatus.out) {
+      } else if (stockStatusFilter === STOCK_FILTERS.out) {
         stockStatusMatch = stockStatus === "out";
       }
 
@@ -153,9 +163,9 @@ export default function InventoryView({
         : true;
 
       let promoOnlyMatch = true;
-      if (promoOnlyFilter === common.yes) {
+      if (promoOnlyFilter === PROMO_FILTERS.yes) {
         promoOnlyMatch = promotedCode === p.code;
-      } else if (promoOnlyFilter === common.no) {
+      } else if (promoOnlyFilter === PROMO_FILTERS.no) {
         promoOnlyMatch = promotedCode !== p.code;
       }
 
@@ -180,12 +190,12 @@ export default function InventoryView({
   ]);
 
   const clearAllFilters = () => {
-    setCategoryFilter(t.options.allCategories);
-    setGenderFilter(common.all);
-    setStockStatusFilter(common.all);
+    setCategoryFilter(ANY);
+    setGenderFilter(ANY);
+    setStockStatusFilter(ANY);
     setProductNameFilter("");
     setProductCodeFilter("");
-    setPromoOnlyFilter(common.all);
+    setPromoOnlyFilter(ANY);
   };
 
   return (
@@ -222,7 +232,7 @@ export default function InventoryView({
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option value={t.options.allCategories}>{t.options.allCategories}</option>
+                <option value={ANY}>{t.options.allCategories}</option>
                 {CATEGORIES.map((category) => (
                   <option key={category} value={category}>
                     {dict.categoryLabels[category] || category}
@@ -240,7 +250,7 @@ export default function InventoryView({
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
               >
-                <option value={common.all}>{common.all}</option>
+                <option value={ANY}>{common.all}</option>
                 <option value="גברים">{t.options.genders.men}</option>
                 <option value="נשים">{t.options.genders.women}</option>
                 <option value="ילדים">{t.options.genders.kids}</option>
@@ -257,10 +267,12 @@ export default function InventoryView({
                 value={stockStatusFilter}
                 onChange={(e) => setStockStatusFilter(e.target.value)}
               >
-                <option>{common.all}</option>
-                <option>{t.options.stockStatus.available}</option>
-                <option>{t.options.stockStatus.low}</option>
-                <option>{t.options.stockStatus.out}</option>
+                <option value={ANY}>{common.all}</option>
+                <option value={STOCK_FILTERS.available}>
+                  {t.options.stockStatus.available}
+                </option>
+                <option value={STOCK_FILTERS.low}>{t.options.stockStatus.low}</option>
+                <option value={STOCK_FILTERS.out}>{t.options.stockStatus.out}</option>
               </select>
             </div>
 
@@ -297,9 +309,9 @@ export default function InventoryView({
                 value={promoOnlyFilter}
                 onChange={(e) => setPromoOnlyFilter(e.target.value)}
               >
-                <option>{common.all}</option>
-                <option>{common.yes}</option>
-                <option>{common.no}</option>
+                <option value={ANY}>{common.all}</option>
+                <option value={PROMO_FILTERS.yes}>{common.yes}</option>
+                <option value={PROMO_FILTERS.no}>{common.no}</option>
               </select>
             </div>
           </div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useDialog } from "../../common/DialogProvider";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
+import { needsManagerDecision } from "../../../functions/manager/orderStatus";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
@@ -55,7 +56,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
     );
   }, [orders, monthFilter]);
 
-  const pending = monthFilteredOrders.filter((o) => !o.confirmed && !o.cancelled && !o.rejected).length;
+  const pending = monthFilteredOrders.filter(needsManagerDecision).length;
   const confirmed = monthFilteredOrders.filter((o) => o.confirmed && !o.cancelled && !o.rejected).length;
   const cancelled = monthFilteredOrders.filter((o) => o.cancelled).length;
   const rejected = monthFilteredOrders.filter((o) => o.rejected).length;
