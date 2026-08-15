@@ -1,4 +1,5 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useDialog } from "../common/DialogProvider";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -17,6 +18,10 @@ export default function TryOnModal({
   const { alertDialog } = useDialog();
   const { t: dict } = useLanguage();
   const t = dict.customer.tryOn;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: closeTryOnModal,
+  });
 
   const resultImageUrl =
     tryOnResult?.resultImageUrl ||
@@ -82,7 +87,7 @@ export default function TryOnModal({
       className={`${modalStyles.modalWrap} ${modalStyles.open}`}
       id="visual-modal"
     >
-      <div className={modalStyles.modalBox}>
+      <div ref={dialogRef} {...dialogProps} className={modalStyles.modalBox}>
         <button
           type="button"
           className={modalStyles.modalClose}
@@ -108,7 +113,7 @@ export default function TryOnModal({
               color: "var(--gold)",
             }}
           >
-            {t.title}
+            <span {...titleProps}>{t.title}</span>
           </div>
         </div>
 

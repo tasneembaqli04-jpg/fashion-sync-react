@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  getNotificationSettings,
+  setNotificationSettings,
+} from "../../../services/settings/notificationSettingsService";
+import { validateBusinessHours as checkHours } from "../../../functions/manager/businessHoursPolicy";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
@@ -195,8 +200,34 @@ export default function SettingsView({
     );
   }
 
+  // One message for every failed write on this screen. A confirmation shown
+  // without checking the write meant a manager could set opening hours, see
+  // "saved", and find the old hours still in place on the next visit.
+  const [saveError, setSaveError] = useState("");
+
+  function reportSaveFailure(error) {
+    console.error("Settings could not be saved:", error);
+    setSaveError(t.saveFailed);
+    setTimeout(() => setSaveError(""), 4000);
+  }
+
   async function handleSaveHours() {
-    await setBusinessHours({ days });
+    const problem = checkHours(days, t.hoursErrors, dict.manager.settings.dayNames);
+
+    if (problem) {
+      setSaveError(problem);
+      setTimeout(() => setSaveError(""), 5000);
+      return;
+    }
+
+    try {
+      await setBusinessHours({ days });
+    } catch (error) {
+      reportSaveFailure(error);
+      return;
+    }
+
+    setSaveError("");
     setHoursSaved(true);
     setTimeout(() => setHoursSaved(false), 2500);
   }
@@ -207,15 +238,53 @@ export default function SettingsView({
   const [notifSaved, setNotifSaved] = useState(false);
 
   const handleSaveStore = async () => {
-    const finalAddressEn = await translateStoreAddress(address);
-    setAddressEn(finalAddressEn);
+    try {
+      const finalAddressEn = await translateStoreAddress(address);
+      setAddressEn(finalAddressEn);
 
-    await setStoreDetails({ storeName, phone, email, address, addressEn: finalAddressEn });
+      await setStoreDetails({
+        storeName,
+        phone,
+        email,
+        address,
+        addressEn: finalAddressEn,
+      });
+    } catch (error) {
+      reportSaveFailure(error);
+      return;
+    }
+
+    setSaveError("");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleSaveNotif = () => {
+  // Loaded from Firestore rather than held in component state. The panel used
+  // to show a saved confirmation without writing anything, so the preferences
+  // reverted on every reload and the alert builder never saw them.
+  useEffect(() => {
+    getNotificationSettings().then((settings) => {
+      setNotifLow(settings.lowStock);
+      setNotifOos(settings.outOfStock);
+      setNotifDemand(settings.highDemand);
+      setDemandThreshold(settings.demandThreshold);
+    });
+  }, []);
+
+  const handleSaveNotif = async () => {
+    try {
+      await setNotificationSettings({
+        lowStock: notifLow,
+        outOfStock: notifOos,
+        highDemand: notifDemand,
+        demandThreshold,
+      });
+    } catch (error) {
+      reportSaveFailure(error);
+      return;
+    }
+
+    setSaveError("");
     setNotifSaved(true);
     setTimeout(() => setNotifSaved(false), 2000);
   };
@@ -434,6 +503,15 @@ export default function SettingsView({
             >
               {t.saveHoursButton}
             </button>
+
+            {saveError && (
+              <div
+                className={`${uiStyles.alert} ${uiStyles.aDanger}`}
+                style={{ marginTop: "0.75rem" }}
+              >
+                {saveError}
+              </div>
+            )}
 
             {hoursSaved && (
               <div

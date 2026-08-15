@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import styles from "../../styles/Home.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 import {
@@ -24,6 +25,10 @@ export default function EmailVerificationModal({
 }) {
   const { t: dict, lang } = useLanguage();
   const t = dict.home.verification;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen,
+    onClose,
+  });
 
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -111,14 +116,14 @@ export default function EmailVerificationModal({
   return (
     <div className={`${styles.fsModal} ${styles.show}`}>
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={styles.fsModalCard}
-        role="dialog"
-        aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.fsModalHeader}>
-          <h3>{t.title}</h3>
-          <button className={styles.fsClose} onClick={onClose} aria-label="close">
+          <h3 {...titleProps}>{t.title}</h3>
+          <button className={styles.fsClose} onClick={onClose} aria-label={t.close}>
             ✕
           </button>
         </div>

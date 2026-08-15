@@ -39,6 +39,19 @@ import { getStoreDetails } from "../services/settings/storeDetailsService";
 import { auth } from "../firebase";
 import { useLanguage } from "../translations/LanguageProvider";
 import { useDialog } from "../components/common/DialogProvider";
+/**
+ * Raised when the cart turns out to be empty at the moment of payment.
+ *
+ * A distinct type rather than a message, so the dialog below can recognise the
+ * one failure it has wording for without matching on text.
+ */
+class EmptyCartError extends Error {
+  constructor() {
+    super("Cart is empty, cannot create an order");
+    this.name = "EmptyCartError";
+  }
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { alertDialog } = useDialog();
@@ -429,7 +442,7 @@ export default function Checkout() {
         }
 
         if (orderItems.length === 0) {
-          throw new Error("העגלה ריקה, אי אפשר ליצור הזמנה");
+          throw new EmptyCartError();
         }
 
         const orderSubtotal = getSubtotal(orderItems);
@@ -506,44 +519,64 @@ export default function Checkout() {
         };
 
         await saveReceiptAndOrder(receipt);
-        await decrementProductsStock(orderItems);
-        sendOrderConfirmationEmail({
-          toEmail: formData.email,
-          lang,
-          order: {
-            id: receipt.id,
-            customerName: formData.firstName || "",
-            items: orderItems,
-            total: orderTotal,
-            isPickup: selectedShipping?.id === "pickup",
-          },
-        });
 
-        const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
-        if (usedCouponCode && orderDiscountAmount > 0) {
-          await logCouponUsage({
-            code: usedCouponCode,
-            email: formData.email,
-            orderId: receipt.id,
-            discountAmount: orderDiscountAmount,
+        // Everything below runs against an order that already exists. Sharing
+        // the outer catch meant a failure in any of it told the customer her
+        // order had not been saved, left her on the payment step, and invited
+        // her to pay again, creating a second order for the same basket.
+        //
+        // These are consequences of the order rather than conditions for it,
+        // so they get their own catch: the failure is recorded for the manager
+        // to sort out, and the customer still reaches her confirmation.
+        try {
+          await decrementProductsStock(orderItems);
+
+          sendOrderConfirmationEmail({
+            toEmail: formData.email,
+            lang,
+            order: {
+              id: receipt.id,
+              customerName: formData.firstName || "",
+              items: orderItems,
+              total: orderTotal,
+              isPickup: selectedShipping?.id === "pickup",
+            },
           });
-        }
 
-        if (orderPointsRedeemed > 0) {
-          await redeemLoyaltyPoints(realAuthEmail, orderPointsRedeemed);
-        }
+          const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
+          if (usedCouponCode && orderDiscountAmount > 0) {
+            await logCouponUsage({
+              code: usedCouponCode,
+              email: formData.email,
+              orderId: receipt.id,
+              discountAmount: orderDiscountAmount,
+            });
+          }
 
-        if (orderGiftCardCode && orderGiftCardDiscount > 0) {
-          await redeemGiftCardAmount(orderGiftCardCode, orderGiftCardDiscount);
-          localStorage.removeItem(LS_KEYS.GIFT_CARD_CODE);
-          localStorage.removeItem(LS_KEYS.GIFT_CARD_DISCOUNT);
-        }
+          if (orderPointsRedeemed > 0) {
+            await redeemLoyaltyPoints(realAuthEmail, orderPointsRedeemed);
+          }
 
-        if (checkoutGiftCardCode && checkoutGiftCardDiscount > 0) {
-          await redeemGiftCardAmount(checkoutGiftCardCode, checkoutGiftCardDiscount);
-        }
+          if (orderGiftCardCode && orderGiftCardDiscount > 0) {
+            await redeemGiftCardAmount(orderGiftCardCode, orderGiftCardDiscount);
+            localStorage.removeItem(LS_KEYS.GIFT_CARD_CODE);
+            localStorage.removeItem(LS_KEYS.GIFT_CARD_DISCOUNT);
+          }
 
-        await clearCheckoutCart(realAuthEmail);
+          if (checkoutGiftCardCode && checkoutGiftCardDiscount > 0) {
+            await redeemGiftCardAmount(
+              checkoutGiftCardCode,
+              checkoutGiftCardDiscount,
+            );
+          }
+
+          await clearCheckoutCart(realAuthEmail);
+        } catch (followUpError) {
+          console.error(
+            "Order was saved; a follow-up step failed:",
+            followUpError,
+          );
+        }
 
         setProcessing(false);
 
@@ -565,11 +598,18 @@ export default function Checkout() {
         // so. One line, because the error object already carries its stack.
         console.error("Order could not be saved:", error);
         setProcessing(false);
+
+        // Only a failure the code raised on purpose has wording fit to show.
+        // Anything else carries a message written by Firestore or the browser,
+        // in whatever language and jargon it chose, so it is replaced by the
+        // general apology rather than put in front of the customer.
         alertDialog(
-          dict.customer.dialogs.orderSaveError.replace(
-            "{message}",
-            error?.message || dict.customer.dialogs.unknownError,
-          ),
+          error instanceof EmptyCartError
+            ? dict.customer.dialogs.emptyCart
+            : dict.customer.dialogs.orderSaveError.replace(
+                "{message}",
+                dict.customer.dialogs.unknownError,
+              ),
         );
       }
     }, 1500);

@@ -1,4 +1,5 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
 
@@ -15,6 +16,10 @@ export default function PreCheckoutFeedback({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.preCheckoutFeedback;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: skipToCheckout,
+  });
 
   const topics = [
     t.topicDesign,
@@ -31,8 +36,8 @@ export default function PreCheckoutFeedback({
       id="pre-checkout-feedback"
       style={{ display: open ? "flex" : "none" }}
     >
-      <div className={modalStyles.pcfBox}>
-        <div className={modalStyles.pcfTitle}>{t.title}</div>
+      <div ref={dialogRef} {...dialogProps} className={modalStyles.pcfBox}>
+        <div className={modalStyles.pcfTitle}><span {...titleProps}>{t.title}</span></div>
 
         <div className={modalStyles.pcfSub}>
           {t.subtitle}

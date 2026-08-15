@@ -35,21 +35,22 @@ export function buildGiftCardPreview({ amount, customAmount, name, message }) {
  * @param {string} options.email - Buyer email. Required, so the cart can be saved.
  * @param {Array} options.cart - Current cart.
  * @returns {Promise<{ok: boolean, error?: string, code?: string, nextCart?: Array}>}
- * Failure carries a ready-to-display Hebrew message; success carries the new code and cart.
+ * Failure carries a reason code rather than a sentence, because this layer has
+ * no access to the chosen language. The page maps the code to wording.
  */
 export async function buyGiftCard({ amount, customAmount, name, message, email, cart }) {
   const finalAmount = amount === "other" ? Number(customAmount) : Number(amount);
 
   if (!name.trim()) {
-    return { ok: false, error: "נא להזין שם מקבל." };
+    return { ok: false, reason: "recipientRequired" };
   }
 
   if (!finalAmount || finalAmount < 10) {
-    return { ok: false, error: "נא להזין סכום תקין (מינימום ₪10)." };
+    return { ok: false, reason: "invalidAmount" };
   }
 
   if (!email) {
-    return { ok: false, error: "יש להתחבר כדי לרכוש כרטיס מתנה." };
+    return { ok: false, reason: "loginRequired" };
   }
 
   const gcCode = "GC-" + Math.random().toString(36).slice(2, 10).toUpperCase();

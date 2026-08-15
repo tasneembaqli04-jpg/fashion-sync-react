@@ -1,4 +1,5 @@
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import {
   getItemName,
   getItemSize,
@@ -7,6 +8,10 @@ import {
 export default function OrderDetailsModal({ open, order, onClose }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.orderDetailsModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: onClose,
+  });
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   function fmtDate(value) {
@@ -113,6 +118,8 @@ export default function OrderDetailsModal({ open, order, onClose }) {
       }}
     >
       <div
+        ref={dialogRef}
+        {...dialogProps}
         style={{
           background: "var(--surface)",
           color: "var(--text)",
@@ -150,7 +157,7 @@ export default function OrderDetailsModal({ open, order, onClose }) {
           ✕
         </button>
 
-        <h2 style={{ marginBottom: "4px" }}>{t.title}</h2>
+        <h2 style={{ marginBottom: "4px" }}><span {...titleProps}>{t.title}</span></h2>
         <p style={{ opacity: 0.7, marginTop: 0 }}>{order.id}</p>
 
         <p>

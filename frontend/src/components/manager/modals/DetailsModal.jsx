@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import { useDialog } from "../../common/DialogProvider";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { translateProductFields } from "../../../services/translation/translationService";
-import { useEscapeKey } from "../../../hooks/useEscapeKey";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -61,6 +61,10 @@ export default function DetailsModal({
   const { alertDialog } = useDialog();
   const { t: dict } = useLanguage();
   const t = dict.manager.detailsModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: isOpen,
+    onClose: onClose,
+  });
 
   const SEASONS = [
     { value: "summer", label: t.seasonSummer },
@@ -129,7 +133,6 @@ export default function DetailsModal({
   const usesVariants = variantsDraft.length > 0;
   const displayedStock = usesVariants ? totalStock : simpleStock;
 
-  useEscapeKey(isOpen, onClose);
   if (!isOpen || !product) return null;
 
   const seasonStyle = SEASON_COLORS[season] || {};
@@ -284,14 +287,14 @@ export default function DetailsModal({
         theme === "light" ? modalStyles.light : ""
       }`}
     >
-      <div className={modalStyles.detailsModalBox}>
+      <div ref={dialogRef} {...dialogProps} className={modalStyles.detailsModalBox}>
         <button className={modalStyles.modalCloseBtn} onClick={onClose}>
           ✕
         </button>
 
         <div className={modalStyles.detailsTopSection}>
           <div className={modalStyles.detailsTopRight}>
-            <div className={modalStyles.detailsTitle}>
+            <div {...titleProps} className={modalStyles.detailsTitle}>
                 {t.titlePrefix} {name || product.name}
             </div>
 

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import { useLanguage } from "../../translations/LanguageProvider";
 
 const DialogContext = createContext(null);
@@ -14,6 +15,14 @@ export const globalDialog = {
 export function DialogProvider({ children }) {
   const { lang, t: dict } = useLanguage();
   const [dialogState, setDialogState] = useState(null);
+
+  // Escape answers a confirm the same way the cancel button does, and an
+  // alert the same way its single button does, which is what a keyboard user
+  // expects from a dialog that is blocking the page.
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: Boolean(dialogState),
+    onClose: () => handleClose(dialogState?.type !== "confirm"),
+  });
 
   const alertDialog = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
@@ -69,6 +78,8 @@ export function DialogProvider({ children }) {
           }}
         >
           <div
+            ref={dialogRef}
+            {...dialogProps}
             onClick={(e) => e.stopPropagation()}
             dir={lang === "he" ? "rtl" : "ltr"}
             style={{
@@ -90,6 +101,7 @@ export function DialogProvider({ children }) {
             `}</style>
 
             <div
+              {...titleProps}
               style={{
                 color: "var(--text, #eaeaf0)",
                 fontFamily: "Alef, sans-serif",

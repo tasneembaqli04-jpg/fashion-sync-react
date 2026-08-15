@@ -1,4 +1,5 @@
 import styles from "../../styles/customer/OutfitProductsCatalog.module.scss";
+import { useLanguage } from "../../translations/LanguageProvider";
 
 export default function OutfitProductsCatalog({
   products = [],
@@ -9,6 +10,8 @@ export default function OutfitProductsCatalog({
   // moment a caller forgot to.
   title = "",
 }) {
+  const { t: dict } = useLanguage();
+
   if (!Array.isArray(products) || products.length === 0) {
     return null;
   }
@@ -44,7 +47,7 @@ export default function OutfitProductsCatalog({
               className={styles.addToCartBtn}
               onClick={() => openProductModal?.(product.code)}
             >
-              🛒 הוסף לסל
+              {dict.customer.productCard.addToCart}
             </button>
           </div>
         ))}

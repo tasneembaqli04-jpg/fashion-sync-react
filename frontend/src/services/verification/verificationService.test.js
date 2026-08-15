@@ -34,6 +34,7 @@ const {
   verifyCode,
   isEmailVerified,
   CODE_TTL_MS,
+  CODE_TTL_MINUTES,
   PREVIOUS_CODE_GRACE_MS,
   MAX_SENDS_PER_WINDOW,
   SEND_WINDOW_MS,
@@ -53,8 +54,15 @@ afterEach(() => {
 });
 
 describe("the three timings and how they relate", () => {
-  it("gives the code ten minutes", () => {
-    expect(CODE_TTL_MS).toBe(10 * 60 * 1000);
+  it("gives the code five minutes", () => {
+    expect(CODE_TTL_MS).toBe(5 * 60 * 1000);
+  });
+
+  // The verification email states the lifetime, and takes the figure from
+  // here rather than writing it into a template once per language.
+  it("exposes the same lifetime in whole minutes for the email wording", () => {
+    expect(CODE_TTL_MINUTES).toBe(5);
+    expect(CODE_TTL_MINUTES * 60000).toBe(CODE_TTL_MS);
   });
 
   it("keeps a replaced code recognisable for one minute", () => {
@@ -71,9 +79,11 @@ describe("the three timings and how they relate", () => {
     expect(hintMs).toBeLessThan(CODE_TTL_MS);
   });
 
+  // The hint sends the customer to her spam folder, so there has to be a
+  // usable stretch of time left after it appears.
   it("leaves time to act on the hint before the code dies", () => {
     const hintMs = 180 * 1000;
-    expect(CODE_TTL_MS - hintMs).toBeGreaterThanOrEqual(5 * 60 * 1000);
+    expect(CODE_TTL_MS - hintMs).toBeGreaterThanOrEqual(2 * 60 * 1000);
   });
 });
 
@@ -105,7 +115,7 @@ describe("createAndSendVerificationCode", () => {
     expect(store.has(EMAIL)).toBe(true);
   });
 
-  it("sets the expiry ten minutes out", async () => {
+  it("sets the expiry five minutes out", async () => {
     const before = Date.now();
     await createAndSendVerificationCode(EMAIL, "Dana", "he");
     const { expiresAt } = store.get(EMAIL);
@@ -312,5 +322,31 @@ describe("isEmailVerified", () => {
   // Accounts predating verification have no document, and must keep working.
   it("is true when no document exists", async () => {
     await expect(isEmailVerified("legacy@example.com")).resolves.toBe(true);
+  });
+});
+
+describe("the email is told how long the code lasts", () => {
+  it("sends the lifetime in minutes with the request", async () => {
+    await createAndSendVerificationCode(EMAIL, "Dana", "he");
+
+    expect(sent[0].expiresInMinutes).toBe(CODE_TTL_MINUTES);
+  });
+
+  // The template used to state "one minute" in both languages while the code
+  // actually lasted longer, because the figure was written into the wording.
+  it("keeps the stated lifetime and the real one in step", async () => {
+    await createAndSendVerificationCode(EMAIL, "Dana", "he");
+
+    const { expiresAt, createdAt } = store.get(EMAIL);
+    const actualMinutes = (expiresAt - createdAt) / 60000;
+
+    expect(sent[0].expiresInMinutes).toBe(actualMinutes);
+  });
+
+  it("sends it on a resend too", async () => {
+    await createAndSendVerificationCode(EMAIL, "Dana", "en");
+    await resendVerificationCode(EMAIL, "Dana", "en");
+
+    expect(sent[1].expiresInMinutes).toBe(CODE_TTL_MINUTES);
   });
 });

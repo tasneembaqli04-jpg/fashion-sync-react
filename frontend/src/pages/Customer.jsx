@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRY_ON_ERRORS } from "../services/tryOn/tryOnErrors";
-import { getStoreDetails } from "../services/settings/storeDetailsService";
-import { getBusinessHours } from "../services/settings/businessHoursService";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/customer/Customer.module.scss";
 import { getOrdersByUser, cancelOrder } from "../services/orders/ordersService";
@@ -88,6 +86,14 @@ import TryOnModal from "../components/customer/TryOnModal";
 
 // Each Try-On error code maps to a key under customer.dialogs. A code with no
 // entry here falls back to the general message.
+// Each gift card refusal maps to a key under customer.giftCard. An unknown
+// reason falls back to the general message.
+const GIFT_CARD_ERROR_KEYS = {
+  recipientRequired: "errorRecipientRequired",
+  invalidAmount: "errorInvalidAmount",
+  loginRequired: "errorLoginRequired",
+};
+
 const TRY_ON_ERROR_KEYS = {
   [TRY_ON_ERRORS.NO_PRODUCT]: "tryOnErrorProductNotFound",
   [TRY_ON_ERRORS.NO_PRODUCT_IMAGE]: "tryOnErrorProductImageMissing",
@@ -139,23 +145,12 @@ export default function Customer() {
   const [isGuest, setIsGuest] = useState(false);
 
   const [products, setProducts] = useState([]);
-  const [storeAddressForChat, setStoreAddressForChat] = useState("");
-  const [hoursTextForChat, setHoursTextForChat] = useState("");
 
-  useEffect(() => {
-    getStoreDetails().then((details) => {
-      if (details) setStoreAddressForChat(details.address || "");
-    });
+  // The store address and opening hours were fetched here to feed the offline
+  // fallback replies. That fallback no longer answers questions, so the two
+  // reads went with it. The chat service reads both from Firestore itself when
+  // it is reachable, which is the only place they were ever accurate.
 
-    getBusinessHours().then((hours) => {
-      if (!hours?.days) return;
-      const summary = hours.days
-        .filter((d) => d.open)
-        .map((d) => `${dict.manager.settings.dayNames[d.key]} ${d.openTime}–${d.closeTime}`)
-        .join(", ");
-      setHoursTextForChat(summary);
-    });
-  }, []);
   const [featuredCode, setFeaturedCode] = useState("");
   const [cart, setCart] = useState(loadCart());
 
@@ -615,7 +610,7 @@ export default function Customer() {
           ...prev,
           {
             type: "bot",
-            html: "הנה המחשת הלוק שביקשת:",
+            html: dict.customer.chat.outfitImageReady,
             imageUrl: result.image.dataUrl,
             imageMimeType: result.image.mimeType || "image/png",
             products: result.products || [],
@@ -647,23 +642,18 @@ export default function Customer() {
           ...prev,
           {
             type: "bot",
-            html: "הבקשה לקחה יותר מדי זמן. נסי שוב.",
+            html: dict.customer.chat.requestTimedOut,
           },
         ]);
 
         return;
       }
 
-      const fallbackReply = getReply(text, products, {
-        storeAddress: storeAddressForChat,
-        hoursText: hoursTextForChat,
-      });
-
       setChatMessages((prev) => [
         ...prev,
         {
           type: "bot",
-          html: fallbackReply,
+          html: getReply(dict),
         },
       ]);
     } finally {
@@ -1078,7 +1068,10 @@ export default function Customer() {
     });
 
     if (!result.ok) {
-      setGiftError(result.error);
+      setGiftError(
+        dict.customer.giftCard[GIFT_CARD_ERROR_KEYS[result.reason]] ||
+          dict.customer.dialogs.unknownError
+      );
       return;
     }
 

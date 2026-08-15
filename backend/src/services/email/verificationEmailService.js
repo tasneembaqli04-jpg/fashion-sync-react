@@ -1,8 +1,45 @@
 const {sendMail} = require("./gmailMailer");
 const {isEnglish, dir} = require("./emailLangHelpers");
 
-function buildVerificationEmailHtml(code, lang) {
+/**
+ * Default lifetime, used only when the caller does not state one.
+ *
+ * The real figure is owned by the frontend and travels with the request, so
+ * this template never has to be edited when the lifetime changes. The fallback
+ * exists for an older client that still sends nothing.
+ */
+const DEFAULT_EXPIRY_MINUTES = 5;
+
+/**
+ * Renders the lifetime as a phrase, since one minute reads differently from
+ * several in both languages.
+ *
+ * @param {number} minutes - Whole minutes the code stays valid.
+ * @param {string} lang - Response language ("he" or "en").
+ * @return {string} The phrase to drop into the sentence.
+ */
+function formatValidity(minutes, lang) {
+  if (isEnglish(lang)) {
+    return minutes === 1 ? "one minute" : `${minutes} minutes`;
+  }
+
+  return minutes === 1 ? "לדקה אחת" : `ל-${minutes} דקות`;
+}
+
+/**
+ * Builds the verification email body.
+ *
+ * @param {string} code - The six digit code.
+ * @param {string} lang - Response language ("he" or "en").
+ * @param {number} expiresInMinutes - How long the code stays valid.
+ * @return {string} The email HTML.
+ */
+function buildVerificationEmailHtml(code, lang, expiresInMinutes) {
   const en = isEnglish(lang);
+  const minutes = Number(expiresInMinutes) > 0 ?
+    Math.round(Number(expiresInMinutes)) :
+    DEFAULT_EXPIRY_MINUTES;
+  const validity = formatValidity(minutes, lang);
 
   if (en) {
     return `
@@ -13,7 +50,7 @@ function buildVerificationEmailHtml(code, lang) {
         <div style="background: #f5f0e8; border-radius: 10px; padding: 18px; text-align: center; margin: 20px 0;">
           <span style="font-size: 2rem; font-weight: 900; letter-spacing: 6px; color: #1a1a1a;">${code}</span>
         </div>
-        <p>The code is valid for one minute. If you didn't request this code, you can ignore this email.</p>
+        <p>The code is valid for ${validity}. If you didn't request this code, you can ignore this email.</p>
         <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
       </div>
     `;
@@ -27,13 +64,13 @@ function buildVerificationEmailHtml(code, lang) {
       <div style="background: #f5f0e8; border-radius: 10px; padding: 18px; text-align: center; margin: 20px 0;">
         <span style="font-size: 2rem; font-weight: 900; letter-spacing: 6px; color: #1a1a1a;">${code}</span>
       </div>
-      <p>הקוד תקף לדקה אחת. אם לא ביקשת קוד זה, אפשר להתעלם מהמייל הזה.</p>
+      <p>הקוד תקף ${validity}. אם לא ביקשת קוד זה, אפשר להתעלם מהמייל הזה.</p>
       <p style="color: #888; font-size: 0.85em; margin-top: 24px;">FashionSync</p>
     </div>
   `;
 }
 
-async function sendVerificationCodeEmail({toEmail, code, lang}) {
+async function sendVerificationCodeEmail({toEmail, code, lang, expiresInMinutes}) {
   if (!toEmail || typeof toEmail !== "string") {
     throw new Error("Recipient email is required");
   }
@@ -49,7 +86,7 @@ async function sendVerificationCodeEmail({toEmail, code, lang}) {
   return await sendMail({
     to: toEmail,
     subject,
-    html: buildVerificationEmailHtml(code, lang),
+    html: buildVerificationEmailHtml(code, lang, expiresInMinutes),
   });
 }
 

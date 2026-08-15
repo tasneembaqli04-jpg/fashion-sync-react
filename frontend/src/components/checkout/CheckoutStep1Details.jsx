@@ -25,9 +25,13 @@ export default function CheckoutStep1Details({
               value={form.firstName}
               onChange={onChange}
               className={errors.firstName ? styles.invalid : ""}
+              aria-invalid={Boolean(errors.firstName)}
+              aria-describedby={errors.firstName ? "f-first-error" : undefined}
             />
             {errors.firstName && (
-              <div className={styles.fieldErr}>{t.requiredField}</div>
+              <div id="f-first-error" className={styles.fieldErr}>
+                {t.requiredField}
+              </div>
             )}
           </div>
 
@@ -40,9 +44,13 @@ export default function CheckoutStep1Details({
               value={form.lastName}
               onChange={onChange}
               className={errors.lastName ? styles.invalid : ""}
+              aria-invalid={Boolean(errors.lastName)}
+              aria-describedby={errors.lastName ? "f-last-error" : undefined}
             />
             {errors.lastName && (
-              <div className={styles.fieldErr}>{t.requiredField}</div>
+              <div id="f-last-error" className={styles.fieldErr}>
+                {t.requiredField}
+              </div>
             )}
           </div>
         </div>
@@ -58,9 +66,13 @@ export default function CheckoutStep1Details({
             readOnly
             style={{ opacity: 0.75, cursor: "not-allowed" }}
             className={errors.email ? styles.invalid : ""}
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "f-email-error" : undefined}
           />
           {errors.email && (
-            <div className={styles.fieldErr}>{t.invalidEmail}</div>
+            <div id="f-email-error" className={styles.fieldErr}>
+              {t.invalidEmail}
+            </div>
           )}
         </div>
 
@@ -73,9 +85,13 @@ export default function CheckoutStep1Details({
             value={form.phone}
             onChange={onChange}
             className={errors.phone ? styles.invalid : ""}
+            aria-invalid={Boolean(errors.phone)}
+            aria-describedby={errors.phone ? "f-phone-error" : undefined}
           />
           {errors.phone && (
-            <div className={styles.fieldErr}>{t.invalidPhone}</div>
+            <div id="f-phone-error" className={styles.fieldErr}>
+              {t.invalidPhone}
+            </div>
           )}
         </div>
       </div>
@@ -92,9 +108,13 @@ export default function CheckoutStep1Details({
             value={form.street}
             onChange={onChange}
             className={errors.street ? styles.invalid : ""}
+            aria-invalid={Boolean(errors.street)}
+            aria-describedby={errors.street ? "f-street-error" : undefined}
           />
           {errors.street && (
-            <div className={styles.fieldErr}>{t.requiredField}</div>
+            <div id="f-street-error" className={styles.fieldErr}>
+              {t.requiredField}
+            </div>
           )}
         </div>
 
@@ -108,9 +128,13 @@ export default function CheckoutStep1Details({
               value={form.city}
               onChange={onChange}
               className={errors.city ? styles.invalid : ""}
+              aria-invalid={Boolean(errors.city)}
+              aria-describedby={errors.city ? "f-city-error" : undefined}
             />
             {errors.city && (
-              <div className={styles.fieldErr}>{t.requiredField}</div>
+              <div id="f-city-error" className={styles.fieldErr}>
+                {t.requiredField}
+              </div>
             )}
           </div>
 

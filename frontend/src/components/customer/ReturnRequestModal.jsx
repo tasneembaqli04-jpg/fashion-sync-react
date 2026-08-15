@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -12,6 +13,7 @@ export default function ReturnRequestModal({
   onSubmit,
 }) {
   const { t: dict, lang } = useLanguage();
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({ onClose });
   const t = dict.customer.returns;
 
   const REASONS = [
@@ -80,7 +82,12 @@ export default function ReturnRequestModal({
 
   return (
     <div className={`${modalStyles.modalWrap} ${modalStyles.open}`}>
-      <div className={modalStyles.modalBox} style={{ width: "460px" }}>
+      <div
+        ref={dialogRef}
+        {...dialogProps}
+        className={modalStyles.modalBox}
+        style={{ width: "460px" }}
+      >
         <button className={modalStyles.modalClose} onClick={onClose}>
           ✕
         </button>
@@ -93,7 +100,7 @@ export default function ReturnRequestModal({
             marginBottom: "0.8rem",
           }}
         >
-          {t.modalTitle}
+          <span {...titleProps}>{t.modalTitle}</span>
         </div>
 
         {availableItems.length === 0 ? (

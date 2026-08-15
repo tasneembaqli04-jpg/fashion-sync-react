@@ -1,4 +1,5 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import { useLanguage } from "../../translations/LanguageProvider";
 
 function WhatsAppIcon() {
@@ -37,13 +38,22 @@ export default function ShareModal({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.shareModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: closeShareModal,
+  });
 
   return (
     <div
       className={`${modalStyles.modalWrap} ${open ? modalStyles.open : ""}`}
       id="share-modal"
     >
-      <div className={modalStyles.modalBox} style={{ width: "460px" }}>
+      <div
+        ref={dialogRef}
+        {...dialogProps}
+        className={modalStyles.modalBox}
+        style={{ width: "460px" }}
+      >
         <button className={modalStyles.modalClose} onClick={closeShareModal}>
           ✕
         </button>
@@ -56,7 +66,7 @@ export default function ShareModal({
             marginBottom: "0.5rem",
           }}
         >
-          {t.title}
+          <span {...titleProps}>{t.title}</span>
         </div>
 
         <div

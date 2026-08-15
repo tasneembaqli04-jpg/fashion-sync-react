@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import { createPortal } from "react-dom";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import modalStyles from "../../../styles/manager/ManagerModals.module.scss";
@@ -7,6 +8,10 @@ import { useLanguage } from "../../../translations/LanguageProvider";
 export default function ScanModal({ open, onClose, onCodeScanned }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.scanModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: onClose,
+  });
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -38,6 +43,14 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
 
     return () => clearTimeout(timer);
   }, [open, mode]);
+
+  // Releases the camera when the component goes away while still open. The
+  // effect above only tears down when `open` turns false, so navigating off
+  // the management screen mid-scan left the camera running with its indicator
+  // light on. stopAll only touches refs, so capturing it once is safe.
+  useEffect(() => {
+    return () => stopAll();
+  }, []);
 
   function getReader() {
     if (!codeReaderRef.current) {
@@ -103,10 +116,14 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       streamRef.current = videoRef.current?.srcObject || null;
     } catch (err) {
       console.error("Camera start error:", err);
+      // Anything other than a refused permission gets the general wording.
+      // The browser writes err.message in its own language and its own
+      // vocabulary ("Could not start video source"), which is not something to
+      // put on screen; it stays in the console above for diagnosis.
       if (err.name === "NotAllowedError") {
         setCamStatus(t.cameraPermissionNeeded);
       } else {
-        setCamStatus("⚠️ " + (err.message || err.name));
+        setCamStatus(t.cameraError);
       }
     }
   }
@@ -186,6 +203,8 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
       }}
     >
       <div
+        ref={dialogRef}
+        {...dialogProps}
         className={modalStyles.modalBox}
         style={{
           width: "100%",
@@ -208,7 +227,7 @@ export default function ScanModal({ open, onClose, onCodeScanned }) {
           className={modalStyles.modalTitle}
           style={{ marginBottom: "0.3rem" }}
         >
-          {t.title}
+          <span {...titleProps}>{t.title}</span>
         </div>
 
         <p

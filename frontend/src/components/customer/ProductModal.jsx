@@ -1,7 +1,7 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
+import { useModalA11y } from "../../hooks/useModalA11y";
 import baseStyles from "../../styles/customer/Customer.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
-import { useEscapeKey } from "../../hooks/useEscapeKey";
 
 const CATEGORY_SIZE_OPTIONS = {
   חולצות: ["S", "M", "L", "XL"],
@@ -35,7 +35,10 @@ export default function ProductModal({
 }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.customer.productModal;
-  useEscapeKey(open, closeProductModal);
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen: open,
+    onClose: closeProductModal,
+  });
   if (!product) return null;
 
   const isOnSale =
@@ -90,7 +93,7 @@ export default function ProductModal({
       className={`${modalStyles.modalWrap} ${open ? modalStyles.open : ""}`}
       id="product-modal"
     >
-      <div className={modalStyles.modalBox}>
+      <div ref={dialogRef} {...dialogProps} className={modalStyles.modalBox}>
         <button
           className={modalStyles.modalClose}
           onClick={closeProductModal}
@@ -131,7 +134,7 @@ export default function ProductModal({
 
           <div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: ".5rem" }}>
-              <div className={modalStyles.pdTitle}>
+              <div {...titleProps} className={modalStyles.pdTitle}>
                 {lang === "en" && product.nameEn ? product.nameEn : product.name}
               </div>
               <div style={{ display: "flex", gap: ".4rem", flexShrink: 0 }}>

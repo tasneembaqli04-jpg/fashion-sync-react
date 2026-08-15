@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useModalA11y } from "../../../hooks/useModalA11y";
 import styles from "../../../styles/manager/ManagerModals.module.scss";
 import ScanModal from "./ScanModal";
 import { CATEGORIES } from "../../../data/categories";
@@ -32,6 +33,13 @@ export default function AddProductModal({
 }) {
   const { t: dict } = useLanguage();
   const t = dict.manager.addProductModal;
+  const { dialogRef, dialogProps, titleProps } = useModalA11y({
+    isOpen,
+    // Wrapped rather than passed directly: handleClose is declared further
+    // down as a const, so naming it here would read it before initialisation.
+    // The arrow defers that read until Escape is actually pressed.
+    onClose: () => handleClose(),
+  });
 
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -80,6 +88,21 @@ export default function AddProductModal({
 
     setForm((prev) => ({ ...prev, code: `${prefix}${nextNumber}` }));
   }, [isOpen, products]);
+
+  // Releases the camera when the component goes away with it still running.
+  // Every other path stops it explicitly, but an unmount, such as leaving the
+  // management screen, went through none of them and left the camera on.
+  //
+  // Placed above the early return below: a hook after it would be skipped
+  // whenever the modal is closed, which changes the hook order between renders.
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -172,7 +195,10 @@ export default function AddProductModal({
         }
       }, 50);
     } catch (err) {
-      setError(t.cameraAccessError + (err.message || err.name));
+      // The browser writes err.message in its own language and vocabulary, so
+      // it belongs in the console rather than on screen.
+      console.warn(`Camera unavailable: ${err.message || err.name}`);
+      setError(t.cameraAccessError);
     }
   };
 
@@ -289,7 +315,7 @@ export default function AddProductModal({
     <div
       className={`${styles.modalOverlay} ${theme === "light" ? styles.light : ""}`}
     >
-      <div className={styles.addProductModal}>
+      <div ref={dialogRef} {...dialogProps} className={styles.addProductModal}>
         <button className={styles.modalCloseBtn} onClick={handleClose}>
           ✕
         </button>
@@ -322,7 +348,7 @@ export default function AddProductModal({
               margin: 0,
             }}
           >
-            {t.title}
+            <span {...titleProps}>{t.title}</span>
           </h2>
         </div>
 
