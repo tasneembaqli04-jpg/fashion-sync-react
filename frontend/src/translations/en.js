@@ -312,7 +312,6 @@ export const en = {
       policyAboutStoreHint: "Use {address} wherever you want the real address (from the details above) to appear automatically.",
       policyShippingLabel: "Shipping Policy (4 lines)",
       policyPrivacyLabel: "Privacy Policy",
-      policyPhoneLabel: "Contact Phone",
       policySaveButton: "💾 Save Policy Content",
       policySavingButton: "⏳ Saving & translating...",
       policySaved: "✅ Policy content saved and translated",
@@ -863,20 +862,20 @@ export const en = {
       aboutStoreText: "Our store operates online only. The address {address} is used for pre-arranged self-pickup only — there is no physical storefront for walk-in customers.",
       returnsTitle: "🔄 Return Policy",
       returnsText:
-        'You can request a return for delivered items, per item, from the "My Orders" page, within 7 days of delivery only. Our team reviews each request, and you\'ll get an update in the app and by email on whether it was approved or rejected. If approved, you\'ll receive store credit as a gift card for the value of the returned item, usable on your next purchase.',
+        'You can request a return for delivered items, per item, from the "My Orders" page, within {days} days of delivery only. Our team reviews each request, and you\'ll get an update in the app and by email on whether it was approved or rejected. If approved, you\'ll receive store credit as a gift card for the value of the returned item, usable on your next purchase.',
       cancellationTitle: "❌ Order Cancellation Policy",
       cancellationText:
-        'You can cancel an order entirely and immediately, with no approval needed from our team, within 24 hours of placing it — from the "My Orders" page. After 24 hours, the cancellation option is no longer available.',
+        'You can cancel an order entirely and immediately, with no approval needed from our team, within {hours} hours of placing it — from the "My Orders" page. After {hours} hours, the cancellation option is no longer available.',
       shippingTitle: "🚚 Shipping Policy",
-      shippingLine1: "Standard shipping: 5–7 business days — ₪25 (free for orders over ₪200)",
+      shippingLine1: "Standard shipping: 5–7 business days — ₪25 (free for orders over ₪{threshold})",
       shippingLine2: "Express shipping: 2–3 business days — ₪29",
       shippingLine3: "Same-day delivery: by 23:59 today — ₪59 (central area only)",
       shippingLine4: "Self pickup: tomorrow 10:00–20:00, free — {address}",
       privacyTitle: "🔒 Privacy & Security",
       privacyLine1: "We do not store credit card details. All transactions are encrypted.",
       contactTitle: "📞 Contact Us",
-      contactPhone: "Phone: 054-1234567",
       contactEmailPrefix: "✉️ Email:",
+      contactPhonePrefix: "📞 Phone:",
       hoursPrefix: "🕒 Business hours:",
       contactEmail: "Email: support@fashionsync.co.il",
       contactNameLabel: "Name",
@@ -943,7 +942,7 @@ export const en = {
 
     returns: {
       requestButton: "🔄 Request Return",
-      returnWindowExpired: "The 7-day return window has ended",
+      returnWindowExpired: "The {days}-day return window has ended",
       alreadyRequested: "🔄 Return request sent",
       statusApproved: "✅ Return approved",
       statusRejected: "❌ Return rejected",
@@ -1078,7 +1077,7 @@ export const en = {
     authErrors: {
       wrongPassword: "Incorrect email or password",
       emailInUse: "An account with this email already exists",
-      weakPassword: "Password must be at least 6 characters",
+      weakPassword: "Password must be at least 8 characters",
       invalidEmail: "Invalid email address",
       tooManyRequests: "Too many attempts. Please try again later",
       genericError: "An error occurred, please try again",
@@ -1111,7 +1110,7 @@ export const en = {
     standard: {
       label: "Standard Shipping",
       days: "5–7 business days",
-      note: "Free for orders over ₪200",
+      note: "Free for orders over ₪{threshold}",
     },
     express: {
       label: "Express Shipping",

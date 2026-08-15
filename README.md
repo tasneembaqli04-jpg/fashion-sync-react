@@ -254,5 +254,6 @@ The system is complete and in use. These are the next steps identified for it, i
 - **Use transactions on shared counters,** so two concurrent updates to stock, loyalty points or a gift card balance cannot lose one of them.
 - **Enforce coupon usage server-side,** since the recorded usage is not currently read back to block reuse.
 - **Share the Hebrew search** between the catalogue and the assistant, so the same query behaves the same way in both.
+- **Move the shipping prices into settings.** The four methods and their prices live in `data/shippingOptions.js`, so changing a price needs a code change and a deploy. The rules built on them — the free-shipping threshold and the cancellation and return windows — are already single constants that the customer-facing wording is generated from.
 
 A fuller account of the known constraints, with the reasoning behind each, is given in the project report.

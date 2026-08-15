@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { POINT_REDEMPTION_VALUE } from "../data/storePolicy";
 import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
 import { useTryOn } from "../hooks/useTryOn";
@@ -423,7 +424,7 @@ export default function Customer() {
     });
   }, [rawStockAlerts, products]);
   const cartCount = getCartCount(cart);
-  const pointsDiscountAmount = appliedPointsRedeemed * 0.05;
+  const pointsDiscountAmount = appliedPointsRedeemed * POINT_REDEMPTION_VALUE;
   const { total } = getCartTotals(cart, appliedDiscount, pointsDiscountAmount);
 
   const realCurrentSeason = getCurrentSeason();
@@ -636,7 +637,7 @@ export default function Customer() {
 
     const { raw, discount } = getCartTotals(cart, appliedDiscount);
     const afterCoupon = Math.max(0, raw - discount);
-    const maxPointsUsable = Math.floor(afterCoupon / 0.05);
+    const maxPointsUsable = Math.floor(afterCoupon / POINT_REDEMPTION_VALUE);
 
     if (maxPointsUsable <= 0) {
       alertDialog(dict.customer.dialogs.cartAlreadyCovered);

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { withPolicyNumbers } from "../../data/storePolicy";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -589,7 +590,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
                     {hasAvailableItem && !withinReturnWindow && (
                       <span style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
-                        {rt.returnWindowExpired}
+                        {withPolicyNumbers(rt.returnWindowExpired)}
                       </span>
                     )}
                   </div>

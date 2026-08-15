@@ -1,8 +1,12 @@
 import { resolveTimestamp } from "../../utils/dates";
+import {
+  CANCEL_WINDOW_HOURS,
+  RETURN_WINDOW_DAYS,
+} from "../../data/storePolicy";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
-const CANCEL_WINDOW_MS = 24 * ONE_HOUR_MS;
-const RETURN_WINDOW_MS = 7 * 24 * ONE_HOUR_MS;
+const CANCEL_WINDOW_MS = CANCEL_WINDOW_HOURS * ONE_HOUR_MS;
+const RETURN_WINDOW_MS = RETURN_WINDOW_DAYS * 24 * ONE_HOUR_MS;
 
 // Orders carry two timestamps: `date` is stamped when the customer completes
 // the purchase, `createdAt` when the write reaches Firestore. The two differ by

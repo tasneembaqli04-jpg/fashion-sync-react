@@ -34,10 +34,14 @@ export default function SettingsView({
   const t = dict.manager.settings;
   const policyDefaults = dict.customer.policy;
 
-  const [storeName, setStoreName] = useState("FashionSync");
-  const [phone, setPhone] = useState("054-1234567");
-  const [email, setEmail] = useState("store@fashionsync.co.il");
-  const [address, setAddress] = useState("רחוב דיזנגוף 120, תל אביב");
+  // Store details start empty rather than on sample values. These are shown to
+  // customers on the policy page, so a field the manager has cleared has to
+  // look cleared: filling it back in with a placeholder would both hide that
+  // the change was saved and put a phone number nobody answers on the page.
+  const [storeName, setStoreName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [addressEn, setAddressEn] = useState("");
   const [saved, setSaved] = useState(false);
   const [translatingAddress, setTranslatingAddress] = useState(false);
@@ -45,10 +49,10 @@ export default function SettingsView({
   useEffect(() => {
     getStoreDetails().then((details) => {
       if (!details) return;
-      setStoreName(details.storeName || "FashionSync");
-      setPhone(details.phone || "054-1234567");
-      setEmail(details.email || "store@fashionsync.co.il");
-      setAddress(details.address || "רחוב דיזנגוף 120, תל אביב");
+      setStoreName(details.storeName || "");
+      setPhone(details.phone || "");
+      setEmail(details.email || "");
+      setAddress(details.address || "");
       setAddressEn(details.addressEn || "");
     });
   }, []);
@@ -70,7 +74,6 @@ export default function SettingsView({
   const [policyShipping3, setPolicyShipping3] = useState(policyDefaults.shippingLine3);
   const [policyShipping4, setPolicyShipping4] = useState(policyDefaults.shippingLine4);
   const [policyPrivacy, setPolicyPrivacy] = useState(policyDefaults.privacyLine1);
-  const [policyPhone, setPolicyPhone] = useState(policyDefaults.contactPhone);
   const [savingPolicy, setSavingPolicy] = useState(false);
   const [policySaved, setPolicySaved] = useState(false);
   const [translatingPolicy, setTranslatingPolicy] = useState(false);
@@ -83,7 +86,6 @@ export default function SettingsView({
   const [policyShipping3En, setPolicyShipping3En] = useState("");
   const [policyShipping4En, setPolicyShipping4En] = useState("");
   const [policyPrivacyEn, setPolicyPrivacyEn] = useState("");
-  const [policyPhoneEn, setPolicyPhoneEn] = useState("");
 
   useEffect(() => {
     getPolicyContent().then((content) => {
@@ -101,7 +103,6 @@ export default function SettingsView({
       setPolicyShipping3(content.shippingLine3 || policyDefaults.shippingLine3);
       setPolicyShipping4(content.shippingLine4 || policyDefaults.shippingLine4);
       setPolicyPrivacy(content.privacyLine1 || policyDefaults.privacyLine1);
-      setPolicyPhone(content.contactPhone || policyDefaults.contactPhone);
 
       setPolicyReturnsEn(content.returnsTextEn || "");
       setPolicyCancellationEn(content.cancellationTextEn || "");
@@ -111,7 +112,6 @@ export default function SettingsView({
       setPolicyShipping3En(content.shippingLine3En || "");
       setPolicyShipping4En(content.shippingLine4En || "");
       setPolicyPrivacyEn(content.privacyLine1En || "");
-      setPolicyPhoneEn(content.contactPhoneEn || "");
     });
     
   }, []);
@@ -129,7 +129,6 @@ export default function SettingsView({
       shippingLine3: policyShipping3,
       shippingLine4: policyShipping4,
       privacyLine1: policyPrivacy,
-      contactPhone: policyPhone,
     });
 
     const finalReturnsEn = translations.returnsTextEn;
@@ -140,7 +139,6 @@ export default function SettingsView({
     const finalShipping3En = translations.shippingLine3En;
     const finalShipping4En = translations.shippingLine4En;
     const finalPrivacyEn = translations.privacyLine1En;
-    const finalPhoneEn = translations.contactPhoneEn;
 
     setPolicyReturnsEn(finalReturnsEn);
     setPolicyCancellationEn(finalCancellationEn);
@@ -150,7 +148,6 @@ export default function SettingsView({
     setPolicyShipping3En(finalShipping3En);
     setPolicyShipping4En(finalShipping4En);
     setPolicyPrivacyEn(finalPrivacyEn);
-    setPolicyPhoneEn(finalPhoneEn);
 
     await setPolicyContent({
       returnsText: policyReturns,
@@ -169,8 +166,6 @@ export default function SettingsView({
       shippingLine4En: finalShipping4En,
       privacyLine1: policyPrivacy,
       privacyLine1En: finalPrivacyEn,
-      contactPhone: policyPhone,
-      contactPhoneEn: finalPhoneEn,
     });
 
     setTranslatingPolicy(false);
@@ -602,15 +597,6 @@ export default function SettingsView({
               />
             </div>
 
-            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
-              <div className={formStyles.fl}>{t.policyPhoneLabel}</div>
-              <input
-                className={formStyles.fi}
-                value={policyPhone}
-                onChange={(e) => setPolicyPhone(e.target.value)}
-                style={{ width: "100%" }}
-              />
-            </div>
 
             <div style={{ color: "var(--gold)", fontSize: "0.85rem", fontWeight: 700, marginTop: "0.5rem", marginBottom: "0.9rem" }}>
               {t.policyEnglishTitle}
@@ -688,15 +674,6 @@ export default function SettingsView({
               />
             </div>
 
-            <div className={formStyles.fg} style={{ marginBottom: "0.9rem" }}>
-              <div className={formStyles.fl}>{t.policyPhoneLabel} (EN)</div>
-              <input
-                className={formStyles.fi}
-                value={policyPhoneEn}
-                onChange={(e) => setPolicyPhoneEn(e.target.value)}
-                style={{ width: "100%" }}
-              />
-            </div>
 
             <button
               type="button"

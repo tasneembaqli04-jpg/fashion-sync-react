@@ -1,3 +1,4 @@
+import { FREE_SHIPPING_THRESHOLD } from "../../data/storePolicy";
 /**
  * Calculates the cart subtotal, before discounts or shipping.
  *
@@ -24,7 +25,8 @@ export function getDiscountAmount(subtotal = 0, discountPct = 0) {
 /**
  * Determines the shipping cost for the selected shipping method.
  *
- * Standard shipping is free once the subtotal reaches ₪200. Every other
+ * Standard shipping is free once the subtotal reaches the free-shipping
+ * threshold. Every other
  * method (express, same day, pickup) always charges its listed price,
  * regardless of the subtotal.
  *
@@ -35,7 +37,10 @@ export function getDiscountAmount(subtotal = 0, discountPct = 0) {
 export function getShippingCost(selectedShipping, subtotal = 0) {
   if (!selectedShipping) return 0;
 
-  if (selectedShipping.id === "standard" && subtotal >= 200) {
+  if (
+    selectedShipping.id === "standard" &&
+    subtotal >= FREE_SHIPPING_THRESHOLD
+  ) {
     return 0;
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { withPolicyNumbers } from "../../data/storePolicy";
 import commonStyles from "../../styles/customer/Customer.module.scss";
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -28,7 +29,14 @@ export default function CustomerPolicy({ show, currentUser }) {
     getStoreDetails().then(setStoreDetailsState);
   }, []);
 
+  // The rule numbers are filled in from the constants the logic uses, so the
+  // published policy cannot describe a window or a threshold the system no
+  // longer applies. Manager-edited text goes through the same substitution.
   function field(key) {
+    return withPolicyNumbers(rawField(key));
+  }
+
+  function rawField(key) {
     if (!policyContent) return t[key];
     const enKey = `${key}En`;
     if (lang === "en" && policyContent[enKey]) return policyContent[enKey];
@@ -135,7 +143,16 @@ export default function CustomerPolicy({ show, currentUser }) {
               <br />
             </>
           )}
-          {field("contactPhone")}
+          {/*
+            Phone, email and address all come from the store settings, so the
+            manager's entry is what the customer sees. A detail she has not
+            filled in is left out rather than replaced with a placeholder.
+          */}
+          {storeDetails?.phone && (
+            <>
+              {t.contactPhonePrefix} {storeDetails.phone}
+            </>
+          )}
           {hoursText && (
             <>
               <br />
