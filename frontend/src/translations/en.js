@@ -18,6 +18,8 @@ export const en = {
     required: "Required field",
     success: "Success",
     error: "An error occurred",
+    errorBoundaryTitle: "This part could not be displayed",
+    errorBoundaryMessage: "Please refresh the page, or go back and try again.",
   },
 
   manager: {

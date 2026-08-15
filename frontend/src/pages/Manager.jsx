@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import ErrorBoundary from "../components/common/ErrorBoundary";
 import { useNavigate } from "react-router-dom";
 import LoginOverlay from "../components/manager/LoginOverlay";
 import ManagerSidebar from "../components/manager/ManagerSidebar";
@@ -703,6 +704,16 @@ export default function Manager({ onPromote }) {
         />
 
         <div className={styles.content} ref={contentRef}>
+          {/*
+            One boundary around the views, keyed on the active view: a screen
+            that fails to render shows its message here while the sidebar and
+            topbar keep working, and moving to another view clears it.
+          */}
+          <ErrorBoundary
+            resetKey={activeView}
+            title={dict.common.errorBoundaryTitle}
+            message={dict.common.errorBoundaryMessage}
+          >
           {activeView === "overview" && (
             <OverviewView
               stats={stats}
@@ -790,6 +801,7 @@ export default function Manager({ onPromote }) {
               failedTranslationsCount={failedTranslationsCount}
             />
           )}
+          </ErrorBoundary>
         </div>
       </div>
 

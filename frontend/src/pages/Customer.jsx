@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import ErrorBoundary from "../components/common/ErrorBoundary";
 import { POINT_REDEMPTION_VALUE } from "../data/storePolicy";
 import { useShareModal } from "../hooks/useShareModal";
 import { useGiftCard } from "../hooks/useGiftCard";
@@ -795,6 +796,16 @@ export default function Customer() {
       />
 
       <main className={styles.main} ref={mainContentRef}>
+        {/*
+          Keyed on the panel: a panel that fails to render shows its message
+          here while the sidebar, topbar and cart stay usable, and switching
+          panel clears it.
+        */}
+        <ErrorBoundary
+          resetKey={activePanel}
+          title={dict.common.errorBoundaryTitle}
+          message={dict.common.errorBoundaryMessage}
+        >
         {stockAlerts.length > 0 && (
           <div
             style={{
@@ -1015,6 +1026,7 @@ export default function Customer() {
           show={activePanel === "policy"}
           currentUser={currentUser}
         />
+        </ErrorBoundary>
       </main>
 
       <ProductModal

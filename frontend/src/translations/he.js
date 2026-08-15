@@ -18,6 +18,8 @@ export const he = {
     required: "שדה חובה",
     success: "הפעולה הצליחה",
     error: "אירעה שגיאה",
+    errorBoundaryTitle: "לא ניתן להציג את החלק הזה",
+    errorBoundaryMessage: "נסי לרענן את העמוד, או לחזור אחורה ולנסות שוב.",
   },
 
   manager: {
