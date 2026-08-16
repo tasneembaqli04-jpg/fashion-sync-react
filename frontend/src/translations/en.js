@@ -943,6 +943,7 @@ export const en = {
       shareNotSupported: "Your browser doesn't support direct sharing, so the image was saved to your computer.",
       shareNotSupportedBrowser: "Sharing is not supported in this browser.",
       notifyConfirmMessage: "We will email you at {email} and show a banner at the top of the shop when {name} is back in stock. Continue?",
+      notifyAlreadyRegistered: "You are already signed up for an alert on this product. We will let you know the moment it is back in stock.",
       notifySuccessMessage: "You are signed up. We will email you at {email} and show a banner at the top of the shop when the product is back in stock.",
       tryOnErrorUploadImage: "Please upload an image before using Try It On",
       tryOnErrorProductNotFound: "The selected product was not found",

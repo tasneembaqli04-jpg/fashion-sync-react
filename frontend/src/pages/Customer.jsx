@@ -118,6 +118,10 @@ export default function Customer() {
 
   const mainContentRef = useRef(null);
 
+  // Product codes with a stock-alert request being written right now, so a
+  // second press cannot slip between the check and the write.
+  const notifyInFlightRef = useRef(new Set());
+
   function goBackPanel() {
     navigateToPanel("browse");
     mainContentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -782,27 +786,45 @@ export default function Customer() {
     const product = products.find((item) => item.code === code);
     if (!product) return;
 
-    const confirmed = await confirmDialog(
-      dict.customer.dialogs.notifyConfirmMessage
-        .replace("{email}", currentUser?.email || "")
-        // The dialog is written in the interface language, so the product
-        // name has to follow it.
-        .replace("{name}", getItemName(product, lang)),
-    );
-    if (!confirmed) return;
+    // Held while the write is in flight. The check and the write are two
+    // round trips, so without this a second press during the gap would pass
+    // its own check before the first had written anything, and both would
+    // create a request. A ref rather than state, because it has to be true
+    // immediately: a state update would not be visible until the next render,
+    // which is later than the second press.
+    if (notifyInFlightRef.current.has(product.code)) return;
+    notifyInFlightRef.current.add(product.code);
 
-    requestStockNotification({
-      productCode: product.code,
-      productName: product.name,
-      email: currentUser?.email || "",
-    });
+    try {
+      const confirmed = await confirmDialog(
+        dict.customer.dialogs.notifyConfirmMessage
+          .replace("{email}", currentUser?.email || "")
+          // The dialog is written in the interface language, so the product
+          // name has to follow it.
+          .replace("{name}", getItemName(product, lang)),
+      );
+      if (!confirmed) return;
 
-    alertDialog(
-      dict.customer.dialogs.notifySuccessMessage.replace(
-        "{email}",
-        currentUser?.email || "",
-      ),
-    );
+      const { created } = await requestStockNotification({
+        productCode: product.code,
+        productName: product.name,
+        email: currentUser?.email || "",
+      });
+
+      if (!created) {
+        alertDialog(dict.customer.dialogs.notifyAlreadyRegistered);
+        return;
+      }
+
+      alertDialog(
+        dict.customer.dialogs.notifySuccessMessage.replace(
+          "{email}",
+          currentUser?.email || "",
+        ),
+      );
+    } finally {
+      notifyInFlightRef.current.delete(product.code);
+    }
   }
 
   async function dismissStockAlert(id) {
