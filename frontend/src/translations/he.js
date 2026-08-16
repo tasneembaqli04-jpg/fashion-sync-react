@@ -1063,6 +1063,7 @@ export const he = {
       title: "איך הייתה חוויית הקנייה?",
       textPlaceholder: "מה נוכל לשפר?",
       submitButton: "מעבר לתשלום ←",
+      optionalHint: "אפשר להמשיך גם בלי לדרג",
     },
 
     sidebar: {

@@ -1018,6 +1018,7 @@ export const en = {
       title: "How was your shopping experience?",
       textPlaceholder: "What could we improve?",
       submitButton: "Proceed to payment →",
+      optionalHint: "You can continue without rating",
     },
 
     sidebar: {

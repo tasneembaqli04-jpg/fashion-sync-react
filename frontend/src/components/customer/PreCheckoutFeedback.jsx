@@ -71,6 +71,13 @@ export default function PreCheckoutFeedback({
             {t.submitButton}
           </button>
         </div>
+
+        {/*
+          Says the rating is optional. Without it a single button above a set
+          of stars reads as a form to complete, and a customer who does not
+          want to rate has no way of knowing she can simply carry on.
+        */}
+        <div className={modalStyles.pcfHint}>{t.optionalHint}</div>
       </div>
     </div>
   );

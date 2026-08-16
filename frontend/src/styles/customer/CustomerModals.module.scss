@@ -856,6 +856,18 @@
   flex-wrap: wrap;
 }
 
+/*
+  Sits under the button and stays out of its way: smaller, in the muted
+  colour, and close enough to read as a note about the button rather than as
+  another thing to act on. Alignment is inherited, so it lines up with the
+  button in both reading directions.
+*/
+.pcfHint {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .feedbackSuccess {
   text-align: center;
   padding: 1.5rem 0;
