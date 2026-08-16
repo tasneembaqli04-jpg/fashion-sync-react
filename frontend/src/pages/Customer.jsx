@@ -75,6 +75,15 @@ import CartDrawer from "../components/customer/CartDrawer";
 import PreCheckoutFeedback from "../components/customer/PreCheckoutFeedback";
 import TryOnModal from "../components/customer/TryOnModal";
 
+/**
+ * Marks the history entry the feedback dialog pushes for itself.
+ *
+ * Held in the history state rather than inferred, so the code can tell an
+ * entry it created from one the router or an earlier panel created, and never
+ * call back() on somebody else's.
+ */
+const PRE_CHECKOUT_DIALOG = "preCheckout";
+
 export default function Customer() {
   const navigate = useNavigate();
   const { confirmDialog, alertDialog } = useDialog();
@@ -181,9 +190,9 @@ export default function Customer() {
   const [pcfRating, setPcfRating] = useState(0);
   const [pcfText, setPcfText] = useState("");
 
-  // Going back closes the feedback dialog. Without this the panel behind it
-  // changes while the dialog keeps the screen, leaving the customer looking at
-  // a prompt about a checkout she has just navigated away from.
+  // Going back closes the dialog and returns to the cart, which is what the ✕
+  // does. The entry pushed when the dialog opened is what the browser consumes
+  // here, so the customer stays on the page instead of leaving the shop.
   //
   // Kept as its own effect, next to the state it owns, rather than folded into
   // the history effect above: that one is about which panel is showing, and
@@ -194,6 +203,7 @@ export default function Customer() {
 
     function closeOnBack() {
       setPreCheckoutOpen(false);
+      setCartOpen(true);
     }
 
     window.addEventListener("popstate", closeOnBack);
@@ -687,6 +697,18 @@ export default function Customer() {
     setPcfRating(0);
     setPcfText("");
     setPreCheckoutOpen(true);
+
+    // An entry of its own, so that going back has something belonging to the
+    // dialog to consume. Without it the browser pops the entry underneath —
+    // the page the customer arrived from — and she leaves the shop entirely
+    // while the dialog merely closes on the way out.
+    //
+    // The panel is carried across unchanged, so popping this entry lands on
+    // the same panel and only the dialog goes away.
+    window.history.pushState(
+      { panel: activePanel, dialog: PRE_CHECKOUT_DIALOG },
+      "",
+    );
   }
 
   /**
@@ -708,6 +730,20 @@ export default function Customer() {
    * saving here would collect a second entry for the same visit.
    */
   function closeFeedbackToCart() {
+    // Going back through the entry the dialog pushed, rather than just hiding
+    // the dialog, so that closing by ✕ and closing by the browser's back
+    // button leave the same history behind. Hiding it without popping would
+    // strand the entry, and the next back press would appear to do nothing.
+    //
+    // The listener above does the closing, so this only unwinds the history.
+    // If the entry is not there — nothing pushed it, or it has already been
+    // consumed — the dialog is closed directly rather than calling back() and
+    // navigating off the page.
+    if (window.history.state?.dialog === PRE_CHECKOUT_DIALOG) {
+      window.history.back();
+      return;
+    }
+
     setPreCheckoutOpen(false);
     setCartOpen(true);
   }
@@ -726,7 +762,15 @@ export default function Customer() {
     }
 
     setPreCheckoutOpen(false);
-    navigate("/checkout");
+
+    // Checkout takes the place of the entry the dialog pushed, rather than
+    // stacking on top of it. Otherwise coming back from checkout stops on a
+    // spare entry showing the same panel, and the customer has to press back
+    // twice through screens that look identical.
+    const onDialogEntry =
+      window.history.state?.dialog === PRE_CHECKOUT_DIALOG;
+
+    navigate("/checkout", { replace: onDialogEntry });
   }
 
   async function openNotifyModal(code) {
