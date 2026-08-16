@@ -19,12 +19,14 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 
 | Step | What you do |
 |---|---|
-| **Register** | Sign up with an email and password from the home page. Guests can browse the catalogue but cannot add to the cart or order |
+| **Register** | Sign up with an email and password from the home page, then confirm the code emailed to you. Guests can browse the catalogue but cannot add to the cart or order |
+| **Sign in later** | The same form signs you back in. "Forgot password?" emails a reset link to the address you registered with |
 | **Browse** | Search by product name or product code, and filter by gender, category, season and price. Tab moves between products, Enter opens one, Escape closes it |
 | **Save** | Tap the heart on a product to keep it in your wishlist. It is saved to your account, so it is still there on your next visit and on another device. Open it from "Wishlist", where you can add an item to the cart or remove it |
 | **Add to cart** | Choose a colour and size, then add. Out-of-stock combinations cannot be added, but you can ask to be told when they return |
 | **Wait for a restock** | Ask to be notified on a sold-out product, and when it returns you get an email and a banner at the top of the shop. The banner stays until you dismiss it with "Got it" |
 | **Check out** | Delivery details are pre-filled from your account. Choose standard, express, same-day or store pickup, then a payment method. Standard delivery is free from ₪200, measured on the order total **before** any coupon or points discount. Paying by card in instalments splits the total so the instalments add up to it exactly, which can leave the final one a few agorot apart from the rest |
+| **Rate the shop** | On the way to payment you are asked how the experience was. Rating is optional: the button carries on to checkout either way, and the ✕ takes you back to the cart if you would rather keep shopping |
 | **Pay** | Apply a coupon, redeem loyalty points, or pay with a gift card. You earn one point per ₪1 spent, and 20 points are worth ₪1 off — so points return about 5% of what you spend |
 | **Track** | Follow the order from "My Orders". A confirmation email arrives on purchase |
 | **Cancel** | Available on your own from "My Orders", within 24 hours of ordering and before it ships |
@@ -74,6 +76,8 @@ The result is a simulation for guidance, not a photograph of the product on you.
 
 Sign in at the `/manager` address with the manager username and password. The password is never stored in the site and must be typed at each login.
 
+Forgotten it? "Forgot password?" on that screen emails a reset link to the manager account. There is nothing to type — the address is already known — and the screen confirms when the link has gone, or says so if it could not be sent.
+
 The management session lasts as long as the browser tab. Refreshing or moving between management screens keeps you signed in, but closing the browser ends the session, so the password is required again the next time you open it. Opening the management interface in a second tab counts as a new session and asks for the password. Customer sessions are unaffected and still survive a browser restart.
 
 | Screen | What it does |
@@ -83,7 +87,8 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 | **Deliveries** | Advance the status: Approved → In preparation → Shipped / Ready for pickup → Delivered / Collected |
 | **Receipts** | Full breakdown of every transaction |
 | **Returns** | Approve or reject return requests. Approving issues the credit automatically |
-| **Enquiries and Feedback** | Contact messages and customer feedback from the policy page |
+| **Enquiries** | Messages customers sent from the contact form on the policy page |
+| **Feedback** | Ratings and comments customers left on their way to payment |
 | **Coupons** | Create and manage discount codes |
 | **Gift cards** | Approve or reject gift card orders |
 | **Stock alerts** | Customers waiting for a product to return |
