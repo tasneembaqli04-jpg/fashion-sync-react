@@ -43,6 +43,9 @@ const {
   contactNotificationEmailController,
 } = require("./controllers/email/contactNotificationEmailController");
 const {
+  contactReplyEmailController,
+} = require("./controllers/email/contactReplyEmailController");
+const {
   passwordResetEmailController,
 } = require("./controllers/email/passwordResetEmailController");
 
@@ -170,6 +173,14 @@ const sendContactNotificationEmail = onRequest(
     contactNotificationEmailController,
 );
 
+const sendContactReplyEmail = onRequest(
+    {
+      cors: true,
+      secrets: [gmailUser, gmailAppPassword],
+    },
+    contactReplyEmailController,
+);
+
 const sendPasswordResetEmail = onRequest(
     {
       cors: true,
@@ -195,5 +206,6 @@ module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,
+  sendContactReplyEmail,
   sendPasswordResetEmail,
 };

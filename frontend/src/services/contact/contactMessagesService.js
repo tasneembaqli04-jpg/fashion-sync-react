@@ -49,3 +49,22 @@ export async function markContactMessageRead(id, read) {
 export async function updateContactMessageTranslation(id, { nameEn, messageEn }) {
   await updateDoc(doc(db, "contactMessages", id), omitEmpty({ nameEn, messageEn }));
 }
+
+/**
+ * Records the reply the manager sent, and marks the enquiry read.
+ *
+ * Called only after the email has gone. An answered enquiry has by definition
+ * been read, so marking it here saves the manager doing separately what
+ * answering already proved.
+ *
+ * @param {string} id - Enquiry document id.
+ * @param {string} replyText - What was sent.
+ * @returns {Promise<void>}
+ */
+export async function saveContactReply(id, replyText) {
+  await updateDoc(doc(db, "contactMessages", id), {
+    replyText,
+    repliedAt: new Date().toISOString(),
+    read: true,
+  });
+}

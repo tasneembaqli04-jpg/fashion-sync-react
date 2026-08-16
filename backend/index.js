@@ -13,6 +13,7 @@ const {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendContactNotificationEmail,
+  sendContactReplyEmail,
   sendPasswordResetEmail,
   sendOrderCancellationEmail,
   sendPickupScheduledEmail,
@@ -32,6 +33,7 @@ exports.sendReturnStatusEmail = sendReturnStatusEmail;
 exports.sendVerificationEmail = sendVerificationEmail;
 exports.sendWelcomeEmail = sendWelcomeEmail;
 exports.sendContactNotificationEmail = sendContactNotificationEmail;
+exports.sendContactReplyEmail = sendContactReplyEmail;
 exports.sendPasswordResetEmail = sendPasswordResetEmail;
 exports.sendOrderCancellationEmail = sendOrderCancellationEmail;
 exports.sendPickupScheduledEmail = sendPickupScheduledEmail;
