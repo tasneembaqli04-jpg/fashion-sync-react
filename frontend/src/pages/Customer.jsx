@@ -18,6 +18,7 @@ import { addFeedback } from "../services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../services/customer/customerFirestore";
 import {
   requestStockNotification,
+  hasPendingStockNotification,
   getMyStockAlerts,
   markStockAlertSeen,
 } from "../services/notifications/notificationsService";
@@ -796,6 +797,30 @@ export default function Customer() {
     notifyInFlightRef.current.add(product.code);
 
     try {
+      // Asked before anything else, so a customer who is already signed up is
+      // told so straight away rather than being made to confirm a request that
+      // was never going to be created.
+      //
+      // A check that cannot be made is treated as "not signed up" and the
+      // registration goes ahead: a possible duplicate is a smaller harm than
+      // refusing to register someone because the network faltered, and the
+      // service checks again before it writes.
+      let alreadySignedUp = false;
+
+      try {
+        alreadySignedUp = await hasPendingStockNotification(
+          currentUser?.email || "",
+          product.code,
+        );
+      } catch (err) {
+        console.warn(`Stock alert check skipped: ${err.message}`);
+      }
+
+      if (alreadySignedUp) {
+        alertDialog(dict.customer.dialogs.notifyAlreadyRegistered);
+        return;
+      }
+
       const confirmed = await confirmDialog(
         dict.customer.dialogs.notifyConfirmMessage
           .replace("{email}", currentUser?.email || "")
@@ -811,6 +836,9 @@ export default function Customer() {
         email: currentUser?.email || "",
       });
 
+      // Reached when someone signed up from another tab or device between the
+      // check above and the write. Rare, and it costs a confirmation rather
+      // than a duplicate request.
       if (!created) {
         alertDialog(dict.customer.dialogs.notifyAlreadyRegistered);
         return;
