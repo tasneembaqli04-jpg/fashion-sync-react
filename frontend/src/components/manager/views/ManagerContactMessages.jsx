@@ -13,11 +13,11 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 export default function ManagerContactMessages() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.contactMessages;
-  const locale = lang === "en" ? "en-US" : "he-IL";
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,19 +36,6 @@ export default function ManagerContactMessages() {
       setLoading(false);
     });
   }, []);
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   async function markRead(id) {
     await markContactMessageRead(id, true);
@@ -196,7 +183,7 @@ export default function ManagerContactMessages() {
                   </span>
                 )}
                 <div style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.2rem" }}>
-                  🕒 {fmtDate(msg.createdAt)}
+                  🕒 {formatDateTime(msg.createdAt, lang)}
                 </div>
               </div>
 
@@ -238,7 +225,7 @@ export default function ManagerContactMessages() {
                     marginBottom: "0.3rem",
                   }}
                 >
-                  {t.repliedLabel} · {fmtDate(msg.repliedAt)}
+                  {t.repliedLabel} · {formatDateTime(msg.repliedAt, lang)}
                 </div>
                 <div style={{ whiteSpace: "pre-wrap" }}>{msg.replyText}</div>
               </div>

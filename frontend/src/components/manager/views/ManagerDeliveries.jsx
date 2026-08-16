@@ -12,12 +12,12 @@ import {
   matchesMonthFilter,
   UNKNOWN_MONTH,
 } from "../../../functions/shared/monthFilter";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loading = false }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.deliveries;
   const STEP_LABELS = dict.orderStatusLabels;
-  const locale = lang === "en" ? "en-US" : "he-IL";
 
   const STAGE_TABS = [
     { value: "all", label: t.allTab },
@@ -26,19 +26,6 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
     { value: 2, label: STEP_LABELS[2] },
     { value: 3, label: STEP_LABELS[3] },
   ];
-
-  function fmtDate(ts) {
-    if (!ts) return "";
-    const d = new Date(ts);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   const [stageFilter, setStageFilter] = useState(0);
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
@@ -214,7 +201,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
           {visibleOrders.map((order) => {
             const currentIndex = order.stageIndex ?? 0;
             const nextIndex = currentIndex < DELIVERED_STAGE ? currentIndex + 1 : null;
-            const createdAtText = fmtDate(order.createdAt);
+            const createdAtText = formatDateTime(order.createdAt, lang);
             const isPickup = order.shipping?.id === "pickup";
             const orderStepLabels = isPickup ? dict.pickupStatusLabels : STEP_LABELS;
 

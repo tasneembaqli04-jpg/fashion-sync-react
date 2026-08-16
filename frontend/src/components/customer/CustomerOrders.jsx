@@ -13,6 +13,7 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../functions/shared/monthFilter";
+import { formatDate, formatDateTime } from "../../functions/shared/dateFormat";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
@@ -338,7 +339,9 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               <div className={modalStyles.orderTop}>
                 <div>
                   <div style={{ fontWeight: 900 }}>{order.id}</div>
-                  <div className={modalStyles.orderId}>{order.date}</div>
+                  <div className={modalStyles.orderId}>
+                    {formatDateTime(order.date, lang)}
+                  </div>
                   {order.cancelled && (
                     <div
                       style={{
@@ -462,7 +465,8 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
               {order.shipping?.id === "pickup" && order.pickupDate && (
                 <div style={{ color: "var(--blue)", fontSize: "0.82rem", marginTop: "0.4rem" }}>
-                  🗓️ {t.pickupScheduledLabel} {order.pickupDate} {order.pickupTime}
+                  🗓️ {t.pickupScheduledLabel} {formatDate(order.pickupDate, lang)}{" "}
+                  {order.pickupTime}
                 </div>
               )}
 

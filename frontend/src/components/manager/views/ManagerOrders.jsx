@@ -13,23 +13,12 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
+import { formatDate } from "../../../functions/shared/dateFormat";
 
 export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrder, loading = false }) {
   const { lang, t: dict } = useLanguage();
   const { confirmDialog } = useDialog();
   const t = dict.manager.orders;
-  const locale = lang === "en" ? "en-US" : "he-IL";
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
-  }
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState("pending");
@@ -251,7 +240,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
             );
 
           const hasCustomSize = items.some((item) => item.isCustomSize);
-          const dateText = fmtDate(order.date);
+          const dateText = formatDate(order.date, lang);
 
           return (
             <div className={ordersStyles.orderCard} key={order.id}>

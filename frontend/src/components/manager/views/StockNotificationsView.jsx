@@ -14,27 +14,12 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
-
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 export default function StockNotificationsView({ products = [], initialProductCode = "" }) {
   const { confirmDialog } = useDialog();
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.stockNotifications;
-  const locale = lang === "en" ? "en-US" : "he-IL";
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -222,7 +207,7 @@ export default function StockNotificationsView({ products = [], initialProductCo
                 {item.phone && <span>📞 {item.phone}</span>}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "0.78rem", marginTop: "0.2rem" }}>
-                🕒 {fmtDate(item.createdAt)}
+                🕒 {formatDateTime(item.createdAt, lang)}
               </div>
             </div>
 

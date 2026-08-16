@@ -15,7 +15,12 @@ import {
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
 import { buildReturnCreditMessage } from "../../../functions/manager/returnCredit";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
+// changedMind is no longer offered on the customer's form. It stays here so a
+// request raised while it was still on the list keeps its own label; without
+// the entry, getReasonLabel would fall back to the stored `reason` string,
+// which was written in one language only.
 const REASON_KEY_MAP = {
   defective: "reasonDefective",
   wrongSize: "reasonWrongSize",
@@ -31,20 +36,6 @@ function getReasonLabel(request, t) {
 export default function ManagerReturns({ products = [] }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.returns;
-  const locale = lang === "en" ? "en-US" : "he-IL";
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -255,7 +246,7 @@ export default function ManagerReturns({ products = [] }) {
                   </div>
                 )}
                 <div style={{ color: "var(--muted)", fontSize: "0.75rem", marginTop: "0.2rem" }}>
-                  🕒 {fmtDate(request.createdAt)}
+                  🕒 {formatDateTime(request.createdAt, lang)}
                 </div>
               </div>
             </div>
