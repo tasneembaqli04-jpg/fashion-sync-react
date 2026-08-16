@@ -10,13 +10,34 @@ import { getBusinessHours } from "../../services/settings/businessHoursService";
 import { getPolicyContent } from "../../services/settings/policyContentService";
 import { getStoreDetails } from "../../services/settings/storeDetailsService";
 
+/**
+ * How a field filled in from the account looks: still legible, visibly not
+ * an invitation to type.
+ */
+const accountFieldStyle = {
+  background: "rgba(255, 255, 255, 0.03)",
+  cursor: "default",
+};
+
 export default function CustomerPolicy({ show, currentUser }) {
   const { t: dict, lang } = useLanguage();
   const t = dict.customer.policy;
   const { alertDialog } = useDialog();
 
-  const [contactName, setContactName] = useState(currentUser?.name || "");
-  const [contactEmail, setContactEmail] = useState(currentUser?.email || "");
+  // A signed-in customer's details are read from her account rather than held
+  // in state. They used to be state seeded from `currentUser`, which captured
+  // whatever was known when the page first rendered: signing in afterwards
+  // left the fields on the guest's empty values, and the enquiry arrived with
+  // no address to answer.
+  //
+  // Guests still type their own, so their answers keep their own state.
+  const isSignedIn = Boolean(currentUser?.email);
+
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+
+  const contactName = isSignedIn ? currentUser.name || "" : guestName;
+  const contactEmail = isSignedIn ? currentUser.email : guestEmail;
   const [contactMessage, setContactMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [businessHours, setBusinessHoursState] = useState(null);
@@ -162,21 +183,46 @@ export default function CustomerPolicy({ show, currentUser }) {
         </div>
 
         <div className={modalStyles.pdField} style={{ marginBottom: "0.7rem" }}>
-          <label>{t.contactNameLabel}</label>
+          <label htmlFor="contact-name">{t.contactNameLabel}</label>
           <input
+            id="contact-name"
             type="text"
             value={contactName}
-            onChange={(e) => setContactName(e.target.value)}
+            onChange={(e) => setGuestName(e.target.value)}
+            readOnly={isSignedIn}
+            style={isSignedIn ? accountFieldStyle : undefined}
           />
         </div>
 
         <div className={modalStyles.pdField} style={{ marginBottom: "0.7rem" }}>
-          <label>{t.contactEmailLabel}</label>
+          <label htmlFor="contact-email">{t.contactEmailLabel}</label>
+          {/*
+            readOnly rather than disabled: a disabled field is skipped by the
+            keyboard and read out as unavailable, when the value is not
+            unavailable at all — it is settled. Read-only keeps it reachable
+            and announced.
+          */}
           <input
+            id="contact-email"
             type="email"
             value={contactEmail}
-            onChange={(e) => setContactEmail(e.target.value)}
+            onChange={(e) => setGuestEmail(e.target.value)}
+            readOnly={isSignedIn}
+            aria-describedby={isSignedIn ? "contact-email-note" : undefined}
+            style={isSignedIn ? accountFieldStyle : undefined}
           />
+          {isSignedIn && (
+            <div
+              id="contact-email-note"
+              style={{
+                fontSize: "0.78rem",
+                color: "var(--muted)",
+                marginTop: "0.3rem",
+              }}
+            >
+              {t.contactEmailFromAccount}
+            </div>
+          )}
         </div>
 
         <div className={modalStyles.pdField} style={{ marginBottom: "0.9rem" }}>

@@ -895,6 +895,7 @@ export const en = {
       hoursPrefix: "🕒 Business hours:",
       contactEmail: "Email: support@fashionsync.co.il",
       contactNameLabel: "Name",
+      contactEmailFromAccount: "Taken from your account",
       contactEmailLabel: "Email address to reach you",
       contactMessageLabel: "Message",
       contactMessagePlaceholder: "How can we help?",
