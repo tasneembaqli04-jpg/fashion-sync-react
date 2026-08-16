@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useDialog } from "../../common/DialogProvider";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
@@ -17,8 +17,62 @@ import { formatDate } from "../../../functions/shared/dateFormat";
 
 export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrder, loading = false }) {
   const { lang, t: dict } = useLanguage();
-  const { confirmDialog } = useDialog();
+  const { alertDialog, confirmDialog } = useDialog();
   const t = dict.manager.orders;
+
+  // Held in a ref rather than state because it has to take effect on the click
+  // that sets it, before any re-render. A second click while the dialog is
+  // open would otherwise open a second dialog over the first, and answering
+  // both would decide the same order twice.
+  const decidingRef = useRef(false);
+
+  /**
+   * Asks before approving or rejecting, then reports what actually happened.
+   *
+   * Both decisions email the customer and neither can be undone, so both are
+   * confirmed first — the approval prompt names the email, and names the gift
+   * card as well when the order holds one, because approving activates it.
+   *
+   * @param {object} order - The order being decided.
+   * @param {"approve"|"reject"} decision - Which way.
+   */
+  async function decide(order, decision) {
+    if (decidingRef.current) return;
+    decidingRef.current = true;
+
+    try {
+      const holdsGiftCard = (order.items || []).some((item) => item.isGiftCard);
+
+      const prompt =
+        decision === "reject"
+          ? t.confirmRejectPrompt
+          : holdsGiftCard
+            ? t.confirmApproveGiftCardPrompt
+            : t.confirmApprovePrompt;
+
+      if (!(await confirmDialog(prompt))) return;
+
+      const act = decision === "reject" ? onRejectOrder : onConfirmOrder;
+      const result = await act?.(order.docId);
+
+      // An older caller that returns nothing is treated as success, so this
+      // screen never reports a failure it has no evidence for.
+      if (!result || result.ok) return;
+
+      if (result.failed === "write") {
+        await alertDialog(t.decisionWriteFailed);
+      } else if (result.failed === "giftCard") {
+        await alertDialog(t.decisionGiftCardFailed);
+      } else {
+        await alertDialog(t.decisionEmailFailed);
+      }
+    } catch (err) {
+      console.error(`Order decision failed: ${err.message}`);
+      await alertDialog(t.decisionWriteFailed);
+    } finally {
+      decidingRef.current = false;
+    }
+  }
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState("pending");
@@ -317,7 +371,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
                     <button
                       type="button"
                       className={ordersStyles.orderPrepareBtn}
-                      onClick={() => onConfirmOrder?.(order.docId)}
+                      onClick={() => decide(order, "approve")}
                     >
                       {t.confirmOrderButton}
                     </button>
@@ -330,16 +384,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
                         border: "1px solid var(--red)",
                         color: "var(--red)",
                       }}
-                      onClick={async () => {
-                        const confirmed = await confirmDialog(t.confirmRejectPrompt);
-                        if (!confirmed) return;
-
-                        try {
-                          await onRejectOrder?.(order.docId);
-                        } catch (err) {
-                          console.error("Reject order failed:", err);
-                        }
-                      }}
+                      onClick={() => decide(order, "reject")}
                     >
                       {t.rejectOrderButton}
                     </button>

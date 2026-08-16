@@ -103,7 +103,16 @@ export const he = {
       customSizeTag: "⚠️ מידה מיוחדת",
       confirmOrderButton: "✅ אישור הזמנה",
       rejectOrderButton: "✕ דחיית הזמנה",
-      confirmRejectPrompt: "לדחות את ההזמנה? תישלח על כך הודעה ללקוח.",
+      confirmRejectPrompt: "לדחות את ההזמנה? תישלח על כך הודעה במייל.",
+      confirmApprovePrompt: "לאשר את ההזמנה? תישלח על כך הודעה במייל.",
+      confirmApproveGiftCardPrompt:
+        "לאשר את ההזמנה? כרטיס המתנה יופעל, ותישלח על כך הודעה במייל.",
+      decisionWriteFailed:
+        "הפעולה לא נשמרה. ההזמנה נשארה כפי שהייתה, ואפשר לנסות שוב.",
+      decisionEmailFailed:
+        "ההזמנה עודכנה, אבל ההודעה במייל לא נשלחה. כדאי ליצור קשר ישירות.",
+      decisionGiftCardFailed:
+        "ההזמנה עודכנה, אבל כרטיס המתנה לא עודכן. כדאי לבדוק אותו במסך כרטיסי המתנה.",
       orderDetailsButton: "📋 פרטי הזמנה",
       cancelledLabel: "✕ בוטלה",
       cancelledSuffix: "בוטלו",

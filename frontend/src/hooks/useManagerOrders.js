@@ -145,79 +145,162 @@ export function useManagerOrders({ isLoggedIn, refreshKey }) {
     }));
   }, [orders]);
 
-  function handleConfirmOrder(orderDocId) {
-    confirmOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, confirmed: true } : order
-      )
-    );
-
+  /**
+   * Approves an order: records the decision, activates any gift card in it,
+   * and tells the customer.
+   *
+   * Reports which of the three actually happened, because they can part
+   * company. A failed write means nothing happened and the screen is put back;
+   * a failed email means the order really is approved and only the customer
+   * was not told. Saying "approved" for both would hide the second, which is
+   * the one the manager has to act on.
+   *
+   * Only the field this function set is reverted, never the whole order, so a
+   * subscription update that landed while the write was in flight is left
+   * alone. The subscription is the authority either way and will correct the
+   * screen on its next echo.
+   *
+   * @param {string} orderDocId - Firestore document id of the order.
+   * @returns {Promise<{ok: boolean, failed?: string}>} What succeeded.
+   *          `failed` is "write", "giftCard" or "email".
+   */
+  async function handleConfirmOrder(orderDocId) {
     const order = orders.find((o) => o.docId === orderDocId);
     const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
 
+    setOrders((prevOrders) =>
+      prevOrders.map((o) =>
+        o.docId === orderDocId ? { ...o, confirmed: true } : o
+      )
+    );
+
+    try {
+      await confirmOrder(orderDocId);
+    } catch (err) {
+      console.error(`Order not confirmed: ${err.message}`);
+
+      setOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o.docId === orderDocId ? { ...o, confirmed: false } : o
+        )
+      );
+
+      return { ok: false, failed: "write" };
+    }
+
     if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        activateGiftCard(item.code);
-      });
+      // Awaited one at a time rather than in parallel: an order rarely holds
+      // more than one card, and a serial loop reports which card failed.
+      let cardFailed = false;
+
+      for (const item of giftCardItems) {
+        try {
+          await activateGiftCard(item.code);
+        } catch (err) {
+          console.error(`Gift card ${item.code} not activated: ${err.message}`);
+          cardFailed = true;
+        }
+      }
+
+      if (cardFailed) return { ok: false, failed: "giftCard" };
 
       if (order?.customerEmail) {
-        sendGiftCardActivatedEmail({
+        const sent = await sendGiftCardActivatedEmail({
           toEmail: order.customerEmail,
           giftCardCode: giftCardItems[0].code,
           amount: giftCardItems[0].price,
           lang,
         });
+
+        if (!sent) return { ok: false, failed: "email" };
       }
 
-      return;
+      return { ok: true };
     }
 
     if (order?.customerEmail) {
-      sendShippingUpdateEmail({
+      const sent = await sendShippingUpdateEmail({
         toEmail: order.customerEmail,
         orderId: order.id,
         stageIndex: 0,
         lang,
       });
+
+      if (!sent) return { ok: false, failed: "email" };
     }
+
+    return { ok: true };
   }
 
-  function handleRejectOrder(orderDocId) {
-    rejectOrder(orderDocId);
-
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.docId === orderDocId ? { ...order, rejected: true } : order
-      )
-    );
-
+  /**
+   * Rejects an order: records the decision, voids any gift card in it, and
+   * tells the customer. Reports its outcome the same way as approval.
+   *
+   * @param {string} orderDocId - Firestore document id of the order.
+   * @returns {Promise<{ok: boolean, failed?: string}>} What succeeded.
+   *          `failed` is "write", "giftCard" or "email".
+   */
+  async function handleRejectOrder(orderDocId) {
     const order = orders.find((o) => o.docId === orderDocId);
     const giftCardItems = (order?.items || []).filter((item) => item.isGiftCard);
 
+    setOrders((prevOrders) =>
+      prevOrders.map((o) =>
+        o.docId === orderDocId ? { ...o, rejected: true } : o
+      )
+    );
+
+    try {
+      await rejectOrder(orderDocId);
+    } catch (err) {
+      console.error(`Order not rejected: ${err.message}`);
+
+      setOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o.docId === orderDocId ? { ...o, rejected: false } : o
+        )
+      );
+
+      return { ok: false, failed: "write" };
+    }
+
     if (giftCardItems.length > 0) {
-      giftCardItems.forEach((item) => {
-        rejectGiftCard(item.code);
-      });
+      let cardFailed = false;
+
+      for (const item of giftCardItems) {
+        try {
+          await rejectGiftCard(item.code);
+        } catch (err) {
+          console.error(`Gift card ${item.code} not voided: ${err.message}`);
+          cardFailed = true;
+        }
+      }
+
+      if (cardFailed) return { ok: false, failed: "giftCard" };
 
       if (order?.customerEmail) {
-        sendGiftCardRejectedEmail({
+        const sent = await sendGiftCardRejectedEmail({
           toEmail: order.customerEmail,
           lang,
         });
+
+        if (!sent) return { ok: false, failed: "email" };
       }
 
-      return;
+      return { ok: true };
     }
 
     if (order?.customerEmail) {
-      sendOrderRejectedEmail({
+      const sent = await sendOrderRejectedEmail({
         toEmail: order.customerEmail,
         orderId: order.id,
         lang,
       });
+
+      if (!sent) return { ok: false, failed: "email" };
     }
+
+    return { ok: true };
   }
 
   function handleAdvanceOrderStage(orderDocId, nextIndex, isPickup = false) {

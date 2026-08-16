@@ -112,6 +112,18 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 5. Move to "Delivery tracking"
 6. Advance the status as the order progresses
 
+Both decisions ask first, and the question says what will be sent: either
+way the customer is emailed, and approving an order that contains a gift
+card also activates the card. Neither decision can be undone from the
+management screens — a customer can still cancel her own order within 24
+hours of placing it, but there is no way back from this side.
+
+If something does not go through, you are told which part failed. A
+decision that was not saved leaves the order exactly as it was, so you
+can try again. A decision that was saved but whose email did not send
+says so, because then the order really has been decided and only the
+customer has not heard.
+
 ---
 
 ## Troubleshooting
