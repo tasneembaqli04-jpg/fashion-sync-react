@@ -92,6 +92,25 @@ export function useManagerOrders({ isLoggedIn, refreshKey }) {
           subtotal: Number(order.subtotal) || 0,
           discountAmount: Number(order.discountAmount) || 0,
           shippingCost: Number(order.shippingCost) || 0,
+          // Both keys deliberately carry the same value, and `date` wins.
+          //
+          // An order stores two timestamps a second or two apart: `date`,
+          // stamped when the customer confirms payment, and `createdAt`,
+          // stamped as the write leaves for Firestore. `date` is the business
+          // event, so it is what every management screen should show and file
+          // by. The screens do not all reach for the same key — the orders
+          // list reads `date`, the deliveries list reads `createdAt` — so
+          // both are filled with it here and the two screens cannot disagree
+          // about when an order was placed or which month it belongs to.
+          //
+          // The consequence is that the real `createdAt` does not survive this
+          // mapping. Nothing on the manager side wants it; anything that ever
+          // does must read it from the document rather than from here.
+          //
+          // This is not a copy-paste slip. Setting `createdAt` to
+          // `order.createdAt` would move an order between months on the
+          // deliveries screen but not on the orders screen, for orders placed
+          // either side of midnight at the end of a month.
           date: order.date || order.createdAt || null,
           createdAt: order.date || order.createdAt || null,
           payMethod: order.payMethod || "",

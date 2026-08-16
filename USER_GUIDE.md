@@ -118,11 +118,16 @@ card also activates the card. Neither decision can be undone from the
 management screens — a customer can still cancel her own order within 24
 hours of placing it, but there is no way back from this side.
 
-If something does not go through, you are told which part failed. A
-decision that was not saved leaves the order exactly as it was, so you
-can try again. A decision that was saved but whose email did not send
-says so, because then the order really has been decided and only the
-customer has not heard.
+If something does not go through, you are told which part failed, because
+the three parts can come apart:
+
+- **The decision was not saved.** Nothing happened and the order goes
+  back to waiting, so you can simply try again.
+- **The decision was saved but the email did not send.** The order really
+  has been decided and only the customer has not heard, so it is worth
+  getting in touch directly.
+- **The decision was saved but the gift card was not updated.** Check the
+  card on the "Gift cards" screen.
 
 ---
 

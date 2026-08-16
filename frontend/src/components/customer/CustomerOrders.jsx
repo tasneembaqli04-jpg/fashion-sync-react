@@ -120,10 +120,15 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
     });
   }, [orders]);
 
-  // The customer files an order by createdAt, falling back to date. The
-  // manager screen reads the same two fields the other way round; neither is
-  // changed here, because either change would move orders between months on
-  // one of the two screens.
+  // The customer files an order by createdAt, falling back to date, and shows
+  // date on the order line. The two are a second or two apart, so the pair
+  // only diverge for an order placed either side of midnight at the end of a
+  // month. Left as found rather than settled, because settling it moves those
+  // orders between months.
+  //
+  // The manager's screens do not have this: their hook fills both keys with
+  // `date`, so every management screen agrees. This is the only place the two
+  // timestamps are still read separately.
   const monthFilteredOrders = useMemo(() => {
     return sortedOrders.filter((order) =>
       matchesMonthFilter(monthFilter, order.createdAt || order.date),
