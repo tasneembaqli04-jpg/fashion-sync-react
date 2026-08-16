@@ -988,6 +988,7 @@ export const he = {
       shareNotSupported: "הדפדפן לא תומך בשיתוף ישיר, לכן התמונה נשמרה למחשב.",
       shareNotSupportedBrowser: "השיתוף לא נתמך בדפדפן הזה.",
       notifyConfirmMessage: "נשלח לך מייל לכתובת {email} ונציג באנר בראש החנות כש{name} יחזור למלאי. להמשיך?",
+      notifyAlreadyRegistered: "כבר נרשמת להתראה על המוצר הזה. נודיע לך ברגע שיחזור למלאי.",
       notifySuccessMessage: "נרשמת בהצלחה! נעדכן אותך במייל ({email}) ובאנר בראש החנות כשהמוצר יחזור למלאי.",
       tryOnErrorUploadImage: "יש להעלות תמונה לפני הפעלת נסה עליי",
       tryOnErrorProductNotFound: "המוצר שנבחר לא נמצא",

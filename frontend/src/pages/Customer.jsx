@@ -18,6 +18,7 @@ import { addFeedback } from "../services/feedback/feedbackService";
 import { getLoyaltyPoints } from "../services/customer/customerFirestore";
 import {
   requestStockNotification,
+  hasPendingStockNotification,
   getMyStockAlerts,
   markStockAlertSeen,
 } from "../services/notifications/notificationsService";
@@ -117,6 +118,10 @@ export default function Customer() {
   }
 
   const mainContentRef = useRef(null);
+
+  // Product codes with a stock-alert request being written right now, so a
+  // second press cannot slip between the check and the write.
+  const notifyInFlightRef = useRef(new Set());
 
   function goBackPanel() {
     navigateToPanel("browse");
@@ -557,6 +562,23 @@ export default function Customer() {
     setProductModalOpen(false);
   }
 
+  /**
+   * The colour and size chosen in the product dialog.
+   *
+   * The custom-size branches are no longer reachable: the dialog offers only
+   * the sizes a product actually has, so `selectedSize` can no longer be
+   * "אחר". They are kept on purpose.
+   *
+   * A cart survives in the browser and in Firestore between visits, so a
+   * customer who was part way through a purchase when the option was removed
+   * still holds a line with a custom size. Dropping this handling would put
+   * that line through the ordinary variant checks, against stock the product
+   * never had, and her cart would start refusing an item she had already
+   * chosen. The same reasoning keeps the matching branches in
+   * `getVariantStockLimit` and `isVariantAvailable`.
+   *
+   * Safe to delete once no stored cart can predate the removal.
+   */
   function getChosenVariant() {
     return {
       size: selectedSize === "אחר" ? customSize || "אחר" : selectedSize,
@@ -782,27 +804,72 @@ export default function Customer() {
     const product = products.find((item) => item.code === code);
     if (!product) return;
 
-    const confirmed = await confirmDialog(
-      dict.customer.dialogs.notifyConfirmMessage
-        .replace("{email}", currentUser?.email || "")
-        // The dialog is written in the interface language, so the product
-        // name has to follow it.
-        .replace("{name}", getItemName(product, lang)),
-    );
-    if (!confirmed) return;
+    // Held while the write is in flight. The check and the write are two
+    // round trips, so without this a second press during the gap would pass
+    // its own check before the first had written anything, and both would
+    // create a request. A ref rather than state, because it has to be true
+    // immediately: a state update would not be visible until the next render,
+    // which is later than the second press.
+    if (notifyInFlightRef.current.has(product.code)) return;
+    notifyInFlightRef.current.add(product.code);
 
-    requestStockNotification({
-      productCode: product.code,
-      productName: product.name,
-      email: currentUser?.email || "",
-    });
+    try {
+      // Asked before anything else, so a customer who is already signed up is
+      // told so straight away rather than being made to confirm a request that
+      // was never going to be created.
+      //
+      // A check that cannot be made is treated as "not signed up" and the
+      // registration goes ahead: a possible duplicate is a smaller harm than
+      // refusing to register someone because the network faltered, and the
+      // service checks again before it writes.
+      let alreadySignedUp = false;
 
-    alertDialog(
-      dict.customer.dialogs.notifySuccessMessage.replace(
-        "{email}",
-        currentUser?.email || "",
-      ),
-    );
+      try {
+        alreadySignedUp = await hasPendingStockNotification(
+          currentUser?.email || "",
+          product.code,
+        );
+      } catch (err) {
+        console.warn(`Stock alert check skipped: ${err.message}`);
+      }
+
+      if (alreadySignedUp) {
+        alertDialog(dict.customer.dialogs.notifyAlreadyRegistered);
+        return;
+      }
+
+      const confirmed = await confirmDialog(
+        dict.customer.dialogs.notifyConfirmMessage
+          .replace("{email}", currentUser?.email || "")
+          // The dialog is written in the interface language, so the product
+          // name has to follow it.
+          .replace("{name}", getItemName(product, lang)),
+      );
+      if (!confirmed) return;
+
+      const { created } = await requestStockNotification({
+        productCode: product.code,
+        productName: product.name,
+        email: currentUser?.email || "",
+      });
+
+      // Reached when someone signed up from another tab or device between the
+      // check above and the write. Rare, and it costs a confirmation rather
+      // than a duplicate request.
+      if (!created) {
+        alertDialog(dict.customer.dialogs.notifyAlreadyRegistered);
+        return;
+      }
+
+      alertDialog(
+        dict.customer.dialogs.notifySuccessMessage.replace(
+          "{email}",
+          currentUser?.email || "",
+        ),
+      );
+    } finally {
+      notifyInFlightRef.current.delete(product.code);
+    }
   }
 
   async function dismissStockAlert(id) {

@@ -35,9 +35,13 @@ export function getCartCount(cart) {
  * cart when only one existed, because two other sizes made up the difference.
  *
  * Falls back to product.stock when the line has no colour or size, when the
- * product has no variants, or when the colour is not found. Custom sizes
- * ("אחר") are handled outside the regular stock system and keep the old
- * behaviour too.
+ * product has no variants, or when the colour is not found.
+ *
+ * The custom-size branch ("אחר") no longer arises from the interface: the
+ * product dialog offers only the sizes a product has. It is kept for carts
+ * saved before that option was removed, which persist in the browser and in
+ * Firestore between visits. Without it such a line would be measured against
+ * a variant that does not exist and its quantity capped at zero.
  *
  * @param {object|null} product - Product from the catalogue.
  * @param {string} [color] - Colour on the cart line.
