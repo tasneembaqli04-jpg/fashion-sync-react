@@ -76,7 +76,7 @@ export default function Manager({ onPromote }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === "manager@fashionsync-internal.com") {
+      if (user && user.email === "fashionsyncmanager@gmail.com") {
         setIsLoggedIn(true);
       }
       setCheckingAuth(false);
