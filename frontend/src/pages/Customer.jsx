@@ -562,6 +562,23 @@ export default function Customer() {
     setProductModalOpen(false);
   }
 
+  /**
+   * The colour and size chosen in the product dialog.
+   *
+   * The custom-size branches are no longer reachable: the dialog offers only
+   * the sizes a product actually has, so `selectedSize` can no longer be
+   * "אחר". They are kept on purpose.
+   *
+   * A cart survives in the browser and in Firestore between visits, so a
+   * customer who was part way through a purchase when the option was removed
+   * still holds a line with a custom size. Dropping this handling would put
+   * that line through the ordinary variant checks, against stock the product
+   * never had, and her cart would start refusing an item she had already
+   * chosen. The same reasoning keeps the matching branches in
+   * `getVariantStockLimit` and `isVariantAvailable`.
+   *
+   * Safe to delete once no stored cart can predate the removal.
+   */
   function getChosenVariant() {
     return {
       size: selectedSize === "אחר" ? customSize || "אחר" : selectedSize,

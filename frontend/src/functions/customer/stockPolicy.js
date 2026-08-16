@@ -42,7 +42,10 @@ export function getStockStatus(stock, minStock) {
  * - A product with variants is available only if that exact colour+size
  *   combination has a positive quantity.
  * - A custom size ("אחר") is always treated as available, because it is
- *   handled outside the regular stock system and needs a manual check.
+ *   handled outside the regular stock system and needs a manual check. This
+ *   no longer arises from the interface, which offers only the sizes a
+ *   product has; it is kept for carts saved before that option was removed,
+ *   which outlive the change in the browser and in Firestore.
  *
  * @param {object} product - The product being checked.
  * @param {Array<object>} [product.variants] - Variants, each with colorName and a sizes map.

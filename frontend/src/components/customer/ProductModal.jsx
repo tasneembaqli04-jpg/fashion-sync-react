@@ -69,14 +69,15 @@ export default function ProductModal({
     (a, b) => canonicalSizeOrder.indexOf(a) - canonicalSizeOrder.indexOf(b),
   );
 
-  const isUniformSizeOnly =
-    sortedSizes.length === 1 && sortedSizes[0] === "אחיד";
-
-  const allSizes = isUniformSizeOnly
-    ? sortedSizes
-    : sortedSizes.includes("אחר")
-      ? sortedSizes
-      : [...sortedSizes, "אחר"];
+  // Only the sizes the product actually has. A custom-size option used to be
+  // appended here, letting a customer ask for a size the shop had never said
+  // it stocked, which then bypassed the stock checks and could not be
+  // fulfilled reliably.
+  //
+  // The handling of a custom size is still present further down and in the
+  // cart and stock rules. It is unreachable from this screen and deliberately
+  // kept: see the note above `isCustomSize` in Customer.jsx.
+  const allSizes = sortedSizes;
 
   const seasonIcon =
     product.season === "summer"
