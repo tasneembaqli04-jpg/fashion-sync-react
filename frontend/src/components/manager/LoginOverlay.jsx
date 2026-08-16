@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { signIn } from "../../services/auth/firebaseAuth";
+import { sendPasswordResetRequest } from "../../services/email/emailService";
 import { auth } from "../../firebase";
 import { setPersistence, browserSessionPersistence } from "firebase/auth";
 import loginStyles from "../../styles/manager/ManagerLogin.module.scss";
@@ -28,17 +29,38 @@ const MANAGER_EMAIL = "manager@fashionsync-internal.com";
 
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const { t: dict } = useLanguage();
+  const { t: dict, lang } = useLanguage();
   const t = dict.manager.loginOverlay;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [featuredImage, setFeaturedImage] = useState("");
+  const [resetStatus, setResetStatus] = useState("idle");
 
   useEffect(() => {
     loadFeaturedImage().then(setFeaturedImage);
   }, []);
+
+  /**
+   * Emails a password reset link to the manager account.
+   *
+   * The address is not asked for: there is exactly one manager account, and
+   * the constant above already names it. A failure is reported rather than
+   * swallowed, because the manager cannot tell an unsent link from an email
+   * that is merely slow, and would otherwise sit waiting for it.
+   */
+  const handleForgotPassword = async () => {
+    setResetStatus("sending");
+
+    try {
+      await sendPasswordResetRequest({ toEmail: MANAGER_EMAIL, lang });
+      setResetStatus("sent");
+    } catch (err) {
+      console.warn(`Manager password reset not sent: ${err.message}`);
+      setResetStatus("failed");
+    }
+  };
 
   const handleLogin = async () => {
     // A single error message for every failure mode, so it never hints
@@ -162,6 +184,49 @@ export default function LoginOverlay({ onLoginSuccess }) {
               {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
+        </div>
+
+        {/*
+          The reset goes to the manager account's own address, taken from the
+          constant above rather than from a field: there is nothing for the
+          manager to type, and nothing on this public screen reveals where the
+          link was sent.
+        */}
+        <div style={{ textAlign: "start", marginBottom: "0.7rem" }}>
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={resetStatus === "sending"}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--gold)",
+              fontSize: "0.82rem",
+              cursor: "pointer",
+              padding: 0,
+              textDecoration: "underline",
+            }}
+          >
+            {t.forgotPasswordLink}
+          </button>
+
+          {resetStatus === "sending" && (
+            <div style={{ fontSize: "0.8rem", color: "var(--muted)", marginTop: "0.3rem" }}>
+              {t.forgotPasswordSending}
+            </div>
+          )}
+
+          {resetStatus === "sent" && (
+            <div style={{ fontSize: "0.8rem", color: "var(--green)", marginTop: "0.3rem" }}>
+              {t.forgotPasswordSent}
+            </div>
+          )}
+
+          {resetStatus === "failed" && (
+            <div style={{ fontSize: "0.8rem", color: "var(--red)", marginTop: "0.3rem" }}>
+              {t.forgotPasswordFailed}
+            </div>
+          )}
         </div>
 
         {errorVisible && (

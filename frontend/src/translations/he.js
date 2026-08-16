@@ -534,6 +534,10 @@ export const he = {
       showPassword: "הצג סיסמה",   
       hidePassword: "הסתר סיסמה",
       wrongCredentials: "❌ שם משתמש או סיסמה שגויים",
+      forgotPasswordLink: "שכחת סיסמה?",
+      forgotPasswordSending: "שולח קישור לאיפוס...",
+      forgotPasswordSent: "✅ נשלח קישור לאיפוס סיסמה לכתובת המנהלת.",
+      forgotPasswordFailed: "⚠️ לא הצלחנו לשלוח את הקישור. אפשר לנסות שוב בעוד רגע.",
       loginButton: "כניסה",
     },
     promo: {
@@ -1064,6 +1068,7 @@ export const he = {
       textPlaceholder: "מה נוכל לשפר?",
       submitButton: "מעבר לתשלום ←",
       optionalHint: "אפשר להמשיך גם בלי לדרג",
+      backToCart: "חזרה לסל",
     },
 
     sidebar: {
