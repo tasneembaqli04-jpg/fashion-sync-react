@@ -10,16 +10,18 @@ export default function PreCheckoutFeedback({
   setPcfRating,
   setPcfText,
   continueToCheckout,
+  closeToCart,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.preCheckoutFeedback;
 
-  // Escape does what the button does. With one way out of this step, closing
-  // the dialog and continuing are the same act, and anything already filled
-  // in is kept rather than discarded for using the keyboard.
+  // Escape matches the ✕, not the main button. Both are ways of saying "not
+  // now", and dismissing a dialog should leave the customer where she came
+  // from — the cart — rather than carrying her forward to payment, which is
+  // the one thing a dismissal should never do on its own.
   const { dialogRef, dialogProps, titleProps } = useModalA11y({
     isOpen: open,
-    onClose: continueToCheckout,
+    onClose: closeToCart,
   });
 
   return (
@@ -29,6 +31,21 @@ export default function PreCheckoutFeedback({
       style={{ display: open ? "flex" : "none" }}
     >
       <div ref={dialogRef} {...dialogProps} className={modalStyles.pcfBox}>
+        {/*
+          Two ways out, because there are two intentions: the button below
+          continues to payment, this returns to the cart. Without it, a
+          customer who changed her mind about the purchase had no way to say
+          so from here.
+        */}
+        <button
+          type="button"
+          className={modalStyles.modalClose}
+          onClick={closeToCart}
+          aria-label={t.backToCart}
+        >
+          ✕
+        </button>
+
         {/*
           One heading rather than a title and a subtitle. The two buttons below
           already say "payment" twice, so the question does not repeat it.

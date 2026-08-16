@@ -528,6 +528,10 @@ export const en = {
       showPassword: "Show password", 
       hidePassword: "Hide password", 
       wrongCredentials: "❌ Incorrect username or password",
+      forgotPasswordLink: "Forgot password?",
+      forgotPasswordSending: "Sending reset link...",
+      forgotPasswordSent: "✅ A password reset link has been sent to the manager address.",
+      forgotPasswordFailed: "⚠️ The link could not be sent. Please try again in a moment.",
       loginButton: "Log in",
     },
     promo: {
@@ -1019,6 +1023,7 @@ export const en = {
       textPlaceholder: "What could we improve?",
       submitButton: "Proceed to payment →",
       optionalHint: "You can continue without rating",
+      backToCart: "Back to cart",
     },
 
     sidebar: {

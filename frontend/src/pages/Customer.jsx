@@ -181,6 +181,25 @@ export default function Customer() {
   const [pcfRating, setPcfRating] = useState(0);
   const [pcfText, setPcfText] = useState("");
 
+  // Going back closes the feedback dialog. Without this the panel behind it
+  // changes while the dialog keeps the screen, leaving the customer looking at
+  // a prompt about a checkout she has just navigated away from.
+  //
+  // Kept as its own effect, next to the state it owns, rather than folded into
+  // the history effect above: that one is about which panel is showing, and
+  // reaching forward to a setter declared eighty lines below it would be
+  // harder to follow than an extra listener.
+  useEffect(() => {
+    if (!preCheckoutOpen) return;
+
+    function closeOnBack() {
+      setPreCheckoutOpen(false);
+    }
+
+    window.addEventListener("popstate", closeOnBack);
+    return () => window.removeEventListener("popstate", closeOnBack);
+  }, [preCheckoutOpen]);
+
   // Declared after `products` and the product dialog's own state, since it
   // resolves the product to try on from the code that dialog is showing.
   const {
@@ -679,6 +698,20 @@ export default function Customer() {
    * simply not saved, so the feedback list is never padded with empty rows
    * that would drag the average rating down towards zero.
    */
+  /**
+   * Leaves the feedback step for the cart, keeping nothing.
+   *
+   * The ✕ and Escape mean the purchase is being reconsidered, not that the
+   * rating is being submitted, so what was typed is dropped rather than sent.
+   * A dismissal that quietly saved would be a side effect nobody asked for,
+   * and the customer is going back to a screen she will likely return from —
+   * saving here would collect a second entry for the same visit.
+   */
+  function closeFeedbackToCart() {
+    setPreCheckoutOpen(false);
+    setCartOpen(true);
+  }
+
   function continueToCheckout() {
     const comment = pcfText.trim();
     const hasFeedback = pcfRating > 0 || comment !== "";
@@ -1092,6 +1125,7 @@ export default function Customer() {
         setPcfRating={setPcfRating}
         setPcfText={setPcfText}
         continueToCheckout={continueToCheckout}
+        closeToCart={closeFeedbackToCart}
       />
 
       <TryOnModal
