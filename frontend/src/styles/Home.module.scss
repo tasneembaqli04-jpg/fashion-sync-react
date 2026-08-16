@@ -50,33 +50,6 @@
   filter: brightness(0.28) saturate(0.5);
 }
 
-.floatItem {
-  position: fixed;
-  font-size: 4rem;
-  opacity: 0.6; 
-  pointer-events: none;
-  z-index: 5;
-  animation: floatAround 8s infinite linear; 
-}
-
-@keyframes floatAround {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate(30px, -40px) rotate(10deg);
-  }
-  50% {
-    transform: translate(-20px, -80px) rotate(-5deg);
-  }
-  75% {
-    transform: translate(40px, -50px) rotate(8deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-}
-
 .nav {
   position: relative;
   z-index: 10;

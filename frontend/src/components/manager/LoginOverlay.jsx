@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import FloatingItems from "../home/FloatingItems";
 import { signIn } from "../../services/auth/firebaseAuth";
 import { auth } from "../../firebase";
 import { setPersistence, browserSessionPersistence } from "firebase/auth";
@@ -92,7 +91,6 @@ export default function LoginOverlay({ onLoginSuccess }) {
       <div className={loginStyles.bgLayer}>
         <div className={homeStyles.homePage}>
           <HomeBackground featuredImage={featuredImage} />
-          <FloatingItems />
           <HomeNavbar isLight={false} onToggleTheme={() => {}} />
           <HomeHero onOpenLogin={() => {}} onBrowse={() => {}} />
         </div>

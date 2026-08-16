@@ -180,7 +180,6 @@ export default function Customer() {
   const [preCheckoutOpen, setPreCheckoutOpen] = useState(false);
   const [pcfRating, setPcfRating] = useState(0);
   const [pcfText, setPcfText] = useState("");
-  const [pcfTopics, setPcfTopics] = useState([]);
 
   // Declared after `products` and the product dialog's own state, since it
   // resolves the product to try on from the code that dialog is showing.
@@ -670,20 +669,11 @@ export default function Customer() {
     setPreCheckoutOpen(true);
   }
 
-  function togglePcfTopic(topic) {
-    setPcfTopics((prev) =>
-      prev.includes(topic)
-        ? prev.filter((item) => item !== topic)
-        : [...prev, topic],
-    );
-  }
-
   function submitPreCheckoutFeedback() {
     addFeedback({
       type: "pre-checkout",
       user: currentUser?.email || dict.customer.misc.guestFallbackName,
       rating: pcfRating,
-      topics: pcfTopics,
       text: pcfText.trim(),
     });
 
@@ -1089,10 +1079,8 @@ export default function Customer() {
         open={preCheckoutOpen}
         pcfRating={pcfRating}
         pcfText={pcfText}
-        selectedTopics={pcfTopics}
         setPcfRating={setPcfRating}
         setPcfText={setPcfText}
-        togglePcfTopic={togglePcfTopic}
         submitPreCheckoutFeedback={submitPreCheckoutFeedback}
         skipToCheckout={skipToCheckout}
       />

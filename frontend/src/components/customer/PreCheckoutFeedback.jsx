@@ -7,10 +7,8 @@ export default function PreCheckoutFeedback({
   open = false,
   pcfRating = 0,
   pcfText = "",
-  selectedTopics = [],
   setPcfRating,
   setPcfText,
-  togglePcfTopic,
   submitPreCheckoutFeedback,
   skipToCheckout,
 }) {
@@ -21,15 +19,6 @@ export default function PreCheckoutFeedback({
     onClose: skipToCheckout,
   });
 
-  const topics = [
-    t.topicDesign,
-    t.topicSearch,
-    t.topicShopping,
-    t.topicMobile,
-    t.topicChatbot,
-    t.topicSuggestion,
-  ];
-
   return (
     <div
       className={modalStyles.preCheckoutFeedback}
@@ -37,11 +26,11 @@ export default function PreCheckoutFeedback({
       style={{ display: open ? "flex" : "none" }}
     >
       <div ref={dialogRef} {...dialogProps} className={modalStyles.pcfBox}>
+        {/*
+          One heading rather than a title and a subtitle. The two buttons below
+          already say "payment" twice, so the question does not repeat it.
+        */}
         <div className={modalStyles.pcfTitle}><span {...titleProps}>{t.title}</span></div>
-
-        <div className={modalStyles.pcfSub}>
-          {t.subtitle}
-        </div>
 
         <div className={modalStyles.pcfStars} id="pcf-stars-row">
           {[1, 2, 3, 4, 5].map((value) => (
@@ -54,23 +43,6 @@ export default function PreCheckoutFeedback({
             >
               ⭐
             </span>
-          ))}
-        </div>
-
-        <div className={modalStyles.pcfTopics} id="pcf-topics">
-          {topics.map((topic) => (
-            <button
-              key={topic}
-              type="button"
-              className={`${modalStyles.pcfTopic} ${
-                selectedTopics.includes(topic)
-                  ? modalStyles.selectedTopic
-                  : ""
-              }`}
-              onClick={() => togglePcfTopic(topic)}
-            >
-              {topic}
-            </button>
           ))}
         </div>
 

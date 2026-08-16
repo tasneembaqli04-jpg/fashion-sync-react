@@ -239,6 +239,16 @@ export const he = {
       markAsUnread: "↺ סמן כלא נקרא",
       alreadyRead: "✓ נקרא",
       unreadBadge: "חדש",
+
+      // Labels for the topics older feedback was tagged with. The customer
+      // form no longer offers them, but entries from when it did still need
+      // naming, so they live with the screen that displays that history.
+      topicDesign: "🎨 עיצוב",
+      topicSearch: "🔍 חיפוש",
+      topicShopping: "🛒 קנייה",
+      topicMobile: "📱 מובייל",
+      topicChatbot: "💬 צ׳אטבוט",
+      topicSuggestion: "💡 הצעה",
     },
     analytics: {
       title: "אנליטיקה",
@@ -1050,15 +1060,8 @@ export const he = {
     },
 
     preCheckoutFeedback: {
-      title: "💡 לפני שאתה משלם...",
-      subtitle: "יש לך הצעות לשיפור האתר? נשמח לשמוע! (אפשר לדלג)",
-      topicDesign: "🎨 עיצוב",
-      topicSearch: "🔍 חיפוש",
-      topicShopping: "🛒 קנייה",
-      topicMobile: "📱 מובייל",
-      topicChatbot: "💬 צ'אטבוט",
-      topicSuggestion: "💡 הצעה",
-      textPlaceholder: "כתוב הערה כלשהי... (לא חובה)",
+      title: "איך היה באתר שלנו?",
+      textPlaceholder: "מה עבד טוב, ומה היה יכול להיות טוב יותר?",
       submitButton: "שלח וקדם לתשלום ←",
       skipButton: "דלג ועבור לתשלום",
     },
