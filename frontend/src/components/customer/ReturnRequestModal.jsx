@@ -16,11 +16,13 @@ export default function ReturnRequestModal({
   const { dialogRef, dialogProps, titleProps } = useModalA11y({ onClose });
   const t = dict.customer.returns;
 
+  // "Changed my mind" is no longer offered. The reason is kept in the
+  // dictionaries and in the manager's REASON_KEY_MAP, so a request raised
+  // while it was on the list still shows its own label rather than a blank.
   const REASONS = [
     { key: "defective", label: t.reasonDefective },
     { key: "wrongSize", label: t.reasonWrongSize },
     { key: "notAsDescribed", label: t.reasonNotAsDescribed },
-    { key: "changedMind", label: t.reasonChangedMind },
     { key: "other", label: t.reasonOther },
   ];
 
