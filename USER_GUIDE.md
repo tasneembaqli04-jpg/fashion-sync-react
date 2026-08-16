@@ -28,10 +28,10 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 | **Check out** | Delivery details are pre-filled from your account. Choose standard, express, same-day or store pickup, then a payment method. Standard delivery is free from ₪200, measured on the order total **before** any coupon or points discount. Paying by card in instalments splits the total so the instalments add up to it exactly, which can leave the final one a few agorot apart from the rest |
 | **Rate the shop** | On the way to payment you are asked how the experience was. Rating is optional: the button carries on to checkout either way, and the ✕ takes you back to the cart if you would rather keep shopping |
 | **Pay** | Apply a coupon, redeem loyalty points, or pay with a gift card. You earn one point per ₪1 spent, and 20 points are worth ₪1 off — so points return about 5% of what you spend |
-| **Track** | Follow the order from "My Orders". A confirmation email arrives on purchase |
+| **Track** | Follow the order from "My Orders", newest first, with delivered orders at the bottom. Two selectors narrow the list to a month or a whole year. A confirmation email arrives on purchase |
 | **Cancel** | Available on your own from "My Orders", within 24 hours of ordering and before it ships |
 | **Return** | Available once the order shows "Delivered", within 7 days. Select the items and submit; after the manager approves, a credit is issued as a gift card with an `RTN-` code |
-| **Get in touch** | The store policy page carries a contact form. Your message reaches the manager, and she is notified by email |
+| **Get in touch** | The store policy page carries a contact form. If you are signed in, your email address is filled in for you. Your message reaches the manager, she is notified by email, and her reply arrives by email at the address on the message |
 
 Gift cards and return credits are checked from the "Gift Card" page, using codes beginning with `GC-` or `RTN-`.
 
@@ -82,18 +82,22 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 
 | Screen | What it does |
 |---|---|
+| **Overview** | The shop at a glance: items in stock, sales, stock issues needing attention, and the active alerts |
 | **Inventory** | Add and edit products, including variants by colour and size, images and prices. Name and description are translated to English automatically on save |
+| **Alerts** | Out of stock, low stock and high demand, filtered by kind and by age. Alerts are kept for a week and follow the product's current status |
 | **Orders** | All orders, searchable by order number or phone. Orders past the promised delivery time are flagged "⏰ Delayed" |
 | **Deliveries** | Advance the status: Approved → In preparation → Shipped / Ready for pickup → Delivered / Collected |
 | **Receipts** | Full breakdown of every transaction |
 | **Returns** | Approve or reject return requests. Approving issues the credit automatically |
-| **Enquiries** | Messages customers sent from the contact form on the policy page |
+| **Enquiries** | Messages customers sent from the contact form on the policy page. Type a reply and it is emailed to the customer, then kept on the message so you can see what was answered. An enquiry sent without an address cannot be replied to, and says so. Answering marks it read |
 | **Feedback** | Ratings and comments customers left on their way to payment |
 | **Coupons** | Create and manage discount codes |
 | **Gift cards** | Approve or reject gift card orders |
 | **Stock alerts** | Customers waiting for a product to return |
 | **Store settings** | Policy text, business hours, and store details. Changes reach the chatbot immediately |
 | **Analytics** | Sales trends and performance, from live data. Revenue counts goods sold: delivery fees are not income, and a gift card counts when it is spent rather than when it is bought |
+
+**Filtering by month** is available on every screen that lists records over time — orders, deliveries, receipts, gift cards, returns, stock alerts, enquiries and feedback. Two selectors, month and year: pick a year on its own to see the whole year, or clear the year to see everything. Each screen opens on the current month.
 
 **Barcode scanning** is available when adding a product, where it fills in the product code, and as a standalone scanner for finding an existing product. It reads from the device camera and requires camera permission.
 
