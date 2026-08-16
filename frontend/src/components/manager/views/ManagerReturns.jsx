@@ -9,13 +9,13 @@ import { sendReturnStatusEmail } from "../../../services/email/emailService";
 import { restockReturnedItem } from "../../../services/products/productsService";
 import { issueGiftCard } from "../../../services/giftcard/giftCardService";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 import { buildReturnCreditMessage } from "../../../functions/manager/returnCredit";
 
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
 const REASON_KEY_MAP = {
   defective: "reasonDefective",
   wrongSize: "reasonWrongSize",
@@ -32,7 +32,6 @@ export default function ManagerReturns({ products = [] }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.returns;
   const locale = lang === "en" ? "en-US" : "he-IL";
-  const MONTH_NAMES = dict.monthNames;
 
   function fmtDate(value) {
     if (!value) return "";
@@ -45,12 +44,6 @@ export default function ManagerReturns({ products = [] }) {
       hour: "2-digit",
       minute: "2-digit",
     });
-  }
-
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
   }
 
   const [requests, setRequests] = useState([]);
@@ -137,18 +130,10 @@ export default function ManagerReturns({ products = [] }) {
     }
   }
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(requests.map((r) => getMonthKey(r.createdAt)));
-    keys.add(getMonthKey(new Date()));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [requests]);
-
   const visibleRequests = useMemo(() => {
     return requests.filter((r) => {
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
-      if (monthFilter !== "all" && getMonthKey(r.createdAt) !== monthFilter) {
-        return false;
-      }
+      if (!matchesMonthFilter(monthFilter, r.createdAt)) return false;
       return true;
     });
   }, [requests, statusFilter, monthFilter]);
@@ -196,25 +181,13 @@ export default function ManagerReturns({ products = [] }) {
           </button>
         ))}
 
-        <select
+        {/* Returns are filed by createdAt, when the request was raised. */}
+        <MonthFilter
+          records={requests}
+          getDate={(r) => r.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {loading ? (

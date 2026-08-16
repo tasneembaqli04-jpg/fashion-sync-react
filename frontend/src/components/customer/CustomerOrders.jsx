@@ -8,14 +8,13 @@ import { canCancelOrder, canRequestReturn } from "../../functions/customer/order
 import { getItemName } from "../../functions/customer/itemDisplay";
 import { setPickupSchedule } from "../../services/orders/ordersService";
 import { sendPickupScheduledEmail } from "../../services/email/emailService";
+import MonthFilter from "../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../functions/shared/monthFilter";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
 
 export default function CustomerOrders({ show, orders = [], returnRequests = [], onRequestReturn, onCancelOrder, onUpdateOrder }) {
   const { t: dict, lang } = useLanguage();
@@ -80,7 +79,6 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
     setPickupErrors((prev) => ({ ...prev, [order.id]: "" }));
   }
   const STATUS_LABELS = dict.orderStatusLabels;
-  const MONTH_NAMES = dict.monthNames;
 
   const FILTERS = [
     { key: "all", label: t.allFilter },
@@ -89,12 +87,6 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
     { key: 2, label: STATUS_LABELS[2] },
     { key: 3, label: STATUS_LABELS[3] },
   ];
-
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return t.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
@@ -125,15 +117,13 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
     });
   }, [orders]);
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(sortedOrders.map((o) => getMonthKey(o.createdAt || o.date)));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [sortedOrders]);
-
+  // The customer files an order by createdAt, falling back to date. The
+  // manager screen reads the same two fields the other way round; neither is
+  // changed here, because either change would move orders between months on
+  // one of the two screens.
   const monthFilteredOrders = useMemo(() => {
-    if (monthFilter === "all") return sortedOrders;
-    return sortedOrders.filter(
-      (order) => getMonthKey(order.createdAt || order.date) === monthFilter
+    return sortedOrders.filter((order) =>
+      matchesMonthFilter(monthFilter, order.createdAt || order.date),
     );
   }, [sortedOrders, monthFilter]);
 
@@ -199,25 +189,12 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       <div className={commonStyles.pageSub}>{t.subtitle}</div>
 
       <div style={{ marginBottom: "0.8rem" }}>
-        <select
+        <MonthFilter
+          records={sortedOrders}
+          getDate={(order) => order.createdAt || order.date}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2, transparent)",
-            color: "var(--text)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       <div

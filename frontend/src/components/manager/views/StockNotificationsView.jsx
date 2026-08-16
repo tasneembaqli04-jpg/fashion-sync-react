@@ -9,18 +9,17 @@ import {
 import { sendStockAlertEmail } from "../../../services/email/emailService";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
 
 export default function StockNotificationsView({ products = [], initialProductCode = "" }) {
   const { confirmDialog } = useDialog();
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.stockNotifications;
-  const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   function fmtDate(value) {
@@ -36,11 +35,6 @@ export default function StockNotificationsView({ products = [], initialProductCo
     });
   }
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,19 +80,11 @@ export default function StockNotificationsView({ products = [], initialProductCo
 
   const pendingCount = items.filter((item) => !item.notified).length;
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(items.map((item) => getMonthKey(item.createdAt)));
-    keys.add(getMonthKey(new Date()));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [items]);
-
   const visibleItems = useMemo(() => {
     return items.filter((item) => {
       if (statusFilter === "pending" && item.notified) return false;
       if (statusFilter === "notified" && !item.notified) return false;
-      if (monthFilter !== "all" && getMonthKey(item.createdAt) !== monthFilter) {
-        return false;
-      }
+      if (!matchesMonthFilter(monthFilter, item.createdAt)) return false;
       if (productCodeFilter && item.productCode !== productCodeFilter) {
         return false;
       }
@@ -189,25 +175,13 @@ export default function StockNotificationsView({ products = [], initialProductCo
           </button>
         ))}
 
-        <select
+        {/* Stock requests are filed by createdAt, when the customer asked. */}
+        <MonthFilter
+          records={items}
+          getDate={(item) => item.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {loading ? (

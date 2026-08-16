@@ -360,3 +360,41 @@ export async function sendGiftCardRejectedEmail({ toEmail, lang }) {
     return null;
   }
 }
+const CONTACT_REPLY_EMAIL_URL =
+  import.meta.env.VITE_CONTACT_REPLY_EMAIL_URL ||
+  "http://127.0.0.1:5001/fashionsync-dc79f/us-central1/sendContactReplyEmail";
+
+/**
+ * Emails the manager's reply to whoever sent an enquiry.
+ *
+ * Unlike the other messages here, a failure is reported to the caller rather
+ * than only logged: the manager is waiting on the result, and the reply is
+ * saved to the enquiry only if it actually went. Recording an answer the
+ * customer never received would be worse than not recording one.
+ *
+ * @param {object} options - The reply to send.
+ * @returns {Promise<object|null>} The response, or null when nothing was sent.
+ * @throws {Error} When the send failed, so the caller does not save the reply.
+ */
+export async function sendContactReplyEmail({
+  toEmail,
+  name,
+  originalMessage,
+  replyText,
+}) {
+  if (!toEmail || !replyText) return null;
+
+  const response = await fetch(CONTACT_REPLY_EMAIL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ toEmail, name, originalMessage, replyText }),
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || "The reply could not be sent");
+  }
+
+  return data;
+}

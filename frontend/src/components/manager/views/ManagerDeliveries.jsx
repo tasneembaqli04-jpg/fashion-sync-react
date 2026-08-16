@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import deliveriesStyles from "../../../styles/manager/ManagerDeliveries.module.scss";
@@ -6,18 +6,17 @@ import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { DELIVERED_STAGE } from "../../../functions/manager/orderStatus";
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+  UNKNOWN_MONTH,
+} from "../../../functions/shared/monthFilter";
 
 export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loading = false }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.deliveries;
   const STEP_LABELS = dict.orderStatusLabels;
-  const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   const STAGE_TABS = [
@@ -41,12 +40,6 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
     });
   }
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
-
   const [stageFilter, setStageFilter] = useState(0);
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -62,22 +55,41 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
     [orders],
   );
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(confirmedOrders.map((o) => getMonthKey(o.createdAt)));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [confirmedOrders]);
+  // Landing on a month that has deliveries.
+  //
+  // This screen used to move itself to the newest month with orders whenever
+  // the selected one had none. That was needed because its selector listed
+  // only months that had orders, so the month it opened on could be missing
+  // from the list entirely and nothing would appear selected.
+  //
+  // The shared selector always offers all twelve months, so that can no
+  // longer happen — but the landing is worth keeping: opening deliveries in a
+  // quiet month should still show the deliveries there are. It runs once,
+  // when the orders first arrive. Running it again would undo a deliberate
+  // choice of an empty month, which the manager can now make.
+  const hasLanded = useRef(false);
 
   useEffect(() => {
-    if (monthFilter === "all") return;
-    if (availableMonths.length === 0) return;
-    if (!availableMonths.includes(monthFilter)) {
-      setMonthFilter(availableMonths[0]);
+    if (hasLanded.current || !confirmedOrders.length) return;
+    hasLanded.current = true;
+
+    const monthsWithOrders = [
+      ...new Set(confirmedOrders.map((o) => getMonthKey(o.createdAt))),
+    ]
+      // Orders with no date belong to no month, and landing on them would
+      // show an empty screen. The old sort put them first.
+      .filter((key) => key !== UNKNOWN_MONTH)
+      .sort((a, b) => (a < b ? 1 : -1));
+
+    if (monthsWithOrders.length && !monthsWithOrders.includes(monthFilter)) {
+      setMonthFilter(monthsWithOrders[0]);
     }
-  }, [availableMonths]);
+  }, [confirmedOrders, monthFilter]);
 
   const monthFilteredOrders = useMemo(() => {
-    if (monthFilter === "all") return confirmedOrders;
-    return confirmedOrders.filter((order) => getMonthKey(order.createdAt) === monthFilter);
+    return confirmedOrders.filter((order) =>
+      matchesMonthFilter(monthFilter, order.createdAt),
+    );
   }, [confirmedOrders, monthFilter]);
 
   const sortedOrders = useMemo(() => {
@@ -122,25 +134,13 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
       </div>
 
       <div style={{ marginBottom: "0.8rem" }}>
-        <select
+        {/* Deliveries are filed by createdAt, when the order was placed. */}
+        <MonthFilter
+          records={confirmedOrders}
+          getDate={(order) => order.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.95rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       <div

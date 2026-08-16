@@ -8,18 +8,16 @@ import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss"
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
 export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrder, loading = false }) {
   const { lang, t: dict } = useLanguage();
   const { confirmDialog } = useDialog();
   const t = dict.manager.orders;
-  const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   function fmtDate(value) {
@@ -33,26 +31,16 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
     });
   }
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
-
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
   const [monthFilter, setMonthFilter] = useState(getMonthKey(new Date()));
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(orders.map((o) => getMonthKey(o.date || o.createdAt)));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [orders]);
-
+  // Orders are filed by date, falling back to createdAt. Both use sites read
+  // it the same way, and the cards above and the list below must agree.
   const monthFilteredOrders = useMemo(() => {
-    if (monthFilter === "all") return orders;
-    return orders.filter(
-      (o) => getMonthKey(o.date || o.createdAt) === monthFilter,
+    return orders.filter((o) =>
+      matchesMonthFilter(monthFilter, o.date || o.createdAt),
     );
   }, [orders, monthFilter]);
 
@@ -68,8 +56,8 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
     if (statusFilter === "ready" && !order.confirmed) return false;
     if (statusFilter === "pending" && order.confirmed) return false;
 
-    if (monthFilter !== "all") {
-      if (getMonthKey(order.date || order.createdAt) !== monthFilter) return false;
+    if (!matchesMonthFilter(monthFilter, order.date || order.createdAt)) {
+      return false;
     }
 
     const term = searchTerm.trim();
@@ -225,25 +213,13 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
           }}
         />
 
-        <select
+        {/* Orders are filed by date, falling back to createdAt. */}
+        <MonthFilter
+          records={orders}
+          getDate={(o) => o.date || o.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.95rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {/*

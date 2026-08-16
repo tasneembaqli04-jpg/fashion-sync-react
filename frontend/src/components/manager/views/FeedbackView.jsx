@@ -6,18 +6,16 @@ import {
   updateFeedbackReadStatus,
 } from "../../../services/feedback/feedbackService";
 import { useLanguage } from "../../../translations/LanguageProvider";
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
 export default function FeedbackView() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.feedback;
   const locale = lang === "en" ? "en-US" : "he-IL";
-  const MONTH_NAMES = dict.monthNames;
   // Feedback used to be tagged with a topic. The customer form no longer asks
   // for one, so nothing new arrives tagged, but entries from when it did are
   // still shown and still need their labels.
@@ -80,12 +78,6 @@ export default function FeedbackView() {
     });
   }
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
-
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [readFilter, setReadFilter] = useState("unread");
@@ -106,19 +98,11 @@ export default function FeedbackView() {
     );
   }
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(feedback.map((f) => getMonthKey(f.createdAt)));
-    keys.add(getMonthKey(new Date()));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [feedback]);
-
   const visibleFeedback = useMemo(() => {
     return feedback.filter((item) => {
       if (readFilter === "unread" && item.read) return false;
       if (readFilter === "read" && !item.read) return false;
-      if (monthFilter !== "all" && getMonthKey(item.createdAt) !== monthFilter) {
-        return false;
-      }
+      if (!matchesMonthFilter(monthFilter, item.createdAt)) return false;
       return true;
     });
   }, [feedback, readFilter, monthFilter]);
@@ -165,25 +149,13 @@ export default function FeedbackView() {
           </button>
         ))}
 
-        <select
+        {/* Feedback is filed by createdAt, which is the only date it carries. */}
+        <MonthFilter
+          records={feedback}
+          getDate={(item) => item.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {loading ? (

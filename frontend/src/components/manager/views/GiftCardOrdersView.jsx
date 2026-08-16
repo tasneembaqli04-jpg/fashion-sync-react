@@ -4,17 +4,15 @@ import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss"
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getAllGiftCards, translateGiftCard } from "../../../services/giftcard/giftCardService";
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
 export default function GiftCardOrdersView() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.giftCardOrders;
-  const MONTH_NAMES = dict.monthNames;
   const locale = lang === "en" ? "en-US" : "he-IL";
 
   const [giftCards, setGiftCards] = useState([]);
@@ -65,12 +63,6 @@ export default function GiftCardOrdersView() {
     });
   }
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return "";
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
-
   const entries = useMemo(() => {
     return giftCards.map((card) => ({
       code: card.code || "",
@@ -84,14 +76,8 @@ export default function GiftCardOrdersView() {
     }));
   }, [giftCards, lang]);
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(entries.map((e) => getMonthKey(e.date)));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [entries]);
-
   const monthFilteredEntries = useMemo(() => {
-    if (monthFilter === "all") return entries;
-    return entries.filter((e) => getMonthKey(e.date) === monthFilter);
+    return entries.filter((e) => matchesMonthFilter(monthFilter, e.date));
   }, [entries, monthFilter]);
 
   const totalSold = entries.length;
@@ -206,25 +192,17 @@ export default function GiftCardOrdersView() {
           <option value="over300">{t.amountOver300}</option>
         </select>
 
-        <select
+        {/*
+          Gift cards are filed by the date the card was issued. The "this
+          month" figure above is counted separately and always means the
+          current month, whatever is selected here.
+        */}
+        <MonthFilter
+          records={entries}
+          getDate={(e) => e.date}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.95rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {loading ? (
