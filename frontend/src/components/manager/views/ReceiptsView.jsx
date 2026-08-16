@@ -2,6 +2,11 @@ import { useMemo, useState } from "react";
 import styles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import ReceiptDetailsModal from "../modals/ReceiptDetailsModal";
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
 function ReceiptBlock({ receipt, locale, lang, t, onOpenDetails }) {
   function fmtDate(date) {
@@ -58,36 +63,16 @@ function ReceiptBlock({ receipt, locale, lang, t, onOpenDetails }) {
   );
 }
 
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export default function ReceiptsView({ receipts }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.receipts;
   const locale = lang === "en" ? "en-US" : "he-IL";
-  const MONTH_NAMES = dict.monthNames;
   const [query, setQuery] = useState("");
   const [monthFilter, setMonthFilter] = useState(() => getMonthKey(new Date()));
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
-
-  const availableMonths = useMemo(() => {
-    const keys = new Set(receipts.map((r) => getMonthKey(r.date)));
-    keys.add(getMonthKey(new Date()));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [receipts]);
-
   const filteredReceipts = useMemo(() => {
-    if (monthFilter === "all") return receipts;
-    return receipts.filter((r) => getMonthKey(r.date) === monthFilter);
+    return receipts.filter((r) => matchesMonthFilter(monthFilter, r.date));
   }, [receipts, monthFilter]);
 
   const matches = useMemo(() => {
@@ -161,25 +146,13 @@ export default function ReceiptsView({ receipts }) {
             <label style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
               {t.filterByMonthLabel}
             </label>
-            <select
+            {/* Receipts are filed by date, the moment of sale. */}
+            <MonthFilter
+              records={receipts}
+              getDate={(r) => r.date}
               value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "9px",
-                border: "1px solid var(--border)",
-                background: "var(--surface2)",
-                color: "var(--text)",
-                fontSize: "0.85rem",
-              }}
-            >
-              <option value="all">{t.allMonths}</option>
-              {availableMonths.map((key) => (
-                <option key={key} value={key}>
-                  {getMonthLabel(key)}
-                </option>
-              ))}
-            </select>
+              onChange={setMonthFilter}
+            />
           </div>
         </div>
 
