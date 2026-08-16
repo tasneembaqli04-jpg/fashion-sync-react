@@ -102,16 +102,18 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       _timestamp: new Date(order.createdAt || order.date || 0).getTime() || 0,
     }));
 
+    // Delivered orders sink to the bottom; everything else is newest first.
+    //
+    // This is the customer's reading list, so the most recent order is the one
+    // she is most likely to have come to look at. The manager's screens sort
+    // the other way on purpose: there the list is a work queue, and the order
+    // that has waited longest is the one that needs attention first.
     return withStatus.sort((a, b) => {
       const aDelivered = a._statusNum === 3;
       const bDelivered = b._statusNum === 3;
 
       if (aDelivered !== bDelivered) {
         return aDelivered ? 1 : -1;
-      }
-
-      if (!aDelivered) {
-        return a._timestamp - b._timestamp;
       }
 
       return b._timestamp - a._timestamp;
