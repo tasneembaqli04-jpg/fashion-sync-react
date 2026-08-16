@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import HomeBackground from "../components/home/HomeBackground.jsx";
-import FloatingItems from "../components/home/FloatingItems.jsx";
 import HomeNavbar from "../components/home/HomeNavbar.jsx";
 import HomeHero from "../components/home/HomeHero.jsx";
 import HomeFooter from "../components/home/HomeFooter.jsx";
@@ -120,7 +119,6 @@ export default function Home() {
   return (
     <div className={styles.homePage}>
       <HomeBackground featuredImage={featuredImage} />
-      <FloatingItems />
       <HomeNavbar isLight={isLight} onToggleTheme={handleToggleTheme} />
       <HomeHero onOpenLogin={openLoginModal} onBrowse={handleBrowse} />
       <HomeFooter />

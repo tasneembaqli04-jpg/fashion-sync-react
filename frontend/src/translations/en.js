@@ -239,6 +239,16 @@ export const en = {
       markAsUnread: "↺ Mark as unread",
       alreadyRead: "✓ Read",
       unreadBadge: "New",
+
+      // Labels for the topics older feedback was tagged with. The customer
+      // form no longer offers them, but entries from when it did still need
+      // naming, so they live with the screen that displays that history.
+      topicDesign: "🎨 Design",
+      topicSearch: "🔍 Search",
+      topicShopping: "🛒 Shopping",
+      topicMobile: "📱 Mobile",
+      topicChatbot: "💬 Chatbot",
+      topicSuggestion: "💡 Suggestion",
     },
     analytics: {
       title: "Analytics",
@@ -1005,17 +1015,10 @@ export const en = {
     },
 
     preCheckoutFeedback: {
-      title: "💡 Before you pay...",
-      subtitle: "Have suggestions to improve the site? We'd love to hear them! (You can skip)",
-      topicDesign: "🎨 Design",
-      topicSearch: "🔍 Search",
-      topicShopping: "🛒 Shopping",
-      topicMobile: "📱 Mobile",
-      topicChatbot: "💬 Chatbot",
-      topicSuggestion: "💡 Suggestion",
-      textPlaceholder: "Write any comment... (optional)",
-      submitButton: "Send and proceed to payment →",
-      skipButton: "Skip and proceed to payment",
+      title: "How was your shopping experience?",
+      textPlaceholder: "What could we improve?",
+      submitButton: "Proceed to payment →",
+      optionalHint: "You can continue without rating",
     },
 
     sidebar: {

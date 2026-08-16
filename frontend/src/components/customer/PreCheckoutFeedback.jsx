@@ -7,28 +7,20 @@ export default function PreCheckoutFeedback({
   open = false,
   pcfRating = 0,
   pcfText = "",
-  selectedTopics = [],
   setPcfRating,
   setPcfText,
-  togglePcfTopic,
-  submitPreCheckoutFeedback,
-  skipToCheckout,
+  continueToCheckout,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.preCheckoutFeedback;
+
+  // Escape does what the button does. With one way out of this step, closing
+  // the dialog and continuing are the same act, and anything already filled
+  // in is kept rather than discarded for using the keyboard.
   const { dialogRef, dialogProps, titleProps } = useModalA11y({
     isOpen: open,
-    onClose: skipToCheckout,
+    onClose: continueToCheckout,
   });
-
-  const topics = [
-    t.topicDesign,
-    t.topicSearch,
-    t.topicShopping,
-    t.topicMobile,
-    t.topicChatbot,
-    t.topicSuggestion,
-  ];
 
   return (
     <div
@@ -37,11 +29,11 @@ export default function PreCheckoutFeedback({
       style={{ display: open ? "flex" : "none" }}
     >
       <div ref={dialogRef} {...dialogProps} className={modalStyles.pcfBox}>
+        {/*
+          One heading rather than a title and a subtitle. The two buttons below
+          already say "payment" twice, so the question does not repeat it.
+        */}
         <div className={modalStyles.pcfTitle}><span {...titleProps}>{t.title}</span></div>
-
-        <div className={modalStyles.pcfSub}>
-          {t.subtitle}
-        </div>
 
         <div className={modalStyles.pcfStars} id="pcf-stars-row">
           {[1, 2, 3, 4, 5].map((value) => (
@@ -57,23 +49,6 @@ export default function PreCheckoutFeedback({
           ))}
         </div>
 
-        <div className={modalStyles.pcfTopics} id="pcf-topics">
-          {topics.map((topic) => (
-            <button
-              key={topic}
-              type="button"
-              className={`${modalStyles.pcfTopic} ${
-                selectedTopics.includes(topic)
-                  ? modalStyles.selectedTopic
-                  : ""
-              }`}
-              onClick={() => togglePcfTopic(topic)}
-            >
-              {topic}
-            </button>
-          ))}
-        </div>
-
         <textarea
           className={modalStyles.pcfTextarea}
           id="pcf-text"
@@ -82,23 +57,27 @@ export default function PreCheckoutFeedback({
           onChange={(e) => setPcfText(e.target.value)}
         />
 
+        {/*
+          One button, not two. Both used to lead to checkout, which left the
+          customer choosing between them at the moment she wants to pay. What
+          she filled in decides whether anything is sent.
+        */}
         <div className={modalStyles.pcfActions}>
           <button
             type="button"
             className={`${baseStyles.btn} ${baseStyles.btnGold}`}
-            onClick={submitPreCheckoutFeedback}
+            onClick={continueToCheckout}
           >
             {t.submitButton}
           </button>
-
-          <button
-            type="button"
-            className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-            onClick={skipToCheckout}
-          >
-            {t.skipButton}
-          </button>
         </div>
+
+        {/*
+          Says the rating is optional. Without it a single button above a set
+          of stars reads as a form to complete, and a customer who does not
+          want to rate has no way of knowing she can simply carry on.
+        */}
+        <div className={modalStyles.pcfHint}>{t.optionalHint}</div>
       </div>
     </div>
   );

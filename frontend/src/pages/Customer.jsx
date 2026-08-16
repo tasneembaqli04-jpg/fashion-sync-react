@@ -180,7 +180,6 @@ export default function Customer() {
   const [preCheckoutOpen, setPreCheckoutOpen] = useState(false);
   const [pcfRating, setPcfRating] = useState(0);
   const [pcfText, setPcfText] = useState("");
-  const [pcfTopics, setPcfTopics] = useState([]);
 
   // Declared after `products` and the product dialog's own state, since it
   // resolves the product to try on from the code that dialog is showing.
@@ -663,35 +662,36 @@ export default function Customer() {
       return;
     }
 
+    // Cleared each time, so a rating left from an earlier visit to checkout
+    // is not shown as though it had just been given.
     setCartOpen(false);
     setPcfRating(0);
     setPcfText("");
-    setPcfTopics([]);
     setPreCheckoutOpen(true);
   }
 
-  function togglePcfTopic(topic) {
-    setPcfTopics((prev) =>
-      prev.includes(topic)
-        ? prev.filter((item) => item !== topic)
-        : [...prev, topic],
-    );
-  }
+  /**
+   * Leaves the feedback step for checkout, sending what was given.
+   *
+   * One button does both, because two buttons leading to the same screen ask
+   * the customer to make a distinction at the moment she wants to pay. What
+   * she filled in decides: anything at all is sent, and an untouched form is
+   * simply not saved, so the feedback list is never padded with empty rows
+   * that would drag the average rating down towards zero.
+   */
+  function continueToCheckout() {
+    const comment = pcfText.trim();
+    const hasFeedback = pcfRating > 0 || comment !== "";
 
-  function submitPreCheckoutFeedback() {
-    addFeedback({
-      type: "pre-checkout",
-      user: currentUser?.email || dict.customer.misc.guestFallbackName,
-      rating: pcfRating,
-      topics: pcfTopics,
-      text: pcfText.trim(),
-    });
+    if (hasFeedback) {
+      addFeedback({
+        type: "pre-checkout",
+        user: currentUser?.email || dict.customer.misc.guestFallbackName,
+        rating: pcfRating,
+        text: comment,
+      });
+    }
 
-    setPreCheckoutOpen(false);
-    navigate("/checkout");
-  }
-
-  function skipToCheckout() {
     setPreCheckoutOpen(false);
     navigate("/checkout");
   }
@@ -1089,12 +1089,9 @@ export default function Customer() {
         open={preCheckoutOpen}
         pcfRating={pcfRating}
         pcfText={pcfText}
-        selectedTopics={pcfTopics}
         setPcfRating={setPcfRating}
         setPcfText={setPcfText}
-        togglePcfTopic={togglePcfTopic}
-        submitPreCheckoutFeedback={submitPreCheckoutFeedback}
-        skipToCheckout={skipToCheckout}
+        continueToCheckout={continueToCheckout}
       />
 
       <TryOnModal

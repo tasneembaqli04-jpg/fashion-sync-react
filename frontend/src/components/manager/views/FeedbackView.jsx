@@ -18,15 +18,16 @@ export default function FeedbackView() {
   const t = dict.manager.feedback;
   const locale = lang === "en" ? "en-US" : "he-IL";
   const MONTH_NAMES = dict.monthNames;
-  const pcfT = dict.customer.preCheckoutFeedback;
-
+  // Feedback used to be tagged with a topic. The customer form no longer asks
+  // for one, so nothing new arrives tagged, but entries from when it did are
+  // still shown and still need their labels.
   const TOPIC_LABELS_BY_ID = {
-    design: pcfT.topicDesign,
-    search: pcfT.topicSearch,
-    shopping: pcfT.topicShopping,
-    mobile: pcfT.topicMobile,
-    chatbot: pcfT.topicChatbot,
-    suggestion: pcfT.topicSuggestion,
+    design: t.topicDesign,
+    search: t.topicSearch,
+    shopping: t.topicShopping,
+    mobile: t.topicMobile,
+    chatbot: t.topicChatbot,
+    suggestion: t.topicSuggestion,
   };
 
   const LEGACY_TOPIC_LABELS = {

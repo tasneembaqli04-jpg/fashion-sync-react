@@ -796,12 +796,6 @@
   margin-bottom: 0.3rem;
 }
 
-.pcfSub {
-  color: var(--light-gray);
-  font-size: 0.88rem;
-  margin-bottom: 1.2rem;
-}
-
 .pcfStars,
 .feedbackStars {
   display: flex;
@@ -825,39 +819,6 @@
   opacity: 1;
   filter: none;
   transform: scale(1.15);
-}
-
-.pcfTopics,
-.feedbackTopics {
-  display: flex;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.pcfTopic,
-.feedbackTopic {
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: none;
-  color: var(--light-gray);
-  font-family: "Alef", sans-serif;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pcfTopic:hover,
-.feedbackTopic:hover {
-  border-color: rgba(201, 168, 76, 0.4);
-  color: var(--gold);
-}
-
-.selectedTopic {
-  background: rgba(201, 168, 76, 0.12);
-  border-color: rgba(201, 168, 76, 0.4);
-  color: var(--gold);
 }
 
 .pcfTextarea,
@@ -893,6 +854,18 @@
   gap: 0.75rem;
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+/*
+  Sits under the button and stays out of its way: smaller, in the muted
+  colour, and close enough to read as a note about the button rather than as
+  another thing to act on. Alignment is inherited, so it lines up with the
+  button in both reading directions.
+*/
+.pcfHint {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .feedbackSuccess {
