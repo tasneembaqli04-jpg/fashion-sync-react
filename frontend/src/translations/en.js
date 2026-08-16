@@ -1015,10 +1015,9 @@ export const en = {
     },
 
     preCheckoutFeedback: {
-      title: "How was your experience?",
-      textPlaceholder: "What worked well, and what could be better?",
-      submitButton: "Send and proceed to payment →",
-      skipButton: "Skip and proceed to payment",
+      title: "How was your shopping experience?",
+      textPlaceholder: "What could we improve?",
+      submitButton: "Proceed to payment →",
     },
 
     sidebar: {

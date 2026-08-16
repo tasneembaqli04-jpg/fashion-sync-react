@@ -9,14 +9,17 @@ export default function PreCheckoutFeedback({
   pcfText = "",
   setPcfRating,
   setPcfText,
-  submitPreCheckoutFeedback,
-  skipToCheckout,
+  continueToCheckout,
 }) {
   const { t: dict } = useLanguage();
   const t = dict.customer.preCheckoutFeedback;
+
+  // Escape does what the button does. With one way out of this step, closing
+  // the dialog and continuing are the same act, and anything already filled
+  // in is kept rather than discarded for using the keyboard.
   const { dialogRef, dialogProps, titleProps } = useModalA11y({
     isOpen: open,
-    onClose: skipToCheckout,
+    onClose: continueToCheckout,
   });
 
   return (
@@ -54,21 +57,18 @@ export default function PreCheckoutFeedback({
           onChange={(e) => setPcfText(e.target.value)}
         />
 
+        {/*
+          One button, not two. Both used to lead to checkout, which left the
+          customer choosing between them at the moment she wants to pay. What
+          she filled in decides whether anything is sent.
+        */}
         <div className={modalStyles.pcfActions}>
           <button
             type="button"
             className={`${baseStyles.btn} ${baseStyles.btnGold}`}
-            onClick={submitPreCheckoutFeedback}
+            onClick={continueToCheckout}
           >
             {t.submitButton}
-          </button>
-
-          <button
-            type="button"
-            className={`${baseStyles.btn} ${baseStyles.btnOutline}`}
-            onClick={skipToCheckout}
-          >
-            {t.skipButton}
           </button>
         </div>
       </div>

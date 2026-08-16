@@ -670,19 +670,28 @@ export default function Customer() {
     setPreCheckoutOpen(true);
   }
 
-  function submitPreCheckoutFeedback() {
-    addFeedback({
-      type: "pre-checkout",
-      user: currentUser?.email || dict.customer.misc.guestFallbackName,
-      rating: pcfRating,
-      text: pcfText.trim(),
-    });
+  /**
+   * Leaves the feedback step for checkout, sending what was given.
+   *
+   * One button does both, because two buttons leading to the same screen ask
+   * the customer to make a distinction at the moment she wants to pay. What
+   * she filled in decides: anything at all is sent, and an untouched form is
+   * simply not saved, so the feedback list is never padded with empty rows
+   * that would drag the average rating down towards zero.
+   */
+  function continueToCheckout() {
+    const comment = pcfText.trim();
+    const hasFeedback = pcfRating > 0 || comment !== "";
 
-    setPreCheckoutOpen(false);
-    navigate("/checkout");
-  }
+    if (hasFeedback) {
+      addFeedback({
+        type: "pre-checkout",
+        user: currentUser?.email || dict.customer.misc.guestFallbackName,
+        rating: pcfRating,
+        text: comment,
+      });
+    }
 
-  function skipToCheckout() {
     setPreCheckoutOpen(false);
     navigate("/checkout");
   }
@@ -1082,8 +1091,7 @@ export default function Customer() {
         pcfText={pcfText}
         setPcfRating={setPcfRating}
         setPcfText={setPcfText}
-        submitPreCheckoutFeedback={submitPreCheckoutFeedback}
-        skipToCheckout={skipToCheckout}
+        continueToCheckout={continueToCheckout}
       />
 
       <TryOnModal

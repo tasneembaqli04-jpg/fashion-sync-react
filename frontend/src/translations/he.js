@@ -1060,10 +1060,9 @@ export const he = {
     },
 
     preCheckoutFeedback: {
-      title: "איך היה באתר שלנו?",
-      textPlaceholder: "מה עבד טוב, ומה היה יכול להיות טוב יותר?",
+      title: "איך הייתה חוויית הקנייה?",
+      textPlaceholder: "מה נוכל לשפר?",
       submitButton: "מעבר לתשלום ←",
-      skipButton: "דילוג",
     },
 
     sidebar: {
