@@ -4,7 +4,7 @@ service cloud.firestore {
 
     function isManager() {
       return request.auth != null &&
-             request.auth.token.email.lower() == "manager@fashionsync-internal.com";
+             request.auth.token.email.lower() == "fashionsyncmanager@gmail.com";
     }
 
     function isSignedIn() {

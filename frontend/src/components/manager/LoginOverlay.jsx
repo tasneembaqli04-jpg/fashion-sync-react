@@ -18,13 +18,18 @@ const MANAGER_USERNAME = "manager";
 // Email address of the manager account in Firebase Auth.
 //
 // The address is not a secret and may stay in the source: an email address on
-// its own grants nothing, and it already appears in firestore.rules and in
-// Manager.jsx.
+// its own grants nothing.
+//
+// It appears in three places that have to agree — here, the gate in
+// Manager.jsx, and isManager() in firestore.rules — and the rules file cannot
+// import from the application, so the three are kept in step by hand. Changing
+// it in fewer than all three locks the manager out: the rules alone decide
+// whether anything can be read or written.
 //
 // The password is the secret, and it is deliberately not in this file. The
 // manager types it into the form, so it never reaches the build output and is
 // never shipped to a visitor's browser.
-const MANAGER_EMAIL = "manager@fashionsync-internal.com";
+const MANAGER_EMAIL = "fashionsyncmanager@gmail.com";
 
 export default function LoginOverlay({ onLoginSuccess }) {
   const navigate = useNavigate();
