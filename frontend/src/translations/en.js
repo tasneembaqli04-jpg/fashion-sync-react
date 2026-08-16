@@ -18,6 +18,12 @@ export const en = {
     required: "Required field",
     success: "Success",
     error: "An error occurred",
+    monthFilter: {
+      allTime: "All time",
+      allMonthsInYear: "All months",
+      yearLabel: "Filter by year",
+      monthLabel: "Filter by month",
+    },
     errorBoundaryTitle: "This part could not be displayed",
     errorBoundaryMessage: "Please refresh the page, or go back and try again.",
   },

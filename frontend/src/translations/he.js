@@ -18,6 +18,12 @@ export const he = {
     required: "שדה חובה",
     success: "הפעולה הצליחה",
     error: "אירעה שגיאה",
+    monthFilter: {
+      allTime: "כל הזמנים",
+      allMonthsInYear: "כל החודשים",
+      yearLabel: "סינון לפי שנה",
+      monthLabel: "סינון לפי חודש",
+    },
     errorBoundaryTitle: "לא ניתן להציג את החלק הזה",
     errorBoundaryMessage: "כדאי לרענן את העמוד, או לחזור אחורה ולנסות שוב.",
   },
