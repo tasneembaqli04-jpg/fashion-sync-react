@@ -662,10 +662,11 @@ export default function Customer() {
       return;
     }
 
+    // Cleared each time, so a rating left from an earlier visit to checkout
+    // is not shown as though it had just been given.
     setCartOpen(false);
     setPcfRating(0);
     setPcfText("");
-    setPcfTopics([]);
     setPreCheckoutOpen(true);
   }
 
