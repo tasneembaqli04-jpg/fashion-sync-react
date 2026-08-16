@@ -8,24 +8,16 @@ import {
 } from "../../../services/contact/contactMessagesService";
 import { sendContactReplyEmail } from "../../../services/email/emailService";
 import { useLanguage } from "../../../translations/LanguageProvider";
-
-function getMonthKey(value) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+import MonthFilter from "../../common/MonthFilter";
+import {
+  getMonthKey,
+  matchesMonthFilter,
+} from "../../../functions/shared/monthFilter";
 
 export default function ManagerContactMessages() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.contactMessages;
   const locale = lang === "en" ? "en-US" : "he-IL";
-  const MONTH_NAMES = dict.monthNames;
-
-  function getMonthLabel(monthKey) {
-    if (monthKey === "unknown") return dict.customer.orders.noDate;
-    const [year, month] = monthKey.split("-");
-    return `${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
-  }
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,19 +99,11 @@ export default function ManagerContactMessages() {
     }
   }
 
-  const availableMonths = useMemo(() => {
-    const keys = new Set(messages.map((m) => getMonthKey(m.createdAt)));
-    keys.add(getMonthKey(new Date()));
-    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
-  }, [messages]);
-
   const visibleMessages = useMemo(() => {
     return messages.filter((m) => {
       if (filter === "unread" && m.read) return false;
       if (filter === "read" && !m.read) return false;
-      if (monthFilter !== "all" && getMonthKey(m.createdAt) !== monthFilter) {
-        return false;
-      }
+      if (!matchesMonthFilter(monthFilter, m.createdAt)) return false;
       return true;
     });
   }, [messages, filter, monthFilter]);
@@ -166,25 +150,13 @@ export default function ManagerContactMessages() {
           </button>
         ))}
 
-        <select
+        {/* Enquiries are filed by createdAt, the only date they carry. */}
+        <MonthFilter
+          records={messages}
+          getDate={(m) => m.createdAt}
           value={monthFilter}
-          onChange={(e) => setMonthFilter(e.target.value)}
-          style={{
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid var(--border)",
-            background: "var(--surface2)",
-            color: "var(--text)",
-            fontSize: "0.9rem",
-          }}
-        >
-          <option value="all">{t.allMonths}</option>
-          {availableMonths.map((key) => (
-            <option key={key} value={key}>
-              {getMonthLabel(key)}
-            </option>
-          ))}
-        </select>
+          onChange={setMonthFilter}
+        />
       </div>
 
       {loading ? (

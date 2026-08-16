@@ -74,21 +74,11 @@ export default function MonthFilter({
   };
 
   return (
+    // Month first, year second, in both languages. A flex row follows the
+    // page direction, so this one order reads correctly each way: month on
+    // the right in Hebrew, month on the left in English — the narrower unit
+    // leading in each, as a date is written.
     <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", ...style }}>
-      <select
-        value={selectedYear}
-        onChange={(e) => changeYear(e.target.value)}
-        aria-label={t.yearLabel}
-        style={selectStyle}
-      >
-        <option value="">{t.allTime}</option>
-        {years.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-
       <select
         value={selectedMonth}
         onChange={(e) => changeMonth(e.target.value)}
@@ -99,6 +89,20 @@ export default function MonthFilter({
         {MONTH_NAMES.map((name, index) => (
           <option key={name} value={String(index + 1).padStart(2, "0")}>
             {name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={selectedYear}
+        onChange={(e) => changeYear(e.target.value)}
+        aria-label={t.yearLabel}
+        style={selectStyle}
+      >
+        <option value="">{t.allTime}</option>
+        {years.map((year) => (
+          <option key={year} value={year}>
+            {year}
           </option>
         ))}
       </select>
