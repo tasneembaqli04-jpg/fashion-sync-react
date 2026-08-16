@@ -940,6 +940,7 @@ export const he = {
       hoursPrefix: "🕒 שעות פעילות:",
       contactEmail: "אימייל: support@fashionsync.co.il",
       contactNameLabel: "שם",
+      contactEmailFromAccount: "הכתובת נלקחת מהחשבון שלך",
       contactEmailLabel: "כתובת מייל לחזרה אליך",
       contactMessageLabel: "הודעה",
       contactMessagePlaceholder: "איך אפשר לעזור?",
