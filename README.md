@@ -63,7 +63,7 @@ Small fashion stores selling through social networks struggle to keep stock accu
           └─────────────┘         └─────────────┘
 ```
 
-The React frontend talks directly to Firebase Auth and Firestore for most operations, and to Cloud Functions for anything needing server-side logic: sending email, calling the AI models, and generating images. There are 17 cloud functions.
+The React frontend talks directly to Firebase Auth and Firestore for most operations, and to Cloud Functions for anything needing server-side logic: sending email, calling the AI models, and generating images. There are 18 cloud functions.
 
 ## The AI Pipeline
 
@@ -150,7 +150,7 @@ The rest: `carts`, `wishlists`, `deliveries`, `coupons`, `couponUsage`, `returnR
 
 ## Project Structure
 
-7 customer panels and 14 management screens, built from 57 React components over 15 Firestore collections and 17 cloud functions.
+7 customer panels and 14 management screens, built from 58 React components over 15 Firestore collections and 18 cloud functions.
 
 ```
 fashion-sync-react/
@@ -196,7 +196,7 @@ If the emulator is not running, the calls fail and the chat falls back to a loca
 
 ## Environment Variables
 
-Two files in `frontend/`, holding the same 16 variables with different values:
+Three files in `frontend/`, holding the same 17 variable names:
 
 | File | Tracked | Loaded when | Contents |
 |---|---|---|---|
@@ -204,7 +204,7 @@ Two files in `frontend/`, holding the same 16 variables with different values:
 | `.env.emulator` | Yes | Only with `npm run dev:emulator` | The same variables pointing at `127.0.0.1:5001` |
 | `.env.example` | Yes | Never | The variable names with placeholder values, to copy into `.env` |
 
-`.env.emulator` is committed on purpose: it contains nothing but localhost addresses, and keeping it in the repository means a fresh clone can run against the emulator without rebuilding sixteen URLs by hand. `.env` holds the deployed URLs and stays out.
+`.env.emulator` is committed on purpose: it contains nothing but localhost addresses, and keeping it in the repository means a fresh clone can run against the emulator without rebuilding seventeen URLs by hand. `.env` holds the deployed URLs and stays out.
 
 Vite loads `.env` first, then `.env.<mode>` on top, overriding matching names.
 
@@ -212,11 +212,11 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing and CI
 
-439 unit tests over the business logic that carries the most risk.
+487 unit tests over the business logic that carries the most risk.
 
 | Suite | Tests | Covers |
 |---|---|---|
-| Frontend | 420 across 21 files | Pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, which orders still need a decision |
+| Frontend | 468 across 24 files | Pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, date and month handling, which orders still need a decision |
 | Backend | 19 across 1 file | The search logic: Hebrew stem derivation, relevance scoring, the three-level sort |
 
 ```bash

@@ -13,6 +13,7 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../functions/shared/monthFilter";
+import { formatDate, formatDateTime } from "../../functions/shared/dateFormat";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
@@ -101,6 +102,12 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       _timestamp: new Date(order.createdAt || order.date || 0).getTime() || 0,
     }));
 
+    // Delivered orders sink to the bottom; everything else is newest first.
+    //
+    // This is the customer's reading list, so the most recent order is the one
+    // she is most likely to have come to look at. The manager's screens sort
+    // the other way on purpose: there the list is a work queue, and the order
+    // that has waited longest is the one that needs attention first.
     return withStatus.sort((a, b) => {
       const aDelivered = a._statusNum === 3;
       const bDelivered = b._statusNum === 3;
@@ -109,18 +116,19 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
         return aDelivered ? 1 : -1;
       }
 
-      if (!aDelivered) {
-        return a._timestamp - b._timestamp;
-      }
-
       return b._timestamp - a._timestamp;
     });
   }, [orders]);
 
-  // The customer files an order by createdAt, falling back to date. The
-  // manager screen reads the same two fields the other way round; neither is
-  // changed here, because either change would move orders between months on
-  // one of the two screens.
+  // The customer files an order by createdAt, falling back to date, and shows
+  // date on the order line. The two are a second or two apart, so the pair
+  // only diverge for an order placed either side of midnight at the end of a
+  // month. Left as found rather than settled, because settling it moves those
+  // orders between months.
+  //
+  // The manager's screens do not have this: their hook fills both keys with
+  // `date`, so every management screen agrees. This is the only place the two
+  // timestamps are still read separately.
   const monthFilteredOrders = useMemo(() => {
     return sortedOrders.filter((order) =>
       matchesMonthFilter(monthFilter, order.createdAt || order.date),
@@ -338,7 +346,9 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
               <div className={modalStyles.orderTop}>
                 <div>
                   <div style={{ fontWeight: 900 }}>{order.id}</div>
-                  <div className={modalStyles.orderId}>{order.date}</div>
+                  <div className={modalStyles.orderId}>
+                    {formatDateTime(order.date, lang)}
+                  </div>
                   {order.cancelled && (
                     <div
                       style={{
@@ -462,7 +472,8 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
               {order.shipping?.id === "pickup" && order.pickupDate && (
                 <div style={{ color: "var(--blue)", fontSize: "0.82rem", marginTop: "0.4rem" }}>
-                  🗓️ {t.pickupScheduledLabel} {order.pickupDate} {order.pickupTime}
+                  🗓️ {t.pickupScheduledLabel} {formatDate(order.pickupDate, lang)}{" "}
+                  {order.pickupTime}
                 </div>
               )}
 

@@ -9,11 +9,11 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
+import { formatDate } from "../../../functions/shared/dateFormat";
 
 export default function GiftCardOrdersView() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.giftCardOrders;
-  const locale = lang === "en" ? "en-US" : "he-IL";
 
   const [giftCards, setGiftCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,17 +51,6 @@ export default function GiftCardOrdersView() {
       loadCards().then(() => setTranslating(false));
     });
   }, [loading]);
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
-  }
 
   const entries = useMemo(() => {
     return giftCards.map((card) => ({
@@ -315,7 +304,7 @@ export default function GiftCardOrdersView() {
               </div>
 
               <div style={{ fontSize: "0.82rem", opacity: 0.7, whiteSpace: "nowrap" }}>
-                🕒 {fmtDate(entry.date)}
+                🕒 {formatDate(entry.date, lang)}
               </div>
             </div>
           ))}

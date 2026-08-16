@@ -103,7 +103,16 @@ export const en = {
       customSizeTag: "⚠️ Custom size",
       confirmOrderButton: "✅ Confirm order",
       rejectOrderButton: "✕ Reject order",
-      confirmRejectPrompt: "Are you sure you want to reject this order? The customer will receive an email.",
+      confirmRejectPrompt: "Reject this order? An email will be sent about it.",
+      confirmApprovePrompt: "Approve this order? An email will be sent about it.",
+      confirmApproveGiftCardPrompt:
+        "Approve this order? The gift card will be activated, and an email will be sent about it.",
+      decisionWriteFailed:
+        "The action was not saved. The order is unchanged, and you can try again.",
+      decisionEmailFailed:
+        "The order was updated, but the email was not sent. It is worth getting in touch directly.",
+      decisionGiftCardFailed:
+        "The order was updated, but the gift card was not. Check it on the gift cards screen.",
       orderDetailsButton: "📋 Order details",
       cancelledLabel: "✕ Cancelled",
       cancelledSuffix: "Cancelled",

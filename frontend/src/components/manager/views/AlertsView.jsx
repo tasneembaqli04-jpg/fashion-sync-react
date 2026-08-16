@@ -4,6 +4,7 @@ import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 function alertClass(type) {
   if (type === "danger") {
@@ -21,17 +22,6 @@ function alertClass(type) {
 export default function AlertsView({ alerts = [], products = [], onViewStockRequests }) {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.alerts;
-  const locale = lang === "en" ? "en-US" : "he-IL";
-
-  function fmtDate(date) {
-    return new Date(date).toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   const TABS = [
     { key: "", label: t.tabAll },
@@ -199,7 +189,7 @@ export default function AlertsView({ alerts = [], products = [], onViewStockRequ
                         marginTop: ".15rem",
                       }}
                     >
-                      🕒 {fmtDate(alert.createdAt)}
+                      🕒 {formatDateTime(alert.createdAt, lang)}
                     </div>
                   </div>
                 </div>

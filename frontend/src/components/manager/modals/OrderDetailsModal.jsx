@@ -4,6 +4,7 @@ import {
   getItemName,
   getItemSize,
 } from "../../../functions/customer/itemDisplay";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 export default function OrderDetailsModal({ open, order, onClose }) {
   const { lang, t: dict } = useLanguage();
@@ -12,19 +13,11 @@ export default function OrderDetailsModal({ open, order, onClose }) {
     isOpen: open,
     onClose: onClose,
   });
-  const locale = lang === "en" ? "en-US" : "he-IL";
-
+  // The shared formatter returns an empty string for a date it cannot read.
+  // An order document says so instead, and prints the full year rather than
+  // the two digits the list screens use.
   function fmtDate(value) {
-    if (!value) return t.unknown;
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return t.unknown;
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDateTime(value, lang, { fullYear: true }) || t.unknown;
   }
 
   const PAY_METHOD_LABELS = {

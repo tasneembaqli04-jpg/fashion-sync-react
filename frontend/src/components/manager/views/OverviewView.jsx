@@ -5,6 +5,7 @@ import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getSlowProducts } from "../../../functions/manager/analytics";
 import { HIGH_DEMAND_THRESHOLD } from "../../../functions/manager/managerHelpers";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 function getAlertClass(type) {
   if (type === "danger") {
@@ -31,16 +32,6 @@ export default function OverviewView({
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.overview;
   const locale = lang === "en" ? "en-US" : "he-IL";
-
-  function fmtDate(date) {
-    return new Date(date).toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   const today = new Date().toLocaleDateString(locale, {
     weekday: "long",
@@ -205,7 +196,7 @@ export default function OverviewView({
                           marginTop: ".15rem",
                         }}
                       >
-                        🕒 {fmtDate(alert.createdAt)}
+                        🕒 {formatDateTime(alert.createdAt, lang)}
                       </div>
                     </div>
                   </div>

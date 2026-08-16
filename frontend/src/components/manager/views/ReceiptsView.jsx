@@ -7,24 +7,16 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 function ReceiptBlock({ receipt, locale, lang, t, onOpenDetails }) {
-  function fmtDate(date) {
-    return new Date(date).toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 
   return (
     <div className={styles.receiptBlock}>
       <div className={styles.receiptHd}>
         <div>
           <div className={styles.receiptId}>{receipt.id}</div>
-          <div className={styles.receiptDate}>{fmtDate(receipt.date)}</div>
+          <div className={styles.receiptDate}>{formatDateTime(receipt.date, lang)}</div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>

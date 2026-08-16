@@ -11,11 +11,11 @@ import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
+import { formatDateTime } from "../../../functions/shared/dateFormat";
 
 export default function FeedbackView() {
   const { lang, t: dict } = useLanguage();
   const t = dict.manager.feedback;
-  const locale = lang === "en" ? "en-US" : "he-IL";
   // Feedback used to be tagged with a topic. The customer form no longer asks
   // for one, so nothing new arrives tagged, but entries from when it did are
   // still shown and still need their labels.
@@ -63,19 +63,6 @@ export default function FeedbackView() {
     }
 
     return cleaned;
-  }
-
-  function fmtDate(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleString(locale, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   }
 
   const [feedback, setFeedback] = useState([]);
@@ -189,7 +176,7 @@ export default function FeedbackView() {
                 )}
               </div>
               <span style={{ color: "var(--muted)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                {fmtDate(item.createdAt)}
+                {formatDateTime(item.createdAt, lang)}
               </span>
             </div>
 
