@@ -649,7 +649,7 @@ export const he = {
       messagePlaceholder: "כתוב הודעה...",
       serviceUnavailable: "העוזר אינו זמין כרגע. אפשר לנסות שוב בעוד רגע, או לעיין בעמוד המדיניות.",
       outfitImageReady: "הנה המחשת הלוק שביקשת:",
-      requestTimedOut: "לא הצלחתי להשיב הפעם. נסי שוב או שאלי משהו אחר.",
+      requestTimedOut: "לא הצלחתי להשיב הפעם , נסה שוב או שאל משהו אחר.",
       welcomeMessage: "שלום! 👋 אני SYNC, העוזר החכם של FashionSync.<br />אני יכול לעזור לך למצוא בגדים, לבדוק מחירים, שעות פתיחה ועוד.<br />במה אוכל לעזור היום?",
     },
     browse: {
