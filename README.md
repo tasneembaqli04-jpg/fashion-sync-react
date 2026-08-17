@@ -109,12 +109,12 @@ Gemini touches only the two ends. Every fact on the way through comes from Fires
 
 ## Original Algorithms
 
-Four pieces of logic are written rather than delegated, each because a library or a model call does not solve the specific problem. All four are unit tested.
+Four algorithms are implemented in the system rather than taken from a library, each solving a problem specific to a bilingual fashion catalogue. All four are unit tested.
 
 | Algorithm | What it does | Where |
 |---|---|---|
 | **Hebrew stem derivation** | Folds final letters and drops the construct-state ending, so a search for `שמלה` matches `שמלת ערב`. A four-character floor keeps short words from being ground down to noise | `toHebrewStem` |
-| **Relevance scoring** | Scores occasion, style and season at 3, 2 and 1. Scoring only reorders and never rejects, so a search cannot come back empty because of the occasion | `getProductRelevanceScore` |
+| **Relevance scoring** | Scores a product against the request on occasion, style and season, weighted 3, 2 and 1. The score sets the order of the results and never removes one | `getProductRelevanceScore` |
 | **Three-level sort** | Availability first, then relevance descending, then price ascending. A sold-out perfect match sorts below an available good one, because the customer cannot buy the first | `chatProductService` |
 | **Translation dictionary** | 17 product terms and 20 colours the translation API gets wrong — transliterating, injecting unrelated text, or picking the wrong sense of a homonym. Consulted before the API, which is called only on a miss | `translationService` |
 
@@ -131,7 +131,7 @@ Four pieces of logic are written rather than delegated, each because a library o
 | Auth | Firebase Authentication, email and password |
 | Testing | Vitest |
 
-The interface supports Hebrew and English with dynamic RTL/LTR switching, plus light and dark themes. Product cards are keyboard navigable and key dialogs close with Escape.
+The interface supports Hebrew and English with dynamic RTL/LTR switching, plus light and dark themes. Product cards are reachable by keyboard, and dialogs close with Escape.
 
 ## Data Model
 
@@ -204,7 +204,7 @@ Three files in `frontend/`, holding the same 17 variable names:
 | `.env.emulator` | Yes | Only with `npm run dev:emulator` | The same variables pointing at `127.0.0.1:5001` |
 | `.env.example` | Yes | Never | The variable names with placeholder values, to copy into `.env` |
 
-`.env.emulator` is committed on purpose: it contains nothing but localhost addresses, and keeping it in the repository means a fresh clone can run against the emulator without rebuilding seventeen URLs by hand. `.env` holds the deployed URLs and stays out.
+`.env.emulator` is in the repository because it holds nothing but localhost addresses, so a fresh clone can run against the emulator without rebuilding seventeen URLs by hand. `.env` holds the deployed URLs and stays out.
 
 Vite loads `.env` first, then `.env.<mode>` on top, overriding matching names.
 
@@ -212,7 +212,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing and CI
 
-487 unit tests over the business logic that carries the most risk.
+487 unit tests over the business logic.
 
 | Suite | Tests | Covers |
 |---|---|---|
@@ -241,14 +241,12 @@ A change to `firestore.rules` has no effect until the third command runs. Test n
 
 ## Security
 
-Firestore Security Rules are role based, and there are no passwords in the source code.
+Firestore Security Rules control access by role. Credentials live in Secret Manager, never in the repository.
 
 | Role | Access | Session |
 |---|---|---|
 | **Manager** | The only role that can edit products, settings and coupons. Identified by an exact email address on an authenticated account | `browserSessionPersistence` — ends with the tab, so the password is required again next visit |
 | **Customer** | Reads and writes only data she owns, matched by email rather than by being signed in at all | `browserLocalPersistence` — survives a browser restart |
 | **Guest** | Catalogue and store information only | None |
-
-Both persistence settings are stated explicitly rather than left to the default, because persistence belongs to the shared auth instance and not to a single sign-in call.
 
 The rules also limit which fields each role may write — a customer can update an order's cancellation fields but not its total or status — and separate reading one document from scanning a collection, so a customer can validate her own gift card without enumerating every card.

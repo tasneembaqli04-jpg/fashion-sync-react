@@ -39,7 +39,7 @@ Gift cards and return credits are checked from the "Gift Card" page, using codes
 
 ## The SYNC Chatbot
 
-SYNC answers using the settings currently configured in the system. When the manager changes business hours or policy text, the next answer already reflects it.
+SYNC answers from the store's current settings. When the manager changes business hours or policy text, the next answer already reflects it.
 
 | Ask about | Example |
 |---|---|
@@ -64,7 +64,7 @@ Try-On renders a selected product on a photo of you.
 1. Open a product from the catalogue
 2. Choose Try-On
 3. Upload a photo of yourself
-4. Press the activation button and wait for the image
+4. Press "Run Try It On" and wait for the image
 
 The result is a simulation for guidance, not a photograph of the product on you.
 
@@ -74,11 +74,11 @@ The result is a simulation for guidance, not a photograph of the product on you.
 
 ## Manager Guide
 
-Sign in at the `/manager` address with the manager username and password. The password is never stored in the site and must be typed at each login.
+Sign in at the `/manager` address with the manager username and password.
 
-Forgotten it? "Forgot password?" on that screen emails a reset link to the manager account. There is nothing to type — the address is already known — and the screen confirms when the link has gone, or says so if it could not be sent.
+If you have forgotten the password, "Forgot password?" on that screen emails a reset link to the manager account. There is nothing to type in: the address is already known, and the screen confirms when the link has been sent.
 
-The management session lasts as long as the browser tab. Refreshing or moving between management screens keeps you signed in, but closing the browser ends the session, so the password is required again the next time you open it. Opening the management interface in a second tab counts as a new session and asks for the password. Customer sessions are unaffected and still survive a browser restart.
+The management session lasts as long as the browser tab. Refreshing or moving between management screens keeps you signed in, but closing the browser ends the session, so the password is required again the next time you open it. Opening the management interface in a second tab counts as a new session and asks for the password. Customer sessions are separate and survive a browser restart.
 
 | Screen | What it does |
 |---|---|
@@ -112,22 +112,13 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 5. Move to "Delivery tracking"
 6. Advance the status as the order progresses
 
-Both decisions ask first, and the question says what will be sent: either
-way the customer is emailed, and approving an order that contains a gift
-card also activates the card. Neither decision can be undone from the
-management screens — a customer can still cancel her own order within 24
-hours of placing it, but there is no way back from this side.
+Both decisions ask first, and the question says what will be sent: either way the customer is emailed, and approving an order that contains a gift card also activates the card. Neither decision can be undone from the management screens. A customer can cancel her own order within 24 hours of placing it.
 
-If something does not go through, you are told which part failed, because
-the three parts can come apart:
+If something does not go through, the screen says which part failed:
 
-- **The decision was not saved.** Nothing happened and the order goes
-  back to waiting, so you can simply try again.
-- **The decision was saved but the email did not send.** The order really
-  has been decided and only the customer has not heard, so it is worth
-  getting in touch directly.
-- **The decision was saved but the gift card was not updated.** Check the
-  card on the "Gift cards" screen.
+- **The decision was not saved.** The order goes back to waiting, so you can try again.
+- **The decision was saved but the email did not send.** The order has been decided and only the customer has not heard, so it is worth getting in touch directly.
+- **The decision was saved but the gift card was not updated.** Check the card on the "Gift cards" screen.
 
 ---
 
@@ -139,7 +130,7 @@ Check the spam folder first, which is where it usually is. The screen offers a f
 
 A code is valid for **five minutes**. After that it stops working and you need a new one — the screen says the code expired rather than that it was wrong, so you can tell the two apart.
 
-Requesting a new code does not immediately break the previous one. The old code keeps working for a further minute, so if both emails arrive together, either will do. Past that minute the older one is refused, and the screen says it was replaced rather than mistyped.
+A new code does not cancel the previous one at once: the old code keeps working for one more minute, so if both emails arrive together, either will do. After that minute the older one is refused, and the screen says it was replaced rather than mistyped.
 
 You can request **five codes per hour** for the same address. Beyond that the system stops sending until the hour is up. If you reach that point, the code you already have is almost certainly in the spam folder.
 
@@ -147,7 +138,7 @@ You can request **five codes per hour** for the same address. Beyond that the sy
 
 A sold-out product stays visible in the catalogue but cannot be added to the cart, and the chatbot will not recommend it. If only some combinations are gone, choosing a different colour or size may be enough.
 
-To be told when it returns, open the product and ask to be notified. You hear twice — by email, and as a banner at the top of the shop the next time you visit. The alert is for the product as a whole, so it fires when stock returns in any colour or size.
+To be told when it returns, open the product and ask to be notified. You are told twice: by email, and by a banner at the top of the shop on your next visit. The alert is for the product as a whole, so it arrives when stock returns in any colour or size.
 
 ### The gift card code is not found
 
