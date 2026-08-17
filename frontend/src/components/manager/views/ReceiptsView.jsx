@@ -79,7 +79,6 @@ export default function ReceiptsView({ receipts }) {
       <div className={styles.pageHd}>
         <div className={styles.phLeft}>
           <h2>{t.title}</h2>
-          <p>{t.subtitle}</p>
         </div>
       </div>
 

@@ -38,7 +38,7 @@ export const en = {
       sectionSales: "Sales",
       customerOrders: "Customer Orders",
       giftCardOrders: "Gift Cards",
-      deliveryTracking: "Delivery Tracking",
+      deliveryTracking: "Order Tracking",
       salesReceipts: "Sales Receipts",
       analytics: "Analytics",
       customerFeedback: "Customer Feedback",
@@ -149,7 +149,7 @@ export const en = {
       balanceLabel: "Current balance",
     },
     deliveries: {
-      title: "Delivery Tracking",
+      title: "Order Tracking",
       subtitle: "Update the delivery status for each order",
       allTab: "🔔 All",
       allMonths: "📅 All months",
