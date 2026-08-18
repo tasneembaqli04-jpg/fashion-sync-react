@@ -148,6 +148,26 @@ export async function decrementProductsStock(cartItems = []) {
     }
   }
 }
+/**
+ * The sales count after goods have gone back on the shelf.
+ *
+ * A cancelled order was never a sale, and a returned item stopped being one,
+ * so both give their units back to the count as well as to the stock.
+ * Without this the count only ever rose, and a product bought once and
+ * cancelled stayed recorded as sold for good.
+ *
+ * Floored at zero. The count and the stock are written by separate paths and
+ * can drift — a manager editing stock by hand does not touch the count — and
+ * a negative sales figure would be a worse answer than an imprecise one.
+ *
+ * @param {number} currentSales - The count before the restock.
+ * @param {number} restoredQty - Units that actually returned to the shelf.
+ * @returns {number} The count to store, never below zero.
+ */
+export function salesAfterRestock(currentSales, restoredQty) {
+  return Math.max(0, (Number(currentSales) || 0) - (Number(restoredQty) || 0));
+}
+
 export async function restockReturnedItem({ code, qty, color, size }) {
   if (!code) return;
 
@@ -159,6 +179,13 @@ export async function restockReturnedItem({ code, qty, color, size }) {
   const data = snapshot.data();
   const addQty = Number(qty) || 0;
   const hasVariants = Array.isArray(data.variants) && data.variants.length > 0;
+
+  // Read before anything is written, so the units that actually reached the
+  // shelf can be measured rather than assumed. The variant path can restock
+  // nothing at all — when the colour no longer exists on the product — and a
+  // sale must not be unwound for goods that never came back.
+  const previousStock = Number(data.stock) || 0;
+  const currentSales = Number(data.salesLastMonth) || 0;
 
   if (hasVariants) {
     // Clone variants while preserving every existing field, for the same
@@ -201,12 +228,14 @@ export async function restockReturnedItem({ code, qty, color, size }) {
     await updateDoc(productRef, {
       stock: newStock,
       variants,
+      salesLastMonth: salesAfterRestock(currentSales, newStock - previousStock),
     });
   } else {
     const currentStock = Number(data.stock) || 0;
 
     await updateDoc(productRef, {
       stock: currentStock + addQty,
+      salesLastMonth: salesAfterRestock(currentSales, addQty),
     });
   }
 }

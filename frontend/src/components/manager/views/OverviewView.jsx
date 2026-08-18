@@ -317,7 +317,7 @@ export default function OverviewView({
                       }}
                     >
                       <span className={uiStyles.slowBadge}>
-                        🛒 {p.salesLastMonth} {t.salesThisMonth}
+                        🛒 {p.salesLastMonth} {t.salesCount}
                       </span>
                       <span
                         className={`${uiStyles.tag} ${uiStyles.tBlue}`}
