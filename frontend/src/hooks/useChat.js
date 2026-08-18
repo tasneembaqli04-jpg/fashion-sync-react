@@ -42,6 +42,7 @@ export function useChat() {
   const [isChatTyping, setIsChatTyping] = useState(false);
   const [currentOutfit, setCurrentOutfit] = useState([]);
   const [currentOutfitImage, setCurrentOutfitImage] = useState("");
+  const [shownProductCodes, setShownProductCodes] = useState([]);
 
   // Switching language re-greets, but only while the greeting is all there is.
   // Once the customer has said anything, the conversation is left alone rather
@@ -101,6 +102,7 @@ export function useChat() {
         history,
         currentOutfit,
         currentOutfitImage,
+        shownProductCodes,
         lang,
         signal: controller.signal,
 
@@ -130,6 +132,13 @@ export function useChat() {
           }
         },
       });
+      if (Array.isArray(result?.products) && result.products.length > 0) {
+        const newCodes = result.products
+          .map((product) => product?.code || product?.id)
+          .filter(Boolean);
+
+        setShownProductCodes((prev) => [...new Set([...prev, ...newCodes])]);
+      }
       if (
         botMessageStarted &&
         result?.responseMode === "TEXT" &&
@@ -186,7 +195,9 @@ export function useChat() {
         ]);
       }
     } catch (err) {
-      console.warn(`Chat service unreachable, using the fallback reply: ${err.message}`);
+      console.warn(
+        `Chat service unreachable, using the fallback reply: ${err.message}`,
+      );
 
       if (err?.name === "AbortError") {
         setChatMessages((prev) => [

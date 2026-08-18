@@ -11,13 +11,10 @@
  * what keeps the chatbot's recommendations grounded in real catalogue data
  * rather than free-form guessing by the model.
  */
-const {getGeminiClient} = require("../../config/gemini");
+const { getGeminiClient } = require("../../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
-const RESPONSE_MODE_VALUES = Object.freeze([
-  "TEXT",
-  "IMAGE",
-]);
+const RESPONSE_MODE_VALUES = Object.freeze(["TEXT", "IMAGE"]);
 const INTENTS = Object.freeze({
   PRODUCT_SEARCH: "PRODUCT_SEARCH",
   PRODUCT_DETAILS: "PRODUCT_DETAILS",
@@ -46,15 +43,9 @@ const CATEGORY_VALUES = Object.freeze([
   "אביזרים",
 ]);
 
-const GENDER_VALUES = Object.freeze([
-  "נשים",
-  "גברים",
-]);
+const GENDER_VALUES = Object.freeze(["נשים", "גברים"]);
 
-const OUTFIT_TYPE_VALUES = Object.freeze([
-  "SINGLE_PRODUCT",
-  "COMPLETE_OUTFIT",
-]);
+const OUTFIT_TYPE_VALUES = Object.freeze(["SINGLE_PRODUCT", "COMPLETE_OUTFIT"]);
 const CONVERSATION_ACTION_VALUES = Object.freeze([
   "CONTINUE",
   "RESET",
@@ -92,10 +83,7 @@ const INTENT_SCHEMA = {
 
     category: {
       type: ["string", "null"],
-      enum: [
-        ...CATEGORY_VALUES,
-        null,
-      ],
+      enum: [...CATEGORY_VALUES, null],
     },
 
     productCode: {
@@ -108,10 +96,7 @@ const INTENT_SCHEMA = {
 
     gender: {
       type: ["string", "null"],
-      enum: [
-        ...GENDER_VALUES,
-        null,
-      ],
+      enum: [...GENDER_VALUES, null],
     },
 
     size: {
@@ -148,10 +133,7 @@ const INTENT_SCHEMA = {
 
     outfitType: {
       type: ["string", "null"],
-      enum: [
-        ...OUTFIT_TYPE_VALUES,
-        null,
-      ],
+      enum: [...OUTFIT_TYPE_VALUES, null],
     },
 
     saleOnly: {
@@ -159,6 +141,9 @@ const INTENT_SCHEMA = {
     },
 
     inStockOnly: {
+      type: "boolean",
+    },
+    moreResultsRequested: {
       type: "boolean",
     },
 
@@ -190,6 +175,7 @@ const INTENT_SCHEMA = {
     "outfitType",
     "saleOnly",
     "inStockOnly",
+    "moreResultsRequested",
     "confidence",
   ],
 };
@@ -217,6 +203,71 @@ const INTENT_INSTRUCTION = `
 - תקן קוד מוצר לצורה FS-000 כאשר אפשר.
 - gender יהיה "נשים", "גברים" או null.
 
+כלל לנרמול productName:
+
+כאשר productName מתייחס לסוג מוצר מוכר,
+החזר אותו בצורה שתואמת לשמות ולמונחים שבהם משתמש הקטלוג בעברית.
+
+לדוגמה:
+- t-shirt -> "חולצת טי"
+- polo shirt -> "חולצת פולו"
+- dress -> "שמלה"
+- jeans -> "ג'ינס"
+
+אין לתרגם שם מסחרי או שם מוצר ספציפי אם הוא אמור להישאר כפי שנכתב.
+
+כלל מחייב להבחנה בין קטגוריה כללית לבין סוג מוצר ספציפי:
+
+- כאשר הלקוח מבקש קטגוריה כללית, category יכיל את הקטגוריה המתאימה
+  ו-productName חייב להיות null.
+
+- אסור להסיק תת-סוג מוצר שלא נאמר במפורש על ידי הלקוח.
+
+- חשוב במיוחד:
+  "shirt" או "shirts" פירושם קטגוריית חולצות כללית.
+  אין לפרש אותם כ-"t-shirt".
+  רק אם הלקוח כתב במפורש "t-shirt", "tee" או ביטוי שמציין חולצת טי,
+  productName יכול להיות "חולצת טי".
+
+- באותה צורה, שם כללי של קטגוריה אינו productName:
+  shirts -> category="חולצות", productName=null
+  dresses -> category="שמלות", productName=null
+  shoes -> category="נעליים", productName=null
+  pants -> category="מכנסיים", productName=null
+
+- productName ישמש רק כאשר הלקוח ציין במפורש
+  סוג מוצר מסוים, תת-סוג מסוים או שם מוצר מסוים.
+
+דוגמאות מחייבות:
+
+"I want to see all the shirts you have"
+category="חולצות"
+productName=null
+
+"Show me shirts"
+category="חולצות"
+productName=null
+
+"Do you have shirts?"
+category="חולצות"
+productName=null
+
+"תראי לי את כל החולצות"
+category="חולצות"
+productName=null
+
+"Do you have a t-shirt?"
+category="חולצות"
+productName="חולצת טי"
+
+"Show me t-shirts"
+category="חולצות"
+productName="חולצת טי"
+
+"Show me polo shirts"
+category="חולצות"
+productName="חולצת פולו"
+
 כלל עדיפות מחייב ללוק מלא:
 
 כאשר outfitType הוא COMPLETE_OUTFIT והמגדר אינו ידוע,
@@ -227,7 +278,8 @@ const INTENT_INSTRUCTION = `
 - outfitType = COMPLETE_OUTFIT
 - gender = null
 - needsClarification = true
-- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+- clarificationQuestion ישאל האם הלוק מיועד לאישה או לגבר.
+- ניסוח השאלה יהיה בשפת הממשק לפי כלל השפה.
 - responseMode = TEXT
 
 אסור ליצור תמונה ואסור להחזיר needsClarification=false
@@ -267,6 +319,35 @@ const INTENT_INSTRUCTION = `
 כאשר conversationAction הוא CONTINUE:
 - השתמש בהיסטוריה כדי להשלים שדות חסרים.
 - שמור תנאים קודמים שרלוונטיים לחיפוש הנוכחי.
+כלל לבקשת תוצאות נוספות:
+
+- moreResultsRequested יהיה true רק כאשר הלקוח מבקש במפורש לראות אפשרויות נוספות או אחרות מאותו חיפוש קודם.
+
+דוגמאות:
+"show me more"
+"show me more options"
+"other shirts"
+"do you have other shirts?"
+"תראי לי עוד"
+"יש עוד?"
+"יש חולצות אחרות?"
+"אפשרויות נוספות"
+"משהו אחר מאותה קטגוריה"
+
+במקרים כאלה:
+- moreResultsRequested=true
+- conversationAction יהיה CONTINUE כאשר ברור שהבקשה מתייחסת לאותו חיפוש קודם.
+- השתמש בהיסטוריית השיחה כדי לשמור את תנאי החיפוש הקודם הרלוונטיים.
+- אין לפרש בקשה ל"עוד" כחיפוש חדש אם ברור שהיא מתייחסת לאותו חיפוש קודם.
+
+כאשר הלקוח מתחיל חיפוש חדש או רק מוסיף תנאי כמו צבע, מידה או מחיר:
+- moreResultsRequested=false.
+
+דוגמאות:
+"show me red shirts" -> moreResultsRequested=false
+"במידה M?" -> moreResultsRequested=false
+"עד 200 שקל?" -> moreResultsRequested=false
+
 כאשר intent הוא OUTFIT_MODIFICATION:
 
 - אם הלקוחה מבקשת להחליף רק קטגוריה אחת (למשל נעליים, תיק או אביזרים),
@@ -308,7 +389,7 @@ color = "אדום"
 אבל לא ברור איזה סוג מוצר היא רוצה למצוא:
 
 - needsClarification יהיה true.
-- clarificationQuestion יכיל שאלה אחת קצרה וטבעית בעברית.
+- clarificationQuestion יכיל שאלה אחת קצרה וטבעית בשפת הממשק שנמסרה בכלל השפה.
 - אל תנחש קטגוריית מוצר.
 - category יהיה null.
 - אל תחזיר את כל הקטלוג.
@@ -322,7 +403,8 @@ color = "אדום"
 intent="OUTFIT_RECOMMENDATION"
 conversationAction="RELATED_SEARCH"
 needsClarification=true
-clarificationQuestion="בשמחה! איזה סוג פריט תרצי להתאים לנעליים השחורות — שמלה, תיק, מכנסיים או לוק מלא?"
+clarificationQuestion ישאל איזה סוג פריט הלקוחה רוצה להתאים,
+והניסוח יהיה בשפת הממשק לפי כלל השפה.
 category=null
 
 כאשר הלקוחה כבר מציינת את סוג המוצר:
@@ -359,8 +441,9 @@ category="שמלות"
 - intent יהיה OUTFIT_MODIFICATION.
 - conversationAction יהיה ASK_CHANGE_TARGET.
 - needsClarification יהיה true.
-- clarificationQuestion יהיה:
-  "בשמחה 😊 מה תרצי להחליף בלוק — את השמלה, הנעליים, התיק, האביזרים או את כל הלוק?"
+- clarificationQuestion ישאל איזה פריט הלקוחה רוצה להחליף בלוק:
+  שמלה, נעליים, תיק, אביזרים או כל הלוק.
+- ניסוח השאלה יהיה בשפת הממשק לפי כלל השפה.
 - שמור מההיסטוריה את gender, occasion, eventTime, season,
   style, outfitType ו-responseMode.
 - אין לבחור מוצרים חדשים ואין ליצור תמונה לפני קבלת תשובת הלקוחה.
@@ -396,8 +479,8 @@ category="שמלות"
 
 - אם gender אינו ידוע, אסור לבחור מגדר לבד.
 - needsClarification חייב להיות true.
-- clarificationQuestion חייב להיות:
-  "הלוק מיועד לאישה או לגבר?"
+- clarificationQuestion ישאל האם הלוק מיועד לאישה או לגבר.
+- ניסוח השאלה יהיה בשפת הממשק לפי כלל השפה.
 - gender יהיה null.
 - אין ליצור עדיין תמונה או לבחור מוצרים לפני קבלת תשובת הלקוחה.
 
@@ -578,7 +661,7 @@ intent: BUSINESS_HOURS
   gender: null
   responseMode: TEXT
   needsClarification: true
-  clarificationQuestion: "הלוק מיועד לאישה או לגבר?"
+  clarificationQuestion: שאלה בשפת הממשק האם הלוק מיועד לאישה או לגבר
 
 כאשר הלקוחה מבקשת לראות, להציג, ליצור או לקבל לוק חזותי:
 - intent = OUTFIT_RECOMMENDATION.
@@ -590,7 +673,8 @@ intent: BUSINESS_HOURS
 אם מדובר בלוק מלא והמגדר אינו ידוע:
 - responseMode = TEXT.
 - needsClarification = true.
-- clarificationQuestion = "הלוק מיועד לאישה או לגבר?"
+- clarificationQuestion ישאל האם הלוק מיועד לאישה או לגבר.
+- ניסוח השאלה יהיה בשפת הממשק לפי כלל השפה.
 
 לאחר שהלקוחה עונה "לאישה", "לנשים", "לגבר" או "לגברים":
 - שמור את כל פרטי הבקשה הקודמת.
@@ -629,7 +713,7 @@ responseMode חייב להיות IMAGE.
 intent="OUTFIT_RECOMMENDATION"
 conversationAction="RESET"
 needsClarification=true
-clarificationQuestion="הלוק מיועד לאישה או לגבר?"
+clarificationQuestion = שאלה בשפת הממשק האם הלוק מיועד לאישה או לגבר
 responseMode="TEXT"
 gender=null
 occasion="חתונה"
@@ -690,9 +774,9 @@ function normalizeNullableNumber(value) {
  */
 function extractJsonText(rawText) {
   const cleanedText = String(rawText || "")
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
 
   const firstBraceIndex = cleanedText.indexOf("{");
   const lastBraceIndex = cleanedText.lastIndexOf("}");
@@ -705,10 +789,7 @@ function extractJsonText(rawText) {
     throw new Error("No JSON object found in Gemini response");
   }
 
-  return cleanedText.slice(
-      firstBraceIndex,
-      lastBraceIndex + 1,
-  );
+  return cleanedText.slice(firstBraceIndex, lastBraceIndex + 1);
 }
 
 /**
@@ -722,10 +803,7 @@ function extractJsonText(rawText) {
 function normalizeEnumValue(value, allowedValues) {
   const normalizedValue = normalizeNullableString(value);
 
-  if (
-    normalizedValue &&
-    allowedValues.includes(normalizedValue)
-  ) {
+  if (normalizedValue && allowedValues.includes(normalizedValue)) {
     return normalizedValue;
   }
 
@@ -786,10 +864,9 @@ function normalizeProductCode(value) {
  * @return {object} A safe, normalized intent object.
  */
 function normalizeIntent(parsed) {
-  const normalizedIntent =
-    INTENT_VALUES.includes(parsed?.intent) ?
-      parsed.intent :
-      INTENTS.GENERAL_CHAT;
+  const normalizedIntent = INTENT_VALUES.includes(parsed?.intent)
+    ? parsed.intent
+    : INTENTS.GENERAL_CHAT;
 
   const confidence = Number(parsed?.confidence);
 
@@ -797,86 +874,56 @@ function normalizeIntent(parsed) {
     intent: normalizedIntent,
     conversationAction:
       normalizeEnumValue(
-          parsed?.conversationAction,
-          CONVERSATION_ACTION_VALUES,
+        parsed?.conversationAction,
+        CONVERSATION_ACTION_VALUES,
       ) || "RESET",
 
-    needsClarification:
-      parsed?.needsClarification === true,
+    needsClarification: parsed?.needsClarification === true,
 
     clarificationQuestion:
-      parsed?.needsClarification === true ?
-        normalizeNullableString(
-            parsed?.clarificationQuestion,
-        ) :
-      null,
+      parsed?.needsClarification === true
+        ? normalizeNullableString(parsed?.clarificationQuestion)
+        : null,
 
     responseMode:
-      normalizeEnumValue(
-          parsed?.responseMode,
-          RESPONSE_MODE_VALUES,
-      ) || "TEXT",
+      normalizeEnumValue(parsed?.responseMode, RESPONSE_MODE_VALUES) || "TEXT",
 
-    category: normalizeEnumValue(
-        parsed?.category,
-        CATEGORY_VALUES,
-    ),
+    category: normalizeEnumValue(parsed?.category, CATEGORY_VALUES),
 
-    productCode: normalizeProductCode(
-        parsed?.productCode,
-    ),
+    productCode: normalizeProductCode(parsed?.productCode),
 
-    productName: normalizeNullableString(
-        parsed?.productName,
-    ),
+    productName: normalizeNullableString(parsed?.productName),
 
-    gender: normalizeEnumValue(
-        parsed?.gender,
-        GENDER_VALUES,
-    ),
+    gender: normalizeEnumValue(parsed?.gender, GENDER_VALUES),
 
     size: normalizeSize(parsed?.size),
 
-    color: normalizeNullableString(
-        parsed?.color,
-    ),
+    color: normalizeNullableString(parsed?.color),
 
-    minPrice: normalizeNullableNumber(
-        parsed?.minPrice,
-    ),
+    minPrice: normalizeNullableNumber(parsed?.minPrice),
 
-    maxPrice: normalizeNullableNumber(
-        parsed?.maxPrice,
-    ),
+    maxPrice: normalizeNullableNumber(parsed?.maxPrice),
 
-    occasion: normalizeNullableString(
-        parsed?.occasion,
-    ),
+    occasion: normalizeNullableString(parsed?.occasion),
 
-    eventTime: normalizeNullableString(
-        parsed?.eventTime,
-    ),
+    eventTime: normalizeNullableString(parsed?.eventTime),
 
-    season: normalizeNullableString(
-        parsed?.season,
-    ),
+    season: normalizeNullableString(parsed?.season),
 
-    style: normalizeNullableString(
-        parsed?.style,
-    ),
+    style: normalizeNullableString(parsed?.style),
 
-    outfitType: normalizeEnumValue(
-        parsed?.outfitType,
-        OUTFIT_TYPE_VALUES,
-    ),
+    outfitType: normalizeEnumValue(parsed?.outfitType, OUTFIT_TYPE_VALUES),
 
     saleOnly: Boolean(parsed?.saleOnly),
 
     inStockOnly: Boolean(parsed?.inStockOnly),
+    
+    moreResultsRequested: Boolean(parsed?.moreResultsRequested),
 
-    confidence: Number.isFinite(confidence) ?
-      Math.min(Math.max(confidence, 0), 1) :
-      0,
+
+    confidence: Number.isFinite(confidence)
+      ? Math.min(Math.max(confidence, 0), 1)
+      : 0,
   };
 }
 
@@ -889,23 +936,17 @@ function normalizeIntent(parsed) {
  * @return {Array} The contents structure in the format Gemini expects.
  */
 function buildContents(history, message) {
-  const safeHistory = Array.isArray(history) ?
-    history
-        .filter((turn) =>
-          turn &&
-        typeof turn.text === "string" &&
-        turn.text.trim(),
+  const safeHistory = Array.isArray(history)
+    ? history
+        .filter(
+          (turn) => turn && typeof turn.text === "string" && turn.text.trim(),
         )
-        .slice(-8) :
-    [];
+        .slice(-8)
+    : [];
 
   return [
     ...safeHistory.map((turn) => ({
-      role:
-        turn.role === "bot" ||
-        turn.role === "model" ?
-          "model" :
-          "user",
+      role: turn.role === "bot" || turn.role === "model" ? "model" : "user",
 
       parts: [
         {
@@ -941,27 +982,34 @@ function buildContents(history, message) {
  * @return {Promise<object>} Structured customer intent (intent, category, gender, price range and so on).
  * @throws {Error} When the message is empty, Gemini returns an empty response, or the response is not valid JSON.
  */
-async function detectChatIntent({
-  message,
-  history = [],
-}) {
-  if (
-    !message ||
-    typeof message !== "string" ||
-    !message.trim()
-  ) {
+async function detectChatIntent({ message, history = [], lang = "he" }) {
+  if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
 
   const ai = getGeminiClient();
   const contents = buildContents(history, message);
+  const languageInstruction =
+    lang === "en"
+      ? `
+Language rule:
+- clarificationQuestion must always be written in English.
+- Even if the conversation history contains Hebrew, use English for clarificationQuestion.
+`
+      : `
+כלל שפה:
+- clarificationQuestion חייבת תמיד להיות בעברית.
+- גם אם היסטוריית השיחה כוללת אנגלית, שאלת ההבהרה תהיה בעברית.
+`;
 
   const result = await ai.models.generateContent({
     model: MODEL_NAME,
     contents,
 
     config: {
-      systemInstruction: INTENT_INSTRUCTION,
+      systemInstruction: `${INTENT_INSTRUCTION}
+
+${languageInstruction}`,
       responseMimeType: "application/json",
       responseJsonSchema: INTENT_SCHEMA,
       temperature: 0,
@@ -974,9 +1022,7 @@ async function detectChatIntent({
   });
 
   const rawText =
-    result?.text ||
-    result?.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "";
+    result?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
   if (!rawText.trim()) {
     throw new Error("Empty intent response from Gemini");
@@ -989,14 +1035,9 @@ async function detectChatIntent({
     parsed = JSON.parse(jsonText);
   } catch (error) {
     console.error("Invalid intent JSON:", rawText);
-    console.error(
-        "Intent parsing error:",
-        error?.message || error,
-    );
+    console.error("Intent parsing error:", error?.message || error);
 
-    throw new Error(
-        "Invalid intent response from Gemini",
-    );
+    throw new Error("Invalid intent response from Gemini");
   }
 
   const normalizedIntent = normalizeIntent(parsed);

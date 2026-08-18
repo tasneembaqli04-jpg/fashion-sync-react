@@ -640,8 +640,7 @@ export const en = {
       serviceUnavailable: "The assistant is unavailable right now. Please try again shortly, or see the policy page.",
       outfitImageReady: "Here is the look you asked for:",
       requestTimedOut: "I could not answer that one. Please try again, or ask me something else.",
-      welcomeMessage: "Hello! 👋 I'm SYNC, FashionSync's smart assistant.<br />I can help you find clothes, check prices, business hours, and more.<br />How can I help you today?",
-    },
+      welcomeMessage: "Hello! 👋 I'm SYNC, FashionSync's smart assistant.<br />I can help you find clothes, check prices and business hours, and create a complete outfit for your event.<br />I may occasionally make mistakes.<br />How can I help you today?",    },
     browse: {
       searchPlaceholder: "Search by name/barcode",
       refreshTitle: "🔄 Refresh",

@@ -7,18 +7,18 @@
  * handleChatMessage is the single entry point that drives the whole process
  * for each incoming customer message.
  */
-const {INTENTS, detectChatIntent} = require("./chatIntentService");
+const { INTENTS, detectChatIntent } = require("./chatIntentService");
 
-const {getBusinessHours} = require("./chatBusinessHoursService");
-const {getPolicyContent, getStoreDetails} = require("./chatPolicyService");
+const { getBusinessHours } = require("./chatBusinessHoursService");
+const { getPolicyContent, getStoreDetails } = require("./chatPolicyService");
 
-const {getProductByCode, searchProducts} = require("./chatProductService");
+const { getProductByCode, searchProducts } = require("./chatProductService");
 
-const {streamChatReply} = require("./chatService");
+const { streamChatReply } = require("./chatService");
 
-const {generateOutfitVisualization} = require("./outfitVisualizationService");
+const { generateOutfitVisualization } = require("./outfitVisualizationService");
 
-const {planOutfit} = require("./outfitPlannerService");
+const { planOutfit } = require("./outfitPlannerService");
 
 const PRODUCT_INTENTS = new Set([
   INTENTS.PRODUCT_SEARCH,
@@ -70,9 +70,9 @@ function buildProductSearchOptions(intent) {
     season: intent.season,
     limit:
       intent.intent === INTENTS.OUTFIT_RECOMMENDATION ||
-      intent.intent === INTENTS.OUTFIT_MODIFICATION ?
-        50 :
-        5,
+      intent.intent === INTENTS.OUTFIT_MODIFICATION
+        ? 50
+        : 5,
   };
 }
 
@@ -100,12 +100,12 @@ function buildBusinessHoursContext(businessHours, lang) {
     timeZone: "Asia/Jerusalem",
     weekday: "short",
   })
-      .format(new Date())
-      .toLowerCase();
+    .format(new Date())
+    .toLowerCase();
 
-  const todayData = Array.isArray(businessHours.days) ?
-    businessHours.days.find((day) => day?.key === currentDayKey) :
-    null;
+  const todayData = Array.isArray(businessHours.days)
+    ? businessHours.days.find((day) => day?.key === currentDayKey)
+    : null;
 
   return `
 נתוני שעות הפעילות הבאים הגיעו ישירות
@@ -191,8 +191,8 @@ function buildProductForAi(product, options = {}) {
   const variants = Array.isArray(product?.variants) ? product.variants : [];
 
   const variantColors = variants
-      .map((variant) => variant?.colorName || variant?.color || variant?.name)
-      .filter(Boolean);
+    .map((variant) => variant?.colorName || variant?.color || variant?.name)
+    .filter(Boolean);
 
   const existingColors = Array.isArray(product?.colors) ? product.colors : [];
 
@@ -379,6 +379,7 @@ async function handleChatMessage({
   history = [],
   currentOutfit = [],
   currentOutfitImage = "",
+  shownProductCodes = [],
   lang,
   onChunk,
 }) {
@@ -387,11 +388,12 @@ async function handleChatMessage({
   let liveStoreDetails = null;
 
   try {
-    [liveBusinessHours, livePolicyContent, liveStoreDetails] = await Promise.all([
-      getBusinessHours(),
-      getPolicyContent(),
-      getStoreDetails(),
-    ]);
+    [liveBusinessHours, livePolicyContent, liveStoreDetails] =
+      await Promise.all([
+        getBusinessHours(),
+        getPolicyContent(),
+        getStoreDetails(),
+      ]);
   } catch (error) {
     console.error("LIVE CHAT CONTEXT FETCH ERROR:", error?.message || error);
   }
@@ -406,6 +408,7 @@ async function handleChatMessage({
   const intent = await detectChatIntent({
     message,
     history,
+    lang,
   });
 
   if (intent.needsClarification && intent.clarificationQuestion) {
@@ -434,7 +437,10 @@ async function handleChatMessage({
     });
   }
   if (intent.intent === INTENTS.BUSINESS_HOURS) {
-    const businessHoursContext = buildBusinessHoursContext(liveBusinessHours, lang);
+    const businessHoursContext = buildBusinessHoursContext(
+      liveBusinessHours,
+      lang,
+    );
 
     return streamChatReply({
       message: `
@@ -450,7 +456,11 @@ ${businessHoursContext}
   }
 
   if (intent.intent === INTENTS.STORE_INFO) {
-    const policyContext = buildPolicyContext(livePolicyContent, liveStoreDetails, lang);
+    const policyContext = buildPolicyContext(
+      livePolicyContent,
+      liveStoreDetails,
+      lang,
+    );
 
     return streamChatReply({
       message: `
@@ -483,7 +493,15 @@ ${policyContext}
       products = [product];
     }
   } else {
-    products = await searchProducts(buildProductSearchOptions(intent));
+    const searchOptions = buildProductSearchOptions(intent);
+
+    if (intent.moreResultsRequested) {
+      searchOptions.excludeProductCodes = Array.isArray(shownProductCodes)
+        ? shownProductCodes
+        : [];
+    }
+
+    products = await searchProducts(searchOptions);
   }
 
   if (isImageResponseRequested(intent)) {
@@ -544,71 +562,71 @@ ${policyContext}
       };
     }
 
-    const normalizedCurrentOutfit = Array.isArray(currentOutfit) ?
-      currentOutfit :
-      [];
+    const normalizedCurrentOutfit = Array.isArray(currentOutfit)
+      ? currentOutfit
+      : [];
 
     const requestedCategory = intent?.category || "";
 
     const productsForVisualization = outfitPlan.selectedProducts.map(
-        (product) => {
-          const productCode = product?.code || product?.id || "";
+      (product) => {
+        const productCode = product?.code || product?.id || "";
 
-          const previousProduct = normalizedCurrentOutfit.find(
-              (currentProduct) =>
-                (currentProduct?.code || currentProduct?.id || "") === productCode,
-          );
+        const previousProduct = normalizedCurrentOutfit.find(
+          (currentProduct) =>
+            (currentProduct?.code || currentProduct?.id || "") === productCode,
+        );
 
-          const productCategory = product?.category || product?.cat || "";
+        const productCategory = product?.category || product?.cat || "";
 
-          const isExistingProduct = Boolean(previousProduct);
+        const isExistingProduct = Boolean(previousProduct);
 
-          const isRequestedCategory =
+        const isRequestedCategory =
           requestedCategory && productCategory === requestedCategory;
 
-          const shouldKeep =
+        const shouldKeep =
           intent?.intent === "OUTFIT_MODIFICATION" &&
           isExistingProduct &&
           !isRequestedCategory;
 
-          return buildProductForAi(
-              {
-                ...previousProduct,
-                ...product,
+        return buildProductForAi(
+          {
+            ...previousProduct,
+            ...product,
 
-                colors:
-              Array.isArray(product?.colors) && product.colors.length ?
-                product.colors :
-                previousProduct?.colors || [],
+            colors:
+              Array.isArray(product?.colors) && product.colors.length
+                ? product.colors
+                : previousProduct?.colors || [],
 
-                variants:
-              Array.isArray(product?.variants) && product.variants.length ?
-                product.variants :
-                previousProduct?.variants || [],
+            variants:
+              Array.isArray(product?.variants) && product.variants.length
+                ? product.variants
+                : previousProduct?.variants || [],
 
-                imageUrl:
+            imageUrl:
               product?.imageUrl ||
               product?.img ||
               previousProduct?.imageUrl ||
               previousProduct?.img ||
               "",
-              },
-              {
-                selectedColor: shouldKeep ?
-              previousProduct?.selectedColor || null :
-              intent?.color ||
+          },
+          {
+            selectedColor: shouldKeep
+              ? previousProduct?.selectedColor || null
+              : intent?.color ||
                 product?.selectedColor ||
                 previousProduct?.selectedColor ||
                 null,
 
-                action: shouldKeep ?
-              "KEEP" :
-              isExistingProduct ?
-                "KEEP" :
-                "REPLACE",
-              },
-          );
-        },
+            action: shouldKeep
+              ? "KEEP"
+              : isExistingProduct
+                ? "KEEP"
+                : "REPLACE",
+          },
+        );
+      },
     );
 
     try {

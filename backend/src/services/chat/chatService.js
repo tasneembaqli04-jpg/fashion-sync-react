@@ -1,4 +1,4 @@
-const {getGeminiClient} = require("../../config/gemini");
+const { getGeminiClient } = require("../../config/gemini");
 
 const MODEL_NAME = "gemini-3-flash-preview";
 
@@ -9,10 +9,24 @@ function buildSystemInstruction({
   storeDetails,
 } = {}) {
   const isEnglish = lang === "en";
+  const productResultsRule = isEnglish
+    ? `
+When showing products from the catalog:
+When showing products from the catalog:
+- Do not imply that the displayed products are all matching products unless you know that all matches are being shown.
+- When only a subset of matching products is shown, explicitly tell the customer that this is only a selection and that additional matching products are not currently displayed.
+- Invite the customer to ask to see more options.
+`
+    : `
+כאשר מוצגים ללקוח מוצרים מתוך הקטלוג:
+- אל תציג את הרשימה כאילו היא כוללת את כל המוצרים המתאימים, אלא אם ידוע שכל התוצאות מוצגות.
+- כאשר מוצג רק חלק מהמוצרים המתאימים, אמור ללקוח במפורש שזו רק חלק מהאפשרויות ושקיימים מוצרים מתאימים נוספים שאינם מוצגים כרגע.
+- הצע ללקוח לבקש לראות אפשרויות נוספות.
+`;
 
-  const languageLine = isEnglish ?
-    "Always answer in English, briefly and in a friendly tone (2-4 sentences max), like a real customer service rep." :
-    "ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.";
+  const languageLine = isEnglish
+    ? "Always answer in English, briefly and in a friendly tone (2-4 sentences max), like a real customer service rep."
+    : "ענה/י תמיד בעברית, בקצרה וידידותית (2-4 משפטים לכל היותר), כמו נציג/ת שירות אמיתי/ת.";
 
   const liveDataBlock = `
 נתונים חיים מ-Firestore (settings/businessHours, settings/policyContent, settings/storeDetails):
@@ -32,6 +46,7 @@ ${storeDetails ? JSON.stringify(storeDetails, null, 2) : "לא זמין"}
 ${languageLine}
 
 ${liveDataBlock}
+${productResultsRule}
 
 כללים:
 - כל תשובה על שעות פעילות, מדיניות החזרות/ביטול, משלוחים, כתובת, או פרטי קשר -
@@ -56,7 +71,14 @@ function buildGeminiConfig(liveDataContext) {
   };
 }
 
-async function generateChatReply({message, history = [], lang, businessHours, policyContent, storeDetails}) {
+async function generateChatReply({
+  message,
+  history = [],
+  lang,
+  businessHours,
+  policyContent,
+  storeDetails,
+}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
@@ -69,25 +91,28 @@ async function generateChatReply({message, history = [], lang, businessHours, po
 
     contents.push({
       role: turn.role === "bot" ? "model" : "user",
-      parts: [{text: String(turn.text)}],
+      parts: [{ text: String(turn.text) }],
     });
   });
 
   contents.push({
     role: "user",
-    parts: [{text: message.trim()}],
+    parts: [{ text: message.trim() }],
   });
 
   const result = await ai.models.generateContent({
     model: MODEL_NAME,
     contents,
-    config: buildGeminiConfig({lang, businessHours, policyContent, storeDetails}),
+    config: buildGeminiConfig({
+      lang,
+      businessHours,
+      policyContent,
+      storeDetails,
+    }),
   });
 
   const reply =
-    result?.text ||
-    result?.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "";
+    result?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
   if (!reply.trim()) {
     throw new Error("Empty reply from model");
@@ -98,7 +123,15 @@ async function generateChatReply({message, history = [], lang, businessHours, po
   };
 }
 
-async function streamChatReply({message, history = [], onChunk, lang, businessHours, policyContent, storeDetails}) {
+async function streamChatReply({
+  message,
+  history = [],
+  onChunk,
+  lang,
+  businessHours,
+  policyContent,
+  storeDetails,
+}) {
   if (!message || typeof message !== "string" || !message.trim()) {
     throw new Error("Message is required");
   }
@@ -115,13 +148,13 @@ async function streamChatReply({message, history = [], onChunk, lang, businessHo
 
     contents.push({
       role: turn.role === "bot" ? "model" : "user",
-      parts: [{text: String(turn.text)}],
+      parts: [{ text: String(turn.text) }],
     });
   });
 
   contents.push({
     role: "user",
-    parts: [{text: message.trim()}],
+    parts: [{ text: message.trim() }],
   });
 
   const MAX_ATTEMPTS = 2;
@@ -134,12 +167,17 @@ async function streamChatReply({message, history = [], onChunk, lang, businessHo
         ai.models.generateContentStream({
           model: MODEL_NAME,
           contents,
-          config: buildGeminiConfig({lang, businessHours, policyContent, storeDetails}),
+          config: buildGeminiConfig({
+            lang,
+            businessHours,
+            policyContent,
+            storeDetails,
+          }),
         }),
         new Promise((_, reject) =>
           setTimeout(
-              () => reject(new Error("Gemini request timed out")),
-              ATTEMPT_TIMEOUT_MS,
+            () => reject(new Error("Gemini request timed out")),
+            ATTEMPT_TIMEOUT_MS,
           ),
         ),
       ]);
@@ -170,12 +208,12 @@ async function streamChatReply({message, history = [], onChunk, lang, businessHo
         err?.status === 503 ||
         err?.status === 429 ||
         /UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/.test(
-            String(err?.message || ""),
+          String(err?.message || ""),
         );
 
       console.error(
-          `streamChatReply attempt ${attempt} failed:`,
-          err?.message || err,
+        `streamChatReply attempt ${attempt} failed:`,
+        err?.message || err,
       );
 
       if (!isRetryable || attempt === MAX_ATTEMPTS) {

@@ -1,4 +1,4 @@
-const {db} = require("../../config/firebaseAdmin");
+const { db } = require("../../config/firebaseAdmin");
 
 const PRODUCTS_COLLECTION = "products";
 const DEFAULT_LIMIT = 5;
@@ -16,15 +16,15 @@ const ALL_SEASONS_VALUE = "all";
 // no translation between the two, the comparison could never succeed and the
 // season point was never awarded to any product.
 const SEASON_SLUGS = Object.freeze({
-  "קיץ": "summer",
-  "חורף": "winter",
-  "אביב": "spring-autumn",
-  "סתיו": "spring-autumn",
-  "summer": "summer",
-  "winter": "winter",
-  "spring": "spring-autumn",
-  "autumn": "spring-autumn",
-  "fall": "spring-autumn",
+  קיץ: "summer",
+  חורף: "winter",
+  אביב: "spring-autumn",
+  סתיו: "spring-autumn",
+  summer: "summer",
+  winter: "winter",
+  spring: "spring-autumn",
+  autumn: "spring-autumn",
+  fall: "spring-autumn",
 });
 
 /**
@@ -54,11 +54,11 @@ function toSeasonSlug(season) {
 
 // Hebrew final letters mapped to their regular form, for word comparison.
 const FINAL_LETTER_FORMS = Object.freeze({
-  "ך": "כ",
-  "ם": "מ",
-  "ן": "נ",
-  "ף": "פ",
-  "ץ": "צ",
+  ך: "כ",
+  ם: "מ",
+  ן: "נ",
+  ף: "פ",
+  ץ: "צ",
 });
 
 // Shortest stem allowed for prefix matching. Anything shorter requires an
@@ -73,19 +73,19 @@ const MIN_STEM_PREFIX_LENGTH = 3;
 // Every word here must be at least three characters long — shorter words can
 // match accidentally inside unrelated Hebrew words.
 const OCCASION_KEYWORDS = Object.freeze({
-  "חתונה": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
-  "אירוע": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
-  "חגיגה": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
-  "ערב": ["ערב", "קוקטייל", "אלגנט", "מקסי"],
-  "עבודה": ["משרד", "קלאסי", "מכופתר"],
-  "ראיון": ["משרד", "קלאסי", "מכופתר"],
-  "משרד": ["משרד", "קלאסי", "מכופתר"],
-  "דייט": ["קוקטייל", "מיני", "ערב"],
-  "מסיבה": ["קוקטייל", "מיני", "ערב"],
-  "חופשה": ["קיץ", "פרחוני", "מקסי", "קליל"],
-  "טיול": ["קיץ", "פרחוני", "מקסי", "קליל"],
-  "לימודים": ["יומיומי", "כותנה", "סריג", "בסיסי"],
-  "יומיום": ["יומיומי", "כותנה", "סריג", "בסיסי"],
+  חתונה: ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  אירוע: ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  חגיגה: ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  ערב: ["ערב", "קוקטייל", "אלגנט", "מקסי"],
+  עבודה: ["משרד", "קלאסי", "מכופתר"],
+  ראיון: ["משרד", "קלאסי", "מכופתר"],
+  משרד: ["משרד", "קלאסי", "מכופתר"],
+  דייט: ["קוקטייל", "מיני", "ערב"],
+  מסיבה: ["קוקטייל", "מיני", "ערב"],
+  חופשה: ["קיץ", "פרחוני", "מקסי", "קליל"],
+  טיול: ["קיץ", "פרחוני", "מקסי", "קליל"],
+  לימודים: ["יומיומי", "כותנה", "סריג", "בסיסי"],
+  יומיום: ["יומיומי", "כותנה", "סריג", "בסיסי"],
 });
 
 /**
@@ -96,11 +96,11 @@ const OCCASION_KEYWORDS = Object.freeze({
  */
 function normalizeText(value) {
   return String(value || "")
-      .toLowerCase()
-      .replace(/[׳’‘`]/g, "'")
-      .replace(/[״“”]/g, "\"")
-      .replace(/\s+/g, " ")
-      .trim();
+    .toLowerCase()
+    .replace(/[׳’‘`]/g, "'")
+    .replace(/[״“”]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -154,8 +154,8 @@ function normalizeProduct(documentSnapshot) {
  */
 function toHebrewStem(word) {
   const withoutFinals = word.replace(
-      /[ךםןףץ]/g,
-      (letter) => FINAL_LETTER_FORMS[letter],
+    /[ךםןףץ]/g,
+    (letter) => FINAL_LETTER_FORMS[letter],
   );
 
   if (withoutFinals.length >= 4 && /[הת]$/.test(withoutFinals)) {
@@ -191,8 +191,7 @@ function wordMatchesProductWords(queryWord, productWords) {
     }
 
     return (
-      productStem.startsWith(queryStem) ||
-      queryStem.startsWith(productStem)
+      productStem.startsWith(queryStem) || queryStem.startsWith(productStem)
     );
   });
 }
@@ -225,13 +224,13 @@ function productMatchesText(product, searchText) {
   }
 
   const searchableText = normalizeText(
-      [
-        product.code,
-        product.name,
-        product.category,
-        product.gender,
-        product.desc,
-      ].join(" "),
+    [
+      product.code,
+      product.name,
+      product.category,
+      product.gender,
+      product.desc,
+    ].join(" "),
   );
 
   // Every query word is required, including short ones. No stop-word list:
@@ -241,11 +240,16 @@ function productMatchesText(product, searchText) {
 
   const productWords = searchableText.split(" ").filter(Boolean);
 
-  return queryWords.every(
-      (queryWord) =>
-        searchableText.includes(queryWord) ||
-        wordMatchesProductWords(queryWord, productWords),
-  );
+  return queryWords.every((queryWord) => {
+    if (queryWord.length < MIN_STEM_PREFIX_LENGTH) {
+      return wordMatchesProductWords(queryWord, productWords);
+    }
+
+    return (
+      searchableText.includes(queryWord) ||
+      wordMatchesProductWords(queryWord, productWords)
+    );
+  });
 }
 
 /**
@@ -262,40 +266,24 @@ function productHasSize(product, requestedSize) {
     return true;
   }
 
-  const normalizedRequestedSize =
-    normalizeText(requestedSize).toUpperCase();
+  const normalizedRequestedSize = normalizeText(requestedSize).toUpperCase();
 
   return product.variants.some((variant) => {
     const sizes = variant?.sizes;
 
     if (Array.isArray(sizes)) {
       return sizes.some((size) => {
-        if (
-          typeof size === "string" ||
-          typeof size === "number"
-        ) {
-          return (
-            String(size).toUpperCase() ===
-            normalizedRequestedSize
-          );
+        if (typeof size === "string" || typeof size === "number") {
+          return String(size).toUpperCase() === normalizedRequestedSize;
         }
 
         const sizeValue =
-          size?.size ||
-          size?.name ||
-          size?.label ||
-          size?.value ||
-          "";
+          size?.size || size?.name || size?.label || size?.value || "";
 
-        const quantity =
-          size?.quantity ??
-          size?.stock ??
-          size?.qty ??
-          null;
+        const quantity = size?.quantity ?? size?.stock ?? size?.qty ?? null;
 
         const matchesSize =
-          String(sizeValue).toUpperCase() ===
-          normalizedRequestedSize;
+          String(sizeValue).toUpperCase() === normalizedRequestedSize;
 
         if (quantity === null || quantity === undefined) {
           return matchesSize;
@@ -307,9 +295,8 @@ function productHasSize(product, requestedSize) {
 
     if (sizes && typeof sizes === "object") {
       return Object.entries(sizes).some(
-          ([sizeName, quantity]) =>
-            String(sizeName).toUpperCase() ===
-            normalizedRequestedSize &&
+        ([sizeName, quantity]) =>
+          String(sizeName).toUpperCase() === normalizedRequestedSize &&
           Number(quantity) > 0,
       );
     }
@@ -330,15 +317,11 @@ function productHasColor(product, requestedColor) {
     return true;
   }
 
-  const normalizedRequestedColor =
-    normalizeText(requestedColor);
+  const normalizedRequestedColor = normalizeText(requestedColor);
 
   return product.variants.some((variant) => {
     const colorName =
-      variant?.colorName ||
-      variant?.color ||
-      variant?.name ||
-      "";
+      variant?.colorName || variant?.color || variant?.name || "";
 
     const normalizedColorName = normalizeText(colorName);
 
@@ -370,7 +353,7 @@ function isProductOnSale(product) {
 
   if (typeof product.sale === "object") {
     return Boolean(
-        product.sale.active ||
+      product.sale.active ||
       product.sale.enabled ||
       Number(product.sale.discount) > 0 ||
       Number(product.sale.percent) > 0,
@@ -389,59 +372,40 @@ function isProductOnSale(product) {
  * @return {number} Available stock.
  */
 function getProductAvailableStock(product) {
-  const variantStock = product.variants.reduce(
-      (total, variant) => {
-        const sizes = variant?.sizes;
+  const variantStock = product.variants.reduce((total, variant) => {
+    const sizes = variant?.sizes;
 
-        if (Array.isArray(sizes)) {
-          const sizesStock = sizes.reduce(
-              (sizeTotal, size) => {
-                if (typeof size === "number") {
-                  return sizeTotal + Math.max(size, 0);
-                }
-
-                if (size && typeof size === "object") {
-                  const quantity = Number(
-                      size.quantity ??
-                size.stock ??
-                size.qty ??
-                0,
-                  );
-
-                  return (
-                    sizeTotal +
-                Math.max(quantity || 0, 0)
-                  );
-                }
-
-                return sizeTotal;
-              },
-              0,
-          );
-
-          return total + sizesStock;
+    if (Array.isArray(sizes)) {
+      const sizesStock = sizes.reduce((sizeTotal, size) => {
+        if (typeof size === "number") {
+          return sizeTotal + Math.max(size, 0);
         }
 
-        if (sizes && typeof sizes === "object") {
-          const sizesStock = Object.values(sizes).reduce(
-              (sizeTotal, quantity) =>
-                sizeTotal +
-            Math.max(Number(quantity) || 0, 0),
-              0,
-          );
+        if (size && typeof size === "object") {
+          const quantity = Number(size.quantity ?? size.stock ?? size.qty ?? 0);
 
-          return total + sizesStock;
+          return sizeTotal + Math.max(quantity || 0, 0);
         }
 
-        return total;
-      },
-      0,
-  );
+        return sizeTotal;
+      }, 0);
 
-  return Math.max(
-      Number(product.stock) || 0,
-      variantStock,
-  );
+      return total + sizesStock;
+    }
+
+    if (sizes && typeof sizes === "object") {
+      const sizesStock = Object.values(sizes).reduce(
+        (sizeTotal, quantity) => sizeTotal + Math.max(Number(quantity) || 0, 0),
+        0,
+      );
+
+      return total + sizesStock;
+    }
+
+    return total;
+  }, 0);
+
+  return Math.max(Number(product.stock) || 0, variantStock);
 }
 
 /**
@@ -532,8 +496,8 @@ function getProductRelevanceScore(product, occasionKeywords, style, season) {
   const productText = [product.name, product.desc].join(" ");
   const searchableText = normalizeText(productText);
 
-  const matchesOccasion = occasionKeywords.some(
-      (keyword) => searchableText.includes(keyword),
+  const matchesOccasion = occasionKeywords.some((keyword) =>
+    searchableText.includes(keyword),
   );
 
   if (matchesOccasion) {
@@ -542,10 +506,7 @@ function getProductRelevanceScore(product, occasionKeywords, style, season) {
 
   const normalizedStyle = normalizeText(style);
 
-  if (
-    normalizedStyle &&
-    searchableText.includes(normalizedStyle)
-  ) {
+  if (normalizedStyle && searchableText.includes(normalizedStyle)) {
     score += 2;
   }
 
@@ -575,23 +536,22 @@ async function getProductByCode(code) {
     return null;
   }
 
-  const normalizedCode =
-    String(code).trim().toUpperCase();
+  const normalizedCode = String(code).trim().toUpperCase();
 
   const directDocument = await db
-      .collection(PRODUCTS_COLLECTION)
-      .doc(normalizedCode)
-      .get();
+    .collection(PRODUCTS_COLLECTION)
+    .doc(normalizedCode)
+    .get();
 
   if (directDocument.exists) {
     return normalizeProduct(directDocument);
   }
 
   const querySnapshot = await db
-      .collection(PRODUCTS_COLLECTION)
-      .where("code", "==", normalizedCode)
-      .limit(1)
-      .get();
+    .collection(PRODUCTS_COLLECTION)
+    .where("code", "==", normalizedCode)
+    .limit(1)
+    .get();
 
   if (querySnapshot.empty) {
     return null;
@@ -632,34 +592,35 @@ async function searchProducts({
   occasion = null,
   style = null,
   season = null,
+  excludeProductCodes = [],
   limit = DEFAULT_LIMIT,
 } = {}) {
   const safeLimit = Math.min(
-      Math.max(Number(limit) || DEFAULT_LIMIT, 1),
-      MAX_LIMIT,
+    Math.max(Number(limit) || DEFAULT_LIMIT, 1),
+    MAX_LIMIT,
   );
 
-  const snapshot = await db
-      .collection(PRODUCTS_COLLECTION)
-      .limit(200)
-      .get();
+  const snapshot = await db.collection(PRODUCTS_COLLECTION).limit(200).get();
 
   let products = snapshot.docs.map(normalizeProduct);
 
   products = products.filter((product) => {
     if (
+      Array.isArray(excludeProductCodes) &&
+      excludeProductCodes.some(
+        (code) => String(code) === String(product.code || product.id),
+      )
+    ) {
+      return false;
+    }
+    if (
       category &&
-      normalizeText(product.category) !==
-        normalizeText(category)
+      normalizeText(product.category) !== normalizeText(category)
     ) {
       return false;
     }
 
-    if (
-      gender &&
-      normalizeText(product.gender) !==
-        normalizeText(gender)
-    ) {
+    if (gender && normalizeText(product.gender) !== normalizeText(gender)) {
       return false;
     }
 
@@ -667,24 +628,15 @@ async function searchProducts({
       return false;
     }
 
-    if (
-      maxPrice !== null &&
-      product.price > Number(maxPrice)
-    ) {
+    if (maxPrice !== null && product.price > Number(maxPrice)) {
       return false;
     }
 
-    if (
-      minPrice !== null &&
-      product.price < Number(minPrice)
-    ) {
+    if (minPrice !== null && product.price < Number(minPrice)) {
       return false;
     }
 
-    if (
-      inStockOnly &&
-      getProductAvailableStock(product) <= 0
-    ) {
+    if (inStockOnly && getProductAvailableStock(product) <= 0) {
       return false;
     }
 
@@ -709,10 +661,10 @@ async function searchProducts({
   products = products.map((product) => ({
     ...product,
     relevanceScore: getProductRelevanceScore(
-        product,
-        occasionKeywords,
-        style,
-        season,
+      product,
+      occasionKeywords,
+      style,
+      season,
     ),
   }));
 

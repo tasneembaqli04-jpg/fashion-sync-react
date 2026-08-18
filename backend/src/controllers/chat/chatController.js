@@ -4,8 +4,14 @@ const {
 
 async function chatController(request, response) {
   try {
-    const {message, history, currentOutfit, currentOutfitImage, lang} =
-      request.body || {};
+    const {
+      message,
+      history,
+      currentOutfit,
+      currentOutfitImage,
+      shownProductCodes,
+      lang,
+    } = request.body || {};
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return response.status(400).json({
@@ -39,12 +45,16 @@ async function chatController(request, response) {
 
       history: Array.isArray(history) ? history : [],
 
+      shownProductCodes: Array.isArray(shownProductCodes)
+        ? shownProductCodes.filter(
+            (code) => typeof code === "string" && code.trim(),
+          )
+        : [],
+
       currentOutfit: Array.isArray(currentOutfit) ? currentOutfit : [],
 
       currentOutfitImage:
-        typeof currentOutfitImage === "string" ?
-          currentOutfitImage :
-          "",
+        typeof currentOutfitImage === "string" ? currentOutfitImage : "",
 
       lang: lang === "en" ? "en" : "he",
 
