@@ -14,6 +14,8 @@ import {
   matchesMonthFilter,
 } from "../../functions/shared/monthFilter";
 import { formatDate, formatDateTime } from "../../functions/shared/dateFormat";
+import LoadMoreButton from "../common/LoadMoreButton";
+import { useProgressiveList } from "../../hooks/useProgressiveList";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
@@ -162,6 +164,19 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
 
     return list;
   }, [monthFilteredOrders, activeFilter, showOnlyWithReturns, showOnlyCancelled, showOnlyPickup, returnRequests]);
+
+  // All five controls are in the key: the status tabs, the month, and the
+  // three toggles. A returning customer builds up orders over years, and
+  // there is no reason to render every one of them to show her the last few.
+  const orderList = useProgressiveList(filteredOrders, {
+    resetKey: [
+      activeFilter,
+      monthFilter,
+      showOnlyWithReturns,
+      showOnlyCancelled,
+      showOnlyPickup,
+    ].join("|"),
+  });
 
   const countsByStatus = useMemo(() => {
     const counts = { all: monthFilteredOrders.length, 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -324,7 +339,7 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
       )}
 
       {filteredOrders.length ? (
-        filteredOrders.map((order) => {
+        orderList.visible.map((order) => {
           const steps = order.shipping?.id === "pickup"
             ? dict.pickupStatusLabels
             : STATUS_LABELS;
@@ -621,6 +636,11 @@ export default function CustomerOrders({ show, orders = [], returnRequests = [],
           {t.noOrdersInStatus}
         </div>
       )}
+
+      <LoadMoreButton
+        remaining={orderList.remaining}
+        onClick={orderList.showMore}
+      />
     </div>
   );
 }
