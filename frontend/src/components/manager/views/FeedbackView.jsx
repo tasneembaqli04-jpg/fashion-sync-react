@@ -7,6 +7,8 @@ import {
 } from "../../../services/feedback/feedbackService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -94,6 +96,13 @@ export default function FeedbackView() {
     });
   }, [feedback, readFilter, monthFilter]);
 
+  // Collapsed back to the first page whenever the filters change. Without
+  // that, expanding three times and then switching month leaves a count
+  // belonging to a list that is no longer on screen.
+  const feedbackList = useProgressiveList(visibleFeedback, {
+    resetKey: `${readFilter}|${monthFilter}`,
+  });
+
   return (
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
@@ -152,7 +161,7 @@ export default function FeedbackView() {
           {t.noFeedbackYet}
         </div>
       ) : (
-        visibleFeedback.map((item) => (
+        feedbackList.visible.map((item) => (
           <div
             key={item.id}
             style={{
@@ -222,6 +231,11 @@ export default function FeedbackView() {
           </div>
         ))
       )}
+
+      <LoadMoreButton
+        remaining={feedbackList.remaining}
+        onClick={feedbackList.showMore}
+      />
     </div>
   );
 }

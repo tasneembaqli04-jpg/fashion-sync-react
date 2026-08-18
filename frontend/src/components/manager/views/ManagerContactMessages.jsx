@@ -9,6 +9,8 @@ import {
 import { sendContactReplyEmail } from "../../../services/email/emailService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -95,6 +97,12 @@ export default function ManagerContactMessages() {
     });
   }, [messages, filter, monthFilter]);
 
+  // Collapses back to the first page when either filter moves, so the count
+  // on the button always belongs to the list on screen.
+  const messageList = useProgressiveList(visibleMessages, {
+    resetKey: `${filter}|${monthFilter}`,
+  });
+
   return (
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
@@ -153,7 +161,7 @@ export default function ManagerContactMessages() {
           {t.noMessagesYet}
         </div>
       ) : (
-        visibleMessages.map((msg) => (
+        messageList.visible.map((msg) => (
           <div
             key={msg.id}
             style={{
@@ -310,6 +318,11 @@ export default function ManagerContactMessages() {
           </div>
         ))
       )}
+
+      <LoadMoreButton
+        remaining={messageList.remaining}
+        onClick={messageList.showMore}
+      />
     </div>
   );
 }

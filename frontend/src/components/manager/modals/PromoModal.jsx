@@ -96,7 +96,7 @@ export default function PromoModal({
                 marginTop: "0.18rem",
               }}
             >
-              🛒 {product.salesLastMonth || 0} {t.salesThisMonth}
+              🛒 {product.salesLastMonth || 0} {t.salesCount}
             </div>
           </div>
         </div>

@@ -54,13 +54,36 @@ export function getSlowProducts(
   products = [],
   { share = 0.1, min = 5, max = 15 } = {}
 ) {
+  const ranked = rankSlowProducts(products);
+
+  if (!ranked.length) {
+    return [];
+  }
+
+  const size = Math.min(max, Math.max(min, Math.ceil(ranked.length * share)));
+
+  return ranked.slice(0, Math.min(size, ranked.length));
+}
+
+/**
+ * The whole catalogue in slow-moving order, worst first.
+ *
+ * Same ranking as getSlowProducts without the sizing. A screen that reveals
+ * the list a part at a time wants the full order rather than a slice of it:
+ * the cap exists because a long list was unusable, and once the list can be
+ * expanded on request there is no reason to stop the manager at fifteen.
+ *
+ * @param {Array<object>} [products] - The catalogue.
+ * @returns {Array<object>} Every in-stock product, slowest first.
+ */
+export function rankSlowProducts(products = []) {
   const inStock = products.filter((product) => (Number(product.stock) || 0) > 0);
 
   if (!inStock.length) {
     return [];
   }
 
-  const ranked = [...inStock].sort((first, second) => {
+  return [...inStock].sort((first, second) => {
     const firstSales = Number(first.salesLastMonth) || 0;
     const secondSales = Number(second.salesLastMonth) || 0;
 
@@ -78,10 +101,6 @@ export function getSlowProducts(
     // Stable, so the panel does not reshuffle between renders.
     return String(first.code || "").localeCompare(String(second.code || ""));
   });
-
-  const size = Math.min(max, Math.max(min, Math.ceil(inStock.length * share)));
-
-  return ranked.slice(0, Math.min(size, ranked.length));
 }
 
 /**

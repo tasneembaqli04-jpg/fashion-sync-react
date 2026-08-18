@@ -5,6 +5,9 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getAllGiftCards, translateGiftCard } from "../../../services/giftcard/giftCardService";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
+import { matchesAnySearchField } from "../../../functions/shared/textSearch";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -55,7 +58,13 @@ export default function GiftCardOrdersView() {
   const entries = useMemo(() => {
     return giftCards.map((card) => ({
       code: card.code || "",
+      // Shown in the language on screen.
       recipient: (lang === "en" && card.recipientNameEn) || card.recipientName || "",
+      // Both spellings, kept for the search. An English recipient name is a
+      // transliteration, so the same person is "רותם" and "Rotem", and the
+      // manager will type whichever she remembers.
+      recipientName: card.recipientName || "",
+      recipientNameEn: card.recipientNameEn || "",
       message: (lang === "en" && card.messageEn) || card.message || "",
       amount: Number(card.amount) || 0,
       balance: Number(card.balance) || 0,
@@ -81,14 +90,24 @@ export default function GiftCardOrdersView() {
     if (amountFilter === "100to300" && (entry.amount < 100 || entry.amount > 300)) return false;
     if (amountFilter === "over300" && entry.amount <= 300) return false;
 
-    const term = searchTerm.trim().toLowerCase();
-    if (term) {
-      const matchesCode = entry.code.toLowerCase().includes(term);
-      const matchesRecipient = entry.recipient.toLowerCase().includes(term);
-      if (!matchesCode && !matchesRecipient) return false;
+    if (
+      !matchesAnySearchField(
+        searchTerm,
+        entry.code,
+        entry.recipientName,
+        entry.recipientNameEn,
+      )
+    ) {
+      return false;
     }
 
     return true;
+  });
+
+  // Every control that narrows the list is in the key: the amount band, the
+  // month and the search box.
+  const cardList = useProgressiveList(visibleEntries, {
+    resetKey: `${amountFilter}|${monthFilter}|${searchTerm.trim()}`,
   });
 
   return (
@@ -224,7 +243,7 @@ export default function GiftCardOrdersView() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-          {visibleEntries.map((entry, index) => (
+          {cardList.visible.map((entry, index) => (
             <div
               key={`${entry.code}-${index}`}
               style={{
@@ -308,6 +327,11 @@ export default function GiftCardOrdersView() {
               </div>
             </div>
           ))}
+
+          <LoadMoreButton
+            remaining={cardList.remaining}
+            onClick={cardList.showMore}
+          />
         </div>
       )}
         </>

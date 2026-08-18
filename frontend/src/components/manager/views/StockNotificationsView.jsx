@@ -10,6 +10,8 @@ import { sendStockAlertEmail } from "../../../services/email/emailService";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -76,6 +78,14 @@ export default function StockNotificationsView({ products = [], initialProductCo
       return true;
     });
   }, [items, statusFilter, monthFilter, productCodeFilter]);
+
+  // All three filters are in the key. The product filter is the one that
+  // arrives from outside — the inventory screen links here already narrowed
+  // to a product — so a list left expanded would otherwise carry its count
+  // across a navigation the manager did not make from this screen.
+  const requestList = useProgressiveList(visibleItems, {
+    resetKey: `${statusFilter}|${monthFilter}|${productCodeFilter}`,
+  });
 
   return (
     <div className={layoutStyles.view}>
@@ -176,7 +186,7 @@ export default function StockNotificationsView({ products = [], initialProductCo
           {t.noRequestsYet}
         </div>
       ) : (
-        visibleItems.map((item) => (
+        requestList.visible.map((item) => (
           <div
             key={item.id}
             style={{
@@ -234,6 +244,11 @@ export default function StockNotificationsView({ products = [], initialProductCo
           </div>
         ))
       )}
+
+      <LoadMoreButton
+        remaining={requestList.remaining}
+        onClick={requestList.showMore}
+      />
     </div>
   );
 }

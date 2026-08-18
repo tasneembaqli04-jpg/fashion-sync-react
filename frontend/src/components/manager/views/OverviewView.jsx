@@ -3,7 +3,9 @@ import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss"
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
-import { getSlowProducts } from "../../../functions/manager/analytics";
+import { rankSlowProducts } from "../../../functions/manager/analytics";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
+import LoadMoreButton from "../../common/LoadMoreButton";
 import { HIGH_DEMAND_THRESHOLD } from "../../../functions/manager/managerHelpers";
 import { formatDateTime } from "../../../functions/shared/dateFormat";
 
@@ -68,7 +70,14 @@ export default function OverviewView({
   // Sized relative to the catalogue and ranked by sales then by capital on
   // the shelf. A fixed "two sales or fewer" threshold listed almost the whole
   // catalogue and gave the manager nothing to act on.
-  const slowProducts = getSlowProducts(products);
+  // The whole ranking rather than a slice of it. Both panels used to stop at
+  // a fixed count and say nothing about what they had dropped, which reads as
+  // a complete list; they now reveal the rest on request and name how much is
+  // left. Neither panel has filters, so neither needs a reset key.
+  const slowProducts = rankSlowProducts(products);
+
+  const slowList = useProgressiveList(slowProducts, { initial: 5, step: 5 });
+  const alertList = useProgressiveList(alerts, { initial: 6, step: 6 });
 
   return (
     <div className={layoutStyles.view}>
@@ -166,8 +175,8 @@ export default function OverviewView({
           </div>
 
           <div className={uiStyles.cardBody}>
-            {alerts.slice(0, 6).length > 0 ? (
-              alerts.slice(0, 6).map((alert) => {
+            {alertList.visible.length > 0 ? (
+              alertList.visible.map((alert) => {
                 const product = products.find((p) => p.code === alert.code);
                 const img =
                   product?.img ||
@@ -207,6 +216,11 @@ export default function OverviewView({
                 {t.noActiveAlerts}
               </div>
             )}
+
+            <LoadMoreButton
+              remaining={alertList.remaining}
+              onClick={alertList.showMore}
+            />
           </div>
         </div>
 
@@ -276,7 +290,7 @@ export default function OverviewView({
               {t.allSellingWell}
             </div>
           ) : (
-            slowProducts.map((p) => {
+            slowList.visible.map((p) => {
               const isPromoted = promotedCode === p.code;
 
               return (
@@ -317,7 +331,7 @@ export default function OverviewView({
                       }}
                     >
                       <span className={uiStyles.slowBadge}>
-                        🛒 {p.salesLastMonth} {t.salesThisMonth}
+                        🛒 {p.salesLastMonth} {t.salesCount}
                       </span>
                       <span
                         className={`${uiStyles.tag} ${uiStyles.tBlue}`}
@@ -354,6 +368,11 @@ export default function OverviewView({
               );
             })
           )}
+
+          <LoadMoreButton
+            remaining={slowList.remaining}
+            onClick={slowList.showMore}
+          />
         </div>
       </div>
     </div>

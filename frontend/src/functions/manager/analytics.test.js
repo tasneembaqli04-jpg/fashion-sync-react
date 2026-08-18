@@ -4,6 +4,7 @@ import {
   isSameMonth,
   getOrderGoodsRevenue,
   getSlowProducts,
+  rankSlowProducts,
 } from "./analytics";
 
 // A fixed reference point, so the tests do not depend on the calendar.
@@ -541,6 +542,36 @@ describe("getSlowProducts", () => {
 
     expect(getSlowProducts(catalogue, { share: 0.1, min: 5, max: 100 }))
       .toHaveLength(20);
+  });
+
+  it("ranks the whole catalogue when the sizing is skipped", () => {
+    // 200 products, so a tenth of the catalogue is above the cap of fifteen
+    // and the cap is the thing being measured.
+    const catalogue = Array.from({ length: 200 }, (_, i) =>
+      make(`P${i}`, i, 5, 100)
+    );
+
+    // getSlowProducts stops at fifteen; the ranking itself does not, which is
+    // what lets a screen reveal the rest on request.
+    expect(getSlowProducts(catalogue)).toHaveLength(15);
+    expect(rankSlowProducts(catalogue)).toHaveLength(200);
+  });
+
+  it("ranks in the same order the sized list uses", () => {
+    const catalogue = [
+      make("A", 9, 5, 100),
+      make("B", 0, 5, 100),
+      make("C", 3, 5, 100),
+    ];
+
+    expect(rankSlowProducts(catalogue).slice(0, 3).map((p) => p.code)).toEqual(
+      getSlowProducts(catalogue).slice(0, 3).map((p) => p.code)
+    );
+  });
+
+  it("leaves out-of-stock products out of the ranking too", () => {
+    expect(rankSlowProducts([make("A", 0, 0, 100)])).toEqual([]);
+    expect(rankSlowProducts([])).toEqual([]);
   });
 
   it("orders deterministically when sales and value both tie", () => {

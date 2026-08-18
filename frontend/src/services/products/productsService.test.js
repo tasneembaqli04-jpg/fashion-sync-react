@@ -32,7 +32,8 @@ vi.mock("firebase/firestore", () => ({
   deleteDoc: vi.fn(),
 }));
 
-const { decrementProductsStock } = await import("./productsService");
+const { decrementProductsStock, restockReturnedItem, salesAfterRestock } =
+  await import("./productsService");
 
 const lastWrite = () => writes[writes.length - 1].payload;
 
@@ -152,5 +153,81 @@ describe("decrementProductsStock — salesLastMonth counts what left the shelf",
 
     expect(writes).toHaveLength(1);
     expect(lastWrite().stock).toBe(3);
+  });
+});
+
+describe("salesAfterRestock", () => {
+  it("gives the returned units back to the count", () => {
+    expect(salesAfterRestock(5, 2)).toBe(3);
+  });
+
+  it("never goes below zero", () => {
+    expect(salesAfterRestock(1, 4)).toBe(0);
+    expect(salesAfterRestock(0, 3)).toBe(0);
+  });
+
+  it("treats a missing count as zero", () => {
+    expect(salesAfterRestock(undefined, 2)).toBe(0);
+    expect(salesAfterRestock(null, 2)).toBe(0);
+  });
+
+  it("leaves the count alone when nothing was restocked", () => {
+    expect(salesAfterRestock(4, 0)).toBe(4);
+  });
+});
+
+describe("restockReturnedItem — a cancelled or returned item stops counting as sold", () => {
+  it("takes the returned quantity off the count, on a product without variants", async () => {
+    store.set("FS-100", { salesLastMonth: 3, stock: 1 });
+
+    await restockReturnedItem({ code: "FS-100", qty: 2 });
+
+    expect(lastWrite().stock).toBe(3);
+    expect(lastWrite().salesLastMonth).toBe(1);
+  });
+
+  it("takes the returned quantity off the count, on a product with variants", async () => {
+    store.set("FS-101", {
+      salesLastMonth: 4,
+      stock: 2,
+      variants: [{ colorName: "שחור", sizes: { M: 2 } }],
+    });
+
+    await restockReturnedItem({
+      code: "FS-101",
+      qty: 1,
+      color: "שחור",
+      size: "M",
+    });
+
+    expect(lastWrite().stock).toBe(3);
+    expect(lastWrite().salesLastMonth).toBe(3);
+  });
+
+  it("floors the count at zero rather than going negative", async () => {
+    store.set("FS-102", { salesLastMonth: 1, stock: 0 });
+
+    await restockReturnedItem({ code: "FS-102", qty: 5 });
+
+    expect(lastWrite().salesLastMonth).toBe(0);
+  });
+
+  it("leaves the count alone when the colour no longer exists on the product", async () => {
+    store.set("FS-103", {
+      salesLastMonth: 2,
+      stock: 1,
+      variants: [{ colorName: "שחור", sizes: { M: 1 } }],
+    });
+
+    await restockReturnedItem({
+      code: "FS-103",
+      qty: 1,
+      color: "צבע שנמחק",
+      size: "M",
+    });
+
+    // Nothing reached the shelf, so nothing is unwound.
+    expect(lastWrite().stock).toBe(1);
+    expect(lastWrite().salesLastMonth).toBe(2);
   });
 });

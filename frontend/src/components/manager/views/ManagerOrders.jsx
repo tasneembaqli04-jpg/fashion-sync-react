@@ -9,6 +9,8 @@ import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -118,6 +120,13 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
     return true;
   });
 
+  // The search term is in the key as well as the two filters: typing narrows
+  // the list, and a count left over from before the search would offer records
+  // the search has already excluded.
+  const orderList = useProgressiveList(visibleOrders, {
+    resetKey: `${statusFilter}|${monthFilter}|${searchTerm.trim()}`,
+  });
+
   const cardStyle = (isActive) => ({
     cursor: "pointer",
     outline: isActive ? "2px solid #d6b65c" : "none",
@@ -134,7 +143,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
       </div>
 
       <div
-        className={overviewStyles.statsGrid}
+        className={`${overviewStyles.statsGrid} ${overviewStyles.statsCompact}`}
       >
         <div
           className={`${overviewStyles.stat} ${overviewStyles.gold}`}
@@ -282,7 +291,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
           </div>
         </div>
       ) : (
-        visibleOrders.map((order) => {
+        orderList.visible.map((order) => {
           const items = Array.isArray(order.items) ? order.items : [];
 
           const total =
@@ -395,6 +404,11 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
           );
         })
       )}
+
+      <LoadMoreButton
+        remaining={orderList.remaining}
+        onClick={orderList.showMore}
+      />
 
       <OrderDetailsModal
         open={!!selectedOrder}

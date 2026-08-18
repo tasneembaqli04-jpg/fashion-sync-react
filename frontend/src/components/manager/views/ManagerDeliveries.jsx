@@ -7,6 +7,8 @@ import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { DELIVERED_STAGE } from "../../../functions/manager/orderStatus";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -100,6 +102,13 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
     }
     return list;
   }, [sortedOrders, stageFilter, pickupOnly]);
+
+  // The month is in the key alongside the stage tab and the pickup toggle.
+  // The landing effect can also move the month on its own, when the screen
+  // opens on a quiet one, and the list must collapse with it.
+  const deliveryList = useProgressiveList(visibleOrders, {
+    resetKey: `${stageFilter}|${pickupOnly}|${monthFilter}`,
+  });
 
   const pickupOrdersCount = useMemo(
     () => sortedOrders.filter((order) => order.shipping?.id === "pickup").length,
@@ -198,7 +207,7 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
         </div>
       ) : (
         <div className={deliveriesStyles.deliveriesList}>
-          {visibleOrders.map((order) => {
+          {deliveryList.visible.map((order) => {
             const currentIndex = order.stageIndex ?? 0;
             const nextIndex = currentIndex < DELIVERED_STAGE ? currentIndex + 1 : null;
             const createdAtText = formatDateTime(order.createdAt, lang);
@@ -330,6 +339,11 @@ export default function ManagerDeliveries({ orders = [], onAdvanceStatus, loadin
               </div>
             );
           })}
+
+          <LoadMoreButton
+            remaining={deliveryList.remaining}
+            onClick={deliveryList.showMore}
+          />
         </div>
       )}
 

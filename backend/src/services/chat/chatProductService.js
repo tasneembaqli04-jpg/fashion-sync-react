@@ -223,10 +223,16 @@ function productMatchesText(product, searchText) {
     return true;
   }
 
+  // The English name is searched alongside the Hebrew one. A product is
+  // stored under both, and a customer writing in English asks for it by the
+  // name she can read. The Hebrew stem derivation below leaves English words
+  // untouched — both of its rules test for Hebrew letters — so the two sit in
+  // one text without either interfering with the other.
   const searchableText = normalizeText(
     [
       product.code,
       product.name,
+      product.nameEn,
       product.category,
       product.gender,
       product.desc,

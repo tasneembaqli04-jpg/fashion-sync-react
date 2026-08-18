@@ -4,6 +4,9 @@ import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scs
 import { CATEGORIES } from "../../../data/categories";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { matchesAnySearchField } from "../../../functions/shared/textSearch";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import { getStockStatus } from "../../../functions/customer/stockPolicy";
 
 // Filter values that never change with the interface language.
@@ -154,9 +157,11 @@ export default function InventoryView({
         stockStatusMatch = stockStatus === "out";
       }
 
-      const productNameMatch = productNameFilter.trim()
-        ? p.name.toLowerCase().includes(productNameFilter.trim().toLowerCase())
-        : true;
+      const productNameMatch = matchesAnySearchField(
+        productNameFilter,
+        p.name,
+        p.nameEn,
+      );
 
       const productCodeMatch = productCodeFilter.trim()
         ? p.code.toLowerCase().includes(productCodeFilter.trim().toLowerCase())
@@ -188,6 +193,26 @@ export default function InventoryView({
     promoOnlyFilter,
     promotedCode,
   ]);
+
+  // Twenty-five at a time rather than fifteen: a table row is a fraction of
+  // the height of the cards the other screens list, so the same screenful
+  // holds far more of them.
+  //
+  // Every one of the six filters is in the key. This screen has more of them
+  // than any other, and two are free text, so the list can be narrowed
+  // without a visible control changing at all.
+  const productList = useProgressiveList(filteredProducts, {
+    initial: 25,
+    step: 25,
+    resetKey: [
+      categoryFilter,
+      genderFilter,
+      stockStatusFilter,
+      productNameFilter.trim(),
+      productCodeFilter.trim(),
+      promoOnlyFilter,
+    ].join("|"),
+  });
 
   const clearAllFilters = () => {
     setCategoryFilter(ANY);
@@ -250,11 +275,12 @@ export default function InventoryView({
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
               >
+                {/* Kids and unisex are no longer offered. Their labels stay in
+                    the dictionary so a product carrying one of those values
+                    still shows a translated name rather than the raw Hebrew. */}
                 <option value={ANY}>{common.all}</option>
                 <option value="גברים">{t.options.genders.men}</option>
                 <option value="נשים">{t.options.genders.women}</option>
-                <option value="ילדים">{t.options.genders.kids}</option>
-                <option value="יוניסקס">{t.options.genders.unisex}</option>
               </select>
             </div>
 
@@ -346,7 +372,7 @@ export default function InventoryView({
             </thead>
 
             <tbody>
-              {filteredProducts.map((p) => {
+              {productList.visible.map((p) => {
                 const isPromoted = promotedCode === p.code;
 
                 return (
@@ -446,6 +472,12 @@ export default function InventoryView({
               )}
             </tbody>
           </table>
+
+          <LoadMoreButton
+            remaining={productList.remaining}
+            onClick={productList.showMore}
+            style={{ paddingBottom: "0.7rem" }}
+          />
         </div>
       </div>
     </div>

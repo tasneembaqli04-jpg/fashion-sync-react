@@ -21,7 +21,7 @@ Every page has a language button (Hebrew/English) and a theme button (light/dark
 |---|---|
 | **Register** | Sign up with an email and password from the home page, then confirm the code emailed to you. Guests can browse the catalogue but cannot add to the cart or order |
 | **Sign in later** | The same form signs you back in. "Forgot password?" emails a reset link to the address you registered with |
-| **Browse** | Search by product name or product code, and filter by gender, category, season and price. Tab moves between products, Enter opens one, Escape closes it |
+| **Browse** | Search by product name or product code, in Hebrew or English — a product is found by either of its names, whichever language the site is showing. Filter by gender, category, season and price. Tab moves between products, Enter opens one, Escape closes it |
 | **Save** | Tap the heart on a product to keep it in your wishlist. It is saved to your account, so it is still there on your next visit and on another device. Open it from "Wishlist", where you can add an item to the cart or remove it |
 | **Add to cart** | Choose a colour and size, then add. Out-of-stock combinations cannot be added, but you can ask to be told when they return |
 | **Wait for a restock** | Ask to be notified on a sold-out product, and when it returns you get an email and a banner at the top of the shop. The banner stays until you dismiss it with "Got it" |
@@ -92,7 +92,7 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 | **Enquiries** | Messages customers sent from the contact form on the policy page. Type a reply and it is emailed to the customer, then kept on the message so you can see what was answered. An enquiry sent without an address cannot be replied to, and says so. Answering marks it read |
 | **Feedback** | Ratings and comments customers left on their way to payment |
 | **Coupons** | Create and manage discount codes |
-| **Gift cards** | Approve or reject gift card orders |
+| **Gift cards** | Approve or reject gift card orders. Searchable by card code or recipient name, in either language |
 | **Stock alerts** | Customers waiting for a product to return |
 | **Store settings** | Policy text, business hours, and store details. Changes reach the chatbot immediately |
 | **Analytics** | Sales trends and performance, from live data. Revenue counts goods sold: delivery fees are not income, and a gift card counts when it is spent rather than when it is bought |

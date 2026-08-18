@@ -10,6 +10,8 @@ import { restockReturnedItem } from "../../../services/products/productsService"
 import { issueGiftCard } from "../../../services/giftcard/giftCardService";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -129,6 +131,10 @@ export default function ManagerReturns({ products = [] }) {
     });
   }, [requests, statusFilter, monthFilter]);
 
+  const requestList = useProgressiveList(visibleRequests, {
+    resetKey: `${statusFilter}|${monthFilter}`,
+  });
+
   return (
     <div className={layoutStyles.view}>
       <div className={uiStyles.pageHd}>
@@ -188,7 +194,7 @@ export default function ManagerReturns({ products = [] }) {
           {t.noRequestsYet}
         </div>
       ) : (
-        visibleRequests.map((request) => (
+        requestList.visible.map((request) => (
           <div
             key={request.id}
             style={{
@@ -284,6 +290,11 @@ export default function ManagerReturns({ products = [] }) {
           </div>
         ))
       )}
+
+      <LoadMoreButton
+        remaining={requestList.remaining}
+        onClick={requestList.showMore}
+      />
     </div>
   );
 }
