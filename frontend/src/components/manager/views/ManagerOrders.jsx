@@ -134,7 +134,7 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
       </div>
 
       <div
-        className={overviewStyles.statsGrid}
+        className={`${overviewStyles.statsGrid} ${overviewStyles.statsCompact}`}
       >
         <div
           className={`${overviewStyles.stat} ${overviewStyles.gold}`}
