@@ -24,6 +24,7 @@ export const he = {
       yearLabel: "סינון לפי שנה",
       monthLabel: "סינון לפי חודש",
     },
+    loadMore: "טען עוד ({count})",
     errorBoundaryTitle: "לא ניתן להציג את החלק הזה",
     errorBoundaryMessage: "כדאי לרענן את העמוד, או לחזור אחורה ולנסות שוב.",
   },

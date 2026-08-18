@@ -24,6 +24,7 @@ export const en = {
       yearLabel: "Filter by year",
       monthLabel: "Filter by month",
     },
+    loadMore: "Load more ({count})",
     errorBoundaryTitle: "This part could not be displayed",
     errorBoundaryMessage: "Please refresh the page, or go back and try again.",
   },
