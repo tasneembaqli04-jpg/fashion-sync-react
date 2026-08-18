@@ -1,4 +1,5 @@
 import { getProducts } from "../../services/products/productsService";
+import { matchesAnySearchField } from "../shared/textSearch";
 
 const BESTSELLERS_PER_CATEGORY = 5;
 
@@ -48,8 +49,14 @@ export function filterProducts({
   promotedCode = "",
 }) {
   let list = products.filter((product) => {
-    const matchSearch =
-      !search || product.name.includes(search) || product.code.includes(search);
+    // Both names and the code, case-folded. Comparing raw strings worked in
+    // Hebrew, which has no case, and would have kept failing in English.
+    const matchSearch = matchesAnySearchField(
+      search,
+      product.name,
+      product.nameEn,
+      product.code,
+    );
 
     const matchGender = !gender || product.gender === gender;
     const matchCategory = !category || product.cat === category;

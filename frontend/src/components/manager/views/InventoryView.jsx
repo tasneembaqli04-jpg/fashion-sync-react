@@ -4,6 +4,7 @@ import inventoryStyles from "../../../styles/manager/ManagerInventory.module.scs
 import { CATEGORIES } from "../../../data/categories";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import { matchesAnySearchField } from "../../../functions/shared/textSearch";
 import { getStockStatus } from "../../../functions/customer/stockPolicy";
 
 // Filter values that never change with the interface language.
@@ -154,9 +155,11 @@ export default function InventoryView({
         stockStatusMatch = stockStatus === "out";
       }
 
-      const productNameMatch = productNameFilter.trim()
-        ? p.name.toLowerCase().includes(productNameFilter.trim().toLowerCase())
-        : true;
+      const productNameMatch = matchesAnySearchField(
+        productNameFilter,
+        p.name,
+        p.nameEn,
+      );
 
       const productCodeMatch = productCodeFilter.trim()
         ? p.code.toLowerCase().includes(productCodeFilter.trim().toLowerCase())
