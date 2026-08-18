@@ -28,6 +28,7 @@ import { getProducts, addProduct, deleteProduct, updateProduct } from "../servic
 import { translateProductFields } from "../services/translation/translationService";
 import { resolveStockNotifications, getAllStockNotifications, updateStockNotificationTranslation } from "../services/notifications/notificationsService";
 import { getAllReturnRequests, updateReturnItemTranslation } from "../services/returns/returnsService";
+import { matchesAnySearchField } from "../functions/shared/textSearch";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
 import { updateOrderCustomerAndItems } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
@@ -260,13 +261,16 @@ export default function Manager({ onPromote }) {
 
   const filteredProducts = useMemo(() => {
     if (!globalSearch.trim()) return products;
-    const q = globalSearch.trim();
+
+    // Both names and the code go through the shared matcher, which folds case
+    // and looks in every name a product has. Category and season stay as they
+    // are: they are stored as keys rather than as text the manager reads, and
+    // each screen translates them for display.
     return products.filter(
       (p) =>
-        p.name.includes(q) ||
-        p.code.includes(q) ||
-        p.cat.includes(q) ||
-        (p.season || "").includes(q),
+        matchesAnySearchField(globalSearch, p.name, p.nameEn, p.code) ||
+        p.cat.includes(globalSearch.trim()) ||
+        (p.season || "").includes(globalSearch.trim()),
     );
   }, [products, globalSearch]);
 
