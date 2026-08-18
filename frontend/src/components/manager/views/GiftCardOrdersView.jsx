@@ -5,6 +5,8 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { getAllGiftCards, translateGiftCard } from "../../../services/giftcard/giftCardService";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import { matchesAnySearchField } from "../../../functions/shared/textSearch";
 import {
   getMonthKey,
@@ -100,6 +102,12 @@ export default function GiftCardOrdersView() {
     }
 
     return true;
+  });
+
+  // Every control that narrows the list is in the key: the amount band, the
+  // month and the search box.
+  const cardList = useProgressiveList(visibleEntries, {
+    resetKey: `${amountFilter}|${monthFilter}|${searchTerm.trim()}`,
   });
 
   return (
@@ -235,7 +243,7 @@ export default function GiftCardOrdersView() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-          {visibleEntries.map((entry, index) => (
+          {cardList.visible.map((entry, index) => (
             <div
               key={`${entry.code}-${index}`}
               style={{
@@ -319,6 +327,11 @@ export default function GiftCardOrdersView() {
               </div>
             </div>
           ))}
+
+          <LoadMoreButton
+            remaining={cardList.remaining}
+            onClick={cardList.showMore}
+          />
         </div>
       )}
         </>
