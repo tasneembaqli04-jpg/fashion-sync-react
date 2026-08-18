@@ -250,11 +250,12 @@ export default function InventoryView({
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value)}
               >
+                {/* Kids and unisex are no longer offered. Their labels stay in
+                    the dictionary so a product carrying one of those values
+                    still shows a translated name rather than the raw Hebrew. */}
                 <option value={ANY}>{common.all}</option>
                 <option value="גברים">{t.options.genders.men}</option>
                 <option value="נשים">{t.options.genders.women}</option>
-                <option value="ילדים">{t.options.genders.kids}</option>
-                <option value="יוניסקס">{t.options.genders.unisex}</option>
               </select>
             </div>
 
