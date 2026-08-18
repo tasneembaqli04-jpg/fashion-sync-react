@@ -5,6 +5,8 @@ import { CATEGORIES } from "../../../data/categories";
 import { useDialog } from "../../common/DialogProvider";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { matchesAnySearchField } from "../../../functions/shared/textSearch";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import { getStockStatus } from "../../../functions/customer/stockPolicy";
 
 // Filter values that never change with the interface language.
@@ -192,6 +194,26 @@ export default function InventoryView({
     promotedCode,
   ]);
 
+  // Twenty-five at a time rather than fifteen: a table row is a fraction of
+  // the height of the cards the other screens list, so the same screenful
+  // holds far more of them.
+  //
+  // Every one of the six filters is in the key. This screen has more of them
+  // than any other, and two are free text, so the list can be narrowed
+  // without a visible control changing at all.
+  const productList = useProgressiveList(filteredProducts, {
+    initial: 25,
+    step: 25,
+    resetKey: [
+      categoryFilter,
+      genderFilter,
+      stockStatusFilter,
+      productNameFilter.trim(),
+      productCodeFilter.trim(),
+      promoOnlyFilter,
+    ].join("|"),
+  });
+
   const clearAllFilters = () => {
     setCategoryFilter(ANY);
     setGenderFilter(ANY);
@@ -350,7 +372,7 @@ export default function InventoryView({
             </thead>
 
             <tbody>
-              {filteredProducts.map((p) => {
+              {productList.visible.map((p) => {
                 const isPromoted = promotedCode === p.code;
 
                 return (
@@ -450,6 +472,12 @@ export default function InventoryView({
               )}
             </tbody>
           </table>
+
+          <LoadMoreButton
+            remaining={productList.remaining}
+            onClick={productList.showMore}
+            style={{ paddingBottom: "0.7rem" }}
+          />
         </div>
       </div>
     </div>
