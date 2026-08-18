@@ -5,6 +5,8 @@ import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import formStyles from "../../../styles/manager/ManagerForms.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import { formatDateTime } from "../../../functions/shared/dateFormat";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 
 function alertClass(type) {
   if (type === "danger") {
@@ -64,6 +66,12 @@ export default function AlertsView({ alerts = [], products = [], onViewStockRequ
 
     return list;
   }, [alerts, typeFilter, demandMin]);
+
+  // Both controls are in the key: the kind of alert and the demand threshold
+  // each change what is being counted.
+  const alertList = useProgressiveList(filteredAlerts, {
+    resetKey: `${typeFilter}|${demandMin}`,
+  });
 
   return (
     <div className={layoutStyles.view}>
@@ -145,7 +153,7 @@ export default function AlertsView({ alerts = [], products = [], onViewStockRequ
 
       <div>
         {filteredAlerts.length > 0 ? (
-          filteredAlerts.map((alert) => {
+          alertList.visible.map((alert) => {
             const product = products.find((p) => p.code === alert.code);
             const img =
               product?.img ||
@@ -241,6 +249,11 @@ export default function AlertsView({ alerts = [], products = [], onViewStockRequ
             {t.noAlertsInFilter}
           </div>
         )}
+
+        <LoadMoreButton
+          remaining={alertList.remaining}
+          onClick={alertList.showMore}
+        />
       </div>
     </div>
   );
