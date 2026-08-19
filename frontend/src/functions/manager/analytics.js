@@ -1,3 +1,4 @@
+import { isCompletedTrade } from "./orderStatus";
 import { resolveTimestamp } from "../../utils/dates";
 
 /**
@@ -199,8 +200,25 @@ export function calculateMonthlyStats({
       !order.items.every((item) => item.isGiftCard)
   );
 
-  const monthOrders = realOrders.filter((order) =>
-    isSameMonth(order.date || order.createdAt, now)
+  // Orders that failed are left out of every figure on the screen.
+  //
+  // A sale is measured from the moment the order is placed, because that is
+  // when the stock leaves the shelf: decrementProductsStock runs at checkout,
+  // not on approval. An order still waiting for a decision is a sale not yet
+  // approved rather than a sale that did not happen, so it stays in.
+  //
+  // Cancelled and rejected are the two outcomes that are certain. Neither
+  // reached the customer and both put their stock back, so counting them
+  // would report goods as sold that are on the shelf.
+  //
+  // Every other figure here is derived from monthOrders — revenue, expenses,
+  // the average order and the category split — so excluding them once is what
+  // keeps those four consistent with the count beside them.
+  const monthOrders = realOrders.filter(
+    (order) =>
+      !order.cancelled &&
+      !order.rejected &&
+      isSameMonth(order.date || order.createdAt, now)
   );
 
   const monthRevenue = monthOrders.reduce(
@@ -279,9 +297,25 @@ export function calculateMonthlyStats({
 
   const maxCategorySale = Math.max(1, ...categorySales.map(([, value]) => value));
 
+  // Repeat custom is measured over the whole history, not over the month.
+  // Loyalty is not a property of a period: a customer who bought in March and
+  // again in August is a returning customer, even though August on its own
+  // shows one purchase. Measured monthly the figure would sit near zero
+  // whatever the shop did.
+  //
+  // Failed orders are still excluded. Someone who ordered twice and cancelled
+  // both times did not come back — she left twice.
+  // An order with no address is skipped rather than filed under a shared
+  // "unknown" key. Collecting them together invented a customer: two such
+  // orders made "unknown" look like someone who had come back, counted in
+  // both halves of the ratio. Checkout always records an address, so this
+  // only reaches older or imported records — and skipping them measures
+  // nobody rather than measuring a fiction.
   const ordersByCustomer = {};
-  realOrders.forEach((order) => {
-    const email = order.customerEmail || "unknown";
+  realOrders.filter(isCompletedTrade).forEach((order) => {
+    const email = String(order.customerEmail || "").trim();
+    if (!email) return;
+
     ordersByCustomer[email] = (ordersByCustomer[email] || 0) + 1;
   });
 
@@ -303,6 +337,8 @@ export function calculateMonthlyStats({
     categorySales,
     maxCategorySale,
     repeatPct,
+    repeatCustomers,
+    totalCustomers,
     returnsRevenueDeduction,
     returnsCount: approvedReturnsThisMonth.length,
   };

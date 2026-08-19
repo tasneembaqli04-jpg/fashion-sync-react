@@ -94,7 +94,7 @@ The management session lasts as long as the browser tab. Refreshing or moving be
 | **Coupons** | Create and manage discount codes |
 | **Gift cards** | Approve or reject gift card orders. Searchable by card code or recipient name, in either language |
 | **Stock alerts** | Customers waiting for a product to return |
-| **Store settings** | Policy text, business hours, and store details. Changes reach the chatbot immediately |
+| **Store settings** | Policy text, business hours, and store details. Changes reach the chatbot immediately. Policy text has two buttons: "Save" keeps both languages exactly as typed, and "Translate to English and save" replaces the English with a fresh translation — so an English wording you corrected by hand survives an ordinary save |
 | **Analytics** | Sales trends and performance, from live data. Revenue counts goods sold: delivery fees are not income, and a gift card counts when it is spent rather than when it is bought |
 
 **Filtering by month** is available on every screen that lists records over time — orders, deliveries, receipts, gift cards, returns, stock alerts, enquiries and feedback. Two selectors, month and year: pick a year on its own to see the whole year, or clear the year to see everything. Each screen opens on the current month.

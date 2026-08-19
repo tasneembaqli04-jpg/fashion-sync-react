@@ -10,6 +10,7 @@ import { getAllCustomers } from "../services/customer/customerFirestore";
 import {
   countOrdersNeedingDecision,
   countOrdersAwaitingDelivery,
+  isCompletedTrade,
 } from "../functions/manager/orderStatus";
 import {
   activateGiftCard,
@@ -147,21 +148,37 @@ export function useManagerOrders({ isLoggedIn, refreshKey }) {
     [orders],
   );
 
-  // The financial side of an order, without the customer-facing fields. This
-  // is what the reports and the revenue figures are computed from.
+  /**
+   * The orders that count as completed trade: the financial side of an order,
+   * without the customer-facing fields.
+   *
+   * A cancelled or rejected order never reached the customer and its stock
+   * went back on the shelf, so it is not a sale and not a receipt. This
+   * mapping used to pass every order through and drop the two flags on the
+   * way, which left the overview totals, the weekly chart and the receipts
+   * screen with no way to tell a completed sale from a failed one — and no
+   * way to find out, because the flags were gone.
+   *
+   * Both flags are carried through on the records that survive, so anything
+   * reading this later can still ask rather than assume.
+   */
   const receipts = useMemo(() => {
-    return orders.map((order) => ({
-      id: order.id,
-      date: order.date || order.createdAt || new Date().toISOString(),
-      total: Number(order.total) || 0,
-      subtotal: Number(order.subtotal) || 0,
-      discountAmount: Number(order.discountAmount) || 0,
-      shippingCost: Number(order.shippingCost) || 0,
-      payMethod: order.payMethod || "",
-      shipping: order.shipping || null,
-      customer: order.customerEmbedded || order.customerDetails || null,
-      items: Array.isArray(order.items) ? order.items : [],
-    }));
+    return orders
+      .filter(isCompletedTrade)
+      .map((order) => ({
+        id: order.id,
+        cancelled: false,
+        rejected: false,
+        date: order.date || order.createdAt || new Date().toISOString(),
+        total: Number(order.total) || 0,
+        subtotal: Number(order.subtotal) || 0,
+        discountAmount: Number(order.discountAmount) || 0,
+        shippingCost: Number(order.shippingCost) || 0,
+        payMethod: order.payMethod || "",
+        shipping: order.shipping || null,
+        customer: order.customerEmbedded || order.customerDetails || null,
+        items: Array.isArray(order.items) ? order.items : [],
+      }));
   }, [orders]);
 
   /**

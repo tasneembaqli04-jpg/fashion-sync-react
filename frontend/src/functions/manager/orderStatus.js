@@ -62,3 +62,61 @@ export function countOrdersAwaitingDelivery(orders) {
   if (!Array.isArray(orders)) return 0;
   return orders.filter(isAwaitingDelivery).length;
 }
+
+/**
+ * Whether an order counts as completed trade.
+ *
+ * A cancelled order was called off by the customer and a rejected one was
+ * refused by the manager. Neither reached the customer and both put their
+ * stock back, so neither is a sale, a receipt, or a figure on any report.
+ *
+ * An order still waiting for a decision does count. The stock leaves the
+ * shelf at checkout rather than on approval, so an undecided order is a sale
+ * not yet approved rather than a sale that did not happen.
+ *
+ * @param {object} order - The order to test.
+ * @returns {boolean} Whether it belongs in the trading figures.
+ */
+export function isCompletedTrade(order) {
+  if (!order) return false;
+
+  return !order.cancelled && !order.rejected;
+}
+
+/**
+ * How many orders sit in each outcome, as four counts that do not overlap.
+ *
+ * An order can carry both the cancelled and the rejected flag: the reject
+ * button is hidden once an order is cancelled, but a customer cancelling
+ * while the reject dialog is open lands both writes. Counting each flag on
+ * its own then put one order on two cards, and the four stopped adding up to
+ * the total beside them.
+ *
+ * Cancelling wins that tie. The customer acted first, so the rejection was
+ * written against an order that had already gone — and she is shown
+ * "cancelled", which is what the manager's screen should say too rather than
+ * contradicting her copy of the same order.
+ *
+ * The four are exhaustive as well as exclusive, so they always sum to the
+ * number of orders passed in.
+ *
+ * @param {Array<object>} [orders] - Orders to count, already filtered by month.
+ * @returns {{pending: number, confirmed: number, cancelled: number, rejected: number}}
+ *          The four counts.
+ */
+export function countByOutcome(orders = []) {
+  const list = Array.isArray(orders) ? orders : [];
+
+  const counts = {pending: 0, confirmed: 0, cancelled: 0, rejected: 0};
+
+  for (const order of list) {
+    if (!order) continue;
+
+    if (order.cancelled) counts.cancelled += 1;
+    else if (order.rejected) counts.rejected += 1;
+    else if (order.confirmed) counts.confirmed += 1;
+    else counts.pending += 1;
+  }
+
+  return counts;
+}

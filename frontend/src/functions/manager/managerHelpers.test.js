@@ -112,3 +112,29 @@ describe("createAlerts — the manager's preferences are honoured", () => {
     expect(keysOf(alerts)).toContain("demand_FS-1");
   });
 });
+
+describe("createAlerts — a failed order raises nothing", () => {
+  const customOrder = (extra = {}) => ({
+    id: "RCP-1",
+    status: 0,
+    items: [{ code: "FS-1", isCustomSize: true, size: "44", name: "שמלה" }],
+    ...extra,
+  });
+
+  it("raises a custom-size alert for an order in progress", () => {
+    const alerts = createAlerts([], [customOrder()], t);
+    expect(keysOf(alerts)).toContain("customsize_RCP-1_FS-1");
+  });
+
+  it("raises nothing for a cancelled order", () => {
+    // The alert asks the manager to make the item. There is nothing to make
+    // on an order that will not be fulfilled.
+    const alerts = createAlerts([], [customOrder({ cancelled: true })], t);
+    expect(keysOf(alerts)).not.toContain("customsize_RCP-1_FS-1");
+  });
+
+  it("raises nothing for a rejected order", () => {
+    const alerts = createAlerts([], [customOrder({ rejected: true })], t);
+    expect(keysOf(alerts)).not.toContain("customsize_RCP-1_FS-1");
+  });
+});

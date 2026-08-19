@@ -1,5 +1,6 @@
 import modalStyles from "../../styles/customer/CustomerModals.module.scss";
 import { useModalA11y } from "../../hooks/useModalA11y";
+import { POINT_REDEMPTION_VALUE } from "../../data/storePolicy";
 import { useLanguage } from "../../translations/LanguageProvider";
 import {
   getItemName,
@@ -204,11 +205,11 @@ export default function CartDrawer({
                 {pointsInput && Number(pointsInput) > 0
                   ? t.pointsWorth.replace(
                       "{amount}",
-                      (Number(pointsInput) * 0.05).toFixed(2)
+                      (Number(pointsInput) * POINT_REDEMPTION_VALUE).toFixed(2)
                     )
                   : t.pointsAvailable.replace(
                       "{amount}",
-                      (availablePoints * 0.05).toFixed(2)
+                      (availablePoints * POINT_REDEMPTION_VALUE).toFixed(2)
                     )}
               </div>
             </div>

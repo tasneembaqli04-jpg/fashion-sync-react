@@ -3,6 +3,8 @@ import styles from "../../../styles/manager/ManagerUI.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
 import ReceiptDetailsModal from "../modals/ReceiptDetailsModal";
 import MonthFilter from "../../common/MonthFilter";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import {
   getMonthKey,
   matchesMonthFilter,
@@ -67,12 +69,29 @@ export default function ReceiptsView({ receipts }) {
     return receipts.filter((r) => matchesMonthFilter(monthFilter, r.date));
   }, [receipts, monthFilter]);
 
+  const sortedReceipts = useMemo(() => {
+    return [...filteredReceipts].sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [filteredReceipts]);
+
   const matches = useMemo(() => {
     if (!query.trim()) return [];
-    return receipts.filter((r) =>
-      r.id.toUpperCase().includes(query.trim().toUpperCase())
-    );
+
+    return receipts
+      .filter((r) => r.id.toUpperCase().includes(query.trim().toUpperCase()))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [query, receipts]);
+
+  // Two lists on one screen, each with its own control. The month selector
+  // narrows the ledger below; the search box builds a separate result list
+  // above it and leaves the ledger alone. Sharing one counter between them
+  // would collapse the ledger every time a character was typed.
+  const receiptList = useProgressiveList(sortedReceipts, {
+    resetKey: monthFilter,
+  });
+
+  const matchList = useProgressiveList(matches, {
+    resetKey: query.trim(),
+  });
 
   return (
     <div className={`${styles.view} ${styles.active}`}>
@@ -118,11 +137,14 @@ export default function ReceiptsView({ receipts }) {
                   {t.foundReceipts.replace("{count}", matches.length)}
                 </div>
 
-                {matches
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .map((receipt) => (
-                    <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
-                  ))}
+                {matchList.visible.map((receipt) => (
+                  <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
+                ))}
+
+                <LoadMoreButton
+                  remaining={matchList.remaining}
+                  onClick={matchList.showMore}
+                />
               </>
             )}
           </div>
@@ -148,12 +170,14 @@ export default function ReceiptsView({ receipts }) {
         </div>
 
         <div className={styles.cardBody}>
-          {filteredReceipts
-            .slice()
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map((receipt) => (
-              <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
-            ))}
+          {receiptList.visible.map((receipt) => (
+            <ReceiptBlock key={receipt.id} receipt={receipt} locale={locale} lang={lang} t={t} onOpenDetails={setSelectedReceipt} />
+          ))}
+
+          <LoadMoreButton
+            remaining={receiptList.remaining}
+            onClick={receiptList.showMore}
+          />
         </div>
       </div>
 

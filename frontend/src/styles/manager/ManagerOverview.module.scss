@@ -5,6 +5,25 @@
   margin-bottom: 1.4rem;
 }
 
+/* Three cards in a four-column grid left a gap on the end. Both class names
+   are in the selector so this wins over the shared .statsGrid rules below
+   regardless of source order. */
+.statsGrid.statsThree {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .statsGrid.statsThree {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .statsGrid.statsThree {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Five cards in a four-column grid left one stranded on a second row. This
    variant fits all five across and trims them to suit: the row is a summary
    read at a glance, so the figures stay large while the padding and the

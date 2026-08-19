@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import {
   FREE_SHIPPING_THRESHOLD,
@@ -141,5 +142,31 @@ describe("loyalty redemption", () => {
 
   it("converts points to shekels at the stated rate", () => {
     expect(100 * POINT_REDEMPTION_VALUE).toBeCloseTo(5, 10);
+  });
+});
+
+describe("the point rate has one source", () => {
+  // Two customer screens used to compute the redemption value from a literal
+  // 0.05 while the checkout read POINT_REDEMPTION_VALUE. They agreed only by
+  // coincidence: changing the rate here would have left both screens
+  // promising an amount the checkout would not honour. The screens now read
+  // the constant, and this holds them to it.
+  const screens = [
+    "src/components/customer/CustomerLoyalty.jsx",
+    "src/components/customer/CartDrawer.jsx",
+  ];
+
+  it.each(screens)("%s reads the constant rather than a number", (file) => {
+    const source = readFileSync(file, "utf8");
+
+    expect(source).toContain("POINT_REDEMPTION_VALUE");
+  });
+
+  it.each(screens)("%s states no rate of its own", (file) => {
+    const source = readFileSync(file, "utf8");
+
+    // The rate written out as a number, in either spacing.
+    expect(source.includes("* 0.05")).toBe(false);
+    expect(source.includes("*0.05")).toBe(false);
   });
 });

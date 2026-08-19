@@ -61,47 +61,20 @@ export default function ManagerTopbar({
       <div className={styles.tbRight}>
         {currentPromotedImg && (
           <button
+            className={styles.promoBtn}
             onClick={onCancelPromote}
             title={t.cancelPromoTitle}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.45rem",
-              padding: "0.45rem 0.9rem",
-              borderRadius: "9px",
-              border: "1px solid rgba(46,204,113,0.35)",
-              background: "rgba(46,204,113,0.09)",
-              color: "#2ecc71",
-              fontFamily: "Alef, sans-serif",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.18s",
-              whiteSpace: "nowrap",
-            }}
-            onMouseOver={e => {
-              e.currentTarget.style.background = "rgba(231,76,60,0.1)";
-              e.currentTarget.style.borderColor = "rgba(231,76,60,0.35)";
-              e.currentTarget.style.color = "#f1948a";
-            }}
-            onMouseOut={e => {
-              e.currentTarget.style.background = "rgba(46,204,113,0.09)";
-              e.currentTarget.style.borderColor = "rgba(46,204,113,0.35)";
-              e.currentTarget.style.color = "#2ecc71";
-            }}
+            aria-label={t.promoActiveButton}
           >
             <img
               src={currentPromotedImg}
-              alt="promoted"
-              style={{
-                width: "20px",
-                height: "20px",
-                borderRadius: "4px",
-                objectFit: "cover",
-                flexShrink: 0,
-              }}
+              alt=""
+              className={styles.promoThumb}
             />
-            {t.promoActiveButton}
+            <span className={styles.promoLabel}>{t.promoActiveButton}</span>
+            <span className={styles.promoCancelMark} aria-hidden="true">
+              ✕
+            </span>
           </button>
         )}
       </div>

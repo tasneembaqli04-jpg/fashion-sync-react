@@ -29,6 +29,7 @@ import { translateProductFields } from "../services/translation/translationServi
 import { resolveStockNotifications, getAllStockNotifications, updateStockNotificationTranslation } from "../services/notifications/notificationsService";
 import { getAllReturnRequests, updateReturnItemTranslation } from "../services/returns/returnsService";
 import { matchesAnySearchField } from "../functions/shared/textSearch";
+import { calculateMonthlyStats } from "../functions/manager/analytics";
 import { getAllContactMessages } from "../services/contact/contactMessagesService";
 import { updateOrderCustomerAndItems } from "../services/orders/ordersService";
 import { updateContactMessageTranslation } from "../services/contact/contactMessagesService";
@@ -248,16 +249,30 @@ export default function Manager({ onPromote }) {
       ).length;
       return requestCount > HIGH_DEMAND_THRESHOLD;
     }).length;
-    const sales = receipts.reduce((sum, r) => sum + r.total, 0);
+    // The sales figure comes from the analytics calculation rather than from
+    // a second sum written here. Two screens both labelled "sales" that could
+    // not agree was the fault being closed: this one totalled every order ever
+    // placed, delivery fees included, while the analytics screen reported one
+    // month of goods revenue net of returns. There is now one number.
+    const monthly = calculateMonthlyStats({
+      orders,
+      products,
+      returnRequests,
+      otherCategoryLabel: dict.manager.analytics.otherCategory,
+    });
+
     return {
       totalStock,
       lowCount,
       demandCount,
-      sales,
+      // monthRevenue is already net of approved returns — the calculation
+      // returns the adjusted figure under that name, which is the same number
+      // the analytics screen prints.
+      sales: monthly.monthRevenue,
       productCount: products.length,
-      receiptCount: receipts.length,
+      receiptCount: monthly.salesCount,
     };
-  }, [products, receipts, stockNotifications]);
+  }, [products, orders, returnRequests, stockNotifications, dict]);
 
   const filteredProducts = useMemo(() => {
     if (!globalSearch.trim()) return products;

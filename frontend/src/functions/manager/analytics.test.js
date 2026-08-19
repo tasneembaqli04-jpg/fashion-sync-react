@@ -108,6 +108,69 @@ describe("avgOrder reconciles with the displayed revenue", () => {
   });
 });
 
+describe("an order that failed is not a sale", () => {
+  // A cancelled or rejected order never reached the customer and its stock
+  // went back on the shelf, so counting it reports goods as sold that are
+  // still in the shop. Every figure on the screen is derived from the same
+  // filtered list, so one exclusion has to fix all of them at once.
+  it("leaves a cancelled order out of the count and the revenue", () => {
+    const stats = calculateMonthlyStats({
+      orders: [order(300), order(500, { cancelled: true })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("leaves a rejected order out of the count and the revenue", () => {
+    const stats = calculateMonthlyStats({
+      orders: [order(300), order(500, { rejected: true })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("keeps an order still waiting for a decision", () => {
+    // The stock leaves the shelf at checkout rather than on approval, so an
+    // undecided order is a sale not yet approved, not a sale that did not
+    // happen.
+    const stats = calculateMonthlyStats({
+      orders: [order(300, { confirmed: false })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("carries the exclusion into the expenses, the average and the categories", () => {
+    const products = [{ code: "FS-001", cost: 100, cat: "dresses" }];
+
+    const stats = calculateMonthlyStats({
+      orders: [
+        order(300),
+        order(500, { cancelled: true }),
+        order(700, { rejected: true }),
+      ],
+      products,
+      now: NOW,
+    });
+
+    // One order survives: 300 in, 100 of cost against it.
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+    expect(stats.monthExpenses).toBe(100);
+    expect(stats.avgOrder).toBe(300);
+
+    // The two failed orders contribute nothing to the category split either.
+    const dresses = stats.categorySales.find(([cat]) => cat === "dresses");
+    expect(dresses[1]).toBe(300);
+  });
+});
+
 describe("missingCostCount counts absence, not a cost of zero", () => {
   const items = [{ code: "FS-001", qty: 2, price: 100 }];
 
@@ -620,5 +683,151 @@ describe("avgOrder precision", () => {
 
   it("is 0 rather than NaN with no orders", () => {
     expect(calculateMonthlyStats({ orders: [], now: NOW3 }).avgOrder).toBe(0);
+  });
+});
+
+describe("repeat customers — the denominator", () => {
+  const NOW3 = new Date("2026-08-15T12:00:00Z").getTime();
+  const by = (email, day, extra = {}) => ({
+    total: 100,
+    date: `2026-08-${String(day).padStart(2, "0")}T10:00:00.000Z`,
+    customerEmail: email,
+    subtotal: 100,
+    items: [{ code: "FS-001", price: 100, qty: 1 }],
+    ...extra,
+  });
+
+  it("counts one-time customers in the denominator", () => {
+    // Two customers, one of whom came back. Not 100%.
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("a@x.com", 2), by("b@x.com", 3)],
+      now: NOW3,
+    });
+
+    expect(stats.repeatCustomers).toBe(1);
+    expect(stats.totalCustomers).toBe(2);
+    expect(stats.repeatPct).toBe(50);
+  });
+
+  it("reports the fraction the screen prints beside the percentage", () => {
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("a@x.com", 2)],
+      now: NOW3,
+    });
+
+    expect(stats.repeatCustomers).toBe(1);
+    expect(stats.totalCustomers).toBe(1);
+    expect(stats.repeatPct).toBe(100);
+  });
+
+  it("skips an order with no address rather than inventing a customer", () => {
+    // Two addressless orders used to collect under one "unknown" key and
+    // count as a customer who had come back — in both halves of the ratio.
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("", 2), by("", 3)],
+      now: NOW3,
+    });
+
+    expect(stats.totalCustomers).toBe(1);
+    expect(stats.repeatCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("skips an order whose address is only whitespace", () => {
+    const stats = calculateMonthlyStats({
+      orders: [by("   ", 1), by("   ", 2)],
+      now: NOW3,
+    });
+
+    expect(stats.totalCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("reports zero customers rather than dividing by none", () => {
+    const stats = calculateMonthlyStats({ orders: [], now: NOW3 });
+
+    expect(stats.totalCustomers).toBe(0);
+    expect(stats.repeatCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+});
+
+describe("repeat customers", () => {
+  const NOW2 = new Date("2026-08-15T12:00:00Z").getTime();
+  const at = (iso, email, extra = {}) => ({
+    total: 100,
+    date: iso,
+    customerEmail: email,
+    subtotal: 100,
+    items: [{ code: "FS-001", price: 100, qty: 1 }],
+    ...extra,
+  });
+
+  it("is measured over the whole history, not over the month", () => {
+    // Bought in March and again in August. August alone shows one purchase,
+    // and she is still a returning customer.
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "loyal@x.com"),
+        at("2026-08-04T10:00:00.000Z", "loyal@x.com"),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(100);
+  });
+
+  it("does not count someone who cancelled both times", () => {
+    // She left twice. That is not coming back.
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "gone@x.com", { cancelled: true }),
+        at("2026-08-04T10:00:00.000Z", "gone@x.com", { cancelled: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("does not count a second order that was rejected", () => {
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "once@x.com"),
+        at("2026-08-04T10:00:00.000Z", "once@x.com", { rejected: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("counts a customer whose failed order sits beside two real ones", () => {
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "real@x.com"),
+        at("2026-05-04T10:00:00.000Z", "real@x.com"),
+        at("2026-08-04T10:00:00.000Z", "real@x.com", { cancelled: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(100);
+  });
+});
+
+describe("the weekly chart and the sales card measure the same thing", () => {
+  it("goods revenue excludes the delivery fee", () => {
+    // The chart sums getOrderGoodsRevenue, the same function the monthly
+    // revenue uses, so a bar can never stand taller than the figure above it.
+    const withShipping = {
+      total: 250,
+      shippingCost: 50,
+      subtotal: 200,
+      items: [{ code: "FS-001", price: 200, qty: 1 }],
+    };
+
+    expect(getOrderGoodsRevenue(withShipping)).toBe(200);
+    expect(getOrderGoodsRevenue(withShipping)).toBeLessThan(withShipping.total);
   });
 });

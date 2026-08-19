@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useDialog } from "../../common/DialogProvider";
 import OrderDetailsModal from "../modals/OrderDetailsModal";
 import { isOrderOverdue } from "../../../functions/manager/managerHelpers";
-import { needsManagerDecision } from "../../../functions/manager/orderStatus";
+import { countByOutcome } from "../../../functions/manager/orderStatus";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss";
 import ordersStyles from "../../../styles/manager/ManagerOrders.module.scss";
@@ -89,10 +89,11 @@ export default function ManagerOrders({ orders = [], onConfirmOrder, onRejectOrd
     );
   }, [orders, monthFilter]);
 
-  const pending = monthFilteredOrders.filter(needsManagerDecision).length;
-  const confirmed = monthFilteredOrders.filter((o) => o.confirmed && !o.cancelled && !o.rejected).length;
-  const cancelled = monthFilteredOrders.filter((o) => o.cancelled).length;
-  const rejected = monthFilteredOrders.filter((o) => o.rejected).length;
+  // Four counts that do not overlap and always sum to the total beside them.
+  // See countByOutcome for why cancelling wins when an order carries both
+  // flags.
+  const {pending, confirmed, cancelled, rejected} =
+    countByOutcome(monthFilteredOrders);
 
   const visibleOrders = orders.filter((order) => {
     if (statusFilter === "cancelled") return Boolean(order.cancelled);

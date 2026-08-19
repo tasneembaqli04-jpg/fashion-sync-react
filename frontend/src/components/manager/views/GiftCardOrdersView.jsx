@@ -9,6 +9,11 @@ import LoadMoreButton from "../../common/LoadMoreButton";
 import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import { matchesAnySearchField } from "../../../functions/shared/textSearch";
 import {
+  openGiftCardBalance,
+  soldGiftCards,
+  totalIssuedValue,
+} from "../../../functions/manager/giftCardStats";
+import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
@@ -78,12 +83,28 @@ export default function GiftCardOrdersView() {
     return entries.filter((e) => matchesMonthFilter(monthFilter, e.date));
   }, [entries, monthFilter]);
 
-  const totalSold = entries.length;
-  const totalValue = entries.reduce((sum, e) => sum + e.amount, 0);
-  const thisMonthKey = getMonthKey(new Date());
-  const thisMonthCount = entries.filter(
-    (e) => getMonthKey(e.date) === thisMonthKey,
-  ).length;
+  // A rejected card was never issued, so it is not one that was sold and its
+  // face value is not money the shop took. Active, spent and awaiting-approval
+  // cards all stand.
+  //
+  // The first two figures follow the month selector and the third does not,
+  // which is deliberate. Cards sold and their value measure activity, and
+  // activity belongs to a period. The open balance is a liability: a card sold
+  // in June and never spent is money the shop owes today, so filtering it to
+  // one month would report no debt while the customer can still walk in and
+  // redeem it. "Open balance for August" is not a number that means anything.
+  const soldCards = useMemo(
+    () => soldGiftCards(monthFilteredEntries),
+    [monthFilteredEntries],
+  );
+
+  const totalSold = soldCards.length;
+  const totalValue = useMemo(
+    () => totalIssuedValue(monthFilteredEntries),
+    [monthFilteredEntries],
+  );
+
+  const openBalance = useMemo(() => openGiftCardBalance(entries), [entries]);
 
   const visibleEntries = monthFilteredEntries.filter((entry) => {
     if (amountFilter === "under100" && entry.amount >= 100) return false;
@@ -120,7 +141,7 @@ export default function GiftCardOrdersView() {
       </div>
 
       <div
-        className={overviewStyles.statsGrid}
+        className={`${overviewStyles.statsGrid} ${overviewStyles.statsThree}`}
         style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
       >
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
@@ -146,21 +167,22 @@ export default function GiftCardOrdersView() {
           </div>
         </div>
 
-        <div className={`${overviewStyles.stat} ${overviewStyles.blue}`}>
-          <div className={overviewStyles.statIcon}>📅</div>
+
+        <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
+          <div className={overviewStyles.statIcon}>⏳</div>
           <div
             className={overviewStyles.statLabel}
-            style={{ color: "var(--blue)" }}
+            style={{ color: "var(--gold)" }}
           >
-            {t.thisMonth}
+            {t.openBalance}
           </div>
           <div
             className={overviewStyles.statVal}
-            style={{ color: "var(--blue)" }}
+            style={{ color: "var(--gold)" }}
           >
-            {thisMonthCount}
+            ₪{openBalance.toLocaleString()}
           </div>
-          <div className={overviewStyles.statSub}>{t.cardsSuffix2}</div>
+          <div className={overviewStyles.statSub}>{t.openBalanceSub}</div>
         </div>
       </div>
 

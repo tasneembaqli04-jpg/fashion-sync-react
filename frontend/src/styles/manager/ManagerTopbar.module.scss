@@ -78,8 +78,58 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  min-width: 0;
+
+  /* Logical, not physical. margin-right pushed this group to the far end in
+     Hebrew and left it against its neighbour in English. */
+  margin-inline-start: auto;
+}
+
+/* The promotion indicator. Styles live here rather than inline on the element
+   so a narrow screen can reach them. */
+.promoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9px;
+  border: 1px solid rgba(46, 204, 113, 0.35);
+  background: rgba(46, 204, 113, 0.09);
+  color: var(--green);
+  font-family: "Alef", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  min-width: 0;
+}
+
+/* Pressing it cancels the promotion, so it turns red under the pointer. */
+.promoBtn:hover {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.35);
+  color: #f1948a;
+}
+
+.promoThumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
   flex-shrink: 0;
-  margin-right: auto;
+}
+
+.promoLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Only on a narrow screen, where the words give way. */
+.promoCancelMark {
+  display: none;
+  flex-shrink: 0;
 }
 
 .btn {
@@ -155,5 +205,24 @@
   .btn {
     padding: 0.4rem 0.55rem;
     font-size: 0.72rem;
+  }
+
+  /* The promotion indicator keeps the product thumbnail and a cancel mark and
+     drops the sentence. It is the widest thing in the row, and the row does
+     not wrap: at full width it pushed the search field and the buttons beside
+     it off the screen. The full wording stays on the button's accessible name
+     and its tooltip. */
+  .promoLabel {
+    display: none;
+  }
+
+  .promoCancelMark {
+    display: inline;
+  }
+
+  .promoBtn {
+    padding: 0.4rem 0.5rem;
+    gap: 0.3rem;
+    flex-shrink: 0;
   }
 }

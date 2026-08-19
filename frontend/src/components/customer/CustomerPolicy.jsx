@@ -9,6 +9,7 @@ import { sendContactNotificationEmail } from "../../services/email/emailService"
 import { getBusinessHours } from "../../services/settings/businessHoursService";
 import { getPolicyContent } from "../../services/settings/policyContentService";
 import { getStoreDetails } from "../../services/settings/storeDetailsService";
+import { getStoreName } from "../../functions/shared/storeIdentity";
 
 /**
  * How a field filled in from the account looks: still legible, visibly not
@@ -113,7 +114,9 @@ export default function CustomerPolicy({ show, currentUser }) {
   return (
     <div>
       <div className={commonStyles.pageTitle}>{t.title}</div>
-      <div className={commonStyles.pageSub}>{t.subtitle}</div>
+      <div className={commonStyles.pageSub}>
+        {getStoreName(storeDetails)} · {t.subtitle}
+      </div>
 
       <div className={modalStyles.policySection}>
         <div className={modalStyles.policyTitle}>{t.aboutStoreTitle}</div>
