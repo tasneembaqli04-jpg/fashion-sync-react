@@ -199,8 +199,25 @@ export function calculateMonthlyStats({
       !order.items.every((item) => item.isGiftCard)
   );
 
-  const monthOrders = realOrders.filter((order) =>
-    isSameMonth(order.date || order.createdAt, now)
+  // Orders that failed are left out of every figure on the screen.
+  //
+  // A sale is measured from the moment the order is placed, because that is
+  // when the stock leaves the shelf: decrementProductsStock runs at checkout,
+  // not on approval. An order still waiting for a decision is a sale not yet
+  // approved rather than a sale that did not happen, so it stays in.
+  //
+  // Cancelled and rejected are the two outcomes that are certain. Neither
+  // reached the customer and both put their stock back, so counting them
+  // would report goods as sold that are on the shelf.
+  //
+  // Every other figure here is derived from monthOrders — revenue, expenses,
+  // the average order and the category split — so excluding them once is what
+  // keeps those four consistent with the count beside them.
+  const monthOrders = realOrders.filter(
+    (order) =>
+      !order.cancelled &&
+      !order.rejected &&
+      isSameMonth(order.date || order.createdAt, now)
   );
 
   const monthRevenue = monthOrders.reduce(

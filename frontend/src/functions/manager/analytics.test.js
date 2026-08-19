@@ -108,6 +108,69 @@ describe("avgOrder reconciles with the displayed revenue", () => {
   });
 });
 
+describe("an order that failed is not a sale", () => {
+  // A cancelled or rejected order never reached the customer and its stock
+  // went back on the shelf, so counting it reports goods as sold that are
+  // still in the shop. Every figure on the screen is derived from the same
+  // filtered list, so one exclusion has to fix all of them at once.
+  it("leaves a cancelled order out of the count and the revenue", () => {
+    const stats = calculateMonthlyStats({
+      orders: [order(300), order(500, { cancelled: true })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("leaves a rejected order out of the count and the revenue", () => {
+    const stats = calculateMonthlyStats({
+      orders: [order(300), order(500, { rejected: true })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("keeps an order still waiting for a decision", () => {
+    // The stock leaves the shelf at checkout rather than on approval, so an
+    // undecided order is a sale not yet approved, not a sale that did not
+    // happen.
+    const stats = calculateMonthlyStats({
+      orders: [order(300, { confirmed: false })],
+      now: NOW,
+    });
+
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+  });
+
+  it("carries the exclusion into the expenses, the average and the categories", () => {
+    const products = [{ code: "FS-001", cost: 100, cat: "dresses" }];
+
+    const stats = calculateMonthlyStats({
+      orders: [
+        order(300),
+        order(500, { cancelled: true }),
+        order(700, { rejected: true }),
+      ],
+      products,
+      now: NOW,
+    });
+
+    // One order survives: 300 in, 100 of cost against it.
+    expect(stats.salesCount).toBe(1);
+    expect(stats.monthRevenue).toBe(300);
+    expect(stats.monthExpenses).toBe(100);
+    expect(stats.avgOrder).toBe(300);
+
+    // The two failed orders contribute nothing to the category split either.
+    const dresses = stats.categorySales.find(([cat]) => cat === "dresses");
+    expect(dresses[1]).toBe(300);
+  });
+});
+
 describe("missingCostCount counts absence, not a cost of zero", () => {
   const items = [{ code: "FS-001", qty: 2, price: 100 }];
 
