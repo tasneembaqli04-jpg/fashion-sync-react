@@ -127,8 +127,6 @@ export const he = {
       totalSold: "סה\"כ נמכרו",
       cardsSuffix: "כרטיסים",
       totalValue: "שווי כולל",
-      thisMonth: "החודש",
-      cardsSuffix2: "כרטיסים החודש",
       allAmounts: "💰 כל הסכומים",
       amountUnder100: "עד ₪100",
       amount100to300: "₪100–300",
@@ -149,7 +147,7 @@ export const he = {
       statusRejected: "🚫 נדחה",
       balanceLabel: "יתרה נוכחית",
       openBalance: "יתרה פתוחה",
-      openBalanceSub: "טרם נוצל",
+      openBalanceSub: "נכון להיום",
     },
     deliveries: {
       title: "מעקב הזמנות",

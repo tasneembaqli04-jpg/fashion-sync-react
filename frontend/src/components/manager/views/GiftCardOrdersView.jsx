@@ -84,18 +84,27 @@ export default function GiftCardOrdersView() {
   }, [entries, monthFilter]);
 
   // A rejected card was never issued, so it is not one that was sold and its
-  // face value is not money the shop took. The three figures count the cards
-  // that stand: active, fully used, and still awaiting approval.
-  const soldCards = useMemo(() => soldGiftCards(entries), [entries]);
+  // face value is not money the shop took. Active, spent and awaiting-approval
+  // cards all stand.
+  //
+  // The first two figures follow the month selector and the third does not,
+  // which is deliberate. Cards sold and their value measure activity, and
+  // activity belongs to a period. The open balance is a liability: a card sold
+  // in June and never spent is money the shop owes today, so filtering it to
+  // one month would report no debt while the customer can still walk in and
+  // redeem it. "Open balance for August" is not a number that means anything.
+  const soldCards = useMemo(
+    () => soldGiftCards(monthFilteredEntries),
+    [monthFilteredEntries],
+  );
 
   const totalSold = soldCards.length;
-  const totalValue = useMemo(() => totalIssuedValue(entries), [entries]);
-  const openBalance = useMemo(() => openGiftCardBalance(entries), [entries]);
+  const totalValue = useMemo(
+    () => totalIssuedValue(monthFilteredEntries),
+    [monthFilteredEntries],
+  );
 
-  const thisMonthKey = getMonthKey(new Date());
-  const thisMonthCount = soldCards.filter(
-    (e) => getMonthKey(e.date) === thisMonthKey,
-  ).length;
+  const openBalance = useMemo(() => openGiftCardBalance(entries), [entries]);
 
   const visibleEntries = monthFilteredEntries.filter((entry) => {
     if (amountFilter === "under100" && entry.amount >= 100) return false;
@@ -132,7 +141,7 @@ export default function GiftCardOrdersView() {
       </div>
 
       <div
-        className={overviewStyles.statsGrid}
+        className={`${overviewStyles.statsGrid} ${overviewStyles.statsThree}`}
         style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
       >
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
@@ -158,22 +167,6 @@ export default function GiftCardOrdersView() {
           </div>
         </div>
 
-        <div className={`${overviewStyles.stat} ${overviewStyles.blue}`}>
-          <div className={overviewStyles.statIcon}>📅</div>
-          <div
-            className={overviewStyles.statLabel}
-            style={{ color: "var(--blue)" }}
-          >
-            {t.thisMonth}
-          </div>
-          <div
-            className={overviewStyles.statVal}
-            style={{ color: "var(--blue)" }}
-          >
-            {thisMonthCount}
-          </div>
-          <div className={overviewStyles.statSub}>{t.cardsSuffix2}</div>
-        </div>
 
         <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
           <div className={overviewStyles.statIcon}>⏳</div>

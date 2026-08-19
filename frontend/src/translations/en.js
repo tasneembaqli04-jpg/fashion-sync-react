@@ -127,8 +127,6 @@ export const en = {
       totalSold: "Total sold",
       cardsSuffix: "cards",
       totalValue: "Total value",
-      thisMonth: "This month",
-      cardsSuffix2: "cards this month",
       allAmounts: "💰 All amounts",
       amountUnder100: "Under ₪100",
       amount100to300: "₪100–300",
@@ -149,7 +147,7 @@ export const en = {
       statusRejected: "🚫 Rejected",
       balanceLabel: "Current balance",
       openBalance: "Open balance",
-      openBalanceSub: "not yet spent",
+      openBalanceSub: "as of today",
     },
     deliveries: {
       title: "Order Tracking",
