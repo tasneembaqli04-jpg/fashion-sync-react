@@ -3,6 +3,8 @@ import commonStyles from "../../styles/customer/Customer.module.scss";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import { getAllCoupons } from "../../services/coupons/couponsService";
 import { useLanguage } from "../../translations/LanguageProvider";
+import LoadMoreButton from "../common/LoadMoreButton";
+import { useProgressiveList } from "../../hooks/useProgressiveList";
 
 export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
   const { t: dict } = useLanguage();
@@ -23,6 +25,13 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
       setCoupons(allCoupons.filter((coupon) => coupon.active));
     });
   }, [show]);
+
+  // Declared above the early return, because a hook cannot be skipped on the
+  // renders where the panel is closed. The key collapses the list both when
+  // the panel is reopened and when the set of coupons changes.
+  const couponList = useProgressiveList(coupons, {
+    resetKey: `${show}|${coupons.length}`,
+  });
 
   if (!show) return null;
 
@@ -67,7 +76,7 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
             {t.noActiveCoupons}
           </div>
         ) : (
-          coupons.map((coupon) => (
+          couponList.visible.map((coupon) => (
             <div key={coupon.code} className={browseStyles.couponItem}>
               <div>
                 <div className={browseStyles.couponCodeDisplay}>
@@ -90,6 +99,11 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
             </div>
           ))
         )}
+
+        <LoadMoreButton
+          remaining={couponList.remaining}
+          onClick={couponList.showMore}
+        />
       </div>
     </div>
   );

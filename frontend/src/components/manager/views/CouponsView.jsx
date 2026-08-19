@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDialog } from "../../common/DialogProvider";
 import layoutStyles from "../../../styles/manager/ManagerLayout.module.scss";
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
@@ -10,6 +10,8 @@ import {
   getAllCouponUsage,
 } from "../../../services/coupons/couponsService";
 import { useLanguage } from "../../../translations/LanguageProvider";
+import LoadMoreButton from "../../common/LoadMoreButton";
+import { useProgressiveList } from "../../../hooks/useProgressiveList";
 
 export default function CouponsView() {
   const { confirmDialog, alertDialog } = useDialog();
@@ -40,6 +42,23 @@ export default function CouponsView() {
     setUsage(usageData);
     setLoading(false);
   }
+
+  // Newest first, so a coupon just created is at the top of the list.
+  // Firestore returns these ordered by document id, which is the coupon code,
+  // so without this a new code beginning with a late letter would land beyond
+  // the first page and look as though it had not been saved. Coupons created
+  // before createdAt existed sort to the bottom rather than the top.
+  const sortedCoupons = useMemo(() => {
+    return [...coupons].sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
+  }, [coupons]);
+
+  // The count is the reset key: adding or deleting a coupon rebuilds the list,
+  // and the new one belongs on the first page.
+  const couponList = useProgressiveList(sortedCoupons, {
+    resetKey: coupons.length,
+  });
 
   useEffect(() => {
     refresh();
@@ -178,7 +197,7 @@ export default function CouponsView() {
           {t.noCouponsYet}
         </div>
       ) : (
-        coupons.map((coupon) => (
+        couponList.visible.map((coupon) => (
           <div
             key={coupon.code}
             style={{
@@ -237,6 +256,11 @@ export default function CouponsView() {
           </div>
         ))
       )}
+
+      <LoadMoreButton
+        remaining={couponList.remaining}
+        onClick={couponList.showMore}
+      />
     </div>
   );
 }
