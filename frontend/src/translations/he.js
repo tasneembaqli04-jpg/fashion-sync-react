@@ -280,6 +280,7 @@ export const he = {
       monthSales: "מכירות החודש",
       avgOrder: "ממוצע עסקה",
       repeatCustomers: "לקוחות חוזרים",
+      repeatAllTime: "מכל התקופה",
       monthExpenses: "הוצאות החודש",
       monthProfit: "רווח החודש",
       salesByCategory: "מכירות לפי קטגוריה — החודש",

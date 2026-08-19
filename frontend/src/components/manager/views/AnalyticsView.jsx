@@ -80,6 +80,7 @@ export default function AnalyticsView({ orders = [], products = [], returnReques
           >
             {stats.repeatPct}%
           </div>
+          <div className={overviewStyles.statSub}>{t.repeatAllTime}</div>
         </div>
 
         <div className={`${overviewStyles.stat} ${overviewStyles.orange}`}>

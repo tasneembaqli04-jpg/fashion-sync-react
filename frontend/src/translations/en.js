@@ -280,6 +280,7 @@ export const en = {
       monthSales: "This Month's Sales",
       avgOrder: "Average Order",
       repeatCustomers: "Repeat Customers",
+      repeatAllTime: "all time",
       monthExpenses: "This Month's Expenses",
       monthProfit: "This Month's Profit",
       salesByCategory: "Sales by Category — This Month",

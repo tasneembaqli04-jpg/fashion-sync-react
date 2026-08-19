@@ -82,3 +82,41 @@ export function isCompletedTrade(order) {
 
   return !order.cancelled && !order.rejected;
 }
+
+/**
+ * How many orders sit in each outcome, as four counts that do not overlap.
+ *
+ * An order can carry both the cancelled and the rejected flag: the reject
+ * button is hidden once an order is cancelled, but a customer cancelling
+ * while the reject dialog is open lands both writes. Counting each flag on
+ * its own then put one order on two cards, and the four stopped adding up to
+ * the total beside them.
+ *
+ * Cancelling wins that tie. The customer acted first, so the rejection was
+ * written against an order that had already gone — and she is shown
+ * "cancelled", which is what the manager's screen should say too rather than
+ * contradicting her copy of the same order.
+ *
+ * The four are exhaustive as well as exclusive, so they always sum to the
+ * number of orders passed in.
+ *
+ * @param {Array<object>} [orders] - Orders to count, already filtered by month.
+ * @returns {{pending: number, confirmed: number, cancelled: number, rejected: number}}
+ *          The four counts.
+ */
+export function countByOutcome(orders = []) {
+  const list = Array.isArray(orders) ? orders : [];
+
+  const counts = {pending: 0, confirmed: 0, cancelled: 0, rejected: 0};
+
+  for (const order of list) {
+    if (!order) continue;
+
+    if (order.cancelled) counts.cancelled += 1;
+    else if (order.rejected) counts.rejected += 1;
+    else if (order.confirmed) counts.confirmed += 1;
+    else counts.pending += 1;
+  }
+
+  return counts;
+}

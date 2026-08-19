@@ -685,3 +685,83 @@ describe("avgOrder precision", () => {
     expect(calculateMonthlyStats({ orders: [], now: NOW3 }).avgOrder).toBe(0);
   });
 });
+
+describe("repeat customers", () => {
+  const NOW2 = new Date("2026-08-15T12:00:00Z").getTime();
+  const at = (iso, email, extra = {}) => ({
+    total: 100,
+    date: iso,
+    customerEmail: email,
+    subtotal: 100,
+    items: [{ code: "FS-001", price: 100, qty: 1 }],
+    ...extra,
+  });
+
+  it("is measured over the whole history, not over the month", () => {
+    // Bought in March and again in August. August alone shows one purchase,
+    // and she is still a returning customer.
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "loyal@x.com"),
+        at("2026-08-04T10:00:00.000Z", "loyal@x.com"),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(100);
+  });
+
+  it("does not count someone who cancelled both times", () => {
+    // She left twice. That is not coming back.
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "gone@x.com", { cancelled: true }),
+        at("2026-08-04T10:00:00.000Z", "gone@x.com", { cancelled: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("does not count a second order that was rejected", () => {
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "once@x.com"),
+        at("2026-08-04T10:00:00.000Z", "once@x.com", { rejected: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("counts a customer whose failed order sits beside two real ones", () => {
+    const stats = calculateMonthlyStats({
+      orders: [
+        at("2026-03-04T10:00:00.000Z", "real@x.com"),
+        at("2026-05-04T10:00:00.000Z", "real@x.com"),
+        at("2026-08-04T10:00:00.000Z", "real@x.com", { cancelled: true }),
+      ],
+      now: NOW2,
+    });
+
+    expect(stats.repeatPct).toBe(100);
+  });
+});
+
+describe("the weekly chart and the sales card measure the same thing", () => {
+  it("goods revenue excludes the delivery fee", () => {
+    // The chart sums getOrderGoodsRevenue, the same function the monthly
+    // revenue uses, so a bar can never stand taller than the figure above it.
+    const withShipping = {
+      total: 250,
+      shippingCost: 50,
+      subtotal: 200,
+      items: [{ code: "FS-001", price: 200, qty: 1 }],
+    };
+
+    expect(getOrderGoodsRevenue(withShipping)).toBe(200);
+    expect(getOrderGoodsRevenue(withShipping)).toBeLessThan(withShipping.total);
+  });
+});

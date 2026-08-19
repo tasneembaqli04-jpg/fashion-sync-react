@@ -3,7 +3,10 @@ import overviewStyles from "../../../styles/manager/ManagerOverview.module.scss"
 import uiStyles from "../../../styles/manager/ManagerUI.module.scss";
 import alertStyles from "../../../styles/manager/ManagerAlerts.module.scss";
 import { useLanguage } from "../../../translations/LanguageProvider";
-import { rankSlowProducts } from "../../../functions/manager/analytics";
+import {
+  getOrderGoodsRevenue,
+  rankSlowProducts,
+} from "../../../functions/manager/analytics";
 import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import LoadMoreButton from "../../common/LoadMoreButton";
 import { HIGH_DEMAND_THRESHOLD } from "../../../functions/manager/managerHelpers";
@@ -62,7 +65,10 @@ export default function OverviewView({
         const rDate = new Date(r.date);
         return rDate >= day && rDate <= dayEnd;
       })
-      .reduce((sum, r) => sum + (Number(r.total) || 0), 0);
+      // Goods only, as everywhere else. Summing the order total put the
+      // delivery fee into the bars and made them taller than the sales figure
+      // in the card above them, which excludes it.
+      .reduce((sum, r) => sum + getOrderGoodsRevenue(r), 0);
   });
 
   const max = Math.max(1, ...weekSales);

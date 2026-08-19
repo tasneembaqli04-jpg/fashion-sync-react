@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import commonStyles from "../../styles/customer/Customer.module.scss";
+import { POINT_REDEMPTION_VALUE } from "../../data/storePolicy";
 import browseStyles from "../../styles/customer/CustomerBrowse.module.scss";
 import { getAllCoupons } from "../../services/coupons/couponsService";
 import { useLanguage } from "../../translations/LanguageProvider";
@@ -35,7 +36,7 @@ export default function CustomerLoyalty({ show, copyCoupon, points = 0 }) {
 
   if (!show) return null;
 
-  const redemptionValue = (points * 0.05).toFixed(2);
+  const redemptionValue = (points * POINT_REDEMPTION_VALUE).toFixed(2);
 
   return (
     <div>

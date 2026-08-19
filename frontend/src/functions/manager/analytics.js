@@ -1,3 +1,4 @@
+import { isCompletedTrade } from "./orderStatus";
 import { resolveTimestamp } from "../../utils/dates";
 
 /**
@@ -296,8 +297,16 @@ export function calculateMonthlyStats({
 
   const maxCategorySale = Math.max(1, ...categorySales.map(([, value]) => value));
 
+  // Repeat custom is measured over the whole history, not over the month.
+  // Loyalty is not a property of a period: a customer who bought in March and
+  // again in August is a returning customer, even though August on its own
+  // shows one purchase. Measured monthly the figure would sit near zero
+  // whatever the shop did.
+  //
+  // Failed orders are still excluded. Someone who ordered twice and cancelled
+  // both times did not come back — she left twice.
   const ordersByCustomer = {};
-  realOrders.forEach((order) => {
+  realOrders.filter(isCompletedTrade).forEach((order) => {
     const email = order.customerEmail || "unknown";
     ordersByCustomer[email] = (ordersByCustomer[email] || 0) + 1;
   });
