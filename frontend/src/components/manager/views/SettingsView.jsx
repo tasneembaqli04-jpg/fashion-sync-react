@@ -116,6 +116,43 @@ export default function SettingsView({
     
   }, []);
 
+  /**
+   * Saves the policy text exactly as it stands, in both languages.
+   *
+   * Separate from the translate button because translating is not free and is
+   * not always wanted: translatePolicyFields calls the service for all eight
+   * fields every time, whether or not the Hebrew changed, and overwrites the
+   * English with the result. The English boxes are editable, so a manager who
+   * has corrected a translation by hand would lose it every time she saved a
+   * comma in the Hebrew.
+   */
+  async function handleSavePolicy() {
+    setSavingPolicy(true);
+
+    await setPolicyContent({
+      returnsText: policyReturns,
+      returnsTextEn: policyReturnsEn,
+      cancellationText: policyCancellation,
+      cancellationTextEn: policyCancellationEn,
+      aboutStoreText: policyAboutStore,
+      aboutStoreTextEn: policyAboutStoreEn,
+      shippingLine1: policyShipping1,
+      shippingLine1En: policyShipping1En,
+      shippingLine2: policyShipping2,
+      shippingLine2En: policyShipping2En,
+      shippingLine3: policyShipping3,
+      shippingLine3En: policyShipping3En,
+      shippingLine4: policyShipping4,
+      shippingLine4En: policyShipping4En,
+      privacyLine1: policyPrivacy,
+      privacyLine1En: policyPrivacyEn,
+    });
+
+    setSavingPolicy(false);
+    setPolicySaved(true);
+    setTimeout(() => setPolicySaved(false), 2500);
+  }
+
   async function handleTranslatePolicy() {
     setTranslatingPolicy(true);
 
@@ -675,24 +712,47 @@ export default function SettingsView({
             </div>
 
 
-            <button
-              type="button"
-              onClick={handleTranslatePolicy}
-              disabled={translatingPolicy}
-              style={{
-                background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
-                color: "#080808",
-                border: "none",
-                borderRadius: "10px",
-                padding: "0.6rem 1.2rem",
-                fontFamily: "Alef, sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              {translatingPolicy ? t.policySavingButton : t.policySaveButton}
-            </button>
+            <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={handleSavePolicy}
+                disabled={savingPolicy || translatingPolicy}
+                style={{
+                  background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+                  color: "#080808",
+                  border: "none",
+                  borderRadius: "10px",
+                  padding: "0.6rem 1.2rem",
+                  fontFamily: "Alef, sans-serif",
+                  fontSize: "0.9rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {savingPolicy ? t.policySavingButton : t.policySaveButton}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTranslatePolicy}
+                disabled={savingPolicy || translatingPolicy}
+                style={{
+                  background: "transparent",
+                  color: "var(--gold)",
+                  border: "1px solid var(--border-gold)",
+                  borderRadius: "10px",
+                  padding: "0.6rem 1.2rem",
+                  fontFamily: "Alef, sans-serif",
+                  fontSize: "0.9rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {translatingPolicy
+                  ? t.policyTranslatingButton
+                  : t.policyTranslateButton}
+              </button>
+            </div>
 
             {policySaved && (
               <div
