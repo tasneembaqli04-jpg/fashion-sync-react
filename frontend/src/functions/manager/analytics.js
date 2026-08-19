@@ -305,9 +305,17 @@ export function calculateMonthlyStats({
   //
   // Failed orders are still excluded. Someone who ordered twice and cancelled
   // both times did not come back — she left twice.
+  // An order with no address is skipped rather than filed under a shared
+  // "unknown" key. Collecting them together invented a customer: two such
+  // orders made "unknown" look like someone who had come back, counted in
+  // both halves of the ratio. Checkout always records an address, so this
+  // only reaches older or imported records — and skipping them measures
+  // nobody rather than measuring a fiction.
   const ordersByCustomer = {};
   realOrders.filter(isCompletedTrade).forEach((order) => {
-    const email = order.customerEmail || "unknown";
+    const email = String(order.customerEmail || "").trim();
+    if (!email) return;
+
     ordersByCustomer[email] = (ordersByCustomer[email] || 0) + 1;
   });
 
@@ -329,6 +337,8 @@ export function calculateMonthlyStats({
     categorySales,
     maxCategorySale,
     repeatPct,
+    repeatCustomers,
+    totalCustomers,
     returnsRevenueDeduction,
     returnsCount: approvedReturnsThisMonth.length,
   };

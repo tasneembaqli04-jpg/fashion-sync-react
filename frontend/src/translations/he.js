@@ -281,6 +281,7 @@ export const he = {
       avgOrder: "ממוצע עסקה",
       repeatCustomers: "לקוחות חוזרים",
       repeatAllTime: "מכל התקופה",
+      repeatFraction: "{repeat} מתוך {total}",
       monthExpenses: "הוצאות החודש",
       monthProfit: "רווח החודש",
       salesByCategory: "מכירות לפי קטגוריה — החודש",

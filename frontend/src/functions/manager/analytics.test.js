@@ -686,6 +686,72 @@ describe("avgOrder precision", () => {
   });
 });
 
+describe("repeat customers — the denominator", () => {
+  const NOW3 = new Date("2026-08-15T12:00:00Z").getTime();
+  const by = (email, day, extra = {}) => ({
+    total: 100,
+    date: `2026-08-${String(day).padStart(2, "0")}T10:00:00.000Z`,
+    customerEmail: email,
+    subtotal: 100,
+    items: [{ code: "FS-001", price: 100, qty: 1 }],
+    ...extra,
+  });
+
+  it("counts one-time customers in the denominator", () => {
+    // Two customers, one of whom came back. Not 100%.
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("a@x.com", 2), by("b@x.com", 3)],
+      now: NOW3,
+    });
+
+    expect(stats.repeatCustomers).toBe(1);
+    expect(stats.totalCustomers).toBe(2);
+    expect(stats.repeatPct).toBe(50);
+  });
+
+  it("reports the fraction the screen prints beside the percentage", () => {
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("a@x.com", 2)],
+      now: NOW3,
+    });
+
+    expect(stats.repeatCustomers).toBe(1);
+    expect(stats.totalCustomers).toBe(1);
+    expect(stats.repeatPct).toBe(100);
+  });
+
+  it("skips an order with no address rather than inventing a customer", () => {
+    // Two addressless orders used to collect under one "unknown" key and
+    // count as a customer who had come back — in both halves of the ratio.
+    const stats = calculateMonthlyStats({
+      orders: [by("a@x.com", 1), by("", 2), by("", 3)],
+      now: NOW3,
+    });
+
+    expect(stats.totalCustomers).toBe(1);
+    expect(stats.repeatCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("skips an order whose address is only whitespace", () => {
+    const stats = calculateMonthlyStats({
+      orders: [by("   ", 1), by("   ", 2)],
+      now: NOW3,
+    });
+
+    expect(stats.totalCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+
+  it("reports zero customers rather than dividing by none", () => {
+    const stats = calculateMonthlyStats({ orders: [], now: NOW3 });
+
+    expect(stats.totalCustomers).toBe(0);
+    expect(stats.repeatCustomers).toBe(0);
+    expect(stats.repeatPct).toBe(0);
+  });
+});
+
 describe("repeat customers", () => {
   const NOW2 = new Date("2026-08-15T12:00:00Z").getTime();
   const at = (iso, email, extra = {}) => ({

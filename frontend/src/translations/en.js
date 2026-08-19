@@ -281,6 +281,7 @@ export const en = {
       avgOrder: "Average Order",
       repeatCustomers: "Repeat Customers",
       repeatAllTime: "all time",
+      repeatFraction: "{repeat} of {total}",
       monthExpenses: "This Month's Expenses",
       monthProfit: "This Month's Profit",
       salesByCategory: "Sales by Category — This Month",
