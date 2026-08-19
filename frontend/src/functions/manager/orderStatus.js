@@ -62,3 +62,23 @@ export function countOrdersAwaitingDelivery(orders) {
   if (!Array.isArray(orders)) return 0;
   return orders.filter(isAwaitingDelivery).length;
 }
+
+/**
+ * Whether an order counts as completed trade.
+ *
+ * A cancelled order was called off by the customer and a rejected one was
+ * refused by the manager. Neither reached the customer and both put their
+ * stock back, so neither is a sale, a receipt, or a figure on any report.
+ *
+ * An order still waiting for a decision does count. The stock leaves the
+ * shelf at checkout rather than on approval, so an undecided order is a sale
+ * not yet approved rather than a sale that did not happen.
+ *
+ * @param {object} order - The order to test.
+ * @returns {boolean} Whether it belongs in the trading figures.
+ */
+export function isCompletedTrade(order) {
+  if (!order) return false;
+
+  return !order.cancelled && !order.rejected;
+}

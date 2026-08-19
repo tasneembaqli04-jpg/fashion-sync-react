@@ -114,6 +114,11 @@ export function createAlerts(
   });
 
   orders.forEach((order) => {
+    // A cancelled or rejected order raises nothing. The alert asks the manager
+    // to attend to a custom-size item, and there is no item to make on an
+    // order that will not be fulfilled.
+    if (order.cancelled || order.rejected) return;
+
     const isDone =
       order.status === "ready" ||
       order.status === "done" ||

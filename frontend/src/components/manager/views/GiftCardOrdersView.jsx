@@ -9,6 +9,11 @@ import LoadMoreButton from "../../common/LoadMoreButton";
 import { useProgressiveList } from "../../../hooks/useProgressiveList";
 import { matchesAnySearchField } from "../../../functions/shared/textSearch";
 import {
+  openGiftCardBalance,
+  soldGiftCards,
+  totalIssuedValue,
+} from "../../../functions/manager/giftCardStats";
+import {
   getMonthKey,
   matchesMonthFilter,
 } from "../../../functions/shared/monthFilter";
@@ -78,10 +83,17 @@ export default function GiftCardOrdersView() {
     return entries.filter((e) => matchesMonthFilter(monthFilter, e.date));
   }, [entries, monthFilter]);
 
-  const totalSold = entries.length;
-  const totalValue = entries.reduce((sum, e) => sum + e.amount, 0);
+  // A rejected card was never issued, so it is not one that was sold and its
+  // face value is not money the shop took. The three figures count the cards
+  // that stand: active, fully used, and still awaiting approval.
+  const soldCards = useMemo(() => soldGiftCards(entries), [entries]);
+
+  const totalSold = soldCards.length;
+  const totalValue = useMemo(() => totalIssuedValue(entries), [entries]);
+  const openBalance = useMemo(() => openGiftCardBalance(entries), [entries]);
+
   const thisMonthKey = getMonthKey(new Date());
-  const thisMonthCount = entries.filter(
+  const thisMonthCount = soldCards.filter(
     (e) => getMonthKey(e.date) === thisMonthKey,
   ).length;
 
@@ -161,6 +173,23 @@ export default function GiftCardOrdersView() {
             {thisMonthCount}
           </div>
           <div className={overviewStyles.statSub}>{t.cardsSuffix2}</div>
+        </div>
+
+        <div className={`${overviewStyles.stat} ${overviewStyles.gold}`}>
+          <div className={overviewStyles.statIcon}>⏳</div>
+          <div
+            className={overviewStyles.statLabel}
+            style={{ color: "var(--gold)" }}
+          >
+            {t.openBalance}
+          </div>
+          <div
+            className={overviewStyles.statVal}
+            style={{ color: "var(--gold)" }}
+          >
+            ₪{openBalance.toLocaleString()}
+          </div>
+          <div className={overviewStyles.statSub}>{t.openBalanceSub}</div>
         </div>
       </div>
 
