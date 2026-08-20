@@ -212,7 +212,7 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing and CI
 
-600 unit tests over the business logic.
+610 unit tests over the business logic.
 
 | Suite | Tests | Covers |
 |---|---|---|
