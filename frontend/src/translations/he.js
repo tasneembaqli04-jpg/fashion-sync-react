@@ -284,7 +284,7 @@ export const he = {
       repeatFraction: "{repeat} מתוך {total}",
       monthExpenses: "הוצאות החודש",
       monthProfit: "רווח החודש",
-      salesByCategory: "מכירות לפי קטגוריה — החודש",
+      salesByCategory: "מכירות ברוטו לפי קטגוריה — החודש",
       noSalesThisMonth: "עדיין אין מכירות החודש",
       noteTitle: "💡 הערה",
       missingCostNote:
