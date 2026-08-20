@@ -212,11 +212,11 @@ Never commit API keys for external services, credentials, or service account fil
 
 ## Testing and CI
 
-600 unit tests over the business logic.
+610 unit tests over the business logic.
 
 | Suite | Tests | Covers |
 |---|---|---|
-| Frontend | 581 across 31 files | Pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, date and month handling, which orders still need a decision |
+| Frontend | 591 across 31 files | Pricing and rounding, the cancellation and return windows, stock and availability, revenue recognition, translation, date and month handling, which orders still need a decision |
 | Backend | 19 across 1 file | The search logic: Hebrew stem derivation, relevance scoring, the three-level sort |
 
 ```bash

@@ -1,4 +1,7 @@
-import { FREE_SHIPPING_THRESHOLD } from "../../data/storePolicy";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  POINT_REDEMPTION_VALUE,
+} from "../../data/storePolicy";
 /**
  * Calculates the cart subtotal, before discounts or shipping.
  *
@@ -68,4 +71,35 @@ export function getTotal(cart = [], discountPct = 0, selectedShipping, pointsDis
   );
 
   return afterDiscounts + shippingCost;
+}
+/**
+ * How many of the points a customer set aside can actually be spent.
+ *
+ * Points are applied against the cart as it stands at that moment, and the
+ * cart can change afterwards. Removing an item leaves a redemption larger
+ * than the order it is meant to discount, and the checkout charged zero while
+ * still deducting every point — the customer paid nothing extra and lost the
+ * difference, with nothing on screen to say so.
+ *
+ * So the figure is worked out again from the cart being paid for, rather than
+ * trusted from when it was chosen. A redemption the cart can still absorb is
+ * returned untouched: this only ever removes points that could not have been
+ * spent anyway.
+ *
+ * @param {number} requested - Points the customer set aside.
+ * @param {number} payableValue - Goods value the points may reduce, after any
+ *   coupon and before shipping.
+ * @returns {number} Points to spend and deduct, never more than either.
+ */
+export function usablePoints(requested = 0, payableValue = 0) {
+  const asked = Math.max(0, Math.floor(Number(requested) || 0));
+  const payable = Math.max(0, Number(payableValue) || 0);
+
+  if (asked === 0 || payable === 0) {
+    return 0;
+  }
+
+  const affordable = Math.floor(payable / POINT_REDEMPTION_VALUE);
+
+  return Math.min(asked, affordable);
 }

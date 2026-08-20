@@ -4,7 +4,9 @@ import {
   getDiscountAmount,
   getShippingCost,
   getTotal,
+  usablePoints,
 } from "./checkoutPricing";
+import { POINT_REDEMPTION_VALUE } from "../../data/storePolicy";
 
 describe("getSubtotal", () => {
   it("returns 0 for an empty cart", () => {
@@ -114,5 +116,67 @@ describe("getTotal", () => {
 
   it("returns 0 for an empty cart with no shipping selected", () => {
     expect(getTotal([], 0, null, 0)).toBe(0);
+  });
+});
+describe("usablePoints — the redemption is checked against the cart being paid for", () => {
+  // 20 points to the shekel: 0.05 each.
+
+  it("leaves an ordinary redemption untouched", () => {
+    // 200 points against a cart of 300. The cart absorbs it easily, so the
+    // customer spends exactly what she chose.
+    expect(usablePoints(200, 300)).toBe(200);
+  });
+
+  it("leaves a redemption that exactly covers the cart untouched", () => {
+    // 6,000 points is worth 300, and the cart is 300.
+    expect(usablePoints(6000, 300)).toBe(6000);
+  });
+
+  it("spends only what the cart can absorb once an item is removed", () => {
+    // She applied 6,000 points against a cart of 300, then removed an item
+    // and the cart is 100. Only 2,000 points are worth spending; the rest
+    // stay in her account instead of vanishing against a total of zero.
+    expect(usablePoints(6000, 100)).toBe(2000);
+  });
+
+  it("spends nothing when the cart is empty", () => {
+    expect(usablePoints(6000, 0)).toBe(0);
+  });
+
+  it("spends nothing when nothing was set aside", () => {
+    expect(usablePoints(0, 300)).toBe(0);
+  });
+
+  it("never returns more than was asked for", () => {
+    // A large cart does not spend points the customer did not offer.
+    expect(usablePoints(100, 10000)).toBe(100);
+  });
+
+  it("never returns a fraction of a point", () => {
+    // 90 buys 1,800 points exactly; 95 would buy 1,900.
+    expect(Number.isInteger(usablePoints(9999, 95))).toBe(true);
+    expect(usablePoints(9999, 95)).toBe(1900);
+  });
+
+  it("rounds down rather than granting a point that is not covered", () => {
+    // 0.07 covers one point at 0.05, not two.
+    expect(usablePoints(10, 0.07)).toBe(1);
+  });
+
+  it("survives missing or negative values", () => {
+    expect(usablePoints()).toBe(0);
+    expect(usablePoints(-50, 300)).toBe(0);
+    expect(usablePoints(200, -10)).toBe(0);
+    expect(usablePoints(null, null)).toBe(0);
+  });
+
+  it("matches the discount the checkout will actually apply", () => {
+    // The property that matters: the points spent are never worth more than
+    // the value they are reducing, so the total cannot clamp at zero with
+    // points left unspent.
+    for (const [asked, payable] of [[6000, 100], [200, 300], [1, 0.05], [40, 1]]) {
+      const spent = usablePoints(asked, payable);
+      expect(spent * POINT_REDEMPTION_VALUE).toBeLessThanOrEqual(payable + 1e-9);
+    }
   });
 });
