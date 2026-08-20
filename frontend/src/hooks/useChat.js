@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "../translations/LanguageProvider";
 import { getReply } from "../functions/customer/chat";
 import { requestChatReplyStream } from "../services/chat/chatService";
+import { MAX_CHAT_MESSAGE_LENGTH } from "../data/chatLimits";
 
 /** How long to wait for the assistant before giving up on a reply. */
 const CHAT_TIMEOUT_MS = 30000;
@@ -78,6 +79,25 @@ export function useChat() {
         html: text,
       },
     ]);
+
+    // Stopped here rather than at the server, so the customer is told what is
+    // wrong. A rejected request reaches the catch below and shows the generic
+    // "assistant unavailable", which would send her away to try again with the
+    // same message. Her question stays in the box so she can shorten it.
+    if (text.length > MAX_CHAT_MESSAGE_LENGTH) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          html: dict.customer.chat.messageTooLong.replace(
+            "{max}",
+            MAX_CHAT_MESSAGE_LENGTH,
+          ),
+        },
+      ]);
+
+      return;
+    }
 
     setChatInput("");
     setIsChatTyping(true);
