@@ -27,6 +27,7 @@ import {
   getShippingCost,
   getSubtotal,
   getTotal,
+  usablePoints,
 } from "../functions/checkout/checkoutPricing";
 import CheckoutTopbar from "../components/checkout/CheckoutTopbar";
 import CheckoutStepsBar from "../components/checkout/CheckoutStepsBar";
@@ -451,9 +452,20 @@ export default function Checkout() {
           orderSubtotal,
           discountPct,
         );
-        const orderPointsRedeemed =
+        // Worked out again from the cart being paid for. The figure in
+        // storage was set against the cart as it stood when the points were
+        // applied, and removing an item since then would leave a redemption
+        // bigger than the order: the total clamps at zero while every point
+        // is still deducted, so the customer loses the difference for
+        // nothing. A redemption the cart can still absorb passes through
+        // unchanged.
+        const storedPointsRedeemed =
           parseInt(localStorage.getItem(LS_KEYS.POINTS_REDEEMED) || "0", 10) ||
           0;
+        const orderPointsRedeemed = usablePoints(
+          storedPointsRedeemed,
+          orderSubtotal - orderDiscountAmount,
+        );
         const orderPointsDiscountAmount = orderPointsRedeemed * POINT_REDEMPTION_VALUE;
         const orderIsGiftCardOnly = orderItems.every((item) => item.isGiftCard);
         const orderShippingCost = orderIsGiftCardOnly
