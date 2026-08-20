@@ -687,7 +687,6 @@ export const he = {
       matchingProductsTitle: "מוצרים מתאימים",
       attachImageTitle: "שליחת תמונה",
       messagePlaceholder: "הודעה...",
-      messageTooLong: "ההודעה ארוכה מדי. אפשר לשלוח עד {max} תווים — כדאי לקצר ולשלוח שוב.",
       serviceUnavailable: "העוזר אינו זמין כרגע. אפשר לנסות שוב בעוד רגע, או לעיין בעמוד המדיניות.",
       outfitImageReady: "הנה המחשת הלוק שביקשת:",
       requestTimedOut: "לא הצלחתי להשיב הפעם. אפשר לנסות שוב או לשאול משהו אחר.",
