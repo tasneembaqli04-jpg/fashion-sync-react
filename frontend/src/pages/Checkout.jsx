@@ -471,6 +471,10 @@ export default function Checkout() {
         const orderShippingCost = orderIsGiftCardOnly
           ? 0
           : getShippingCost(selectedShipping, orderSubtotal);
+        // Read with the other order values, because the cleanup below now
+        // runs before the follow-up steps that use this.
+        const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
+
         const orderGiftCardCode = localStorage.getItem(LS_KEYS.GIFT_CARD_CODE) || "";
         const orderGiftCardDiscount =
           parseFloat(localStorage.getItem(LS_KEYS.GIFT_CARD_DISCOUNT) || "0") || 0;
@@ -533,6 +537,13 @@ export default function Checkout() {
 
         await saveReceiptAndOrder(receipt);
 
+        // Cleared here, not after the follow-up steps below. The basket has
+        // become an order, so the coupon, the points and the cart no longer
+        // describe anything: keeping them until the end made the cleanup
+        // hostage to four network calls, and a failure in any of them left a
+        // spent redemption in the browser for the next order to spend again.
+        await clearCheckoutCart(realAuthEmail);
+
         // Everything below runs against an order that already exists. Sharing
         // the outer catch meant a failure in any of it told the customer her
         // order had not been saved, left her on the payment step, and invited
@@ -556,7 +567,6 @@ export default function Checkout() {
             },
           });
 
-          const usedCouponCode = localStorage.getItem(LS_KEYS.COUPON_CODE);
           if (usedCouponCode && orderDiscountAmount > 0) {
             await logCouponUsage({
               code: usedCouponCode,
@@ -583,7 +593,6 @@ export default function Checkout() {
             );
           }
 
-          await clearCheckoutCart(realAuthEmail);
         } catch (followUpError) {
           console.error(
             "Order was saved; a follow-up step failed:",
