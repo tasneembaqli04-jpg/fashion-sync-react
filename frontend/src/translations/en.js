@@ -284,7 +284,7 @@ export const en = {
       repeatFraction: "{repeat} of {total}",
       monthExpenses: "This Month's Expenses",
       monthProfit: "This Month's Profit",
-      salesByCategory: "Sales by Category — This Month",
+      salesByCategory: "Gross sales by category — this month",
       noSalesThisMonth: "No sales yet this month",
       noteTitle: "💡 Note",
       missingCostNote:
