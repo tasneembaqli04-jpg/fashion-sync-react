@@ -642,6 +642,7 @@ export const en = {
       matchingProductsTitle: "Matching products",
       attachImageTitle: "Send image",
       messagePlaceholder: "Type a message...",
+      messageTooLong: "That message is too long. Up to {max} characters can be sent — shortening it should do it.",
       serviceUnavailable: "The assistant is unavailable right now. Please try again shortly, or see the policy page.",
       outfitImageReady: "Here is the look you asked for:",
       requestTimedOut: "I could not answer that one. Please try again, or ask me something else.",

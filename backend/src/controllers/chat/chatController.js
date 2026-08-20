@@ -2,6 +2,15 @@ const {
   handleChatMessage,
 } = require("../../services/chat/chatOrchestratorService");
 
+// A real question is far shorter than this. The cap is here so a very long
+// body cannot be forwarded to Gemini and charged for: nothing else limited the
+// size, and a 100KB message would have been sent in full.
+//
+// The customer's browser stops an over-long message before sending, so this
+// guard is for anything that reaches the function another way. Both numbers
+// must stay in step; the other is in frontend/src/data/chatLimits.js.
+const MAX_MESSAGE_LENGTH = 1000;
+
 async function chatController(request, response) {
   try {
     const {
@@ -17,6 +26,15 @@ async function chatController(request, response) {
       return response.status(400).json({
         success: false,
         message: "message is required",
+      });
+    }
+
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return response.status(400).json({
+        success: false,
+        error: "MESSAGE_TOO_LONG",
+        maxLength: MAX_MESSAGE_LENGTH,
+        message: `message must be ${MAX_MESSAGE_LENGTH} characters or fewer`,
       });
     }
 
